@@ -222,10 +222,8 @@ export default class GoogleMapProvider {
 	clearVehicleMarkers() {
 		if (!this.map) return;
 
-		console.log(this.vehicleMarkers);
 		for (const marker of this.vehicleMarkers) {
 
-			console.log(marker);
 			marker.setMap(null);
 		}
 		this.vehicleMarkers = [];
