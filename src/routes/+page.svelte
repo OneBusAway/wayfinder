@@ -28,6 +28,7 @@
 			clearPolylines();
 			mapProvider.removeStopMarkers();
 			mapProvider.cleanupInfoWindow();
+			mapProvider.clearVehicleMarkers();
 		}
 		stop = null;
 		selectedTrip = null;
