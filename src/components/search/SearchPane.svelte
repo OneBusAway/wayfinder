@@ -14,6 +14,7 @@
 	let location = null;
 	let query = null;
 	let polylines = [];
+	let currentIntervalId = null;
 
 	export let mapProvider = null;
 
@@ -88,7 +89,7 @@
 
 		mapProvider.panTo(routeLat, routeLon);
 
-		dispatch('routeSelected', { route, stopsForRoute, stops, polylines });
+		dispatch('routeSelected', { route, stopsForRoute, stops, polylines, currentIntervalId });
 	}
 
 	async function showStopsOnRoute(stops) {
@@ -152,7 +153,7 @@
 	async function fetchAndUpdateVehicles(routeId) {
 		await updateVehicleMarkers(routeId);
 
-		setInterval(() => updateVehicleMarkers(routeId), 30000);
+		currentIntervalId = setInterval(() => updateVehicleMarkers(routeId), 30000);
 	}
 
 	function handleSearchResults(results) {

@@ -15,6 +15,7 @@
 	let showAllStops = false;
 	let showRouteModal;
 	let mapProvider = null;
+	let currentIntervalId = null;
 	let polylines = [];
 	let stops = [];
 
@@ -29,6 +30,7 @@
 			mapProvider.removeStopMarkers();
 			mapProvider.cleanupInfoWindow();
 			mapProvider.clearVehicleMarkers();
+			clearInterval(currentIntervalId);
 		}
 		stop = null;
 		selectedTrip = null;
@@ -66,6 +68,7 @@
 		selectedRoute = event.detail.route;
 		polylines = event.detail.polylines;
 		stops = event.detail.stops;
+		currentIntervalId = event.detail.currentIntervalId;
 		showRouteModal = true;
 	}
 
