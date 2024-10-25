@@ -138,8 +138,6 @@
 		}
 
 		removeInactiveMarkers(activeTripIds);
-
-		console.log('Vehicle markers updated');
 	}
 
 	function removeInactiveMarkers(activeTripIds) {
@@ -169,6 +167,8 @@
 		stops = null;
 		location = null;
 		query = null;
+		vehicleMarkersMap.clear();
+		activeTripMap.clear();
 	}
 </script>
 
