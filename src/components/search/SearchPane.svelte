@@ -17,6 +17,16 @@
 
 	export let mapProvider = null;
 
+	const activeTripMap = new Map();
+
+	/**
+	 * @type {Map<string, marker>}
+	 * using activeTripId as key instead of vehicleId
+	 * see https://developer.onebusaway.org/api/where/elements/trip-status
+	 *
+	 */
+	const vehicleMarkersMap = new Map();
+
 	function handleLocationClick(location) {
 		if (polylines) {
 			dispatch('clearResults', polylines);
@@ -72,8 +82,8 @@
 		let routeLat = stopsForRoute.data.references.stops[0].lat;
 		let routeLon = stopsForRoute.data.references.stops[0].lon;
 
-		showStopsOnRoute(stops);
-
+		await showStopsOnRoute(stops);
+		await fetchAndUpdateVehicles(route.id);
 		mapProvider.setZoom(11);
 
 		mapProvider.panTo(routeLat, routeLon);
@@ -85,6 +95,66 @@
 		for (const stop of stops) {
 			mapProvider.addStopMarker(stop, null);
 		}
+	}
+
+	async function fetchVehicles(routeId) {
+		const response = await fetch(`/api/oba/trips-for-route/${routeId}`);
+		const responseBody = await response.json();
+		return responseBody.data || {};
+	}
+
+	async function updateVehicleMarkers(routeId) {
+		const data = await fetchVehicles(routeId);
+
+		const activeTripIds = new Set();
+
+		for (const trip of data.references.trips) {
+			if (!activeTripMap.has(trip.id)) {
+				activeTripMap.set(trip.id, trip);
+			}
+		}
+
+		for (const tripStatus of data.list) {
+			const activeTripId = tripStatus.status.activeTripId;
+			const activeTripRoute = activeTripMap.get(activeTripId);
+
+			if (
+				activeTripRoute &&
+				activeTripRoute.routeId === routeId &&
+				tripStatus.status !== 'CANCELED'
+			) {
+				const vehicleStatus = tripStatus.status;
+
+				activeTripIds.add(activeTripId);
+
+				if (vehicleMarkersMap.has(activeTripId)) {
+					const marker = vehicleMarkersMap.get(activeTripId);
+					mapProvider.updateVehicleMarker(marker, vehicleStatus);
+				} else {
+					const marker = mapProvider.addVehicleMarker(vehicleStatus);
+					vehicleMarkersMap.set(activeTripId, marker);
+				}
+			}
+		}
+
+		removeInactiveMarkers(activeTripIds);
+
+		console.log('Vehicle markers updated');
+	}
+
+	function removeInactiveMarkers(activeTripIds) {
+		for (const [activeTripId, marker] of vehicleMarkersMap) {
+			if (!activeTripIds.has(activeTripId)) {
+				mapProvider.removeVehicleMarker(marker);
+				vehicleMarkersMap.delete(activeTripId);
+			}
+		}
+	}
+
+	async function fetchAndUpdateVehicles(routeId) {
+		await updateVehicleMarkers(routeId);
+
+		setInterval(() => updateVehicleMarkers(routeId), 30000);
 	}
 
 	function handleSearchResults(results) {
