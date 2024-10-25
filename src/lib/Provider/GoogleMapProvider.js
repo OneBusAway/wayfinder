@@ -100,7 +100,6 @@ export default class GoogleMapProvider {
 	}
 
 	addStopMarker(stop, stopTime = null) {
-
 		const marker = new google.maps.Marker({
 			position: { lat: stop.lat, lng: stop.lon },
 			map: this.map,
@@ -151,7 +150,6 @@ export default class GoogleMapProvider {
 		});
 		this.stopMarkers = [];
 	}
-
 
 	addVehicleMarker(vehicle) {
 		if (!this.map) return null;
@@ -204,7 +202,6 @@ export default class GoogleMapProvider {
 	}
 
 	updateVehicleMarker(marker, vehicleStatus) {
-
 		if (!this.map) return;
 
 		marker.setPosition({ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon });
@@ -223,7 +220,6 @@ export default class GoogleMapProvider {
 		if (!this.map) return;
 
 		for (const marker of this.vehicleMarkers) {
-
 			marker.setMap(null);
 		}
 		this.vehicleMarkers = [];
