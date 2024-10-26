@@ -72,12 +72,12 @@ function createVehicleIconSvg(orientation) {
         <!-- Bumper -->
         <rect x="17" y="22" width="6" height="1.5" fill="white"/>
         <!-- Wheels -->
-        <circle cx="17" cy="26" r="1.5" fill="black"/>
-        <circle cx="23" cy="26" r="1.5" fill="black"/>
+        <circle cx="17" cy="26" r="1.5" fill="${color}"/>
+        <circle cx="23" cy="26" r="1.5" fill="${color}"/>
     `;
 
 	return `
-        <svg width="40" height="40" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
+        <svg width="50" height="50" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
             <!-- Directional arrow -->
             ${arrowPath}
 
