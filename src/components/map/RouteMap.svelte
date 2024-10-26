@@ -1,4 +1,5 @@
 <script>
+	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { onMount, onDestroy } from 'svelte';
 	export let mapProvider;
 	export let tripId;
@@ -7,6 +8,9 @@
 	let tripData = null;
 	let shapeData = null;
 	let isMounted = true;
+
+	// used to clear interval api calls
+	let currentIntervalId = null;
 
 	onMount(async () => {
 		await loadRouteData();
@@ -17,6 +21,9 @@
 		mapProvider.removePolyline(await polyline);
 		mapProvider.removeStopMarkers();
 		mapProvider.cleanupInfoWindow();
+		clearInterval(currentIntervalId);
+		clearVehicleMarkersMap(mapProvider);
+		mapProvider.clearVehicleMarkers();
 	});
 
 	async function loadRouteData() {
@@ -25,7 +32,9 @@
 
 		const tripReferences = tripData?.data?.references?.trips;
 		const moreTripData = tripReferences?.find((t) => t.id == tripId);
+
 		shapeId = moreTripData?.shapeId;
+		const routeId = moreTripData?.routeId;
 
 		if (shapeId && isMounted) {
 			const shapeResponse = await fetch(`/api/oba/shape/${shapeId}`);
@@ -46,5 +55,7 @@
 				mapProvider.addStopMarker(stop, stopTime);
 			}
 		}
+
+		currentIntervalId = await fetchAndUpdateVehicles(routeId, mapProvider);
 	}
 </script>
