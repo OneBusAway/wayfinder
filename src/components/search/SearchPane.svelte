@@ -116,7 +116,7 @@
 		}
 
 		for (const tripStatus of data.list) {
-			const activeTripId = tripStatus.status.activeTripId;
+			const activeTripId = tripStatus?.status?.activeTripId;
 			const activeTripRoute = activeTripMap.get(activeTripId);
 
 			if (
