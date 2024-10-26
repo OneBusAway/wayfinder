@@ -210,8 +210,6 @@ export default class OpenStreetMapProvider {
 		marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
 		marker.setIcon(updatedIcon);
 
-		console.log(activeTrip);
-
 		marker.vehicleData = {
 			...marker.vehicleData,
 			nextDestination: activeTrip.tripHeadsign,
