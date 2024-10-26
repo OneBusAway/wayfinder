@@ -20,10 +20,6 @@
 
 	export let mapProvider = null;
 
-	// const activeTripMap = new Map();
-
-	// const vehicleMarkersMap = new Map();
-
 	function handleLocationClick(location) {
 		clearResults();
 
