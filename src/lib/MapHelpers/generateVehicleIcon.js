@@ -11,47 +11,6 @@ const DIRECTIONS = [
 	{ angle: 315, icon: 'northwest' }
 ];
 
-const color = '#007BFF';
-
-const ARROW_PATHS = {
-	north: `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" />
-    `, // 0 degrees
-	northeast: `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" transform="rotate(45, 20, 20)" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(45, 20, 20)" />
-    `, // 45 degrees
-	east: `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" transform="rotate(90, 20, 20)" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(90, 20, 20)" />
-    `, // 90 degrees
-	southeast: `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" transform="rotate(135, 20, 20)" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(135, 20, 20)" />
-    `, // 135 degrees
-	south: `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" transform="rotate(180, 20, 20)" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(180, 20, 20)" />
-    `, // 180 degrees
-	southwest: `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" transform="rotate(225, 20, 20)" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(225, 20, 20)" />
-    `, // 225 degrees
-	west: `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" transform="rotate(270, 20, 20)" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(270, 20, 20)" />
-    `, // 270 degrees
-	northwest: `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" transform="rotate(315, 20, 20)" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(315, 20, 20)" />
-    `, // 315 degrees
-	default: `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" />
-    ` // Default direction
-};
-
 function getDirectionFromOrientation(orientation) {
 	const nearestDirection = DIRECTIONS.reduce((prev, curr) =>
 		Math.abs(curr.angle - orientation) < Math.abs(prev.angle - orientation) ? curr : prev
@@ -59,9 +18,14 @@ function getDirectionFromOrientation(orientation) {
 	return nearestDirection.icon;
 }
 
-function createVehicleIconSvg(orientation) {
+function createVehicleIconSvg(orientation, color = '#007BFF') {
 	const direction = getDirectionFromOrientation(toDirection(orientation));
-	const arrowPath = ARROW_PATHS[direction] || ARROW_PATHS.default;
+	const angle = DIRECTIONS.find((d) => d.icon === direction).angle;
+
+	const arrowPath = `
+        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" transform="rotate(${angle}, 20, 20)" />
+        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(${angle}, 20, 20)" />
+    `;
 
 	const busIcon = `
         <!-- Main bus body -->
