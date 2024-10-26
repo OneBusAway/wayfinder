@@ -16,3 +16,23 @@ export function toDirection(orientation) {
 
 	return direction;
 }
+
+/**
+ * calculate midpoint of a list of stops so we can show the route on the map
+ * @param  list of stops
+ * @returns
+ */
+export function calculateMidpoint(stops) {
+	let totalLat = 0;
+	let totalLon = 0;
+
+	for (const stop of stops) {
+		totalLat += stop.lat;
+		totalLon += stop.lon;
+	}
+
+	const midpointLat = totalLat / stops.length;
+	const midpointLon = totalLon / stops.length;
+
+	return { lat: midpointLat, lng: midpointLon };
+}
