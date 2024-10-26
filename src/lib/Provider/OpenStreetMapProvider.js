@@ -5,14 +5,18 @@ import './../../assets/styles/leaflet-map.css';
 import PolylineUtil from 'polyline-encoded';
 import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
+import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
+import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 
 export default class OpenStreetMapProvider {
 	constructor() {
 		this.map = null;
 		this.L = null;
-		this.stopMarkers = [];
 		this.globalInfoWindow = null;
 		this.popupContentComponent = null;
+		this.stopsMap = new Map();
+		this.stopMarkers = [];
+		this.vehicleMarkers = [];
 	}
 
 	async initMap(element, options) {
@@ -71,7 +75,6 @@ export default class OpenStreetMapProvider {
 		const marker = this.L.marker([options.position.lat, options.position.lng], {
 			icon: customIcon
 		}).addTo(this.map);
-
 		return marker;
 	}
 
@@ -84,6 +87,8 @@ export default class OpenStreetMapProvider {
 		});
 
 		const marker = L.marker([stop.lat, stop.lon], { icon: customIcon }).addTo(this.map);
+
+		this.stopsMap.set(stop.id, stop);
 
 		marker.on('click', () => {
 			if (this.globalInfoWindow) {
@@ -128,6 +133,101 @@ export default class OpenStreetMapProvider {
 
 	removeStopMarker(marker) {
 		marker.remove();
+	}
+
+	addVehicleMarker(vehicle) {
+		if (!this.map || !this.L) return null;
+
+		const busIconSvg = createVehicleIconSvg(vehicle?.orientation);
+		const customIcon = this.L.divIcon({
+			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(busIconSvg)}" style="width:45px;height:45px;" />`,
+			iconSize: [40, 40],
+			iconAnchor: [20, 20],
+			className: '',
+			zIndexOffset: 1000
+		});
+
+		const marker = this.L.marker([vehicle.position.lat, vehicle.position.lon], {
+			icon: customIcon,
+			zIndexOffset: 1000
+		}).addTo(this.map);
+
+		this.vehicleMarkers.push(marker);
+
+		marker.vehicleData = {
+			routeName: vehicle.routeName,
+			vehicleId: vehicle.vehicleId,
+			lastUpdated: vehicle.lastUpdated,
+			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name || 'N/A',
+			status: vehicle.status,
+			predicted: vehicle.predicted
+		};
+
+		marker.bindPopup(document.createElement('div'));
+
+		marker.on('popupopen', () => {
+			const popupContainer = document.createElement('div');
+
+			marker.popupComponent = new VehiclePopupContent({
+				target: popupContainer,
+				props: marker.vehicleData
+			});
+
+			marker.getPopup().setContent(popupContainer);
+		});
+
+		marker.on('popupclose', () => {
+			if (marker.popupComponent) {
+				marker.popupComponent.$destroy();
+				marker.popupComponent = null;
+			}
+		});
+
+		return marker;
+	}
+
+	updateVehicleMarker(marker, vehicleStatus) {
+		if (!this.map || !this.L || !marker) return;
+
+		const updatedIconSvg = createVehicleIconSvg(vehicleStatus.orientation);
+		const updatedIcon = this.L.divIcon({
+			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" style="width:45px;height:45px;" />`,
+			iconSize: [40, 40],
+			iconAnchor: [20, 20],
+			className: '',
+			zIndexOffset: 1000
+		});
+
+		marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
+		marker.setIcon(updatedIcon);
+
+		marker.vehicleData = {
+			...marker.vehicleData,
+			routeName: vehicleStatus.routeName,
+			vehicleId: vehicleStatus.vehicleId,
+			lastUpdated: vehicleStatus.lastUpdated,
+			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
+			status: vehicleStatus.status,
+			predicted: vehicleStatus.predicted
+		};
+
+		if (marker.isPopupOpen() && marker.popupComponent) {
+			marker.popupComponent.$set(marker.vehicleData);
+		}
+	}
+	removeVehicleMarker(marker) {
+		if (marker) {
+			marker.remove();
+		}
+	}
+
+	clearVehicleMarkers() {
+		if (!this.map) return;
+
+		this.vehicleMarkers.forEach((marker) => {
+			marker.remove();
+		});
+		this.vehicleMarkers = [];
 	}
 
 	addListener(event, callback) {
