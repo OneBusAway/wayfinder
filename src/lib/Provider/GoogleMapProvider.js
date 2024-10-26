@@ -9,11 +9,11 @@ export default class GoogleMapProvider {
 	constructor(apiKey) {
 		this.apiKey = apiKey;
 		this.map = null;
-		this.stopMarkers = [];
-		this.vehicleMarkers = [];
 		this.globalInfoWindow = null;
 		this.popupContentComponent = null;
 		this.stopsMap = new Map();
+		this.stopMarkers = [];
+		this.vehicleMarkers = [];
 	}
 
 	async initMap(element, options) {
@@ -156,7 +156,6 @@ export default class GoogleMapProvider {
 		if (!this.map) return null;
 
 		const busIcon = createVehicleIconSvg(vehicle?.orientation);
-
 		const icon = {
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(busIcon)}`,
 			scaledSize: new google.maps.Size(40, 40),
@@ -172,37 +171,35 @@ export default class GoogleMapProvider {
 
 		this.vehicleMarkers.push(marker);
 
-		const nextStopName = this.stopsMap.get(vehicle.nextStop)?.name || 'N/A';
+		const vehicleData = {
+			routeName: vehicle.routeName,
+			vehicleId: vehicle.vehicleId,
+			lastUpdateTime: vehicle.lastUpdateTime,
+			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name || 'N/A',
+			status: vehicle.status,
+			predicted: vehicle.predicted
+		};
 
 		const popupContainer = document.createElement('div');
-		const popupComponent = new VehiclePopupContent({
+		marker.popupComponent = new VehiclePopupContent({
 			target: popupContainer,
-			props: {
-				routeName: vehicle.routeName,
-				vehicleId: vehicle.vehicleId,
-				lastUpdated: vehicle.lastUpdated,
-				nextStopName: nextStopName,
-				status: vehicle.status
-			}
+			props: vehicleData
 		});
 
-		const infoWindow = new google.maps.InfoWindow({
+		marker.infoWindow = new google.maps.InfoWindow({
 			content: popupContainer
 		});
 
 		marker.addListener('click', () => {
-			infoWindow.open(this.map, marker);
-		});
-
-		google.maps.event.addListener(infoWindow, 'closeclick', () => {
-			popupComponent.$destroy();
+			marker.infoWindow.open(this.map, marker);
 		});
 
 		return marker;
 	}
 
+
 	updateVehicleMarker(marker, vehicleStatus) {
-		if (!this.map) return;
+		if (!this.map || !marker) return;
 
 		marker.setPosition({ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon });
 
@@ -212,7 +209,22 @@ export default class GoogleMapProvider {
 			scaledSize: new google.maps.Size(40, 40),
 			anchor: new google.maps.Point(20, 20)
 		});
+
+		const updatedData = {
+			routeName: vehicleStatus.routeName,
+			vehicleId: vehicleStatus.vehicleId,
+			lastUpdateTime: vehicleStatus.lastUpdateTime,
+			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
+			status: vehicleStatus.status,
+			predicted: vehicleStatus.predicted
+		};
+
+		if (marker.popupComponent) {
+			marker.popupComponent.$set(updatedData);
+		}
 	}
+
+
 
 	removeVehicleMarker(marker) {
 		marker.setMap(null);
