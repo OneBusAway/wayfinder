@@ -6,6 +6,8 @@
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { faMapPin, faSignsPost } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
+	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
+	import { calculateMidpoint } from '$lib/mathUtils';
 
 	const dispatch = createEventDispatcher();
 
@@ -18,21 +20,11 @@
 
 	export let mapProvider = null;
 
-	const activeTripMap = new Map();
+	// const activeTripMap = new Map();
 
-	/**
-	 * @type {Map<string, marker>}
-	 * using activeTripId as key instead of vehicleId
-	 * see https://developer.onebusaway.org/api/where/elements/trip-status
-	 *
-	 */
-	const vehicleMarkersMap = new Map();
+	// const vehicleMarkersMap = new Map();
 
 	function handleLocationClick(location) {
-		if (polylines) {
-			dispatch('clearResults', polylines);
-		}
-
 		clearResults();
 
 		const lat = location.geometry.location.lat;
@@ -45,10 +37,6 @@
 	}
 
 	function handleStopClick(stop) {
-		if (polylines) {
-			dispatch('clearResults', polylines);
-		}
-
 		clearResults();
 
 		mapProvider.panTo(stop.lat, stop.lon);
@@ -58,11 +46,8 @@
 	}
 
 	async function handleRouteClick(route) {
-		if (polylines) {
-			dispatch('clearResults', polylines);
-		}
-
 		clearResults();
+
 		const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
 
 		const stopsForRoute = await response.json();
@@ -80,14 +65,14 @@
 			polylines.push(polyline);
 		}
 
-		let routeLat = stopsForRoute.data.references.stops[0].lat;
-		let routeLon = stopsForRoute.data.references.stops[0].lon;
-
 		await showStopsOnRoute(stops);
-		await fetchAndUpdateVehicles(route.id);
-		mapProvider.setZoom(11);
 
-		mapProvider.panTo(routeLat, routeLon);
+		currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
+
+		const midpoint = calculateMidpoint(stopsForRoute.data.references.stops);
+
+		mapProvider.panTo(midpoint.lat, midpoint.lng);
+		mapProvider.setZoom(13);
 
 		dispatch('routeSelected', { route, stopsForRoute, stops, polylines, currentIntervalId });
 	}
@@ -98,64 +83,6 @@
 		}
 	}
 
-	async function fetchVehicles(routeId) {
-		const response = await fetch(`/api/oba/trips-for-route/${routeId}`);
-		const responseBody = await response.json();
-		return responseBody.data || {};
-	}
-
-	async function updateVehicleMarkers(routeId) {
-		const data = await fetchVehicles(routeId);
-
-		const activeTripIds = new Set();
-
-		for (const trip of data.references.trips) {
-			if (!activeTripMap.has(trip.id)) {
-				activeTripMap.set(trip.id, trip);
-			}
-		}
-
-		for (const tripStatus of data.list) {
-			const activeTripId = tripStatus?.status?.activeTripId;
-			const activeTripRoute = activeTripMap.get(activeTripId);
-
-			if (
-				activeTripRoute &&
-				activeTripRoute.routeId === routeId &&
-				tripStatus.status !== 'CANCELED'
-			) {
-				const vehicleStatus = tripStatus.status;
-
-				activeTripIds.add(activeTripId);
-
-				if (vehicleMarkersMap.has(activeTripId)) {
-					const marker = vehicleMarkersMap.get(activeTripId);
-					mapProvider.updateVehicleMarker(marker, vehicleStatus);
-				} else {
-					const marker = mapProvider.addVehicleMarker(vehicleStatus);
-					vehicleMarkersMap.set(activeTripId, marker);
-				}
-			}
-		}
-
-		removeInactiveMarkers(activeTripIds);
-	}
-
-	function removeInactiveMarkers(activeTripIds) {
-		for (const [activeTripId, marker] of vehicleMarkersMap) {
-			if (!activeTripIds.has(activeTripId)) {
-				mapProvider.removeVehicleMarker(marker);
-				vehicleMarkersMap.delete(activeTripId);
-			}
-		}
-	}
-
-	async function fetchAndUpdateVehicles(routeId) {
-		await updateVehicleMarkers(routeId);
-
-		currentIntervalId = setInterval(() => updateVehicleMarkers(routeId), 30000);
-	}
-
 	function handleSearchResults(results) {
 		routes = results.detail.routes;
 		stops = results.detail.stops;
@@ -164,12 +91,17 @@
 	}
 
 	function clearResults() {
+		if (polylines) {
+			dispatch('clearResults', polylines);
+		}
 		routes = null;
 		stops = null;
 		location = null;
 		query = null;
-		vehicleMarkersMap.clear();
-		activeTripMap.clear();
+
+		clearVehicleMarkersMap();
+		mapProvider.clearVehicleMarkers();
+		clearInterval(currentIntervalId);
 	}
 </script>
 
