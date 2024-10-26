@@ -4,6 +4,7 @@ import { faBus } from '@fortawesome/free-solid-svg-icons';
 import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
+import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 export default class GoogleMapProvider {
 	constructor(apiKey) {
 		this.apiKey = apiKey;
@@ -154,18 +155,18 @@ export default class GoogleMapProvider {
 	addVehicleMarker(vehicle) {
 		if (!this.map) return null;
 
+		const busIcon = createVehicleIconSvg(vehicle?.orientation);
+
 		const icon = {
-			url: 'https://maps.google.com/mapfiles/kml/shapes/bus.png',
-			scaledSize: new google.maps.Size(30, 30),
-			anchor: new google.maps.Point(15, 15),
-			rotation: vehicle.orientation
+			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(busIcon)}`,
+			scaledSize: new google.maps.Size(40, 40),
+			anchor: new google.maps.Point(20, 20)
 		};
 
 		const marker = new google.maps.Marker({
 			position: { lat: vehicle.position.lat, lng: vehicle.position.lon },
 			map: this.map,
 			icon: icon,
-			rotation: vehicle.orientation,
 			zIndex: 1000
 		});
 
@@ -174,7 +175,6 @@ export default class GoogleMapProvider {
 		const nextStopName = this.stopsMap.get(vehicle.nextStop)?.name || 'N/A';
 
 		const popupContainer = document.createElement('div');
-
 		const popupComponent = new VehiclePopupContent({
 			target: popupContainer,
 			props: {
@@ -205,15 +205,17 @@ export default class GoogleMapProvider {
 		if (!this.map) return;
 
 		marker.setPosition({ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon });
+
+		const updatedIcon = createVehicleIconSvg(vehicleStatus.orientation);
+		marker.setIcon({
+			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIcon)}`,
+			scaledSize: new google.maps.Size(40, 40),
+			anchor: new google.maps.Point(20, 20)
+		});
 	}
 
 	removeVehicleMarker(marker) {
 		marker.setMap(null);
-	}
-
-	centerAndZoomMarker(lat, lng) {
-		this.map.setCenter({ lat, lng });
-		this.map.setZoom(16);
 	}
 
 	clearVehicleMarkers() {
@@ -280,7 +282,7 @@ export default class GoogleMapProvider {
 			geodesic: true,
 			strokeColor: COLORS.POLYLINE,
 			strokeOpacity: 1.0,
-			strokeWeight: 1
+			strokeWeight: 5
 		};
 
 		if (addArrow) {
