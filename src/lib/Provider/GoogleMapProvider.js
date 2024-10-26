@@ -152,10 +152,16 @@ export default class GoogleMapProvider {
 		this.stopMarkers = [];
 	}
 
-	addVehicleMarker(vehicle) {
+	addVehicleMarker(vehicle, activeTrip) {
 		if (!this.map) return null;
 
-		const busIcon = createVehicleIconSvg(vehicle?.orientation);
+		// TODO: Add enum for vehicle color and status
+		let color;
+		if (!vehicle.predicted) {
+			color = COLORS.VEHICLE_REAL_TIME_OFF;
+		}
+
+		const busIcon = createVehicleIconSvg(vehicle?.orientation, color);
 		const icon = {
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(busIcon)}`,
 			scaledSize: new google.maps.Size(40, 40),
@@ -172,11 +178,10 @@ export default class GoogleMapProvider {
 		this.vehicleMarkers.push(marker);
 
 		const vehicleData = {
-			routeName: vehicle.routeName,
+			nextDestination: activeTrip.routeShortName + ' - ' + activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name || 'N/A',
-			status: vehicle.status,
 			predicted: vehicle.predicted
 		};
 
@@ -197,12 +202,17 @@ export default class GoogleMapProvider {
 		return marker;
 	}
 
-	updateVehicleMarker(marker, vehicleStatus) {
+	updateVehicleMarker(marker, vehicleStatus, activeTrip) {
 		if (!this.map || !marker) return;
 
 		marker.setPosition({ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon });
 
-		const updatedIcon = createVehicleIconSvg(vehicleStatus.orientation);
+		let color;
+		if (!vehicleStatus.predicted) {
+			color = COLORS.VEHICLE_REAL_TIME_OFF;
+		}
+
+		const updatedIcon = createVehicleIconSvg(vehicleStatus.orientation, color);
 		marker.setIcon({
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIcon)}`,
 			scaledSize: new google.maps.Size(40, 40),
@@ -210,11 +220,10 @@ export default class GoogleMapProvider {
 		});
 
 		const updatedData = {
-			routeName: vehicleStatus.routeName,
+			nextDestination: activeTrip.routeShortName + ' - ' + activeTrip.tripHeadsign,
 			vehicleId: vehicleStatus.vehicleId,
 			lastUpdateTime: vehicleStatus.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
-			status: vehicleStatus.status,
 			predicted: vehicleStatus.predicted
 		};
 
