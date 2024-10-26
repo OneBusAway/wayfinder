@@ -20,22 +20,28 @@
 	}
 </script>
 
-<div class="max-w-xs rounded-lg bg-white p-4 shadow-md">
-	<div class="text-lg font-bold text-gray-800">{nextDestination}</div>
-	<div class="text-gray-600">
+// TODO: Add vehicle icon, add the nextStops times
+
+<div class="max-w-xs rounded-lg bg-white p-4 text-gray-800 shadow-md">
+	<div class="mb-2 flex items-center">
+		<div class="rounded bg-green-100 px-2 py-1 text-lg font-bold text-green-600">
+			{nextDestination}
+		</div>
+	</div>
+	<div class="text-sm text-gray-600">
 		{#if predicted}
 			Vehicle #<span class="font-semibold text-blue-500">{vehicleId || 'N/A'}</span> | Data updated
 			<span class="font-semibold text-blue-500">{formatLastUpdated(lastUpdateTime)}</span>
 		{:else}
 			<span class="font-semibold text-gray-500"
-				>we don't have a real-time data for this vehicle now.</span
+				>We don't have real-time data for this vehicle now.</span
 			>
 		{/if}
 	</div>
-	<br />
-	<div class="font-bold text-gray-800">Next stop:</div>
-	<div class="text-gray-600">
+	<hr class="my-2" />
+	<div class="text-sm font-bold text-gray-800">Next stop:</div>
+	<div class="text-sm text-gray-600">
 		<strong class="font-semibold text-blue-500">{nextStopName || 'N/A'}</strong>
 	</div>
-	<br />
+	<hr class="my-2" />
 </div>
