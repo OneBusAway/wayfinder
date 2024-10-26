@@ -157,7 +157,7 @@ export default class OpenStreetMapProvider {
 		marker.vehicleData = {
 			routeName: vehicle.routeName,
 			vehicleId: vehicle.vehicleId,
-			lastUpdated: vehicle.lastUpdated,
+			lastUpdateTime: vehicle.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name || 'N/A',
 			status: vehicle.status,
 			predicted: vehicle.predicted
@@ -205,7 +205,7 @@ export default class OpenStreetMapProvider {
 			...marker.vehicleData,
 			routeName: vehicleStatus.routeName,
 			vehicleId: vehicleStatus.vehicleId,
-			lastUpdated: vehicleStatus.lastUpdated,
+			lastUpdateTime: vehicleStatus.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
 			status: vehicleStatus.status,
 			predicted: vehicleStatus.predicted
