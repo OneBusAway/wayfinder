@@ -32,13 +32,9 @@ export async function updateVehicleMarkers(routeId, mapProvider) {
 
 	for (const tripStatus of data.list) {
 		const activeTripId = tripStatus?.status?.activeTripId;
-		const activeTripRoute = activeTripMap.get(activeTripId);
+		const activeTrip = activeTripMap.get(activeTripId);
 
-		if (
-			activeTripRoute &&
-			activeTripRoute?.routeId === routeId &&
-			tripStatus.status !== 'CANCELED'
-		) {
+		if (activeTrip && activeTrip?.routeId === routeId && tripStatus.status !== 'CANCELED') {
 			const vehicleStatus = tripStatus.status;
 
 			activeTripIds.add(activeTripId);
@@ -46,9 +42,9 @@ export async function updateVehicleMarkers(routeId, mapProvider) {
 			if (vehicleMarkersMap.has(activeTripId)) {
 				const marker = vehicleMarkersMap.get(activeTripId);
 
-				mapProvider.updateVehicleMarker(marker, vehicleStatus);
+				mapProvider.updateVehicleMarker(marker, vehicleStatus, activeTrip);
 			} else {
-				const marker = mapProvider.addVehicleMarker(vehicleStatus);
+				const marker = mapProvider.addVehicleMarker(vehicleStatus, activeTrip);
 				vehicleMarkersMap.set(activeTripId, marker);
 			}
 		}
