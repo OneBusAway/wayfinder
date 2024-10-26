@@ -197,7 +197,6 @@ export default class GoogleMapProvider {
 		return marker;
 	}
 
-
 	updateVehicleMarker(marker, vehicleStatus) {
 		if (!this.map || !marker) return;
 
@@ -223,8 +222,6 @@ export default class GoogleMapProvider {
 			marker.popupComponent.$set(updatedData);
 		}
 	}
-
-
 
 	removeVehicleMarker(marker) {
 		marker.setMap(null);
