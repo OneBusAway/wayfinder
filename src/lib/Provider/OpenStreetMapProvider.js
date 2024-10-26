@@ -160,7 +160,7 @@ export default class OpenStreetMapProvider {
 		this.vehicleMarkers.push(marker);
 
 		marker.vehicleData = {
-			nextDestination: activeTrip.routeShortName + ' - ' + activeTrip.tripHeadsign,
+			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name || 'N/A',
@@ -210,9 +210,11 @@ export default class OpenStreetMapProvider {
 		marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
 		marker.setIcon(updatedIcon);
 
+		console.log(activeTrip);
+
 		marker.vehicleData = {
 			...marker.vehicleData,
-			nextDestination: activeTrip.routeShortName + ' - ' + activeTrip.tripHeadsign,
+			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicleStatus.vehicleId,
 			lastUpdateTime: vehicleStatus.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
