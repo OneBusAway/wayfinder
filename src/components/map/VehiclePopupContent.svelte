@@ -1,9 +1,8 @@
 <script>
-	export let routeName;
+	export let nextDestination;
 	export let vehicleId;
 	export let lastUpdateTime;
 	export let nextStopName;
-	export let status;
 	export let predicted;
 
 	function formatLastUpdated(timestamp) {
@@ -22,7 +21,7 @@
 </script>
 
 <div class="max-w-xs rounded-lg bg-white p-4 shadow-md">
-	<div class="text-lg font-bold text-gray-800">{routeName}</div>
+	<div class="text-lg font-bold text-gray-800">{nextDestination}</div>
 	<div class="text-gray-600">
 		{#if predicted}
 			Vehicle #<span class="font-semibold text-blue-500">{vehicleId || 'N/A'}</span> | Data updated
@@ -39,8 +38,4 @@
 		<strong class="font-semibold text-blue-500">{nextStopName || 'N/A'}</strong>
 	</div>
 	<br />
-	<div class="font-bold text-gray-800">Status:</div>
-	<div class="text-gray-600">
-		<strong class="font-semibold text-blue-500">{status || 'N/A'}</strong>
-	</div>
 </div>
