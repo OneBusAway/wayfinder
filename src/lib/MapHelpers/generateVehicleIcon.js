@@ -23,9 +23,9 @@ function createVehicleIconSvg(orientation, color = '#007BFF') {
 	const angle = DIRECTIONS.find((d) => d.icon === direction).angle;
 
 	const arrowPath = `
-        <line x1="20" y1="20" x2="20" y2="0" stroke="${color}" stroke-width="2" transform="rotate(${angle}, 20, 20)" />
-        <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(${angle}, 20, 20)" />
-    `;
+    <line x1="20" y1="20" x2="20" y2="5" stroke="${color}" stroke-width="2" transform="rotate(${angle}, 20, 20)" />
+    <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(${angle}, 20, 20)" />
+`;
 
 	const busIcon = `
         <!-- Main bus body -->
@@ -41,7 +41,7 @@ function createVehicleIconSvg(orientation, color = '#007BFF') {
     `;
 
 	return `
-        <svg width="50" height="50" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+        <svg width="60" height="60" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
             <!-- Directional arrow -->
             ${arrowPath}
 
