@@ -1,26 +1,20 @@
 <script>
+	import { formatLastUpdated } from '$lib/formatters';
+	import '$lib/i18n';
+	import { t } from 'svelte-i18n';
+
 	export let nextDestination;
 	export let vehicleId;
 	export let lastUpdateTime;
 	export let nextStopName;
 	export let predicted;
 
-	function formatLastUpdated(timestamp) {
-		const date = new Date(timestamp);
-		const now = new Date();
-		const secondsAgo = Math.floor((now - date) / 1000);
-
-		const minutes = Math.floor(secondsAgo / 60);
-		const seconds = secondsAgo % 60;
-
-		if (minutes > 0) {
-			return `${minutes} min${minutes > 1 ? 's' : ''} ${seconds} sec${seconds > 1 ? 's' : ''} ago`;
-		}
-		return `${seconds} sec${seconds > 1 ? 's' : ''} ago`;
-	}
+	const lastUpdatedText = formatLastUpdated(lastUpdateTime, {
+		min: $t('time.min'),
+		sec: $t('time.sec'),
+		ago: $t('time.ago')
+	});
 </script>
-
-// TODO: Add vehicle icon, add the nextStops times
 
 <div class="max-w-xs rounded-lg bg-white p-4 text-gray-800 shadow-md">
 	<div class="mb-2 flex items-center">
@@ -30,18 +24,18 @@
 	</div>
 	<div class="text-sm text-gray-600">
 		{#if predicted}
-			Vehicle #<span class="font-semibold text-blue-500">{vehicleId || 'N/A'}</span> | Data updated
-			<span class="font-semibold text-blue-500">{formatLastUpdated(lastUpdateTime)}</span>
+			<span>{$t('vehicle.number')}</span>
+			<span class="font-semibold text-blue-500">{vehicleId || $t('NA')}</span> |
+			<span>{$t('vehicle.data_updated')}</span>
+			<span class="font-semibold text-blue-500">{lastUpdatedText}</span>
 		{:else}
-			<span class="font-semibold text-gray-500"
-				>We don't have real-time data for this vehicle now.</span
-			>
+			<span class="font-semibold text-gray-500">{$t('vehicle.no_real_time_data')}</span>
 		{/if}
 	</div>
 	<hr class="my-2" />
-	<div class="text-sm font-bold text-gray-800">Next stop:</div>
+	<div class="text-sm font-bold text-gray-800">{$t('vehicle.next_stop')}</div>
 	<div class="text-sm text-gray-600">
-		<strong class="font-semibold text-blue-500">{nextStopName || 'N/A'}</strong>
+		<strong class="font-semibold text-blue-500">{nextStopName || $t('NA')}</strong>
 	</div>
 	<hr class="my-2" />
 </div>
