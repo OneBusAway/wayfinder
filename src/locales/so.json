@@ -25,5 +25,19 @@
 	"routes": "Wadooyin",
 	"route": "waddo",
 	"loading": "Shaqeynaya",
-	"arrives": "imaataa"
+	"arrives": "imaataa",
+	"NA": "M/J",
+	"time": {
+		"ago": "hore",
+		"sec": "ilbiriqsi",
+		"secs": "ilbiriqsiyaal",
+		"min": "daqiiqo",
+		"mins": "daqiiqado"
+	},
+	"vehicle": {
+		"number": "Gaari #",
+		"data_updated": "Xogta waa la cusbooneysiiyay",
+		"no_real_time_data": "Ma hayno xog ku saabsan wakhtiga dhabta ah ee gaarigan hadda.",
+		"next_stop": "Joogsiga xiga:"
+	}
 }

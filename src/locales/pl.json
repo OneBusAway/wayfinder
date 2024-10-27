@@ -25,5 +25,19 @@
 	"routes": "Trasy",
 	"route": "trasa",
 	"loading": "Ładowanie",
-	"arrives": "przyjeżdża"
+	"arrives": "przyjeżdża",
+	"NA": "N/D",
+	"time": {
+		"ago": "temu",
+		"sec": "sek",
+		"secs": "sekundy",
+		"min": "min",
+		"mins": "minuty"
+	},
+	"vehicle": {
+		"number": "Pojazd #",
+		"data_updated": "Dane zaktualizowane",
+		"no_real_time_data": "Obecnie nie mamy danych w czasie rzeczywistym dla tego pojazdu.",
+		"next_stop": "Następny przystanek:"
+	}
 }

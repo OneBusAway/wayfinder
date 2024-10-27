@@ -25,5 +25,19 @@
 	"routes": "Tuyến đường",
 	"route": "tuyến đường",
 	"loading": "Đang tải",
-	"arrives": "đến"
+	"arrives": "đến",
+	"NA": "KAD",
+	"time": {
+		"ago": "trước",
+		"sec": "giây",
+		"secs": "giây",
+		"min": "phút",
+		"mins": "phút"
+	},
+	"vehicle": {
+		"number": "Xe #",
+		"data_updated": "Dữ liệu đã cập nhật",
+		"no_real_time_data": "Hiện tại không có dữ liệu thời gian thực cho xe này.",
+		"next_stop": "Trạm dừng tiếp theo:"
+	}
 }

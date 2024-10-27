@@ -20,11 +20,24 @@
 		"arrives_on_time": "llega a tiempo",
 		"scheduled_not_real_time": "Programado/no en tiempo real"
 	},
-
 	"arrivals_and_departures": "Llegadas y salidas",
 	"stop": "Parada",
 	"routes": "Rutas",
 	"route": "Ruta",
 	"loading": "Cargando",
-	"arrives": "llega"
+	"arrives": "llega",
+	"NA": "N/D",
+	"time": {
+		"ago": "hace",
+		"sec": "seg",
+		"secs": "segs",
+		"min": "min",
+		"mins": "mins"
+	},
+	"vehicle": {
+		"number": "Vehículo #",
+		"data_updated": "Datos actualizados",
+		"no_real_time_data": "Actualmente no tenemos datos en tiempo real para este vehículo.",
+		"next_stop": "Próxima parada:"
+	}
 }
