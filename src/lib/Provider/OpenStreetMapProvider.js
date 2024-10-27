@@ -163,7 +163,7 @@ export default class OpenStreetMapProvider {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name || 'N/A',
+			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
 			predicted: vehicle.predicted
 		};
 
