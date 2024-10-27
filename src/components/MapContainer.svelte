@@ -1,4 +1,5 @@
 <script>
+	import '$lib/i18n.js';
 	import MapView from './map/MapView.svelte';
 	import GoogleMapProvider from '$lib/Provider/GoogleMapProvider';
 	import OpenStreetMapProvider from '$lib/Provider/OpenStreetMapProvider';
