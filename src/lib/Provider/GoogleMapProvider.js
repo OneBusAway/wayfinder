@@ -155,7 +155,6 @@ export default class GoogleMapProvider {
 	addVehicleMarker(vehicle, activeTrip) {
 		if (!this.map) return null;
 
-		// TODO: Add enum for vehicle color and status
 		let color;
 		if (!vehicle.predicted) {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
