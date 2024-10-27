@@ -181,7 +181,7 @@ export default class GoogleMapProvider {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name || 'N/A',
+			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
 			predicted: vehicle.predicted
 		};
 
@@ -223,7 +223,7 @@ export default class GoogleMapProvider {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicleStatus.vehicleId,
 			lastUpdateTime: vehicleStatus.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
+			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name,
 			predicted: vehicleStatus.predicted
 		};
 
