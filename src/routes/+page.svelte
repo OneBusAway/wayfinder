@@ -6,6 +6,7 @@
 	import StopPane from '$components/oba/StopPane.svelte';
 	import MapContainer from '$components/MapContainer.svelte';
 	import RouteModal from '$components/navigation/RouteModal.svelte';
+	import ViewAllRoutesModal from '$components/navigation/ViewAllRoutesModal.svelte';
 
 	let stop;
 	let selectedTrip = null;
@@ -13,15 +14,40 @@
 	let selectedRoute = null;
 	let showRouteMap = false;
 	let showAllStops = false;
+	let showAllRoutesModal = false;
 	let showRouteModal;
 	let mapProvider = null;
 	let currentIntervalId = null;
 	let polylines = [];
 	let stops = [];
 
+	$: {
+		if (showRouteModal && showAllRoutesModal) {
+			showAllRoutesModal = false;
+		}
+
+		if (showAllRoutesModal) {
+			showRouteModal = false;
+		}
+	}
+
 	function stopSelected(event) {
 		stop = event.detail.stop;
 		pushState(`/stops/${stop.id}`);
+	}
+
+	function handleShowAllRoutes() {
+		showRouteModal = false;
+		showAllRoutesModal = true;
+	}
+
+	function handleRouteSelectedFromModal(event) {
+		const route = event.detail.route;
+		const customEvent = new CustomEvent('routeSelectedFromModal', {
+			detail: { route }
+		});
+		window.dispatchEvent(customEvent);
+		showAllRoutesModal = false;
 	}
 
 	function closePane() {
@@ -37,6 +63,7 @@
 		selectedRoute = null;
 		showRoute = false;
 		showRouteModal = false;
+		showAllRoutesModal = false;
 	}
 
 	function tripSelected(event) {
@@ -90,6 +117,7 @@
 			{mapProvider}
 			on:routeSelected={handleRouteSelected}
 			on:clearResults={clearPolylines}
+			on:viewAllRoutes={handleShowAllRoutes}
 		/>
 	</div>
 </div>
@@ -109,6 +137,12 @@
 {#if showRouteModal}
 	<ModalPane on:close={closePane}>
 		<RouteModal {mapProvider} {stops} {selectedRoute} />
+	</ModalPane>
+{/if}
+
+{#if showAllRoutesModal}
+	<ModalPane on:close={closePane}>
+		<ViewAllRoutesModal on:routeSelected={handleRouteSelectedFromModal} />
 	</ModalPane>
 {/if}
 
