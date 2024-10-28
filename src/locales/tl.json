@@ -3,7 +3,11 @@
 		"placeholder": "Maghanap ng mga hintuan, ruta, at lugar",
 		"results_for": "Mga resulta ng paghahanap para sa",
 		"clear_results": "I-clear ang mga resulta",
-		"search": "Maghanap"
+		"search": "Maghanap",
+		"click_here": "I-click dito",
+		"for_a_list_of_available_routes": "para sa listahan ng mga magagamit na ruta",
+		"search_for_routes": "Maghanap ng mga ruta...",
+		"no_routes_found": "Walang nahanap na ruta"
 	},
 	"header": {
 		"home": "Home",

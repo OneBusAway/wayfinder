@@ -3,7 +3,11 @@
 		"placeholder": "Buscar paradas, rutas y lugares",
 		"results_for": "Resultados de búsqueda para",
 		"clear_results": "Borrar resultados",
-		"search": "Buscar"
+		"search": "Buscar",
+		"click_here": "Haga clic aquí",
+		"for_a_list_of_available_routes": "para una lista de rutas disponibles",
+		"search_for_routes": "Buscar rutas...",
+		"no_routes_found": "No se encontraron rutas"
 	},
 	"header": {
 		"home": "Inicio",

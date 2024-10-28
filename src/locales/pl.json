@@ -3,7 +3,11 @@
 		"placeholder": "Szukaj przystanków, tras i miejsc",
 		"results_for": "Wyniki wyszukiwania dla",
 		"clear_results": "Wyczyść wyniki",
-		"search": "Szukaj"
+		"search": "Szukaj",
+		"click_here": "Kliknij tutaj",
+		"for_a_list_of_available_routes": "dla listy dostępnych tras",
+		"search_for_routes": "Szukaj tras...",
+		"no_routes_found": "Nie znaleziono tras"
 	},
 	"header": {
 		"home": "Strona główna",

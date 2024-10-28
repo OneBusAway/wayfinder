@@ -3,7 +3,11 @@
 		"placeholder": "Search for stops, routes, and places",
 		"results_for": "Search results for",
 		"clear_results": "Clear results",
-		"search": "Search"
+		"search": "Search",
+		"click_here": "Click here",
+		"for_a_list_of_available_routes": "for a list of available routes",
+		"search_for_routes": "Search for routes...",
+		"no_routes_found": "No routes found"
 	},
 	"header": {
 		"home": "Home",

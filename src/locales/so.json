@@ -3,7 +3,11 @@
 		"placeholder": "Raadi joogsiyo, wadooyin iyo meelo",
 		"results_for": "Natiijooyinka raadinta ee",
 		"clear_results": "Nadiifi natiijooyinka",
-		"search": "Raadi"
+		"search": "Raadi",
+		"click_here": "Guji halkan",
+		"for_a_list_of_available_routes": "si aad u aragto liiska waddooyinka la heli karo",
+		"search_for_routes": "Raadi wadooyin...",
+		"no_routes_found": "Wax waddo ah lama helin"
 	},
 	"header": {
 		"home": "Bogga Hore",

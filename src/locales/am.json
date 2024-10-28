@@ -3,7 +3,11 @@
 		"placeholder": "ቆሻሻዎችን፣ መንገዶችን እና ቦታዎችን ይፈልጉ",
 		"results_for": "የፍለጋ ውጤቶች ለ",
 		"clear_results": "ውጤቶችን አጥፋ",
-		"search": "ፈልግ"
+		"search": "ፈልግ",
+		"click_here": "እዚህ ጠቅ ያድርጉ",
+		"for_a_list_of_available_routes": "ለመገኘት የሚገባቸው መንገዶች",
+		"search_for_routes": "መንገዶችን ይፈልጉ...",
+		"no_routes_found": "ምንም መንገዶች አልተገኙም"
 	},
 	"header": {
 		"home": "ቤት",
