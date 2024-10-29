@@ -7,7 +7,9 @@
 		"click_here": "Kliknij tutaj",
 		"for_a_list_of_available_routes": "dla listy dostępnych tras",
 		"search_for_routes": "Szukaj tras...",
-		"no_routes_found": "Nie znaleziono tras"
+		"no_routes_found": "Nie znaleziono tras",
+		"all_routes": "Wszystkie trasy"
+
 	},
 	"header": {
 		"home": "Strona główna",

@@ -7,7 +7,9 @@
 		"click_here": "Guji halkan",
 		"for_a_list_of_available_routes": "si aad u aragto liiska waddooyinka la heli karo",
 		"search_for_routes": "Raadi wadooyin...",
-		"no_routes_found": "Wax waddo ah lama helin"
+		"no_routes_found": "Wax waddo ah lama helin",
+		"all_routes": "Dhammaan wadooyinka"
+
 	},
 	"header": {
 		"home": "Bogga Hore",

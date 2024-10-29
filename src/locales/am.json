@@ -7,7 +7,8 @@
 		"click_here": "እዚህ ጠቅ ያድርጉ",
 		"for_a_list_of_available_routes": "ለመገኘት የሚገባቸው መንገዶች",
 		"search_for_routes": "መንገዶችን ይፈልጉ...",
-		"no_routes_found": "ምንም መንገዶች አልተገኙም"
+		"no_routes_found": "ምንም መንገዶች አልተገኙም",
+		"all_routes": "ሁሉም መንገዶች"
 	},
 	"header": {
 		"home": "ቤት",

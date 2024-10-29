@@ -7,7 +7,9 @@
 		"click_here": "I-click dito",
 		"for_a_list_of_available_routes": "para sa listahan ng mga magagamit na ruta",
 		"search_for_routes": "Maghanap ng mga ruta...",
-		"no_routes_found": "Walang nahanap na ruta"
+		"no_routes_found": "Walang nahanap na ruta",
+		"all_routes": "Lahat ng ruta"
+
 	},
 	"header": {
 		"home": "Home",

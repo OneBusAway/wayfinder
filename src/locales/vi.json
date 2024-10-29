@@ -7,7 +7,9 @@
 		"click_here": "Nhấn vào đây",
 		"for_a_list_of_available_routes": "cho danh sách các tuyến đường có sẵn",
 		"search_for_routes": "Tìm kiếm tuyến đường...",
-		"no_routes_found": "Không tìm thấy tuyến đường"
+		"no_routes_found": "Không tìm thấy tuyến đường",
+		"all_routes": "Tất cả các tuyến đường"
+
 	},
 	"header": {
 		"home": "Trang chủ",
