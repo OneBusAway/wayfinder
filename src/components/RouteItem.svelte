@@ -16,10 +16,6 @@
 			return `${route.agencyInfo.name} - ${route.longName || route.description}`;
 		}
 	}
-
-	function getTextColor() {
-		return route.color === 'FFFFFF' || route.color === 'ffffff' ? '000000' : route.color;
-	}
 </script>
 
 <button
