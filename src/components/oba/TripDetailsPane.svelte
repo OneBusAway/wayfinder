@@ -104,7 +104,7 @@
 							{#if index === busPosition}
 								<FontAwesomeIcon
 									icon={faBus}
-									class="absolute bg-white text-sm text-xl text-green-500 dark:bg-black"
+									class="absolute bg-white text-sm text-green-500 dark:bg-black"
 								/>
 							{/if}
 							{#if tripStop.stopId === stop.id}
