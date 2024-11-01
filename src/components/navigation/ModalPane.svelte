@@ -1,25 +1,41 @@
 <script>
 	import { fly } from 'svelte/transition';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faX } from '@fortawesome/free-solid-svg-icons';
+	import { faX, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 	import { keybinding } from '$lib/keybinding';
 	import { createEventDispatcher } from 'svelte';
 	import { pushState } from '$app/navigation';
 
 	const dispatch = createEventDispatcher();
+	let collapsed = false;
 
 	function closePane() {
 		pushState('/');
 		dispatch('close');
 	}
+
+	function toggleCollapse() {
+		collapsed = !collapsed;
+	}
 </script>
 
 <div
-	class="modal-pane pointer-events-auto h-full rounded-b-none px-4"
+	class="modal-pane transition-height pointer-events-auto rounded-b-none px-4"
+	class:collapsed
 	in:fly={{ y: 200, duration: 500 }}
 	out:fly={{ y: 200, duration: 500 }}
 >
-	<div class="py-1 text-right">
+	<div class="flex items-center justify-end py-3">
+		{#key collapsed}
+			<button
+				type="button"
+				on:click={toggleCollapse}
+				class="text-lg font-black text-black dark:text-white"
+			>
+				<FontAwesomeIcon icon={collapsed ? faChevronDown : faChevronUp} />
+				<span class="sr-only">{collapsed ? 'Expand' : 'Collapse'}</span>
+			</button>
+		{/key}
 		<button
 			type="button"
 			on:click={closePane}
@@ -37,6 +53,13 @@
 </div>
 
 <style lang="postcss">
+	.modal-pane {
+		@apply h-full rounded-b-none;
+	}
+	.modal-pane.collapsed {
+		@apply h-16 rounded-b-lg;
+		overflow: hidden;
+	}
 	.close-button {
 		@apply rounded px-4 py-2;
 		@apply transition duration-300 ease-in-out hover:bg-neutral-200 dark:hover:bg-neutral-200/50;
