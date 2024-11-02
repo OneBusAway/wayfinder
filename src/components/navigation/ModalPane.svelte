@@ -6,7 +6,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { pushState } from '$app/navigation';
 
-	export let title = "";
+	export let title = '';
 
 	const dispatch = createEventDispatcher();
 
@@ -19,10 +19,11 @@
 <div
 	class="modal-pane pointer-events-auto h-full rounded-b-none px-4"
 	in:fly={{ y: 200, duration: 500 }}
-	out:fly={{ y: 200, duration: 500 }}>
-	<div class="flex flex-col h-full">
-		<div class="py-1 flex">
-			<div class='flex-1 self-center font-semibold text-normal'>
+	out:fly={{ y: 200, duration: 500 }}
+>
+	<div class="flex h-full flex-col">
+		<div class="flex py-1">
+			<div class="text-normal flex-1 self-center font-semibold">
 				{title}
 			</div>
 			<div>
@@ -30,15 +31,16 @@
 					type="button"
 					on:click={closePane}
 					use:keybinding={{ code: 'Escape' }}
-					class="close-button">
+					class="close-button"
+				>
 					<FontAwesomeIcon icon={faX} class="font-black text-black dark:text-white" />
 					<span class="sr-only">Close</span>
 				</button>
 			</div>
 		</div>
 
-		<div class="flex-1 relative">
-			<div class='absolute inset-0 overflow-y-auto'>
+		<div class="relative flex-1">
+			<div class="absolute inset-0 overflow-y-auto">
 				<slot></slot>
 			</div>
 		</div>

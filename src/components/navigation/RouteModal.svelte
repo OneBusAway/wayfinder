@@ -16,9 +16,8 @@
 
 	function title() {
 		if (!stops && !selectedRoute) {
-			return "";
-		}
-		else {
+			return '';
+		} else {
 			return `Route ${selectedRoute?.shortName}`;
 		}
 	}

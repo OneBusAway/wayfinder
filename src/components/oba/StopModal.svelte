@@ -91,7 +91,9 @@
 	}
 
 	function title() {
-		if (stop) { return stop.name; }
+		if (stop) {
+			return stop.name;
+		}
 		if (error) return error;
 		if (loading) return $t('loading');
 	}
