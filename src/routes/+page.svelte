@@ -160,6 +160,7 @@
 				on:clearResults={clearPolylines}
 				on:viewAllRoutes={handleShowAllRoutes}
 			/>
+
 			<div class="mt-4 flex-1">
 				{#if stop}
 					<ModalPane on:close={closePane}>
@@ -174,9 +175,7 @@
 				{/if}
 
 				{#if showRouteModal}
-					<ModalPane on:close={closePane}>
-						<RouteModal {mapProvider} {stops} {selectedRoute} />
-					</ModalPane>
+					<RouteModal {mapProvider} {stops} {selectedRoute} on:close={closePane} />
 				{/if}
 
 				{#if showAllRoutesModal}

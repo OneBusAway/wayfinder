@@ -6,6 +6,8 @@
 	import { createEventDispatcher } from 'svelte';
 	import { pushState } from '$app/navigation';
 
+	export let title = "";
+
 	const dispatch = createEventDispatcher();
 
 	function closePane() {
@@ -19,16 +21,20 @@
 	in:fly={{ y: 200, duration: 500 }}
 	out:fly={{ y: 200, duration: 500 }}
 >
-	<div class="py-1 text-right">
-		<button
-			type="button"
-			on:click={closePane}
-			use:keybinding={{ code: 'Escape' }}
-			class="close-button"
-		>
-			<FontAwesomeIcon icon={faX} class="font-black text-black dark:text-white" />
-			<span class="sr-only">Close</span>
-		</button>
+	<div class="py-1 flex">
+		<div class='flex-1 self-center font-semibold text-normal'>
+			{title}
+		</div>
+		<div>
+			<button
+				type="button"
+				on:click={closePane}
+				use:keybinding={{ code: 'Escape' }}
+				class="close-button">
+				<FontAwesomeIcon icon={faX} class="font-black text-black dark:text-white" />
+				<span class="sr-only">Close</span>
+			</button>
+		</div>
 	</div>
 
 	<div class="modal-content">
