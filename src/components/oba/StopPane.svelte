@@ -7,6 +7,7 @@
 
 	import '$lib/i18n.js';
 	import { t } from 'svelte-i18n';
+	import ModalHeader from '$components/modals/ModalHeader.svelte';
 
 	export let stop;
 	export let arrivalsAndDeparturesResponse = null;
@@ -100,15 +101,12 @@
 
 	{#if arrivalsAndDepartures}
 		<div class="space-y-4">
-			<div>
-				<div class="flex flex-col gap-y-1 rounded-lg bg-[#1C1C1E] bg-opacity-80 p-4">
-					<h1 class="h1 mb-0 text-white">{stop.name}</h1>
-					<h2 class="h2 mb-0 text-white">{$t('stop')} #{stop.id}</h2>
-					{#if routeShortNames()}
-						<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames().join(', ')}</h2>
-					{/if}
-				</div>
-			</div>
+			<ModalHeader
+				title={stop.name}
+				subtitle="{$t('stop')} #{stop.id}"
+				caption="{$t('routes')}: {routeShortNames()?.join(', ')}"
+			/>
+
 			{#if arrivalsAndDepartures.arrivalsAndDepartures.length === 0}
 				<div class="flex h-96 items-center justify-center">
 					<p>{$t('no_arrivals_or_departures_in_next_30_minutes')}</p>

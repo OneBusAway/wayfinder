@@ -1,5 +1,6 @@
 <script>
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
+	import ModalHeader from '$components/modals/ModalHeader.svelte';
 	import RouteItem from '$components/RouteItem.svelte';
 	import { onMount } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
@@ -71,9 +72,7 @@
 	{/if}
 
 	{#if routes.length > 0}
-		<div class="h-25 rounded-lg bg-[#1C1C1E] bg-opacity-80 p-4">
-			<h1 class="mb-6 text-center text-2xl font-bold text-white">{$t('search.all_routes')}</h1>
-		</div>
+		<ModalHeader title={$t('search.all_routes')} />
 
 		<div class="mt-4">
 			<div class="relative mb-4">
