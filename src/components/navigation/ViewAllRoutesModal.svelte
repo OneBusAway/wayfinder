@@ -1,9 +1,8 @@
 <script>
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
-	import ModalHeader from '$components/modals/ModalHeader.svelte';
+	import ModalPane from '$components/navigation/ModalPane.svelte';
 	import RouteItem from '$components/RouteItem.svelte';
-	import { onMount } from 'svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 
 	let routes = [];
@@ -66,15 +65,13 @@
 	}
 </script>
 
-<div>
+<ModalPane on:close title={$t('search.all_routes')}>
 	{#if loading}
 		<LoadingSpinner />
 	{/if}
 
 	{#if routes.length > 0}
-		<ModalHeader title={$t('search.all_routes')} />
-
-		<div class="mt-4">
+		<div>
 			<div class="relative mb-4">
 				<input
 					type="text"
@@ -113,7 +110,7 @@
 			</div>
 		</div>
 	{/if}
-</div>
+</ModalPane>
 
 <style>
 	.scrollbar-hidden {

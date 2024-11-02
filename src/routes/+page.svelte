@@ -178,9 +178,7 @@
 				{/if}
 
 				{#if showAllRoutesModal}
-					<ModalPane on:close={closePane}>
-						<ViewAllRoutesModal on:routeSelected={handleRouteSelectedFromModal} />
-					</ModalPane>
+					<ViewAllRoutesModal on:close={closePane} on:routeSelected={handleRouteSelectedFromModal} />
 				{/if}
 			</div>
 		</div>
