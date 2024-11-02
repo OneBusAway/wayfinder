@@ -1,7 +1,6 @@
 <script>
 	import { pushState } from '$app/navigation';
 	import SearchPane from '$components/search/SearchPane.svelte';
-	import ModalPane from '$components/navigation/ModalPane.svelte';
 	import StopModal from '$components/oba/StopModal.svelte';
 	import MapContainer from '$components/MapContainer.svelte';
 	import RouteModal from '$components/navigation/RouteModal.svelte';
