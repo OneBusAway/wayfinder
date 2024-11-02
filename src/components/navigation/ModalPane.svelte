@@ -19,26 +19,29 @@
 <div
 	class="modal-pane pointer-events-auto h-full rounded-b-none px-4"
 	in:fly={{ y: 200, duration: 500 }}
-	out:fly={{ y: 200, duration: 500 }}
->
-	<div class="py-1 flex">
-		<div class='flex-1 self-center font-semibold text-normal'>
-			{title}
+	out:fly={{ y: 200, duration: 500 }}>
+	<div class="flex flex-col h-full">
+		<div class="py-1 flex">
+			<div class='flex-1 self-center font-semibold text-normal'>
+				{title}
+			</div>
+			<div>
+				<button
+					type="button"
+					on:click={closePane}
+					use:keybinding={{ code: 'Escape' }}
+					class="close-button">
+					<FontAwesomeIcon icon={faX} class="font-black text-black dark:text-white" />
+					<span class="sr-only">Close</span>
+				</button>
+			</div>
 		</div>
-		<div>
-			<button
-				type="button"
-				on:click={closePane}
-				use:keybinding={{ code: 'Escape' }}
-				class="close-button">
-				<FontAwesomeIcon icon={faX} class="font-black text-black dark:text-white" />
-				<span class="sr-only">Close</span>
-			</button>
-		</div>
-	</div>
 
-	<div class="modal-content">
-		<slot></slot>
+		<div class="flex-1 relative">
+			<div class='absolute inset-0 overflow-y-auto'>
+				<slot></slot>
+			</div>
+		</div>
 	</div>
 </div>
 
