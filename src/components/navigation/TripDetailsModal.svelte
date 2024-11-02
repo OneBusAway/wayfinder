@@ -8,7 +8,7 @@
 	export let onClose;
 </script>
 
-<div class="trip-details-modal scrollbar-hidden">
+<div class="trip-details-modal">
 	<div class="py-1 text-left">
 		<button type="button" on:click={onClose} class="close-button">
 			<FontAwesomeIcon icon={faArrowLeft} class="font-black text-black dark:text-white" />
@@ -53,11 +53,5 @@
 	.close-button {
 		@apply flex items-center gap-2 rounded px-4 py-2;
 		@apply transition duration-300 ease-in-out hover:bg-neutral-200 dark:hover:bg-neutral-200/50;
-	}
-	.scrollbar-hidden {
-		scrollbar-width: none;
-		-ms-overflow-style: none;
-		overflow: -moz-scrollbars-none;
-		-webkit-scrollbar: none;
 	}
 </style>
