@@ -2,7 +2,7 @@
 	import { pushState } from '$app/navigation';
 	import SearchPane from '$components/search/SearchPane.svelte';
 	import ModalPane from '$components/navigation/ModalPane.svelte';
-	import StopPane from '$components/oba/StopPane.svelte';
+	import StopModal from '$components/oba/StopModal.svelte';
 	import MapContainer from '$components/MapContainer.svelte';
 	import RouteModal from '$components/navigation/RouteModal.svelte';
 	import ViewAllRoutesModal from '$components/navigation/ViewAllRoutesModal.svelte';
@@ -163,15 +163,14 @@
 
 			<div class="mt-4 flex-1">
 				{#if stop}
-					<ModalPane on:close={closePane}>
-						<StopPane
-							{showAllStops}
-							{stop}
-							on:tripSelected={tripSelected}
-							on:updateRouteMap={handleUpdateRouteMap}
-							on:showAllStops={handleShowAllStops}
-						/>
-					</ModalPane>
+					<StopModal
+						on:close={closePane}
+						{showAllStops}
+						{stop}
+						on:tripSelected={tripSelected}
+						on:updateRouteMap={handleUpdateRouteMap}
+						on:showAllStops={handleShowAllStops}
+					/>
 				{/if}
 
 				{#if showRouteModal}

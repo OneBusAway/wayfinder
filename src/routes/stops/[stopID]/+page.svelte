@@ -1,5 +1,5 @@
 <script>
-	import StopPane from '$components/oba/StopPane.svelte';
+	import StopModal from '$components/oba/StopModal.svelte';
 	import '$lib/i18n.js';
 	export let data;
 	const stop = data.stopData.entry;
@@ -7,5 +7,5 @@
 </script>
 
 <div class="mx-auto max-w-5xl px-8 pt-20">
-	<StopPane {stop} {arrivalsAndDeparturesResponse} />
+	<StopModal {stop} {arrivalsAndDeparturesResponse} />
 </div>

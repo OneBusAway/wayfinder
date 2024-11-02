@@ -2,6 +2,7 @@
 	import ArrivalDeparture from '../ArrivalDeparture.svelte';
 	import TripDetailsModal from '../navigation/TripDetailsModal.svelte';
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
+	import ModalPane from '$components/navigation/ModalPane.svelte';
 	import { onDestroy } from 'svelte';
 	import { createEventDispatcher } from 'svelte';
 
@@ -88,9 +89,15 @@
 		dispatch('updateRouteMap', { show: false });
 		dispatch('showAllStops');
 	}
+
+	function title() {
+		if (stop) { return stop.name; }
+		if (error) return error;
+		if (loading) return $t('loading');
+	}
 </script>
 
-<div>
+<ModalPane on:close title={title()}>
 	{#if loading}
 		<LoadingSpinner />
 	{/if}
@@ -135,7 +142,7 @@
 	{#if showTripDetails}
 		<TripDetailsModal {stop} {selectedTripDetails} onClose={handleCloseTripDetailModal} />
 	{/if}
-</div>
+</ModalPane>
 
 <style lang="postcss">
 	.scrollbar-hidden {
