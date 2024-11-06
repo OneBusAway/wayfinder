@@ -8,6 +8,7 @@
 	import { t } from 'svelte-i18n';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
+	import { Tabs, TabItem } from 'flowbite-svelte';
 
 	const dispatch = createEventDispatcher();
 
@@ -107,63 +108,68 @@
 	});
 </script>
 
-<div class={`modal-pane flex justify-between md:w-96 ${cssClasses}`}>
-	<div class="flex w-full flex-col gap-y-2 py-4">
-		<SearchField value={query} on:searchResults={handleSearchResults} />
+<div class={`modal-pane flex flex-col justify-between md:w-96 ${cssClasses}`}>
+	<Tabs tabStyle="underline">
+		<TabItem open title="Stops and Stations">
+			<SearchField value={query} on:searchResults={handleSearchResults} />
 
-		{#if query}
-			<p class="text-sm text-gray-700 dark:text-gray-400">
-				{$t('search.results_for')} "{query}".
-				<button type="button" on:click={clearResults} class="text-blue-600 hover:underline">
-					{$t('search.clear_results')}
+			{#if query}
+				<p class="text-sm text-gray-700 dark:text-gray-400">
+					{$t('search.results_for')} "{query}".
+					<button type="button" on:click={clearResults} class="text-blue-600 hover:underline">
+						{$t('search.clear_results')}
+					</button>
+				</p>
+			{/if}
+
+			<div class="max-h-96 overflow-y-auto">
+				{#if location}
+					<SearchResultItem
+						on:click={() => handleLocationClick(location)}
+						title={location.formatted_address}
+						icon={faMapPin}
+						subtitle={location.types.join(', ')}
+					/>
+				{/if}
+
+				{#if routes?.length > 0}
+					{#each routes as route}
+						<SearchResultItem
+							on:click={() => handleRouteClick(route)}
+							icon={prioritizedRouteTypeForDisplay(route.type)}
+							title={`${$t('route')} ${route.nullSafeShortName || route.id}`}
+							subtitle={route.description}
+						/>
+					{/each}
+				{/if}
+
+				{#if stops?.length > 0}
+					{#each stops as stop}
+						<SearchResultItem
+							on:click={() => handleStopClick(stop)}
+							icon={faSignsPost}
+							title={stop.name}
+							subtitle={`${compassDirection(stop.direction)}; Code: ${stop.code}`}
+						/>
+					{/each}
+				{/if}
+			</div>
+
+			<div class="mt-0 sm:mt-0">
+				<button
+					type="button"
+					class="text-sm font-medium text-green-600 underline hover:text-green-400 focus:outline-none"
+					on:click={handleViewAllRoutes}
+				>
+					{$t('search.click_here')}
 				</button>
-			</p>
-		{/if}
-
-		<div class="max-h-96 overflow-y-auto">
-			{#if location}
-				<SearchResultItem
-					on:click={() => handleLocationClick(location)}
-					title={location.formatted_address}
-					icon={faMapPin}
-					subtitle={location.types.join(', ')}
-				/>
-			{/if}
-
-			{#if routes?.length > 0}
-				{#each routes as route}
-					<SearchResultItem
-						on:click={() => handleRouteClick(route)}
-						icon={prioritizedRouteTypeForDisplay(route.type)}
-						title={`${$t('route')} ${route.nullSafeShortName || route.id}`}
-						subtitle={route.description}
-					/>
-				{/each}
-			{/if}
-
-			{#if stops?.length > 0}
-				{#each stops as stop}
-					<SearchResultItem
-						on:click={() => handleStopClick(stop)}
-						icon={faSignsPost}
-						title={stop.name}
-						subtitle={`${compassDirection(stop.direction)}; Code: ${stop.code}`}
-					/>
-				{/each}
-			{/if}
-		</div>
-
-		<div class="mt-0 sm:mt-0">
-			<button
-				type="button"
-				class="text-sm font-medium text-green-600 underline hover:text-green-400 focus:outline-none"
-				on:click={handleViewAllRoutes}
-			>
-				{$t('search.click_here')}
-			</button>
-			<span class="text-sm font-medium text-black dark:text-white">
-				{$t('search.for_a_list_of_available_routes')}</span
-			>
-		</div>
-	</div>
+				<span class="text-sm font-medium text-black dark:text-white">
+					{$t('search.for_a_list_of_available_routes')}</span
+				>
+			</div>
+		</TabItem>
+		<TabItem title="Plan a Trip">
+			plan a trip UI goes here!
+		</TabItem>
+	</Tabs>
 </div>

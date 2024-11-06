@@ -40,6 +40,11 @@ See `.env.example` for an example of the required keys and values.
 - `PRIVATE_OBA_GEOCODER_API_KEY` - string: Your Geocoder service's API key. Leave this blank if you don't have one.
 - `PRIVATE_OBA_GEOCODER_PROVIDER` - string: Your Geocoder service. We currently only support the Google Places SDK (value: "google").
 
+
+### Trip Planner
+
+- `PUBLIC_OTP_SERVER_URL` - string: Your OpenTripPlanner 1.x-compatible trip planner server URL. Leave this blank if you don't have one.
+
 ## Building
 
 To create a production version of your app:
