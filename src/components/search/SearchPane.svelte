@@ -109,7 +109,7 @@
 </script>
 
 <div class={`modal-pane flex flex-col justify-between md:w-96 ${cssClasses}`}>
-	<Tabs tabStyle="underline">
+	<Tabs tabStyle="underline" contentClass="pt-2 pb-4 bg-gray-50 rounded-lg dark:bg-gray-800">
 		<TabItem open title="Stops and Stations">
 			<SearchField value={query} on:searchResults={handleSearchResults} />
 
