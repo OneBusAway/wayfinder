@@ -8,6 +8,7 @@
 	import AlertsModal from '$components/navigation/AlertsModal.svelte';
 	import { onMount } from 'svelte';
 	import StopModal from '$components/stops/StopModal.svelte';
+	import TripPlanModal from '$components/trip-planner/TripPlanModal.svelte';
 
 	let stop;
 	let selectedTrip = null;
@@ -16,6 +17,7 @@
 	let showRouteMap = false;
 	let showAllStops = false;
 	let showAllRoutesModal = false;
+	let showTripPlanModal = false;
 	let showRouteModal;
 	let mapProvider = null;
 	let currentIntervalId = null;
@@ -23,6 +25,11 @@
 	let showAlertModal = false;
 	let polylines = [];
 	let stops = [];
+
+	let tripItineraries = [];
+	let loadingItineraries = false;
+	let fromMarker = null;
+	let toMarker = null;
 
 	$: {
 		if (showRouteModal && showAllRoutesModal) {
@@ -76,6 +83,7 @@
 		showAllRoutesModal = false;
 		mapProvider.unHighlightMarker(currentHighlightedStopId);
 		currentHighlightedStopId = null;
+		showTripPlanModal = false;
 	}
 
 	function tripSelected(event) {
@@ -138,6 +146,17 @@
 		}
 	}
 
+	function handleTripPlan(event) {
+		const tripData = event.detail.data;
+		fromMarker = event.detail.fromMarker;
+		toMarker = event.detail.toMarker;
+		tripItineraries = tripData.plan?.itineraries;
+		if (!tripItineraries) {
+			console.error('No itineraries found', 404);
+		}
+		showTripPlanModal = true;
+	}
+
 	onMount(() => {
 		loadAlerts();
 	});
@@ -158,6 +177,7 @@
 				on:routeSelected={handleRouteSelected}
 				on:clearResults={clearPolylines}
 				on:viewAllRoutes={handleShowAllRoutes}
+				on:tripPlanned={handleTripPlan}
 			/>
 
 			<div class="mt-4 flex-1">
@@ -180,6 +200,17 @@
 					<ViewAllRoutesModal
 						on:close={closePane}
 						on:routeSelected={handleRouteSelectedFromModal}
+					/>
+				{/if}
+
+				{#if showTripPlanModal}
+					<TripPlanModal
+						{mapProvider}
+						itineraries={tripItineraries}
+						{fromMarker}
+						{toMarker}
+						loading={loadingItineraries}
+						on:close={closePane}
 					/>
 				{/if}
 			</div>
