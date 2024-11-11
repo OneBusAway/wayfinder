@@ -37,9 +37,8 @@ See `.env.example` for an example of the required keys and values.
 
 ### Geocoding
 
-- `PRIVATE_OBA_GEOCODER_API_KEY` - string: Your Geocoder service's API key. Leave this blank if you don't have one.
+- `PRIVATE_OBA_GEOCODER_API_KEY` - string: Your Geocoder service's API key. Ensure that the Geocoder and Places API permissions are enabled. Leave this blank if you don't have one.
 - `PRIVATE_OBA_GEOCODER_PROVIDER` - string: Your Geocoder service. We currently only support the Google Places SDK (value: "google").
-
 
 ### Trip Planner
 
