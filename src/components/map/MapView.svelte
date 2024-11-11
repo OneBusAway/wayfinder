@@ -20,6 +20,8 @@
 	export let showAllStops = true;
 	export let stop = null;
 	export let mapProvider = null;
+	let isTripPlanMoodActive = false;
+
 	let selectedStopID = null;
 
 	const dispatch = createEventDispatcher();
@@ -163,6 +165,17 @@
 		allStops.forEach((s) => addMarker(s));
 	}
 
+	// TODO: prevent fetch stops-for-location if the trip planner mood is on - we should do this after merge.
+	$: {
+		if (isTripPlanMoodActive) {
+			clearAllMarkers();
+		} else {
+			if (!selectedRoute || !showRoute) {
+				allStops.forEach((s) => addMarker(s));
+			}
+		}
+	}
+
 	function addMarker(s, routeReference) {
 		if (!mapInstance) {
 			console.error('Map not initialized yet');
@@ -218,6 +231,12 @@
 		await initMap();
 		if (browser) {
 			const darkMode = document.documentElement.classList.contains('dark');
+			window.addEventListener('planTripTabClicked', () => {
+				isTripPlanMoodActive = true;
+			});
+			window.addEventListener('tabSwitched', () => {
+				isTripPlanMoodActive = false;
+			});
 			const event = new CustomEvent('themeChange', { detail: { darkMode } });
 			window.dispatchEvent(event);
 		}
