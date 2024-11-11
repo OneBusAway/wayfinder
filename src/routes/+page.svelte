@@ -9,6 +9,7 @@
 	import { onMount } from 'svelte';
 	import StopModal from '$components/stops/StopModal.svelte';
 	import TripPlanModal from '$components/trip-planner/TripPlanModal.svelte';
+	import { browser } from '$app/environment';
 
 	let stop;
 	let selectedTrip = null;
@@ -159,6 +160,13 @@
 
 	onMount(() => {
 		loadAlerts();
+
+		// close the trip plan modal when the tab is switched
+		if (browser) {
+			window.addEventListener('tabSwitched', () => {
+				showTripPlanModal = false;
+			});
+		}
 	});
 </script>
 
