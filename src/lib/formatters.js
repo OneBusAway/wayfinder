@@ -34,3 +34,11 @@ export function formatLastUpdated(timestamp, translations) {
 	}
 	return `${seconds} ${translations.sec} ${translations.ago}`;
 }
+
+export function formatTime(dateString) {
+	return new Date(dateString).toLocaleTimeString([], {
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: true
+	});
+}
