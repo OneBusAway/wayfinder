@@ -7,6 +7,7 @@ import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
+import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 
 export default class OpenStreetMapProvider {
 	constructor() {
@@ -87,6 +88,38 @@ export default class OpenStreetMapProvider {
 		this.markersMap.set(options.stop.id, marker);
 
 		return marker;
+	}
+
+	addPinMarker(position, text) {
+		if (!this.map) return null;
+
+		const container = document.createElement('div');
+
+		new TripPlanPinMarker({
+			target: container,
+			props: {
+				text: text
+			}
+		});
+
+		const customIcon = this.L.divIcon({
+			html: container,
+			className: '',
+			iconSize: [32, 50],
+			iconAnchor: [16, 50]
+		});
+
+		const marker = this.L.marker([position.lat, position.lng], { icon: customIcon }).addTo(
+			this.map
+		);
+
+		return marker;
+	}
+
+	removePinMarker(marker) {
+		if (marker) {
+			marker.remove();
+		}
 	}
 
 	highlightMarker(stopId) {
@@ -312,7 +345,7 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 	}
 
-	createPolyline(points) {
+	createPolyline(points, options = { withArrow: true }) {
 		if (!browser || !this.map) return null;
 
 		const decodedPolyline = PolylineUtil.decode(points);
@@ -322,10 +355,12 @@ export default class OpenStreetMapProvider {
 		}
 
 		const polyline = new this.L.Polyline(decodedPolyline, {
-			color: COLORS.POLYLINE,
-			weight: 4,
-			opacity: 1.0
+			color: options.color || COLORS.POLYLINE,
+			weight: options.weight || 4,
+			opacity: options.opacity || 1
 		}).addTo(this.map);
+
+		if (!options.withArrow) return polyline;
 
 		const arrowDecorator = this.L.polylineDecorator(polyline, {
 			patterns: [
