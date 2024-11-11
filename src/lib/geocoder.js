@@ -10,3 +10,17 @@ export async function googleGeocode({ apiKey, query }) {
 		return null;
 	}
 }
+
+export async function googlePlacesAutocomplete({ apiKey, input }) {
+	const response = await fetch(`https://places.googleapis.com/v1/places:autocomplete`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-Goog-Api-Key': apiKey
+		},
+		body: JSON.stringify({ input })
+	});
+	const data = await response.json();
+
+	return data.suggestions;
+}
