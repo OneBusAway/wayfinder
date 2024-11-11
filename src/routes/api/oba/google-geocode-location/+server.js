@@ -1,4 +1,4 @@
-import { googleGeocode, googleGeocodeByPlaceId } from '$lib/geocoder';
+import { googleGeocode } from '$lib/geocoder';
 
 import {
 	PRIVATE_OBA_GEOCODER_API_KEY as geocoderApiKey,
