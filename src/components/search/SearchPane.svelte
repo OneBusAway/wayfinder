@@ -9,10 +9,13 @@
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
 	import { Tabs, TabItem } from 'flowbite-svelte';
+	import { PUBLIC_OTP_SERVER_URL } from '$env/static/public';
+	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 
 	const dispatch = createEventDispatcher();
 
 	export let cssClasses = '';
+	export let mapProvider = null;
 
 	let routes = null;
 	let stops = null;
@@ -21,32 +24,24 @@
 	let polylines = [];
 	let currentIntervalId = null;
 
-	export let mapProvider = null;
-
 	function handleLocationClick(location) {
 		clearResults();
-
 		const lat = location.geometry.location.lat;
 		const lng = location.geometry.location.lng;
-
 		mapProvider.panTo(lat, lng);
 		mapProvider.setZoom(20);
-
 		dispatch('locationSelected', { location });
 	}
 
 	function handleStopClick(stop) {
 		clearResults();
-
 		mapProvider.panTo(stop.lat, stop.lon);
 		mapProvider.setZoom(20);
-
 		dispatch('stopSelected', { stop });
 	}
 
 	async function handleRouteClick(route) {
 		clearResults();
-
 		const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
 		const stopsForRoute = await response.json();
 		const stops = stopsForRoute.data.references.stops;
@@ -55,7 +50,6 @@
 		for (const polylineData of polylinesData) {
 			const shape = polylineData.points;
 			let polyline;
-
 			polyline = mapProvider.createPolyline(shape);
 			polylines.push(polyline);
 		}
@@ -63,10 +57,8 @@
 		await showStopsOnRoute(stops);
 		currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
 		const midpoint = calculateMidpoint(stopsForRoute.data.references.stops);
-
 		mapProvider.panTo(midpoint.lat, midpoint.lng);
 		mapProvider.setZoom(12);
-
 		dispatch('routeSelected', { route, stopsForRoute, stops, polylines, currentIntervalId });
 	}
 
@@ -101,6 +93,20 @@
 		clearInterval(currentIntervalId);
 	}
 
+	function handleTripPlan(event) {
+		dispatch('tripPlanned', event.detail);
+	}
+
+	function handlePlanTripTabClick() {
+		const event = new CustomEvent('planTripTabClicked');
+		window.dispatchEvent(event);
+	}
+
+	function handleTabSwitch() {
+		const event = new CustomEvent('tabSwitched');
+		window.dispatchEvent(event);
+	}
+
 	onMount(() => {
 		window.addEventListener('routeSelectedFromModal', (event) => {
 			handleRouteClick(event.detail.route);
@@ -110,7 +116,7 @@
 
 <div class={`modal-pane flex flex-col justify-between md:w-96 ${cssClasses}`}>
 	<Tabs tabStyle="underline" contentClass="pt-2 pb-4 bg-gray-50 rounded-lg dark:bg-gray-800">
-		<TabItem open title="Stops and Stations">
+		<TabItem open title="Stops and Stations" on:click={handleTabSwitch}>
 			<SearchField value={query} on:searchResults={handleSearchResults} />
 
 			{#if query}
@@ -168,8 +174,11 @@
 				>
 			</div>
 		</TabItem>
-		<TabItem title="Plan a Trip">
-			plan a trip UI goes here!
-		</TabItem>
+
+		{#if PUBLIC_OTP_SERVER_URL}
+			<TabItem title="Plan a Trip" on:click={handlePlanTripTabClick}>
+				<TripPlan {mapProvider} on:tripPlanned={handleTripPlan} />
+			</TabItem>
+		{/if}
 	</Tabs>
 </div>
