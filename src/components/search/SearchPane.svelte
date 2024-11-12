@@ -121,7 +121,7 @@
 </script>
 
 <div class={`modal-pane flex flex-col justify-between md:w-96 ${cssClasses}`}>
-	<Tabs tabStyle="underline" contentClass="pt-2 pb-4 bg-gray-50 rounded-lg dark:bg-gray-800">
+	<Tabs tabStyle="underline" contentClass="pt-2 pb-4 bg-gray-50 rounded-lg dark:bg-black">
 		<TabItem open title="Stops and Stations" on:click={handleTabSwitch}>
 			<SearchField value={query} on:searchResults={handleSearchResults} />
 
@@ -170,7 +170,7 @@
 			<div class="mt-0 sm:mt-0">
 				<button
 					type="button"
-					class="text-sm font-medium text-green-600 underline hover:text-green-400 focus:outline-none"
+					class="hover:text -green-400 mt-3 text-sm font-medium text-green-600 underline focus:outline-none"
 					on:click={handleViewAllRoutes}
 				>
 					{$t('search.click_here')}
