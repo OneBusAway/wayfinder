@@ -5,6 +5,7 @@ import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
+import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 export default class GoogleMapProvider {
 	constructor(apiKey) {
 		this.apiKey = apiKey;
@@ -154,6 +155,10 @@ export default class GoogleMapProvider {
 
 	unHighlightMarker(stopId) {
 		const marker = this.markersMap.get(stopId);
+
+		if (!marker) {
+			return;
+		}
 		marker.$set({ isHighlighted: false });
 	}
 
@@ -162,6 +167,57 @@ export default class GoogleMapProvider {
 			marker.setMap(null);
 		});
 		this.stopMarkers = [];
+	}
+
+	addPinMarker(position, text) {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+
+		new TripPlanPinMarker({
+			target: container,
+			props: {
+				text: text
+			}
+		});
+
+		const overlay = new google.maps.OverlayView();
+
+		overlay.onAdd = function () {
+			this.getPanes().overlayMouseTarget.appendChild(container);
+		};
+
+		overlay.draw = function () {
+			const projection = this.getProjection();
+			const pos = projection.fromLatLngToDivPixel(
+				new google.maps.LatLng(position.lat, position.lng)
+			);
+			container.style.left = `${pos.x - 16}px`;
+			container.style.top = `${pos.y - 50}px`;
+			container.style.position = 'absolute';
+			container.style.zIndex = '1000';
+		};
+
+		overlay.onRemove = function () {
+			container.parentNode.removeChild(container);
+		};
+
+		overlay.setMap(this.map);
+
+		return { overlay, element: container };
+	}
+
+	removePinMarker(marker) {
+		if (!marker) {
+			return;
+		}
+
+		if (marker.overlay) {
+			marker.overlay.setMap(null);
+		}
+
+		if (marker.element && marker.element.parentNode) {
+			marker.element.parentNode.removeChild(marker.element);
+		}
 	}
 
 	addVehicleMarker(vehicle, activeTrip) {
