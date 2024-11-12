@@ -7,7 +7,12 @@
 		faChevronDown,
 		faChevronUp,
 		faFerry,
-		faTrainSubway
+		faTrainSubway,
+		faMapMarkerAlt,
+		faRulerCombined,
+		faClock,
+		faArrowRight,
+		faArrowAltCircleRight
 	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 
@@ -15,15 +20,12 @@
 	export let index;
 	export let expandedSteps;
 	export let toggleSteps;
-
-	// TODO: ADD ICONS FOR OTHER MODES
-	let icon;
-	let modeText;
-	let iconColor;
+	let icon, modeText, iconColor;
+	let isWalking = leg.mode === 'WALK';
 	switch (leg.mode) {
 		case 'WALK':
 			icon = faWalking;
-			modeText = 'Walking';
+			modeText = 'Walk';
 			iconColor = 'text-blue-600';
 			break;
 		case 'BUS':
@@ -32,11 +34,6 @@
 			iconColor = 'text-green-600';
 			break;
 		case 'TRAIN':
-			icon = faTrain;
-			modeText = `Train - ${leg.route}`;
-			iconColor = 'text-red-600';
-			break;
-
 		case 'RAIL':
 			icon = faTrain;
 			modeText = `Train - ${leg.route}`;
@@ -58,37 +55,73 @@
 	}
 </script>
 
-<div class="flex items-start space-x-4 border-b pb-4">
-	<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
+<div class="relative flex items-start pb-8">
+	<div
+		class="absolute left-5 top-5 border-l-4 border-green-400 {isWalking
+			? 'border-dotted'
+			: 'border-gray-300'}"
+		style="height: 100%;"
+	></div>
+
+	<div
+		class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 shadow-md dark:bg-white"
+	>
 		{#if icon}
-			<FontAwesomeIcon {icon} class={iconColor} />
+			<FontAwesomeIcon {icon} class={iconColor} style={'font-size: 1.3rem;'} />
 		{/if}
 	</div>
 
-	<div class="flex-1">
-		<h4 class="text-md font-semibold">{modeText}</h4>
-		<p>From: {leg.from.name}</p>
-		<p>To: {leg.to.name}</p>
-		<p>Distance: {Math.round(leg.distance)} meters</p>
-		<p>Duration: {Math.round(leg.duration / 60)} minutes</p>
-		<p>Start Time: {formatTime(leg.startTime)}</p>
-		<p>End Time: {formatTime(leg.endTime)}</p>
+	<div class="ml-3 mt-3 flex-1">
+		<div class="mb-2 flex items-center justify-between">
+			<div class="text-md font-semibold text-gray-800 dark:text-white">{leg.from.name}</div>
+		</div>
 
-		{#if leg.mode === 'WALK'}
-			<button class="mt-2 flex items-center text-blue-500" on:click={() => toggleSteps(index)}>
+		<div class="mt-1 flex space-x-4 text-sm text-gray-600 dark:text-gray-100">
+			<div class="flex items-center">
+				<FontAwesomeIcon icon={faClock} class="mr-1 text-blue-500" />
+				<span class="font-medium">Start:</span>
+				<span class="ml-1">{formatTime(leg.startTime)}</span>
+			</div>
+			<div class="flex items-center">
+				<FontAwesomeIcon icon={faClock} class="mr-1 text-red-500" />
+				<span class="font-medium">End:</span> <span class="ml-1">{formatTime(leg.endTime)}</span>
+			</div>
+		</div>
+
+		<div class="mt-4 space-y-4 text-sm text-gray-600 dark:text-gray-100">
+			<div class="mb-2 flex items-center">
+				<FontAwesomeIcon icon={faArrowRight} class="mr-2 text-green-500" />
+				<span class="font-medium">{leg.to.name}</span>
+			</div>
+			<div class="mb-2 flex items-center">
+				<FontAwesomeIcon icon={faRulerCombined} class="mr-2 text-gray-400" />
+				<span>Distance: {Math.round(leg.distance)} meters</span>
+			</div>
+			<div class="mb-4 flex items-center">
+				<FontAwesomeIcon icon={faClock} class="mr-2 text-gray-400" />
+				<span>Duration: {Math.round(leg.duration / 60)} minutes</span>
+			</div>
+		</div>
+
+		{#if isWalking}
+			<button class="mt-4 flex items-center text-blue-500" on:click={() => toggleSteps(index)}>
 				<FontAwesomeIcon icon={expandedSteps[index] ? faChevronUp : faChevronDown} class="mr-2" />
 				{expandedSteps[index] ? 'Hide Steps' : 'Show Steps'}
 			</button>
 
 			{#if expandedSteps[index]}
-				<div class="mt-2 space-y-2 pl-4">
+				<div class="mt-4 space-y-2">
 					{#each leg.steps as step}
 						<div class="text-sm">
-							<p class="font-semibold">
-								{step.relativeDirection} on {step.streetName}
-							</p>
-							<p>Distance: {Math.round(step.distance)} meters</p>
-							<p>Direction: {step.absoluteDirection}</p>
+							<div class="font-semibold">{step.relativeDirection} on {step.streetName}</div>
+							<div class="mb-2 flex items-center">
+								<FontAwesomeIcon icon={faRulerCombined} class="mr-2 text-gray-400" />
+								<span>Distance: {Math.round(step.distance)} meters</span>
+							</div>
+							<div class="flex items-center">
+								<FontAwesomeIcon icon={faArrowAltCircleRight} class="mr-2 text-gray-400" />
+								<span>{step.absoluteDirection}</span>
+							</div>
 						</div>
 					{/each}
 				</div>
