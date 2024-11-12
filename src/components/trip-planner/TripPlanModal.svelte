@@ -55,8 +55,8 @@
 		mapProvider.removePinMarker(toMarker);
 
 		if (currPolylines.length > 0) {
-			currPolylines.forEach((polyline) => {
-				mapProvider.removePolyline(polyline);
+			currPolylines.forEach(async (polyline) => {
+				mapProvider.removePolyline(await polyline);
 			});
 		}
 	});
