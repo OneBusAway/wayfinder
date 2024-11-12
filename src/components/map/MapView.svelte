@@ -12,6 +12,7 @@
 
 	import { faBus } from '@fortawesome/free-solid-svg-icons';
 	import { RouteType, routePriorities, prioritizedRouteTypeForDisplay } from '$config/routeConfig';
+	import { isMapLoaded } from '$src/stores/mapStore';
 
 	export let selectedTrip = null;
 	export let selectedRoute = null;
@@ -229,6 +230,7 @@
 
 	onMount(async () => {
 		await initMap();
+		isMapLoaded.set(true);
 		if (browser) {
 			const darkMode = document.documentElement.classList.contains('dark');
 			window.addEventListener('planTripTabClicked', () => {
