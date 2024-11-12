@@ -24,7 +24,9 @@
 </script>
 
 <div class="relative">
-	<label for="location-input" class="block text-sm font-medium text-gray-700">{label}</label>
+	<label for="location-input" class="dark: block text-sm font-medium text-gray-700 dark:text-white"
+		>{label}</label
+	>
 	<div class="relative">
 		<input
 			id="location-input"
@@ -32,7 +34,7 @@
 			bind:value={place}
 			on:input={handleInput}
 			placeholder="Enter location"
-			class="mt-1 block w-full rounded-md border-gray-300 pr-10 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+			class="dark: mt-1 block w-full rounded-md border-gray-300 pr-10 text-black shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
 		/>
 		{#if place}
 			<button
@@ -67,10 +69,10 @@
 		>
 			{#each results as result}
 				<button
-					class="flex w-full cursor-pointer items-center px-4 py-2 text-left hover:bg-gray-100"
+					class="flex w-full cursor-pointer items-center px-4 py-2 text-left hover:bg-gray-100 dark:text-black"
 					on:click={() => handleSelect(result)}
 				>
-					<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 text-gray-400" />
+					<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 text-gray-400  " />
 					{result.text}
 				</button>
 			{/each}
