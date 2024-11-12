@@ -8,7 +8,6 @@
 		faChevronUp,
 		faFerry,
 		faTrainSubway,
-		faMapMarkerAlt,
 		faRulerCombined,
 		faClock,
 		faArrowRight,
@@ -20,38 +19,32 @@
 	export let index;
 	export let expandedSteps;
 	export let toggleSteps;
-	let icon, modeText, iconColor;
+	let icon, iconColor;
 	let isWalking = leg.mode === 'WALK';
 	switch (leg.mode) {
 		case 'WALK':
 			icon = faWalking;
-			modeText = 'Walk';
 			iconColor = 'text-blue-600';
 			break;
 		case 'BUS':
 			icon = faBus;
-			modeText = `Bus - ${leg.route}`;
 			iconColor = 'text-green-600';
 			break;
 		case 'TRAIN':
 		case 'RAIL':
 			icon = faTrain;
-			modeText = `Train - ${leg.route}`;
 			iconColor = 'text-red-600';
 			break;
 		case 'FERRY':
 			icon = faFerry;
-			modeText = `Ferry - ${leg.route}`;
 			iconColor = 'text-blue-700';
 			break;
 		case 'LIGHT_RAIL':
 			icon = faTrainSubway;
-			modeText = `Light Rail - ${leg.route}`;
 			iconColor = 'text-red-600';
 			break;
 		default:
 			icon = null;
-			modeText = leg.mode;
 	}
 </script>
 
