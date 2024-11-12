@@ -175,7 +175,7 @@
 
 	<button
 		on:click={planTrip}
-		class="mt-4 flex w-full items-center justify-center rounded-md bg-green-500 py-2 text-white shadow-md hover:bg-green-600 disabled:bg-gray-300"
+		class="mt-4 flex w-full items-center justify-center rounded-md bg-green-500 py-2 text-white shadow-md hover:bg-green-600 disabled:bg-gray-300 dark:bg-gray-800 disabled:dark:bg-gray-600"
 		disabled={!selectedFrom || !selectedTo}
 	>
 		{#if loading}
