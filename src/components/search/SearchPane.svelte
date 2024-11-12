@@ -11,6 +11,7 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { PUBLIC_OTP_SERVER_URL } from '$env/static/public';
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
+	import { isMapLoaded } from '$src/stores/mapStore';
 
 	const dispatch = createEventDispatcher();
 
@@ -23,6 +24,7 @@
 	let query = null;
 	let polylines = [];
 	let currentIntervalId = null;
+	let mapLoaded = false;
 
 	function handleLocationClick(location) {
 		clearResults();
@@ -108,6 +110,10 @@
 	}
 
 	onMount(() => {
+		const unsubscribe = isMapLoaded.subscribe((value) => {
+			mapLoaded = value;
+		});
+
 		window.addEventListener('routeSelectedFromModal', (event) => {
 			handleRouteClick(event.detail.route);
 		});
@@ -176,7 +182,7 @@
 		</TabItem>
 
 		{#if PUBLIC_OTP_SERVER_URL}
-			<TabItem title="Plan a Trip" on:click={handlePlanTripTabClick}>
+			<TabItem title="Plan a Trip" on:click={handlePlanTripTabClick} disabled={!mapLoaded}>
 				<TripPlan {mapProvider} on:tripPlanned={handleTripPlan} />
 			</TabItem>
 		{/if}
