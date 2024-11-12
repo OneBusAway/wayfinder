@@ -166,6 +166,10 @@
 			window.addEventListener('tabSwitched', () => {
 				showTripPlanModal = false;
 			});
+
+			window.addEventListener('planTripTabClicked', () => {
+				closePane();
+			});
 		}
 	});
 </script>
