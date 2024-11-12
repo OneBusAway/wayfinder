@@ -110,7 +110,7 @@
 	}
 
 	onMount(() => {
-		const unsubscribe = isMapLoaded.subscribe((value) => {
+		isMapLoaded.subscribe((value) => {
 			mapLoaded = value;
 		});
 
