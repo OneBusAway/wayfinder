@@ -63,7 +63,7 @@
 		class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 shadow-md dark:bg-white"
 	>
 		{#if icon}
-			<FontAwesomeIcon {icon} class={iconColor} style={'font-size: 1.3rem;'} />
+			<FontAwesomeIcon {icon} class={iconColor + ' text-xl'} />
 		{/if}
 	</div>
 
