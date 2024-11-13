@@ -24,7 +24,7 @@
 </script>
 
 <div class="relative">
-	<label for="location-input" class="dark: block text-sm font-medium text-gray-700 dark:text-white"
+	<label for="location-input" class="block text-sm font-medium text-gray-700 dark:text-white"
 		>{label}</label
 	>
 	<div class="relative">
