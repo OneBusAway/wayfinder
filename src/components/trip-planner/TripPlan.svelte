@@ -50,9 +50,9 @@
 		}
 	}, 500);
 
-	async function geocodeLocation(location) {
+	async function geocodeLocation(locationName) {
 		const response = await fetch(
-			`/api/oba/google-geocode-location?query=${encodeURIComponent(location)}`
+			`/api/oba/google-geocode-location?query=${encodeURIComponent(locationName)}`
 		);
 
 		if (!response.ok) {
@@ -103,6 +103,23 @@
 		}
 	}
 
+	async function fetchTripPlan(from, to) {
+		try {
+			const response = await fetch(
+				`/api/otp/plan?fromPlace=${from.lat},${from.lng}&toPlace=${to.lat},${to.lng}`
+			);
+
+			if (!response.ok) {
+				throw new Error(`Error planning trip: ${response.statusText}`);
+			}
+
+			return await response.json();
+		} catch (error) {
+			console.error(error.message);
+			return null;
+		}
+	}
+
 	async function planTrip() {
 		if (!selectedFrom || !selectedTo) {
 			return;
@@ -120,19 +137,11 @@
 			fromMarker = mapProvider.addPinMarker(selectedFrom, 'From');
 			toMarker = mapProvider.addPinMarker(selectedTo, 'To');
 
-			await geocodeLocation(selectedFrom);
+			const data = await fetchTripPlan(selectedFrom, selectedTo);
 
-			const response = await fetch(
-				`/api/otp/plan?fromPlace=${selectedFrom.lat},${selectedFrom.lng}&toPlace=${selectedTo.lat},${selectedTo.lng}`
-			);
-
-			if (!response.ok) {
-				console.error('Error planning trip:', response.statusText);
-				return;
+			if (data) {
+				dispatch('tripPlanned', { data, fromMarker, toMarker });
 			}
-			const data = await response.json();
-
-			dispatch('tripPlanned', { data, fromMarker, toMarker });
 		} finally {
 			loading = false;
 		}
