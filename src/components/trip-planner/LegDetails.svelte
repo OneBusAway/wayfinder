@@ -21,6 +21,8 @@
 	export let toggleSteps;
 	let icon, iconColor;
 	let isWalking = leg.mode === 'WALK';
+
+	// TODO: Add more icons for different modes of transport
 	switch (leg.mode) {
 		case 'WALK':
 			icon = faWalking;
@@ -31,6 +33,9 @@
 			iconColor = 'text-green-600';
 			break;
 		case 'TRAIN':
+			icon = faTrain;
+			iconColor = 'text-red-600';
+			break;
 		case 'RAIL':
 			icon = faTrain;
 			iconColor = 'text-red-600';
@@ -67,15 +72,22 @@
 			<div class="text-md font-semibold text-gray-800 dark:text-white">{leg.from.name}</div>
 		</div>
 
-		<div class="mt-1 flex space-x-4 text-sm text-gray-600 dark:text-gray-100">
+		<div class="mt-3 flex space-x-4 text-sm text-gray-600 dark:text-gray-100">
 			<div class="flex items-center">
 				<FontAwesomeIcon icon={faClock} class="mr-1 text-blue-500" />
-				<span class="font-medium">Start:</span>
-				<span class="ml-1">{formatTime(leg.startTime)}</span>
+				<span class="text-md">Start:</span>
+				<div class="ml-1 flex items-baseline">
+					<span class="text-md font-semibold">{formatTime(leg.startTime).slice(0, -3)}</span>
+					<span class="ml-1 text-xs">{formatTime(leg.startTime).slice(-2)}</span>
+				</div>
 			</div>
 			<div class="flex items-center">
 				<FontAwesomeIcon icon={faClock} class="mr-1 text-red-500" />
-				<span class="font-medium">End:</span> <span class="ml-1">{formatTime(leg.endTime)}</span>
+				<span class="text-md">End:</span>
+				<div class="ml-1 flex items-baseline">
+					<span class="text-md font-semibold">{formatTime(leg.endTime).slice(0, -3)}</span>
+					<span class="ml-1 text-xs">{formatTime(leg.endTime).slice(-2)}</span>
+				</div>
 			</div>
 		</div>
 
