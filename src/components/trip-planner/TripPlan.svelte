@@ -109,35 +109,37 @@
 	}
 
 	async function planTrip() {
-		if (selectedFrom && selectedTo) {
-			loading = true;
-			try {
-				if (fromMarker) {
-					mapProvider.removePinMarker(fromMarker);
-				}
-				if (toMarker) {
-					mapProvider.removePinMarker(toMarker);
-				}
+		if (!selectedFrom || !selectedTo) {
+			return;
+		}
 
-				fromMarker = mapProvider.addPinMarker(selectedFrom, 'From');
-				toMarker = mapProvider.addPinMarker(selectedTo, 'To');
-
-				await geocodeLocation(selectedFrom);
-
-				const response = await fetch(
-					`/api/otp/plan?fromPlace=${selectedFrom.lat},${selectedFrom.lng}&toPlace=${selectedTo.lat},${selectedTo.lng}`
-				);
-
-				if (!response.ok) {
-					console.error('Error planning trip:', response.statusText);
-					return;
-				}
-				const data = await response.json();
-
-				dispatch('tripPlanned', { data, fromMarker, toMarker });
-			} finally {
-				loading = false;
+		loading = true;
+		try {
+			if (fromMarker) {
+				mapProvider.removePinMarker(fromMarker);
 			}
+			if (toMarker) {
+				mapProvider.removePinMarker(toMarker);
+			}
+
+			fromMarker = mapProvider.addPinMarker(selectedFrom, 'From');
+			toMarker = mapProvider.addPinMarker(selectedTo, 'To');
+
+			await geocodeLocation(selectedFrom);
+
+			const response = await fetch(
+				`/api/otp/plan?fromPlace=${selectedFrom.lat},${selectedFrom.lng}&toPlace=${selectedTo.lat},${selectedTo.lng}`
+			);
+
+			if (!response.ok) {
+				console.error('Error planning trip:', response.statusText);
+				return;
+			}
+			const data = await response.json();
+
+			dispatch('tripPlanned', { data, fromMarker, toMarker });
+		} finally {
+			loading = false;
 		}
 	}
 
