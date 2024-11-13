@@ -20,38 +20,33 @@
 
 	const dispatch = createEventDispatcher();
 
+	async function fetchAutocompleteResults(query) {
+		const response = await fetch(
+			`/api/oba/google-place-autocomplete?query=${encodeURIComponent(query)}`
+		);
+		const data = await response.json();
+
+		return data.suggestions
+			? data.suggestions.map((suggestion) => ({
+					placeId: suggestion.placePrediction.placeId,
+					text: suggestion.placePrediction.text.text
+				}))
+			: [];
+	}
+
 	const fetchLocationResults = debounce(async (query, isFrom) => {
-		if (isFrom) {
-			isLoadingFrom = true;
-		} else {
-			isLoadingTo = true;
-		}
+		isLoadingFrom = isFrom;
+		isLoadingTo = !isFrom;
+
 		try {
-			const response = await fetch(
-				`/api/oba/google-place-autocomplete?query=${encodeURIComponent(query)}`
-			);
-			const data = await response.json();
+			const results = await fetchAutocompleteResults(query);
 
-			const results = data.suggestions
-				? data.suggestions.map((suggestion) => ({
-						placeId: suggestion.placePrediction.placeId,
-						text: suggestion.placePrediction.text.text
-					}))
-				: [];
-
-			if (isFrom) {
-				fromResults = results;
-			} else {
-				toResults = results;
-			}
+			isFrom ? (fromResults = results) : (toResults = results);
 		} catch (error) {
 			console.error('Error fetching location results:', error);
 		} finally {
-			if (isFrom) {
-				isLoadingFrom = false;
-			} else {
-				isLoadingTo = false;
-			}
+			isLoadingFrom = false;
+			isLoadingTo = false;
 		}
 	}, 500);
 
