@@ -52,10 +52,8 @@
 	<div
 		class="absolute left-5 top-5 border-l-4 border-green-400 {isWalking
 			? 'border-dotted'
-			: 'border-gray-300'}"
-		style="height: 100%;"
+			: 'border-gray-300'} h-full"
 	></div>
-
 	<div
 		class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 shadow-md dark:bg-white"
 	>
