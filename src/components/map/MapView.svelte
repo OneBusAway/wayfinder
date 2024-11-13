@@ -166,7 +166,7 @@
 		allStops.forEach((s) => addMarker(s));
 	}
 
-	// TODO: prevent fetch stops-for-location if the trip planner mood is on - we should do this after merge.
+	// TODO: prevent fetch stops-for-location if the trip planner mode is on - we should do this after merge.
 	$: {
 		if (isTripPlanMoodActive) {
 			clearAllMarkers();
