@@ -170,7 +170,7 @@
 			<div class="mt-0 sm:mt-0">
 				<button
 					type="button"
-					class="hover:text -green-400 mt-3 text-sm font-medium text-green-600 underline focus:outline-none"
+					class="mt-3 text-sm font-medium text-green-600 underline hover:text-green-400 focus:outline-none"
 					on:click={handleViewAllRoutes}
 				>
 					{$t('search.click_here')}
