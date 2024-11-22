@@ -79,7 +79,7 @@
 
 <button
 	on:click={handleTripDetail}
-	class="flex h-auto w-full items-center justify-between border-b-[1px] border-[#C6C6C8] bg-[#ffffff] p-4 hover:cursor-pointer hover:bg-[#e3e3e3] dark:border-[#313135] dark:bg-[#1c1c1c] hover:dark:bg-[#363636]"
+	class="flex h-auto w-full items-center justify-between bg-[#ffffff] p-4 hover:cursor-pointer"
 >
 	<div class="flex flex-col gap-1">
 		<p class="text-left text-xl font-semibold text-black dark:text-white">
