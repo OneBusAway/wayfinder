@@ -92,7 +92,7 @@
 	}
 
 	function selectionChanged() {
-		console.log("bonk");
+		console.log('bonk');
 	}
 </script>
 
@@ -114,14 +114,14 @@
 					<AccordionItem>
 						<span slot="header">
 							<ArrivalDeparture
-							routeShortName={arrival.routeShortName}
-							tripHeadsign={arrival.tripHeadsign}
-							scheduledArrivalTime={arrival.scheduledArrivalTime}
-							predictedArrivalTime={arrival.predictedArrivalTime}
-							tripId={arrival.tripId}
-							vehicleId={arrival.vehicleId}
-							serviceDate={arrival.serviceDate}
-							on:showTripDetails={handleShowTripDetails}
+								routeShortName={arrival.routeShortName}
+								tripHeadsign={arrival.tripHeadsign}
+								scheduledArrivalTime={arrival.scheduledArrivalTime}
+								predictedArrivalTime={arrival.predictedArrivalTime}
+								tripId={arrival.tripId}
+								vehicleId={arrival.vehicleId}
+								serviceDate={arrival.serviceDate}
+								on:showTripDetails={handleShowTripDetails}
 							/>
 						</span>
 
