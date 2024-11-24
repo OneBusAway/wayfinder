@@ -93,7 +93,7 @@
 				{#each tripDetails.schedule.stopTimes as tripStop, index}
 					<div class="relative mb-4 flex items-center">
 						<div
-							class="relative z-10 flex size-8 items-center justify-center rounded-md border border-neutral-400 bg-white dark:bg-neutral-800"
+							class="relative z-0 flex size-8 items-center justify-center rounded-md border border-neutral-400 bg-white dark:bg-neutral-800"
 						>
 							{#if index === busPosition}
 								<FontAwesomeIcon
