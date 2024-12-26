@@ -9,17 +9,20 @@
 			? document.documentElement.classList.add('dark')
 			: document.documentElement.classList.remove('dark');
 
-		localStorage.theme = darkMode ? 'dark' : 'light';
+		// Update theme in localStorage
+		if (browser) {
+			localStorage.theme = darkMode ? 'dark' : 'light';
+		}
 
+		// Dispatch a themeChange event
 		const event = new CustomEvent('themeChange', { detail: { darkMode } });
 		window.dispatchEvent(event);
 	}
 
+	// Check and apply the theme on the first load
 	if (browser) {
-		if (
-			localStorage.theme === 'dark' ||
-			(!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
-		) {
+		const storedTheme = localStorage.getItem('theme');
+		if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
 			document.documentElement.classList.add('dark');
 			darkMode = true;
 		} else {
@@ -27,6 +30,7 @@
 			darkMode = false;
 		}
 
+		// Dispatch the initial themeChange event
 		const event = new CustomEvent('themeChange', { detail: { darkMode } });
 		window.dispatchEvent(event);
 	}
@@ -38,8 +42,8 @@
 			type="checkbox"
 			id="theme-toggle"
 			class="sr-only"
-			checked={darkMode}
-			onclick={handleThemeSwitch}
+			bind:checked={darkMode}
+			on:click={handleThemeSwitch}
 		/>
 		<label
 			for="theme-toggle"
@@ -53,4 +57,5 @@
 </div>
 
 <style lang="postcss">
+	/* Additional styling if needed */
 </style>
