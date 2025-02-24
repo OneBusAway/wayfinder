@@ -15,7 +15,6 @@
 	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
 	import analytics from '$lib/Analytics/PlausibleAnalytics';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
-	import SurveySubmitted from '$components/surveys/SurveySubmitted.svelte';
 
 	/**
 	 * @typedef {Object} Props
@@ -39,7 +38,6 @@
 	let interval = null;
 	let currentStopSurvey = $state(null);
 	let remainingSurveyQuestions = $state([]);
-	let surveySubmitted = $state(false);
 
 	async function loadData(stopID) {
 		loading = true;
