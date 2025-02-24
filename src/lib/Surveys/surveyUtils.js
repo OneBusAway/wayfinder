@@ -20,7 +20,6 @@ export async function loadSurveys(stop = null, userId = null) {
 		// This is the case when there's multiple surveys and we need to prioritize the one-time survey over the always visible one
 		selectedSurvey = getPrioritySurvey(validSurveys, selectedSurvey);
 		surveyStore.set(selectedSurvey);
-
 	} catch (error) {
 		console.error('Error loading surveys:', error);
 	}
