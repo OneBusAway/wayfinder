@@ -148,7 +148,7 @@
 	<p>Loading...</p>
 {:else}
 	<div>
-		{#if loading && isLoading}
+		{#if loading && isLoading && tripSelected}
 			<LoadingSpinner />
 		{/if}
 
