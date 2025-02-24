@@ -10,6 +10,7 @@
 
 	import { showSurveyModal, surveyStore } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
+	import SurveySubmitted from './SurveySubmitted.svelte';
 
 	let { stop = $bindable(null), skipHeroQuestion, surveyPublicId } = $props();
 
@@ -91,6 +92,10 @@
 			surveyPublicIdentifier = await submitHeroQuestionUtil(surveyResponse);
 			heroQuestionAnswered = true;
 			submitSurvey(currentSurvey, false);
+
+			if (remainingQuestions.length === 0) {
+				surveySubmitted = true;
+			}
 		} catch (error) {
 			console.error('Error submitting hero question:', error);
 		}
@@ -119,26 +124,7 @@
 	>
 		<div class="flex flex-col space-y-2">
 			{#if surveySubmitted}
-				<div class="flex flex-1 flex-col items-center justify-center p-12">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="h-20 w-20 text-green-500"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke="currentColor"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M5 13l4 4L19 7"
-						/>
-					</svg>
-					<h2 class="mt-6 text-4xl font-bold text-gray-900 dark:text-white">Survey Submitted</h2>
-					<p class="mt-3 text-xl text-gray-700 dark:text-gray-300">
-						Thank you for taking the survey!
-					</p>
-				</div>
+				<SurveySubmitted />
 			{:else}
 				<div class="max-h-[60vh] overflow-y-auto p-2">
 					{#if !heroQuestionAnswered && !skipHeroQuestion}
@@ -175,16 +161,16 @@
 							color="red"
 							class="rounded-lg px-10 py-3 shadow-md transition-shadow hover:shadow-lg"
 						>
-							Skip
+							Cancel
 						</Button>
 						<Button
 							onclick={submitHeroQuestion}
 							color="green"
 							class="rounded-lg px-10 py-3 shadow-md transition-shadow hover:shadow-lg"
 						>
-							Next
+							{remainingQuestions.length === 0 ? 'Submit' : 'Next'}
 						</Button>
-					{:else}
+					{:else if remainingQuestions.length > 0}
 						<Button
 							onclick={() => skipSurvey(currentSurvey)}
 							color="red"

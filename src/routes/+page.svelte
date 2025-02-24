@@ -18,6 +18,7 @@
 	import analytics from '$lib/Analytics/PlausibleAnalytics';
 	import { userLocation } from '$src/stores/userLocationStore';
 	import { analyticsDistanceToStop } from '$lib/Analytics/plausibleUtils';
+	import SurveyLauncher from '$components/surveys/SurveyLauncher.svelte';
 
 	let stop = $state();
 	let selectedTrip = $state(null);
@@ -227,7 +228,7 @@
 				{handleTripPlan}
 			>
 				{#snippet childContent()}
-					<!-- optional child content -->
+					<SurveyLauncher />
 				{/snippet}
 			</SearchPane>
 
