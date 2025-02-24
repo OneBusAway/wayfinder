@@ -10,11 +10,12 @@
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
-	import { surveyStore, showSurveyModal } from '$stores/surveyStore';
+	import { surveyStore, showSurveyModal, markSurveyAnswered } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
 	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
 	import analytics from '$lib/Analytics/PlausibleAnalytics';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
+	import SurveySubmitted from '$components/surveys/SurveySubmitted.svelte';
 
 	/**
 	 * @typedef {Object} Props
@@ -37,6 +38,8 @@
 
 	let interval = null;
 	let currentStopSurvey = $state(null);
+	let remainingSurveyQuestions = $state([]);
+	let surveySubmitted = $state(false);
 
 	async function loadData(stopID) {
 		loading = true;
@@ -102,13 +105,17 @@
 	let surveyPublicIdentifier = $state(null);
 	let showHeroQuestion = $state(true);
 
-	async function handleNext() {
+	async function handleSurveyButtonClick() {
 		let heroQuestion = currentStopSurvey.questions[0];
-
+		remainingSurveyQuestions = currentStopSurvey.questions.slice(1);
 		if (heroQuestion.content.type !== 'label' && (!heroAnswer || heroAnswer.trim() === '')) {
 			return;
 		}
-		showSurveyModal.set(true);
+
+		// If there are more questions, show the modal
+		if (remainingSurveyQuestions.length > 0) {
+			showSurveyModal.set(true);
+		}
 		nextSurveyQuestion = true;
 
 		let surveyResponse = {
@@ -129,6 +136,8 @@
 
 		surveyPublicIdentifier = await submitHeroQuestion(surveyResponse);
 		showHeroQuestion = false;
+
+		markSurveyAnswered(currentStopSurvey.id);
 	}
 
 	function handleSkip() {
@@ -183,7 +192,13 @@
 				{/if}
 
 				{#if showHeroQuestion && currentStopSurvey}
-					<HeroQuestion {currentStopSurvey} {handleSkip} {handleNext} {handleHeroQuestionChange} />
+					<HeroQuestion
+						{currentStopSurvey}
+						{handleSkip}
+						{handleSurveyButtonClick}
+						{handleHeroQuestionChange}
+						remainingQuestionsLength={remainingSurveyQuestions.length}
+					/>
 				{/if}
 				{#if nextSurveyQuestion}
 					<SurveyModal

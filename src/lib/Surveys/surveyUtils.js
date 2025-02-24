@@ -1,4 +1,4 @@
-import { showSurveyModal, surveyStore } from '$stores/surveyStore.js';
+import { markSurveyAnswered, showSurveyModal, surveyStore } from '$stores/surveyStore.js';
 
 export async function loadSurveys(stop = null, userId = null) {
 	try {
@@ -19,10 +19,8 @@ export async function loadSurveys(stop = null, userId = null) {
 
 		// This is the case when there's multiple surveys and we need to prioritize the one-time survey over the always visible one
 		selectedSurvey = getPrioritySurvey(validSurveys, selectedSurvey);
-
 		surveyStore.set(selectedSurvey);
 
-		showSurveyModal.set(shouldShowSurvey(selectedSurvey));
 	} catch (error) {
 		console.error('Error loading surveys:', error);
 	}
@@ -73,11 +71,7 @@ export function getValidSurveys(surveys) {
 export function shouldShowSurvey(survey) {
 	if (!survey) return false;
 
-	if (!survey.always_visible) {
-		return true;
-	}
-
-	if (survey.allows_multiple_responses) {
+	if ((survey.always_visible && survey.allows_multiple_responses) || survey.show_on_map) {
 		return true;
 	}
 
@@ -169,7 +163,7 @@ export async function updateSurveyResponse(surveyPublicIdentifier, surveyRespons
 }
 
 export function submitSurvey(survey, hideSurveyModal) {
-	localStorage.setItem(`survey_${survey.id}_answered`, true);
+	markSurveyAnswered(survey.id);
 	if (hideSurveyModal) {
 		setTimeout(() => {
 			showSurveyModal.set(false);

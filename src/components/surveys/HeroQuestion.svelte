@@ -1,6 +1,12 @@
 <script>
 	import SurveyQuestion from '$components/surveys/SurveyQuestion.svelte';
-	let { currentStopSurvey, handleSkip, handleNext, handleHeroQuestionChange } = $props();
+	let {
+		currentStopSurvey,
+		handleSkip,
+		handleSurveyButtonClick,
+		handleHeroQuestionChange,
+		remainingQuestionsLength
+	} = $props();
 </script>
 
 <div class="hero-question-container relative rounded-lg bg-gray-50 p-6 shadow dark:bg-gray-800">
@@ -22,10 +28,10 @@
 	/>
 	<div class="mt-4 flex justify-end">
 		<button
-			onclick={handleNext}
-			class="rounded bg-green-500 px-4 py-3 text-white shadow transition hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
+			onclick={handleSurveyButtonClick}
+			class="rounded bg-green-500 px-4 py-3 text-sm text-white shadow transition hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
 		>
-			Next
+			{remainingQuestionsLength === 0 ? 'Submit' : 'Next'}
 		</button>
 	</div>
 </div>
