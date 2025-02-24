@@ -123,7 +123,12 @@
 
 <div class={`modal-pane flex flex-col justify-between md:w-96 ${cssClasses}`}>
 	<Tabs tabStyle="underline" contentClass="pt-2 pb-4 bg-gray-50 rounded-lg dark:bg-black">
-		<TabItem open title={$t('tabs.stops-and-stations')} on:click={handleTabSwitch}>
+		<TabItem
+			activeClasses="tab-container__item--active p-4"
+			open
+			title={$t('tabs.stops-and-stations')}
+			on:click={handleTabSwitch}
+		>
 			<SearchField value={query} {handleSearchResults} />
 
 			{#if query}
@@ -182,7 +187,12 @@
 		</TabItem>
 
 		{#if env.PUBLIC_OTP_SERVER_URL}
-			<TabItem title={$t('tabs.plan_trip')} on:click={handlePlanTripTabClick} disabled={!mapLoaded}>
+			<TabItem
+				activeClasses="tab-container__item--active p-4"
+				title={$t('tabs.plan_trip')}
+				on:click={handlePlanTripTabClick}
+				disabled={!mapLoaded}
+			>
 				<TripPlan {mapProvider} {handleTripPlan} />
 			</TabItem>
 		{/if}
