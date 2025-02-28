@@ -12,7 +12,7 @@
 	let isMobileMenuOpen = $state(false);
 	let shouldShowMobile = $state(false);
 	let navContainer;
-	let linksContainer;
+	let linksContainer = $state(null);
 	let linksWidthCache = 0;
 
 	let headerLinks = $state(null);
