@@ -93,12 +93,12 @@
 </script>
 
 <div
-	class="bg-blur-md bg-white/80 dark:bg-black dark:text-white md:flex-row md:px-8 flex items-center justify-between px-4 border-b border-gray-500"
+	class="bg-blur-md flex items-center justify-between border-b border-gray-500 bg-white/80 px-4 dark:bg-black dark:text-white md:flex-row md:px-8"
 	bind:this={navContainer}
 >
-	<div class="md:flex-none flex items-center justify-between flex-1">
-		<div class="logo-container md:w-auto flex items-center w-full gap-4 px-2 py-2">
-			<div class="gap-x-2 flex items-center justify-center">
+	<div class="flex flex-1 items-center justify-between md:flex-none">
+		<div class="logo-container flex w-full items-center gap-4 px-2 py-2 md:w-auto">
+			<div class="flex items-center justify-center gap-x-2">
 				<a href="/" class="block">
 					<img src={PUBLIC_OBA_LOGO_URL} alt={PUBLIC_OBA_REGION_NAME} class="h-10 rounded-sm" />
 				</a>
@@ -110,11 +110,11 @@
 
 		{#if !shouldShowMobile}
 			<div class="flex items-center px-2 py-2" bind:this={linksContainer}>
-				<div class="no-scrollbar gap-x-4 flex overflow-x-auto">
+				<div class="no-scrollbar flex gap-x-4 overflow-x-auto">
 					{#if headerLinks && Object.keys(headerLinks).length > 0}
 						{#each Object.entries(headerLinks) as [key, value]}
-							<div class="bg-white/80 dark:bg-gray-800 flex-shrink-0 border rounded-md">
-								<a href={value} class="dark:text-white block px-2 py-1 font-semibold text-gray-900"
+							<div class="flex-shrink-0 rounded-md border bg-white/80 dark:bg-gray-800">
+								<a href={value} class="block px-2 py-1 font-semibold text-gray-900 dark:text-white"
 									>{key}</a
 								>
 							</div>
@@ -129,7 +129,7 @@
 		{#if shouldShowMobile}
 			<button onclick={toggleNavbar} aria-label="Toggle navigation menu" class="mr-2">
 				<svg
-					class="burger-icon dark:text-white w-6 h-6 text-gray-900"
+					class="burger-icon h-6 w-6 text-gray-900 dark:text-white"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
