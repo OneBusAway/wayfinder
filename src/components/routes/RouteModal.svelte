@@ -21,17 +21,17 @@
 
 <ModalPane {closePane} title={title()}>
 	{#if stops && selectedRoute}
-		<div className="space-y-4">
+		<div class="space-y-4">
 			<div>
-				<div className="h-36 rounded-lg bg-brand-secondary bg-opacity-80 p-4">
-					<h1 className="mb-6 text-center text-2xl font-bold text-white">
+				<div class="h-36 rounded-lg bg-brand-secondary bg-opacity-80 p-4">
+					<h1 class="mb-6 text-center text-2xl font-bold text-white">
 						Route: {selectedRoute.shortName}
 					</h1>
-					<h2 className="mb-6 text-center text-xl text-white">{selectedRoute.description}</h2>
+					<h2 class="mb-6 text-center text-xl text-white">{selectedRoute.description}</h2>
 				</div>
 			</div>
 
-			<div className="space-y-2 rounded-lg">
+			<div class="space-y-2 rounded-lg">
 				<div>
 					{#each stops as stop}
 						<StopItem {stop} {handleStopItemClick}/>

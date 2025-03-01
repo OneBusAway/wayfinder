@@ -150,7 +150,7 @@ export default class OpenStreetMapProvider {
 			iconAnchor: [10, 10]
 		});
 
-		const marker = L.marker([stop.lat, stop.lon], {icon: customIcon}).addTo(this.map);
+		const marker = L.marker([stop.lat, stop.lon], { icon: customIcon }).addTo(this.map);
 
 		this.stopsMap.set(stop.id, stop);
 
@@ -180,9 +180,9 @@ export default class OpenStreetMapProvider {
 		});
 
 		this.globalInfoWindow = L.popup()
-		.setLatLng([stop.lat, stop.lon])
-		.setContent(popupContainer)
-		.openOn(this.map);
+			.setLatLng([stop.lat, stop.lon])
+			.setContent(popupContainer)
+			.openOn(this.map);
 	}
 
 	removeStopMarkers() {
