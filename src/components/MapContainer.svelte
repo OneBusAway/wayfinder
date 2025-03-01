@@ -16,7 +16,7 @@
 		if (PUBLIC_OBA_MAP_PROVIDER === MapSource.Google) {
 			mapProvider = new GoogleMapProvider(apiKey);
 		} else if (PUBLIC_OBA_MAP_PROVIDER === MapSource.OpenStreetMap) {
-			mapProvider = new OpenStreetMapProvider(apiKey);
+			mapProvider = new OpenStreetMapProvider(handleStopMarkerSelect);
 		} else {
 			console.error('Unknown map provider:');
 		}

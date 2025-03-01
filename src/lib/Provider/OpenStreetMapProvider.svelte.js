@@ -11,7 +11,8 @@ import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte
 import { mount, unmount } from 'svelte';
 
 export default class OpenStreetMapProvider {
-	constructor() {
+	constructor(handleStopMarkerSelect) {
+		this.handleStopMarkerSelect = handleStopMarkerSelect;
 		this.map = null;
 		this.L = null;
 		this.globalInfoWindow = null;
@@ -149,36 +150,39 @@ export default class OpenStreetMapProvider {
 			iconAnchor: [10, 10]
 		});
 
-		const marker = L.marker([stop.lat, stop.lon], { icon: customIcon }).addTo(this.map);
+		const marker = L.marker([stop.lat, stop.lon], {icon: customIcon}).addTo(this.map);
 
 		this.stopsMap.set(stop.id, stop);
 
-		marker.on('click', () => {
-			if (this.globalInfoWindow) {
-				this.map.closePopup(this.globalInfoWindow);
-			}
-
-			if (this.popupContentComponent) {
-				unmount(this.popupContentComponent);
-			}
-
-			const popupContainer = document.createElement('div');
-
-			this.popupContentComponent = mount(PopupContent, {
-				target: popupContainer,
-				props: {
-					stopName: stop.name,
-					arrivalTime: stopTime ? stopTime.arrivalTime : null
-				}
-			});
-
-			this.globalInfoWindow = L.popup()
-				.setLatLng([stop.lat, stop.lon])
-				.setContent(popupContainer)
-				.openOn(this.map);
-		});
+		marker.on('click', () => this.openStopMarker(stop));
 
 		this.stopMarkers.push(marker);
+	}
+
+	openStopMarker(stop, stopTime = null) {
+		if (this.globalInfoWindow) {
+			this.map.closePopup(this.globalInfoWindow);
+		}
+
+		if (this.popupContentComponent) {
+			unmount(this.popupContentComponent);
+		}
+
+		const popupContainer = document.createElement('div');
+
+		this.popupContentComponent = mount(PopupContent, {
+			target: popupContainer,
+			props: {
+				stopName: stop.name,
+				arrivalTime: stopTime ? stopTime.arrivalTime : null,
+				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
+			}
+		});
+
+		this.globalInfoWindow = L.popup()
+		.setLatLng([stop.lat, stop.lon])
+		.setContent(popupContainer)
+		.openOn(this.map);
 	}
 
 	removeStopMarkers() {
