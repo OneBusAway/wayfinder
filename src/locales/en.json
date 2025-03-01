@@ -108,5 +108,6 @@
 		"page": "Page",
 		"show": "Show",
 		"hide": "Hide"
-	}
+	},
+	"view_stop_information": "View Stop Information"
 }
