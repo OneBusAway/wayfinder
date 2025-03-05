@@ -9,7 +9,7 @@ import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte
 import { mount, unmount } from 'svelte';
 
 export default class GoogleMapProvider {
-	constructor(apiKey) {
+	constructor(apiKey, handleStopMarkerSelect) {
 		this.apiKey = apiKey;
 		this.map = null;
 		this.globalInfoWindow = null;
@@ -18,6 +18,7 @@ export default class GoogleMapProvider {
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
 		this.markersMap = new Map();
+		this.handleStopMarkerSelect = handleStopMarkerSelect;
 	}
 
 	async initMap(element, options) {
@@ -122,33 +123,37 @@ export default class GoogleMapProvider {
 
 		this.stopsMap.set(stop.id, stop);
 
-		marker.addListener('click', () => {
-			if (this.globalInfoWindow) {
-				this.globalInfoWindow.close();
+		marker.addListener('click', () => this.openStopMarker(stop, stopTime));
+
+		this.markersMap.set(stop.id, marker);
+		this.stopMarkers.push(marker);
+	}
+
+	openStopMarker(stop, stopTime = null) {
+		if (this.globalInfoWindow) {
+			this.globalInfoWindow.close();
+		}
+
+		if (this.popupContentComponent) {
+			unmount(this.popupContentComponent);
+		}
+
+		const popupContainer = document.createElement('div');
+
+		this.popupContentComponent = mount(PopupContent, {
+			target: popupContainer,
+			props: {
+				stopName: stop.name,
+				arrivalTime: stopTime ? stopTime.arrivalTime : null,
+				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 			}
-
-			if (this.popupContentComponent) {
-				unmount(this.popupContentComponent);
-			}
-
-			const popupContainer = document.createElement('div');
-
-			this.popupContentComponent = mount(PopupContent, {
-				target: popupContainer,
-				props: {
-					stopName: stop.name,
-					arrivalTime: stopTime ? stopTime.arrivalTime : null
-				}
-			});
-
-			this.globalInfoWindow = new google.maps.InfoWindow({
-				content: popupContainer
-			});
-
-			this.globalInfoWindow.open(this.map, marker);
 		});
 
-		this.stopMarkers.push(marker);
+		this.globalInfoWindow = new google.maps.InfoWindow({
+			content: popupContainer
+		});
+
+		this.globalInfoWindow.open(this.map, this.markersMap.get(stop.id));
 	}
 
 	highlightMarker(stopId) {
