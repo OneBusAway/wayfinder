@@ -11,6 +11,7 @@
 	import { env } from '$env/dynamic/public';
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
+	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
 
 	let {
 		clearPolylines,
@@ -18,7 +19,8 @@
 		handleViewAllRoutes,
 		handleTripPlan,
 		cssClasses = '',
-		mapProvider = null
+		mapProvider = null,
+		childContent
 	} = $props();
 
 	let routes = $state(null);
@@ -28,6 +30,7 @@
 	let polylines = [];
 	let currentIntervalId = null;
 	let mapLoaded = $state(false);
+	let isSurveyAnswered = $state(false);
 
 	function handleLocationClick(location) {
 		clearResults();
@@ -110,6 +113,14 @@
 		window.dispatchEvent(event);
 	}
 
+	$effect(() => {
+		if ($surveyStore && $surveyStore.id) {
+			isSurveyAnswered = $answeredSurveys[$surveyStore.id] === true;
+		} else {
+			isSurveyAnswered = false;
+		}
+	});
+
 	onMount(() => {
 		isMapLoaded.subscribe((value) => {
 			mapLoaded = value;
@@ -125,6 +136,12 @@
 	<Tabs tabStyle="underline" contentClass="pt-2 pb-4 bg-gray-50 rounded-lg dark:bg-black">
 		<TabItem open title={$t('tabs.stops-and-stations')} on:click={handleTabSwitch}>
 			<SearchField value={query} {handleSearchResults} />
+
+			{#if !isSurveyAnswered && $surveyStore}
+				<div class="mt-2">
+					{@render childContent()}
+				</div>
+			{/if}
 
 			{#if query}
 				<p class="text-sm text-gray-700 dark:text-gray-400">
