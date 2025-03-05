@@ -17,6 +17,8 @@
 
 	const THEME_SWITCHER_WIDTH = 56; // Width of the theme switcher component in pixels
 	const EXTRA_PADDING = 32; // Extra padding to account for padding and margins in pixels
+	const LINKS_GAP = '1rem'; // Matches gap-x-4 in the template
+	const LINK_PADDING = '0.25rem 0.5rem'; // Matches px-2 py-1 in the template
 
 	let headerLinks = $state(null);
 
@@ -59,12 +61,12 @@
 		tempDiv.style.position = 'absolute';
 		tempDiv.style.visibility = 'hidden';
 		tempDiv.style.display = 'flex';
-		tempDiv.style.gap = '1rem';
+		tempDiv.style.gap = LINKS_GAP;
 
 		if (Object.keys(headerLinks).length > 0) {
 			Object.keys(headerLinks).forEach((key) => {
 				const linkDiv = document.createElement('div');
-				linkDiv.style.padding = '0.25rem 0.5rem';
+				linkDiv.style.padding = LINK_PADDING;
 				linkDiv.style.flexShrink = '0';
 				linkDiv.textContent = key;
 				tempDiv.appendChild(linkDiv);
