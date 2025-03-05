@@ -154,7 +154,7 @@ export default class OpenStreetMapProvider {
 
 		this.stopsMap.set(stop.id, stop);
 
-		marker.on('click', () => this.openStopMarker(stop));
+		marker.on('click', () => this.openStopMarker(stop, stopTime));
 
 		this.stopMarkers.push(marker);
 	}

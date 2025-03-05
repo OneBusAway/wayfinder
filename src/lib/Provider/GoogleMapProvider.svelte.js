@@ -123,7 +123,7 @@ export default class GoogleMapProvider {
 
 		this.stopsMap.set(stop.id, stop);
 
-		marker.addListener('click', () => this.openStopMarker(stop));
+		marker.addListener('click', () => this.openStopMarker(stop, stopTime));
 
 		this.markersMap.set(stop.id, marker);
 		this.stopMarkers.push(marker);
