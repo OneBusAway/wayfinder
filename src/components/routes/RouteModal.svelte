@@ -1,9 +1,9 @@
 <script>
 	import StopItem from '$components/StopItem.svelte';
 	import ModalPane from '$components/navigation/ModalPane.svelte';
-	import {t} from 'svelte-i18n';
+	import { t } from 'svelte-i18n';
 
-	let {selectedRoute, stops, mapProvider, closePane} = $props();
+	let { selectedRoute, stops, mapProvider, closePane } = $props();
 
 	function handleStopItemClick(stop) {
 		mapProvider.flyTo(stop.lat, stop.lon, 18);
@@ -15,7 +15,7 @@
 			return '';
 		}
 
-		return $t('route_modal_title', {values: {name: selectedRoute.shortName}});
+		return $t('route_modal_title', { values: { name: selectedRoute.shortName } });
 	}
 </script>
 
@@ -34,7 +34,7 @@
 			<div class="space-y-2 rounded-lg">
 				<div>
 					{#each stops as stop}
-						<StopItem {stop} {handleStopItemClick}/>
+						<StopItem {stop} {handleStopItemClick} />
 					{/each}
 				</div>
 			</div>
