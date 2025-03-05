@@ -13,7 +13,7 @@
 	let shouldShowMobile = $state(false);
 	let navContainer;
 	let linksContainer = $state(null);
-	let linksWidthCache = 0;
+	let cachedLinksWidth = 0;
 
 	const THEME_SWITCHER_WIDTH = 56; // Width of the theme switcher component in pixels
 	const EXTRA_PADDING = 32; // Extra padding to account for padding and margins in pixels
@@ -38,9 +38,9 @@
 		let linksWidth = 0;
 		if (linksContainer) {
 			linksWidth = linksContainer.scrollWidth;
-			linksWidthCache = linksWidth;
+			cachedLinksWidth = linksWidth;
 		} else {
-			linksWidth = linksWidthCache;
+			linksWidth = cachedLinksWidth;
 		}
 
 		const newShouldShowMobileMenu = linksWidth > availableWidth;
@@ -73,7 +73,7 @@
 			}
 
 			document.body.appendChild(tempDiv);
-			linksWidthCache = tempDiv.scrollWidth;
+			cachedLinksWidth = tempDiv.scrollWidth;
 			document.body.removeChild(tempDiv);
 		}
 	}
