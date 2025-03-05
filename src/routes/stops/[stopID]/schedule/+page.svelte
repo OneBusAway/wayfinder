@@ -140,52 +140,48 @@
 </svelte:head>
 
 <StandalonePage>
-	{#if loading || $isLoading}
-		<LoadingSpinner />
-	{:else}
-		<StopPageHeader {stopName} {stopId} {stopDirection} />
+	<StopPageHeader {stopName} {stopId} {stopDirection} />
 
-		<div class="flex flex-col">
-			<div class="flex flex-1 flex-col">
-				<h2 class="mb-4 text-2xl font-bold text-gray-800">
-					{$t('schedule_for_stop.route_schedules')}
-				</h2>
+	<div class="flex flex-col">
+		<div class="flex flex-1 flex-col">
+			<h2 class="mb-4 text-2xl font-bold text-gray-800">
+				{$t('schedule_for_stop.route_schedules')}
+			</h2>
 
-				<div class="mb-4 flex gap-4">
-					<div class="z-20 min-w-32 md:w-[30%]">
-						<Datepicker bind:value={selectedDate} inputClass="w-96" />
-					</div>
-
-					<div class="flex-1 text-right">
-						<button class="button" onclick={toggleAllRoutes}>
-							{allRoutesExpanded
-								? $t('schedule_for_stop.collapse_all_routes')
-								: $t('schedule_for_stop.show_all_routes')}
-						</button>
-					</div>
+			<div class="mb-4 flex gap-4">
+				<div class="z-20 min-w-32 md:w-[30%]">
+					<Datepicker bind:value={selectedDate} inputClass="w-96" />
 				</div>
 
-				<div
-					class="flex-1 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-black"
-				>
-					{#if emptySchedules}
-						<p class="text-center text-gray-700 dark:text-gray-400">
-							{$t('schedule_for_stop.no_schedules_available')}
-						</p>
-					{:else}
-						<Accordion bind:this={accordionComponent}>
-							{#each schedules as schedule}
-								<AccordionItem>
-									{#snippet header()}
-										<span>{schedule.tripHeadsign}</span>
-									{/snippet}
-									<RouteScheduleTable {schedule} />
-								</AccordionItem>
-							{/each}
-						</Accordion>
-					{/if}
+				<div class="flex-1 text-right">
+					<button class="button" onclick={toggleAllRoutes}>
+						{allRoutesExpanded
+							? $t('schedule_for_stop.collapse_all_routes')
+							: $t('schedule_for_stop.show_all_routes')}
+					</button>
 				</div>
 			</div>
+
+			<div
+				class="flex-1 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-black"
+			>
+				{#if emptySchedules}
+					<p class="text-center text-gray-700 dark:text-gray-400">
+						{$t('schedule_for_stop.no_schedules_available')}
+					</p>
+				{:else}
+					<Accordion bind:this={accordionComponent}>
+						{#each schedules as schedule}
+							<AccordionItem>
+								{#snippet header()}
+									<span>{schedule.tripHeadsign}</span>
+								{/snippet}
+								<RouteScheduleTable {schedule} />
+							</AccordionItem>
+						{/each}
+					</Accordion>
+				{/if}
+			</div>
 		</div>
-	{/if}
+	</div>
 </StandalonePage>
