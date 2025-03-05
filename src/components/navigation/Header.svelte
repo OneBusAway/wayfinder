@@ -15,6 +15,9 @@
 	let linksContainer = $state(null);
 	let linksWidthCache = 0;
 
+	const THEME_SWITCHER_WIDTH = 56; // Width of the theme switcher component in pixels
+	const EXTRA_PADDING = 32; // Extra padding to account for padding and margins in pixels
+
 	let headerLinks = $state(null);
 
 	if (PUBLIC_NAV_BAR_LINKS) {
@@ -30,8 +33,7 @@
 
 		const navWidth = navContainer.clientWidth;
 		const logoWidth = navContainer.querySelector('.logo-container')?.clientWidth || 0;
-		const themeWidth = 48;
-		const availableWidth = navWidth - logoWidth - themeWidth - 32;
+		const availableWidth = navWidth - logoWidth - THEME_SWITCHER_WIDTH - EXTRA_PADDING;
 
 		let linksWidth = 0;
 		if (linksContainer) {
