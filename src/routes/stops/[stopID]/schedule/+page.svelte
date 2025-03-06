@@ -1,6 +1,5 @@
 <script>
 	import { page } from '$app/stores';
-	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import RouteScheduleTable from '$components/schedule-for-stop/RouteScheduleTable.svelte';
 	import StopPageHeader from '$components/stops/StopPageHeader.svelte';
 	import StandalonePage from '$components/StandalonePage.svelte';
@@ -9,7 +8,6 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import { Datepicker } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import { isLoading } from 'svelte-i18n';
 	import { t } from 'svelte-i18n';
 
 	let selectedDate = $state(new Date());
@@ -19,7 +17,6 @@
 	let stopName = $state('');
 	let stopId = $state('');
 	let stopDirection = $state('');
-	let loading = $state(true);
 	let accordionComponent = $state();
 	let allRoutesExpanded = $state(false);
 
@@ -29,7 +26,6 @@
 
 	async function fetchScheduleForStop(stopId, date) {
 		try {
-			loading = true;
 			emptySchedules = false;
 			const response = await fetch(`/api/oba/schedule-for-stop/${stopId}?date=${date}`);
 			if (!response.ok) throw new Error('Failed to fetch schedule for stop');
@@ -37,8 +33,6 @@
 			handleScheduleForStopResponse(scheduleForStop.data);
 		} catch (error) {
 			console.error('Error fetching schedules:', error);
-		} finally {
-			loading = false;
 		}
 	}
 
