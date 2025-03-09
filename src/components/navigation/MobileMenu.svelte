@@ -6,8 +6,8 @@
 </script>
 
 <div
-	class="fixed inset-0 z-50 flex flex-col items-center justify-center space-y-6 bg-white p-4 dark:bg-black"
-	transition:fly={{ x: 1000, duration: 300 }}
+	class="fixed top-0 right-0 w-50 z-50 shadow-lg flex flex-col items-center justify-center space-y-6 bg-white bg-opacity-90 p-4 dark:bg-black dark:bg-opacity-90"
+	transition:fly={{ x: 300, duration: 300 }}
 >
 	<button onclick={closeMenu} aria-label="Close Menu">
 		<svg
