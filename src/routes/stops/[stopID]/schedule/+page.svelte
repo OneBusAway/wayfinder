@@ -1,6 +1,5 @@
 <script>
 	import { page } from '$app/stores';
-	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import RouteScheduleTable from '$components/schedule-for-stop/RouteScheduleTable.svelte';
 	import StopPageHeader from '$components/stops/StopPageHeader.svelte';
 	import StandalonePage from '$components/StandalonePage.svelte';
@@ -9,7 +8,6 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import { Datepicker } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import { isLoading } from 'svelte-i18n';
 	import { t } from 'svelte-i18n';
 
 	let selectedDate = $state(new Date());
@@ -19,7 +17,6 @@
 	let stopName = $state('');
 	let stopId = $state('');
 	let stopDirection = $state('');
-	let loading = $state(true);
 	let accordionComponent = $state();
 	let allRoutesExpanded = $state(false);
 
@@ -29,7 +26,6 @@
 
 	async function fetchScheduleForStop(stopId, date) {
 		try {
-			loading = true;
 			emptySchedules = false;
 			const response = await fetch(`/api/oba/schedule-for-stop/${stopId}?date=${date}`);
 			if (!response.ok) throw new Error('Failed to fetch schedule for stop');
@@ -37,8 +33,6 @@
 			handleScheduleForStopResponse(scheduleForStop.data);
 		} catch (error) {
 			console.error('Error fetching schedules:', error);
-		} finally {
-			loading = false;
 		}
 	}
 
@@ -140,52 +134,48 @@
 </svelte:head>
 
 <StandalonePage>
-	{#if loading || $isLoading}
-		<LoadingSpinner />
-	{:else}
-		<StopPageHeader {stopName} {stopId} {stopDirection} />
+	<StopPageHeader {stopName} {stopId} {stopDirection} />
 
-		<div class="flex flex-col">
-			<div class="flex flex-1 flex-col">
-				<h2 class="mb-4 text-2xl font-bold text-gray-800">
-					{$t('schedule_for_stop.route_schedules')}
-				</h2>
+	<div class="flex flex-col">
+		<div class="flex flex-1 flex-col">
+			<h2 class="mb-4 text-2xl font-bold text-gray-800">
+				{$t('schedule_for_stop.route_schedules')}
+			</h2>
 
-				<div class="mb-4 flex gap-4">
-					<div class="z-20 min-w-32 md:w-[30%]">
-						<Datepicker bind:value={selectedDate} inputClass="w-96" />
-					</div>
-
-					<div class="flex-1 text-right">
-						<button class="button" onclick={toggleAllRoutes}>
-							{allRoutesExpanded
-								? $t('schedule_for_stop.collapse_all_routes')
-								: $t('schedule_for_stop.show_all_routes')}
-						</button>
-					</div>
+			<div class="mb-4 flex gap-4">
+				<div class="z-20 min-w-32 md:w-[30%]">
+					<Datepicker bind:value={selectedDate} inputClass="w-96" />
 				</div>
 
-				<div
-					class="flex-1 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-black"
-				>
-					{#if emptySchedules}
-						<p class="text-center text-gray-700 dark:text-gray-400">
-							{$t('schedule_for_stop.no_schedules_available')}
-						</p>
-					{:else}
-						<Accordion bind:this={accordionComponent}>
-							{#each schedules as schedule}
-								<AccordionItem>
-									{#snippet header()}
-										<span>{schedule.tripHeadsign}</span>
-									{/snippet}
-									<RouteScheduleTable {schedule} />
-								</AccordionItem>
-							{/each}
-						</Accordion>
-					{/if}
+				<div class="flex-1 text-right">
+					<button class="button" onclick={toggleAllRoutes}>
+						{allRoutesExpanded
+							? $t('schedule_for_stop.collapse_all_routes')
+							: $t('schedule_for_stop.show_all_routes')}
+					</button>
 				</div>
 			</div>
+
+			<div
+				class="flex-1 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-black"
+			>
+				{#if emptySchedules}
+					<p class="text-center text-gray-700 dark:text-gray-400">
+						{$t('schedule_for_stop.no_schedules_available')}
+					</p>
+				{:else}
+					<Accordion bind:this={accordionComponent}>
+						{#each schedules as schedule}
+							<AccordionItem>
+								{#snippet header()}
+									<span>{schedule.tripHeadsign}</span>
+								{/snippet}
+								<RouteScheduleTable {schedule} />
+							</AccordionItem>
+						{/each}
+					</Accordion>
+				{/if}
+			</div>
 		</div>
-	{/if}
+	</div>
 </StandalonePage>
