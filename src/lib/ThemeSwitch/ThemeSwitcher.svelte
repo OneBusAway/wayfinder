@@ -40,6 +40,7 @@
 			class="sr-only"
 			checked={darkMode}
 			onclick={handleThemeSwitch}
+			aria-label="Toggle theme"
 		/>
 		<label
 			for="theme-toggle"
