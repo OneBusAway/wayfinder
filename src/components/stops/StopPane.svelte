@@ -173,15 +173,18 @@
 						{#if routeShortNames()}
 							<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames().join(', ')}</h2>
 						{/if}
-						<div class="mt-auto flex justify-end">
-							<a
-								href={`/stops/${stop.id}/schedule`}
-								class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-secondary"
-								target="_blank"
-							>
-								{$t('schedule_for_stop.view_schedule')}
-							</a>
-						</div>
+
+						{#if tripSelected}
+							<div class="mt-auto flex justify-end">
+								<a
+									href={`/stops/${stop.id}/schedule`}
+									class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-secondary"
+									target="_blank"
+								>
+									{$t('schedule_for_stop.view_schedule')}
+								</a>
+							</div>
+						{/if}
 					</div>
 				</div>
 
