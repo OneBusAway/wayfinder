@@ -7,6 +7,7 @@
 
 	function handleStopItemClick(stop) {
 		mapProvider.flyTo(stop.lat, stop.lon, 18);
+		mapProvider.openStopMarker(stop);
 	}
 
 	function title() {
