@@ -6,6 +6,9 @@ const config = {
 	kit: {
 		// https://svelte.dev/docs/kit/adapter-node
 		adapter: adapter(),
+		files: {
+			assets: 'src/static'
+		},
 		alias: {
 			$components: './src/components',
 			$config: './src/config',
