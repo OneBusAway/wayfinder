@@ -12,8 +12,14 @@ const DIRECTIONS = [
 ];
 
 function getDirectionFromOrientation(orientation) {
-	const nearestDirection = DIRECTIONS.reduce((prev, curr) =>
-		Math.abs(curr.angle - orientation) < Math.abs(prev.angle - orientation) ? curr : prev
+	if (DIRECTIONS.length === 0) {
+		return null;
+	}
+
+	const nearestDirection = DIRECTIONS.reduce(
+		(prev, curr) =>
+			Math.abs(curr.angle - orientation) < Math.abs(prev.angle - orientation) ? curr : prev,
+		DIRECTIONS[0]
 	);
 	return nearestDirection.icon;
 }
