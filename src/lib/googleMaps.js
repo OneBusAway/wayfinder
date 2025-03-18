@@ -1,5 +1,3 @@
-import { COLORS } from '$lib/colors';
-
 /**
  * Loads the Google Maps JavaScript library.
  * @param {string} apiKey - The API key for accessing the Google Maps API.
