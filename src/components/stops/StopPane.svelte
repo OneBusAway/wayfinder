@@ -39,21 +39,37 @@
 	let currentStopSurvey = $state(null);
 	let remainingSurveyQuestions = $state([]);
 
+	let abortController = null;
 	async function loadData(stopID) {
-		loading = true;
-		const response = await fetch(`/api/oba/arrivals-and-departures-for-stop/${stopID}`);
-
-		if (response.ok) {
-			arrivalsAndDeparturesResponse = await response.json();
-			arrivalsAndDepartures = arrivalsAndDeparturesResponse.data.entry;
-			let situations = arrivalsAndDeparturesResponse.data.references.situations || [];
-			serviceAlerts = filterActiveAlerts(situations);
-		} else {
-			error = 'Unable to fetch arrival/departure data';
+    // Cancel the previous request if it exists
+		if (abortController) {
+			abortController.abort();
 		}
-		loading = false;
-	}
+		abortController = new AbortController();
 
+		loading = true;
+		try {
+			const response = await fetch(`/api/oba/arrivals-and-departures-for-stop/${stopID}`, {
+				signal: abortController.signal
+			});
+
+			if (!response.ok) {
+				throw new Error('Unable to fetch arrival/departure data');
+			}
+
+			const data = await response.json();
+			arrivalsAndDeparturesResponse = data;
+			arrivalsAndDepartures = data.data.entry;
+			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
+			error = null; // Clear previous errors if successful
+		} catch (err) {
+			if (err.name !== 'AbortError') {
+				error = 'Unable to fetch arrival/departure data';
+			}
+		} finally {
+			loading = false;
+		}
+	}
 	function resetDataFetchInterval(stopID) {
 		if (interval) clearInterval(interval);
 
