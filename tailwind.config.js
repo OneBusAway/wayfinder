@@ -6,9 +6,6 @@ dotenv.config();
 
 const basePrimary = process.env.PUBLIC_APP_PRIMARY_COLOR || '#78aa36';
 
-console.log("PUBLIC_APP_PRIMARY_COLOR:", process.env.PUBLIC_APP_PRIMARY_COLOR);
-console.log("PUBLIC_APP_SECONDARY_COLOR:", process.env.PUBLIC_APP_SECONDARY_COLOR);
-
 /** @type {import('tailwindcss').Config} */
 export default {
 	content: [
