@@ -12,6 +12,6 @@ export default defineConfig({
 			all: true,
 			exclude: ['**/tests', '.svelte-kit', 'build', 'coverage', 'node_modules']
 		},
-		environment: 'jsdom',
+		environment: 'jsdom'
 	}
 });
