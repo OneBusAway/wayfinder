@@ -108,7 +108,6 @@
 		window.dispatchEvent(event);
 	}
 
-	// only gets called when going trip planner -> stops and stations, not vice versa
 	function handleTabSwitch() {
 		const event = new CustomEvent('tabSwitched');
 		window.dispatchEvent(event);
@@ -199,7 +198,7 @@
 			</div>
 		</TabItem>
 
-		{#if true}
+		{#if env.PUBLIC_OTP_SERVER_URL}
 			<TabItem title={$t('tabs.plan_trip')} on:click={handlePlanTripTabClick} disabled={!mapLoaded}>
 				<TripPlan {mapProvider} {handleTripPlan} />
 			</TabItem>
