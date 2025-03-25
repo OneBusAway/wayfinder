@@ -20,14 +20,12 @@
 	import { analyticsDistanceToStop } from '$lib/Analytics/plausibleUtils';
 	import SurveyLauncher from '$components/surveys/SurveyLauncher.svelte';
 
+	let currentModal = $state(null);
 	let stop = $state();
 	let selectedTrip = $state(null);
 	let showRoute = $state(false);
 	let selectedRoute = $state(null);
 	let showRouteMap = $state(false);
-	let showAllRoutesModal = $state(false);
-	let showTripPlanModal = $state(false);
-	let showRouteModal = $state();
 	let mapProvider = $state(null);
 	let currentIntervalId = null;
 	let alert = $state(null);
@@ -43,20 +41,10 @@
 
 	let currentUserLocation = $state($userLocation);
 
-	$effect(() => {
-		if (showRouteModal && showAllRoutesModal) {
-			showAllRoutesModal = false;
-		}
-
-		if (showAllRoutesModal) {
-			showRouteModal = false;
-		}
-	});
-
 	function handleStopMarkerSelect(stopData) {
+		currentModal = 'stop';
 		stop = stopData;
 		pushState(`/stops/${stop.id}`);
-		showAllRoutesModal = false;
 		loadSurveys(stop, getUserId());
 
 		if (currentHighlightedStopId !== null) {
@@ -75,8 +63,7 @@
 	}
 
 	function handleViewAllRoutes() {
-		showRouteModal = false;
-		showAllRoutesModal = true;
+		currentModal = 'allRoutes';
 	}
 
 	function handleModalRouteClick(route) {
@@ -84,7 +71,7 @@
 			detail: { route }
 		});
 		window.dispatchEvent(customEvent);
-		showAllRoutesModal = false;
+		currentModal = null;
 	}
 
 	function closePane() {
@@ -100,11 +87,9 @@
 		selectedTrip = null;
 		selectedRoute = null;
 		showRoute = false;
-		showRouteModal = false;
-		showAllRoutesModal = false;
 		mapProvider.unHighlightMarker(currentHighlightedStopId);
 		currentHighlightedStopId = null;
-		showTripPlanModal = false;
+		currentModal = null;
 	}
 
 	function tripSelected(event) {
@@ -139,7 +124,7 @@
 		polylines = routeData.polylines;
 		stops = routeData.stops;
 		currentIntervalId = routeData.currentIntervalId;
-		showRouteModal = true;
+		currentModal = 'route';
 		analytics.reportRouteClicked(selectedRoute.id);
 	}
 
@@ -184,7 +169,7 @@
 		if (!tripItineraries) {
 			console.error('No itineraries found', 404);
 		}
-		showTripPlanModal = true;
+		currentModal = 'tripPlanner';
 	}
 
 	onMount(() => {
@@ -196,7 +181,7 @@
 
 		if (browser) {
 			window.addEventListener('tabSwitched', () => {
-				showTripPlanModal = false;
+				currentModal = null;
 			});
 
 			window.addEventListener('planTripTabClicked', () => {
@@ -233,19 +218,13 @@
 			</SearchPane>
 
 			<div class="mt-4 flex-1">
-				{#if stop}
+				{#if currentModal === 'stop'}
 					<StopModal {closePane} {tripSelected} {handleUpdateRouteMap} {stop} />
-				{/if}
-
-				{#if showRouteModal}
+				{:else if currentModal === 'route'}
 					<RouteModal {closePane} {mapProvider} {stops} {selectedRoute} />
-				{/if}
-
-				{#if showAllRoutesModal}
+				{:else if currentModal === 'allRoutes'}
 					<ViewAllRoutesModal {closePane} {handleModalRouteClick} />
-				{/if}
-
-				{#if showTripPlanModal}
+				{:else if currentModal === 'tripPlan'}
 					<TripPlanModal
 						{mapProvider}
 						itineraries={tripItineraries}
@@ -253,7 +232,7 @@
 						{toMarker}
 						loading={loadingItineraries}
 						{closePane}
-					/>
+					/>}
 				{/if}
 			</div>
 		</div>
