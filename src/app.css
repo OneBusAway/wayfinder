@@ -73,4 +73,30 @@
 		left: auto;
 		right: 1.25rem;
 	}
+
+	.collapsible-list {
+		@apply flex flex-col;
+	}
+
+	.collapsible-list__item {
+		@apply mb-2 p-2 border border-gray-300 rounded-md;
+	}
+
+	@media (max-width: 768px) {
+		.collapsible-list__item {
+			@apply mb-1 p-1;
+		}
+	}
+
+	@media (hover: hover) {
+		.collapsible-list__item:hover {
+			@apply bg-gray-100;
+		}
+	}
+
+	@media (pointer: coarse) {
+		.collapsible-list__item {
+			@apply p-3;
+		}
+	}
 }
