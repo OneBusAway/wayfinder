@@ -61,8 +61,46 @@
 		});
 	}
 
+	let previouslyFocusedElement = null;
+
+	function trapFocus(event) {
+		const focusableElements = event.target.querySelectorAll(
+			'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]'
+		);
+		const firstElement = focusableElements[0];
+		const lastElement = focusableElements[focusableElements.length - 1];
+
+		if (event.shiftKey) {
+			if (document.activeElement === firstElement) {
+				lastElement.focus();
+				event.preventDefault();
+			}
+		} else {
+			if (document.activeElement === lastElement) {
+				firstElement.focus();
+				event.preventDefault();
+			}
+		}
+	}
+
+	function handleModalOpen() {
+		previouslyFocusedElement = document.activeElement;
+		const modalElement = document.querySelector('.modal-pane');
+		modalElement.addEventListener('keydown', trapFocus);
+		modalElement.focus();
+	}
+
+	function handleModalClose() {
+		const modalElement = document.querySelector('.modal-pane');
+		modalElement.removeEventListener('keydown', trapFocus);
+		if (previouslyFocusedElement) {
+			previouslyFocusedElement.focus();
+		}
+	}
+
 	onMount(() => {
 		drawRoute();
+		handleModalOpen();
 	});
 	onDestroy(() => {
 		mapProvider.removePinMarker(fromMarker);
@@ -73,10 +111,18 @@
 				mapProvider.removePolyline(await polyline);
 			});
 		}
+		handleModalClose();
 	});
 </script>
 
-<ModalPane {closePane} title={$t('trip-planner.trip_itineraries')}>
+<ModalPane
+	{closePane}
+	title={$t('trip-planner.trip_itineraries')}
+	on:open={handleModalOpen}
+	on:close={handleModalClose}
+	aria-labelledby="trip-plan-modal-title"
+	aria-describedby="trip-plan-modal-description"
+>
 	{#if loading}
 		<LoadingSpinner />
 	{/if}
