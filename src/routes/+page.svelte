@@ -41,8 +41,15 @@
 
 	let currentUserLocation = $state($userLocation);
 
+	const Modal = {
+		STOP: 'stop',
+		ROUTE: 'route',
+		ALL_ROUTES: 'allRoutes',
+		TRIP_PLANNER: 'tripPlanner'
+	};
+
 	function handleStopMarkerSelect(stopData) {
-		currentModal = 'stop';
+		currentModal = Modal.STOP;
 		stop = stopData;
 		pushState(`/stops/${stop.id}`);
 		loadSurveys(stop, getUserId());
@@ -63,7 +70,7 @@
 	}
 
 	function handleViewAllRoutes() {
-		currentModal = 'allRoutes';
+		currentModal = Modal.ALL_ROUTES;
 	}
 
 	function handleModalRouteClick(route) {
@@ -124,7 +131,7 @@
 		polylines = routeData.polylines;
 		stops = routeData.stops;
 		currentIntervalId = routeData.currentIntervalId;
-		currentModal = 'route';
+		currentModal = Modal.ROUTE;
 		analytics.reportRouteClicked(selectedRoute.id);
 	}
 
@@ -169,7 +176,7 @@
 		if (!tripItineraries) {
 			console.error('No itineraries found', 404);
 		}
-		currentModal = 'tripPlanner';
+		currentModal = Modal.TRIP_PLANNER;
 	}
 
 	onMount(() => {
@@ -218,13 +225,13 @@
 			</SearchPane>
 
 			<div class="mt-4 flex-1">
-				{#if currentModal === 'stop'}
+				{#if currentModal === Modal.STOP}
 					<StopModal {closePane} {tripSelected} {handleUpdateRouteMap} {stop} />
-				{:else if currentModal === 'route'}
+				{:else if currentModal === Modal.ROUTE}
 					<RouteModal {closePane} {mapProvider} {stops} {selectedRoute} />
-				{:else if currentModal === 'allRoutes'}
+				{:else if currentModal === Modal.ALL_ROUTES}
 					<ViewAllRoutesModal {closePane} {handleModalRouteClick} />
-				{:else if currentModal === 'tripPlan'}
+				{:else if currentModal === Modal.TRIP_PLANNER}
 					<TripPlanModal
 						{mapProvider}
 						itineraries={tripItineraries}
