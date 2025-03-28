@@ -41,7 +41,7 @@
 
 	let abortController = null;
 	async function loadData(stopID) {
-    // Cancel the previous request if it exists
+		// Cancel the previous request if it exists
 		if (abortController) {
 			abortController.abort();
 		}
