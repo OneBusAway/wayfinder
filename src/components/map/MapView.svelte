@@ -60,50 +60,37 @@
 		return mapProvider.getBoundingBox();
 	}
 
-	async function loadStopsForLocation(lat, lng, zoomLevel, firstCall, signal) {
-		try {
-			if (firstCall) {
-				const response = await fetch(
-					`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&radius=2500`,
-					{ signal }
-				);
-				if (!response.ok) {
-					throw new Error('Failed to fetch locations');
-				}
-				return await response.json();
-			}
-
-			const boundingBox = getBoundingBox();
-			const key = cacheKey(zoomLevel, boundingBox);
-
-			if (stopsCache.has(key)) {
-				console.debug('Stop cache hit:', key);
-				return stopsCache.get(key);
-			} else {
-				console.debug('Stop cache miss:', key);
-			}
-
-			const response = await fetch(
-				`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&latSpan=${boundingBox.north - boundingBox.south}&lngSpan=${boundingBox.east - boundingBox.west}&radius=1500`,
-				{ signal }
-			);
-
+	async function loadStopsForLocation(lat, lng, zoomLevel, firstCall = false) {
+		if (firstCall) {
+			const response = await fetch(`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&radius=2500`);
 			if (!response.ok) {
 				throw new Error('Failed to fetch locations');
 			}
-
-			const stopsForLocation = await response.json();
-			stopsCache.set(key, stopsForLocation);
-
-			return stopsForLocation;
-		} catch (error) {
-			if (error.name === 'AbortError') {
-				console.warn('Fetch request was aborted');
-			} else {
-				console.error('Error fetching stops:', error);
-			}
-			return null;
+			return await response.json();
 		}
+
+		const boundingBox = getBoundingBox();
+		const key = cacheKey(zoomLevel, boundingBox);
+
+		if (stopsCache.has(key)) {
+			console.debug('Stop cache hit: ', key);
+			return stopsCache.get(key);
+		} else {
+			console.debug('Stop cache miss: ', key);
+		}
+
+		const response = await fetch(
+			`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&latSpan=${boundingBox.north - boundingBox.south}&lngSpan=${boundingBox.east - boundingBox.west}&radius=1500`
+		);
+
+		if (!response.ok) {
+			throw new Error('Failed to fetch locations');
+		}
+
+		const stopsForLocation = await response.json();
+		stopsCache.set(key, stopsForLocation);
+
+		return stopsForLocation;
 	}
 
 	async function initMap() {
@@ -138,36 +125,19 @@
 		}
 	}
 
-	let abortController = new AbortController();
-
 	async function loadStopsAndAddMarkers(lat, lng, firstCall = false, zoomLevel = 15) {
-		if (abortController) {
-			abortController.abort();
-		}
+		const stopsData = await loadStopsForLocation(lat, lng, zoomLevel, firstCall);
+		const newStops = stopsData.data.list;
+		const routeReference = stopsData.data.references.routes || [];
 
-		abortController = new AbortController(); // Create a new controller
-		const signal = abortController.signal;
+		const routeLookup = new Map(routeReference.map((route) => [route.id, route]));
 
-		try {
-			const stopsData = await loadStopsForLocation(lat, lng, zoomLevel, firstCall, signal);
-			if (!stopsData) return;
+		// merge the stops routeIds with the route data
+		newStops.forEach((stop) => {
+			stop.routes = stop.routeIds.map((routeId) => routeLookup.get(routeId)).filter(Boolean);
+		});
 
-			const newStops = stopsData.data.list;
-			const routeReference = stopsData.data.references.routes || [];
-			const routeLookup = new Map(routeReference.map((route) => [route.id, route]));
-
-			newStops.forEach((stop) => {
-				stop.routes = stop.routeIds.map((routeId) => routeLookup.get(routeId)).filter(Boolean);
-			});
-
-			allStops = [...new Map([...allStops, ...newStops].map((stop) => [stop.id, stop])).values()];
-		} catch (error) {
-			if (error.name === 'AbortError') {
-				console.warn('Request aborted intentionally');
-			} else {
-				console.error('Error loading stops:', error);
-			}
-		}
+		allStops = [...new Map([...allStops, ...newStops].map((stop) => [stop.id, stop])).values()];
 	}
 
 	function clearAllMarkers() {
