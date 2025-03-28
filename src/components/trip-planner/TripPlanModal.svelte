@@ -61,7 +61,7 @@
 		});
 	}
 
-	onMount(() => {
+	$effect(() => {
 		drawRoute();
 	});
 	onDestroy(() => {
