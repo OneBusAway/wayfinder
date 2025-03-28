@@ -139,19 +139,19 @@
 
 		loading = true;
 		try {
-			if (fromMarker) {
-				mapProvider.removePinMarker(fromMarker);
-			}
-			if (toMarker) {
-				mapProvider.removePinMarker(toMarker);
-			}
-
-			fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
-			toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
-
 			const data = await fetchTripPlan(selectedFrom, selectedTo);
 
 			if (data) {
+				if (fromMarker) {
+					mapProvider.removePinMarker(fromMarker);
+				}
+				if (toMarker) {
+					mapProvider.removePinMarker(toMarker);
+				}
+
+				fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
+				toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
+
 				const tripPlanData = {
 					data,
 					fromMarker,
