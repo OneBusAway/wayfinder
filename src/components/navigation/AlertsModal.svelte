@@ -4,6 +4,7 @@
 	import { t } from 'svelte-i18n';
 
 	let showModal = $state(true);
+	let previouslyFocusedElement = null;
 
 	let { alert } = $props();
 
@@ -27,10 +28,53 @@
 	function getUrlTranslation() {
 		return getTranslation(alert.url.translation);
 	}
+
+	function trapFocus(event) {
+		const focusableElements = event.target.querySelectorAll(
+			'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]'
+		);
+		const firstElement = focusableElements[0];
+		const lastElement = focusableElements[focusableElements.length - 1];
+
+		if (event.shiftKey) {
+			if (document.activeElement === firstElement) {
+				lastElement.focus();
+				event.preventDefault();
+			}
+		} else {
+			if (document.activeElement === lastElement) {
+				firstElement.focus();
+				event.preventDefault();
+			}
+		}
+	}
+
+	function handleModalOpen() {
+		previouslyFocusedElement = document.activeElement;
+		const modalElement = document.querySelector('.modal-pane');
+		modalElement.addEventListener('keydown', trapFocus);
+		modalElement.focus();
+	}
+
+	function handleModalClose() {
+		const modalElement = document.querySelector('.modal-pane');
+		modalElement.removeEventListener('keydown', trapFocus);
+		if (previouslyFocusedElement) {
+			previouslyFocusedElement.focus();
+		}
+	}
 </script>
 
-<Modal title={getHeaderTextTranslation()} bind:open={showModal} autoclose>
-	<p class="text-base leading-relaxed text-gray-500 dark:text-gray-200">
+<Modal
+	title={getHeaderTextTranslation()}
+	bind:open={showModal}
+	autoclose
+	on:open={handleModalOpen}
+	on:close={handleModalClose}
+	aria-labelledby="alert-modal-title"
+	aria-describedby="alert-modal-description"
+>
+	<p id="alert-modal-description" class="text-base leading-relaxed text-gray-500 dark:text-gray-200">
 		{getBodyTextTranslation()}
 	</p>
 	{#snippet footer()}
