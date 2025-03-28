@@ -76,21 +76,11 @@
 		try {
 			const response = await geocodeLocation(suggestion.name);
 			if (isFrom) {
-				// if (fromMarker) {
-				// 	mapProvider.removePinMarker(fromMarker);
-				// }
-
 				selectedFrom = response.location.geometry.location;
-				// fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
 				fromPlace = suggestion.name;
 				fromResults = [];
 			} else {
-				// if (toMarker) {
-				// 	mapProvider.removePinMarker(toMarker);
-				// }
-
 				selectedTo = response.location.geometry.location;
-				// toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
 				toPlace = suggestion.name;
 				toResults = [];
 			}
@@ -106,12 +96,10 @@
 			fromPlace = '';
 			fromResults = [];
 			selectedFrom = null;
-			// mapProvider.removePinMarker(fromMarker);
 		} else {
 			toPlace = '';
 			toResults = [];
 			selectedTo = null;
-			// mapProvider.removePinMarker(toMarker);
 		}
 	}
 
