@@ -66,8 +66,8 @@
 	{/if}
 
 	{#if routes.length > 0}
-		<div>
-			<div class="sticky top-0">
+		<div class="flex flex-col h-full">
+			<div class="sticky top-0 p-2 bg-white dark:bg-black">
 				<input
 					type="text"
 					placeholder={$t('search.search_for_routes')}
@@ -92,7 +92,7 @@
 				</svg>
 			</div>
 
-			<div>
+			<div class="flex-1 overflow-y-auto p-2">
 				{#if filteredRoutes.length > 0}
 					{#each filteredRoutes as route}
 						<RouteItem {route} {handleModalRouteClick} />
