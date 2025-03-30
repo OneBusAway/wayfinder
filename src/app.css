@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
 @layer components {
 	.h1 {
 		@apply mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-300;
@@ -73,4 +75,6 @@
 		left: auto;
 		right: 1.25rem;
 	}
+	
+	
 }

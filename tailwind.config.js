@@ -36,6 +36,6 @@ export default {
 		}
 	},
 
-	plugins: [require('@tailwindcss/forms'), flowbitePlugin],
+	plugins: [require('@tailwindcss/forms'), flowbitePlugin , require('tailwind-scrollbar')],
 	darkMode: 'class'
 };

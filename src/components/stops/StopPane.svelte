@@ -167,10 +167,12 @@
 	});
 </script>
 
-{#if $isLoading}
+
+
+<div class='flex h-[700px] w-full flex-col  overflow-hidden '>{#if $isLoading}
 	<p>Loading...</p>
 {:else}
-	<div>
+	<div class='flex-1 overflow-auto scrollbar-none'>
 		{#if loading && isLoading && tripSelected}
 			<LoadingSpinner />
 		{/if}
@@ -180,18 +182,49 @@
 		{/if}
 		{#if arrivalsAndDepartures}
 			<div class="space-y-4">
+		 <div class="relative rounded-md">
+    <!-- Embedded Map with Marker  -->
+    <iframe 
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10000.0!2d{stop.lon}!3d{stop.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s{stop.lat}%2C{stop.lon}!5e0!3m2!1sen!2suk!4v1644558351325!5m2!1sen!2suk"
+        width="100%"
+        height="300"
+        style="border:0;"
+        loading="lazy"
+        class="rounded"
+        title="Google Maps Location with Marker">
+        allow="gesture"
+    </iframe> 
+    
+    
+    <!-- End Embedded Map -->
+    
+           {#if !tripSelected}
+                <div class="absolute top-2 right-2">
+                    <a
+                        href={`/stops/${stop.id}/schedule`}
+                        class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-secondary"
+                        target="_blank"
+                    >
+                        {$t('schedule_for_stop.view_schedule')}
+                    </a>
+                    
+                </div>
+                {/if}
+            
+</div>
 				<div>
 					<div
-						class="relative flex flex-col gap-y-1 rounded-lg bg-brand-secondary bg-opacity-80 p-4"
+						class="relative flex flex-col gap-y-1 rounded-lg bg-brand-secondary bg-opacity-80 p-4 "
 					>
 						<h1 class="h1 mb-0 text-white">{stop.name}</h1>
+						
 						<h2 class="h2 mb-0 text-white">{$t('stop')} #{stop.id}</h2>
 						{#if routeShortNames()}
 							<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames().join(', ')}</h2>
 						{/if}
 
 						{#if tripSelected}
-							<div class="mt-auto flex justify-end">
+							<div class="mt-auto flex justify-end"> 
 								<a
 									href={`/stops/${stop.id}/schedule`}
 									class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-secondary"
@@ -253,4 +286,20 @@
 			</div>
 		{/if}
 	</div>
-{/if}
+{/if}</div>
+
+
+
+
+<style>
+    /* Hide scrollbar for Chrome, Safari and Opera */
+      .scrollbar-none::-webkit-scrollbar {
+        display: none;
+      }
+    
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .scrollbar-none {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+    </style>
