@@ -61,9 +61,8 @@
 		});
 	}
 
-	$effect(() => {
-		drawRoute();
-	});
+	$effect(drawRoute);
+
 	onDestroy(() => {
 		mapProvider.removePinMarker(fromMarker);
 		mapProvider.removePinMarker(toMarker);
