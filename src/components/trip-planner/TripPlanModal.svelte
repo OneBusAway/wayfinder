@@ -3,7 +3,7 @@
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import ItineraryDetails from './ItineraryDetails.svelte';
 	import ItineraryTab from './ItineraryTab.svelte';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import { t } from 'svelte-i18n';
 
 	/**
