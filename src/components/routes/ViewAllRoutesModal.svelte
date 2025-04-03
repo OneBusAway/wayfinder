@@ -66,8 +66,8 @@
 	{/if}
 
 	{#if routes.length > 0}
-		<div class="flex flex-col h-full">
-			<div class="sticky top-0 p-2 bg-white dark:bg-black">
+		<div class="flex h-full flex-col">
+			<div class="sticky top-0 bg-white p-2 dark:bg-black">
 				<input
 					type="text"
 					placeholder={$t('search.search_for_routes')}
