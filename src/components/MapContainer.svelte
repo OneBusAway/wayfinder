@@ -6,19 +6,21 @@
 	import FullPageLoadingSpinner from '$components/FullPageLoadingSpinner.svelte';
 	import { env } from '$env/dynamic/public';
 	import { PUBLIC_OBA_MAP_PROVIDER } from '$env/static/public';
-	import { onMount } from 'svelte';
 	import { MapSource } from './../config/mapSource.js';
-
-	let apiKey = env.PUBLIC_OBA_GOOGLE_MAPS_API_KEY;
+	
+	
 	let { handleStopMarkerSelect, mapProvider = $bindable(), ...restProps } = $props();
-
-	onMount(() => {
+	
+	// memoize provider creation to avoid unnecessary instantiations 🙅
+	$effect(() => {
+		const apiKey = env.PUBLIC_OBA_GOOGLE_MAPS_API_KEY;
+		
 		if (PUBLIC_OBA_MAP_PROVIDER === MapSource.Google) {
 			mapProvider = new GoogleMapProvider(apiKey, handleStopMarkerSelect);
 		} else if (PUBLIC_OBA_MAP_PROVIDER === MapSource.OpenStreetMap) {
 			mapProvider = new OpenStreetMapProvider(handleStopMarkerSelect);
 		} else {
-			console.error('Unknown map provider:');
+			console.error('Unknown map provider:', PUBLIC_OBA_MAP_PROVIDER);
 		}
 	});
 </script>

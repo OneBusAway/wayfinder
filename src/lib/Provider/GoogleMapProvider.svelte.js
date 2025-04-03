@@ -1,4 +1,4 @@
-import { loadGoogleMapsLibrary, createMap, nightModeStyles } from '$lib/googleMaps';
+import { loadGoogleMapsLibrary, nightModeStyles } from '$lib/googleMaps';
 import StopMarker from '$components/map/StopMarker.svelte';
 import { faBus } from '@fortawesome/free-solid-svg-icons';
 import { COLORS } from '$lib/colors';
@@ -19,43 +19,111 @@ export default class GoogleMapProvider {
 		this.vehicleMarkers = [];
 		this.markersMap = new Map();
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
+		this.overlays = new Set(); 
+		
+		// Pre-create container for InfoWindows to reduce DOM operations 
+		this.popupContainer = document.createElement('div');
+		document.body.appendChild(this.popupContainer);
 	}
 
 	async initMap(element, options) {
-		// Load the Google Maps library
-		loadGoogleMapsLibrary(this.apiKey);
-
-		// Wait for the Google Maps API to be fully loaded
-		await new Promise((resolve) => {
-			const checkGoogleMaps = () => {
+		
+		const googleMapsPromise = new Promise((resolve) => {
+			
+			if (window.google && window.google.maps) {
+				resolve();
+				return;
+			}
+			
+			
+			loadGoogleMapsLibrary(this.apiKey);
+			
+			
+			const observer = new MutationObserver(() => {
 				if (window.google && window.google.maps) {
+					observer.disconnect();
 					resolve();
-				} else {
-					setTimeout(checkGoogleMaps, 100);
 				}
-			};
-			checkGoogleMaps();
+			});
+			
+			observer.observe(document.head, { childList: true, subtree: true });
+			
+			// Fallback timeout check - limit to 5 seconds
+			setTimeout(() => {
+				const checkGoogleMaps = () => {
+					if (window.google && window.google.maps) {
+						observer.disconnect();
+						resolve();
+					} else {
+						setTimeout(checkGoogleMaps, 50); 
+					}
+				};
+				checkGoogleMaps();
+			}, 100);
 		});
 
-		// Use the createMap function from googleMaps.js
-		this.map = await createMap({
-			element,
-			lat: options.lat,
-			lng: options.lng
-		});
+		await googleMapsPromise;
+		
+	
+		const mapOptions = {
+			center: { lat: options.lat, lng: options.lng },
+			zoom: 15,
+			disableDefaultUI: false,
+			clickableIcons: false, 
+			gestureHandling: 'greedy',
+			maxZoom: 20,
+			minZoom: 3,
+			zoomControl: true,
+			mapTypeControl: false,
+			scaleControl: true,
+			streetViewControl: false,
+			rotateControl: false,
+			fullscreenControl: true,
+			optimized: true, 
+			tilt: 0 
+		};
+		
+		this.map = new google.maps.Map(element, mapOptions);
+		
+		
+		google.maps.importLibrary('geometry');
+		
+		return this.map;
 	}
 
 	eventListeners(mapInstance, debouncedLoadMarkers) {
-		mapInstance.addListener('dragend', debouncedLoadMarkers);
-		mapInstance.addListener('zoom_changed', debouncedLoadMarkers);
-		mapInstance.addListener('center_changed', debouncedLoadMarkers);
+	
+		let lastCenter = mapInstance.getCenter();
+		let lastZoom = mapInstance.getZoom();
+		let debounceTimeout;
+		
+		const handleMapChange = () => {
+			const currentCenter = mapInstance.getCenter();
+			const currentZoom = mapInstance.getZoom();
+			
+			
+			const centerChanged = Math.abs(currentCenter.lat() - lastCenter.lat()) > 0.0001 || 
+								 Math.abs(currentCenter.lng() - lastCenter.lng()) > 0.0001;
+			const zoomChanged = currentZoom !== lastZoom;
+			
+			if (centerChanged || zoomChanged) {
+				lastCenter = currentCenter;
+				lastZoom = currentZoom;
+				
+				clearTimeout(debounceTimeout);
+				debounceTimeout = setTimeout(debouncedLoadMarkers, 150);
+			}
+		};
+		
+		// Use idle event which fires once after all movement completes, reducing callback frequency
+		mapInstance.addListener('idle', handleMapChange);
 	}
 
 	addMarker(options) {
 		try {
+			// Reuse container for better performance
 			const container = document.createElement('div');
-			document.body.appendChild(container);
-
+			
 			const props = $state({
 				stop: options.stop,
 				icon: options.icon || faBus,
@@ -71,22 +139,31 @@ export default class GoogleMapProvider {
 			this.markersMap.set(options.stop.id, marker);
 
 			const overlay = new google.maps.OverlayView();
-			overlay.onAdd = function () {
+			overlay.onAdd = function() {
 				this.getPanes().overlayMouseTarget.appendChild(container);
 			};
-			overlay.draw = function () {
+			
+			
+			overlay.draw = function() {
 				const projection = this.getProjection();
 				const position = projection.fromLatLngToDivPixel(options.position);
-				container.style.left = position.x - 20 + 'px';
-				container.style.top = position.y - 20 + 'px';
+				container.style.transform = `translate(${position.x - 20}px, ${position.y - 20}px)`;
 				container.style.position = 'absolute';
+				container.style.willChange = 'transform'; // Hint for browser optimization
 				container.style.zIndex = '1000';
 			};
-			overlay.onRemove = function () {
-				container.parentNode.removeChild(container);
+			
+			overlay.onRemove = function() {
+				unmount(marker);
+				if (container.parentNode) {
+					container.parentNode.removeChild(container);
+				}
 			};
+			
 			overlay.setMap(this.map);
-			return { overlay, element: container };
+			this.overlays.add(overlay);
+			
+			return { overlay, element: container, componentInstance: marker };
 		} catch (error) {
 			console.error('Error adding marker:', error);
 			return null;
@@ -99,46 +176,60 @@ export default class GoogleMapProvider {
 		if (markerObj.marker) {
 			markerObj.marker.setMap(null);
 		}
+		
 		if (markerObj.overlay) {
+			this.overlays.delete(markerObj.overlay);
 			markerObj.overlay.setMap(null);
 		}
-		if (markerObj.element && markerObj.element.parentNode) {
-			markerObj.element.parentNode.removeChild(markerObj.element);
+		
+		if (markerObj.componentInstance) {
+			unmount(markerObj.componentInstance);
 		}
 	}
 
 	addStopMarker(stop, stopTime = null) {
-		const marker = new google.maps.Marker({
-			position: { lat: stop.lat, lng: stop.lon },
-			map: this.map,
-			icon: {
+		
+		if (!this.stopIconDef) {
+			this.stopIconDef = {
 				path: google.maps.SymbolPath.CIRCLE,
 				scale: 5,
 				fillColor: '#FFFFFF',
 				fillOpacity: 1,
 				strokeWeight: 1,
-				strokeColor: '#000000'
-			}
+				strokeColor: '#000000',
+				optimized: true
+			};
+		}
+		
+		const marker = new google.maps.Marker({
+			position: { lat: stop.lat, lng: stop.lon },
+			map: this.map,
+			icon: this.stopIconDef,
+			optimized: true 
 		});
 
 		this.stopsMap.set(stop.id, stop);
 
-		marker.addListener('click', () => this.openStopMarker(stop, stopTime));
+		
+		const clickHandler = this.createStopClickHandler(stop, stopTime);
+		marker.addListener('click', clickHandler);
 
 		this.markersMap.set(stop.id, marker);
 		this.stopMarkers.push(marker);
+		
+		return marker;
+	}
+	
+	createStopClickHandler(stop, stopTime) {
+		return () => this.openStopMarker(stop, stopTime);
 	}
 
 	openStopMarker(stop, stopTime = null) {
-		if (this.globalInfoWindow) {
-			this.globalInfoWindow.close();
-		}
+		this.cleanupInfoWindow();
 
-		if (this.popupContentComponent) {
-			unmount(this.popupContentComponent);
-		}
-
-		const popupContainer = document.createElement('div');
+	
+		const popupContainer = this.popupContainer;
+		popupContainer.innerHTML = '';
 
 		this.popupContentComponent = mount(PopupContent, {
 			target: popupContainer,
@@ -159,119 +250,169 @@ export default class GoogleMapProvider {
 	highlightMarker(stopId) {
 		const marker = this.markersMap.get(stopId);
 		if (!marker) return;
-
-		marker.props.isHighlighted = true;
+		
+		if (marker.props) {
+			marker.props.isHighlighted = true;
+		} else if (marker instanceof google.maps.Marker) {
+		
+			marker.setZIndex(1001);
+			if (!this.highlightedIconDef) {
+				this.highlightedIconDef = {
+					path: google.maps.SymbolPath.CIRCLE,
+					scale: 6,
+					fillColor: '#FFFF00',
+					fillOpacity: 1,
+					strokeWeight: 2,
+					strokeColor: '#000000',
+					optimized: true
+				};
+			}
+			marker.setIcon(this.highlightedIconDef);
+		}
 	}
 
 	unHighlightMarker(stopId) {
 		const marker = this.markersMap.get(stopId);
 		if (!marker) return;
-
-		marker.props.isHighlighted = false;
+		
+		if (marker.props) {
+			marker.props.isHighlighted = false;
+		} else if (marker instanceof google.maps.Marker) {
+			marker.setZIndex(1000);
+			marker.setIcon(this.stopIconDef);
+		}
 	}
 
 	removeStopMarkers() {
-		this.stopMarkers.forEach((marker) => {
+		
+		for (const marker of this.stopMarkers) {
 			marker.setMap(null);
-		});
+		}
 		this.stopMarkers = [];
 	}
 
 	addPinMarker(position, text) {
 		const container = document.createElement('div');
-		document.body.appendChild(container);
-
-		mount(TripPlanPinMarker, {
+		
+		const component = mount(TripPlanPinMarker, {
 			target: container,
-			props: {
-				text: text
-			}
+			props: { text }
 		});
 
 		const overlay = new google.maps.OverlayView();
 
-		overlay.onAdd = function () {
+		overlay.onAdd = function() {
 			this.getPanes().overlayMouseTarget.appendChild(container);
 		};
 
-		overlay.draw = function () {
+		overlay.draw = function() {
 			const projection = this.getProjection();
 			const pos = projection.fromLatLngToDivPixel(
 				new google.maps.LatLng(position.lat, position.lng)
 			);
-			container.style.left = `${pos.x - 16}px`;
-			container.style.top = `${pos.y - 50}px`;
+			container.style.transform = `translate(${pos.x - 16}px, ${pos.y - 50}px)`;
 			container.style.position = 'absolute';
+			container.style.willChange = 'transform';
 			container.style.zIndex = '1000';
 		};
 
-		overlay.onRemove = function () {
-			container.parentNode.removeChild(container);
+		overlay.onRemove = function() {
+			unmount(component);
+			if (container.parentNode) {
+				container.parentNode.removeChild(container);
+			}
 		};
 
 		overlay.setMap(this.map);
+		this.overlays.add(overlay);
 
-		return { overlay, element: container };
+		return { overlay, element: container, componentInstance: component };
 	}
 
 	removePinMarker(marker) {
-		if (!marker) {
-			return;
-		}
+		if (!marker) return;
 
 		if (marker.overlay) {
+			this.overlays.delete(marker.overlay);
 			marker.overlay.setMap(null);
 		}
 
-		if (marker.element && marker.element.parentNode) {
-			marker.element.parentNode.removeChild(marker.element);
+		if (marker.componentInstance) {
+			unmount(marker.componentInstance);
 		}
+	}
+
+	
+	getVehicleSvgCache(orientation, color = null) {
+		
+		const key = `${orientation}_${color || 'default'}`;
+		
+		if (!this.vehicleIconCache) {
+			this.vehicleIconCache = new Map();
+		}
+		
+		if (!this.vehicleIconCache.has(key)) {
+			const svgIcon = createVehicleIconSvg(orientation, color);
+			const url = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svgIcon)}`;
+			
+			this.vehicleIconCache.set(key, {
+				url,
+				scaledSize: new google.maps.Size(40, 40),
+				anchor: new google.maps.Point(20, 20),
+				optimized: true
+			});
+		}
+		
+		return this.vehicleIconCache.get(key);
 	}
 
 	addVehicleMarker(vehicle, activeTrip) {
 		if (!this.map) return null;
 
-		let color;
-		if (!vehicle.predicted) {
-			color = COLORS.VEHICLE_REAL_TIME_OFF;
-		}
-
-		const busIcon = createVehicleIconSvg(vehicle?.orientation, color);
-		const icon = {
-			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(busIcon)}`,
-			scaledSize: new google.maps.Size(40, 40),
-			anchor: new google.maps.Point(20, 20)
-		};
+		const color = !vehicle.predicted ? COLORS.VEHICLE_REAL_TIME_OFF : null;
+		const icon = this.getVehicleSvgCache(vehicle?.orientation, color);
 
 		const marker = new google.maps.Marker({
 			position: { lat: vehicle.position.lat, lng: vehicle.position.lon },
 			map: this.map,
-			icon: icon,
-			zIndex: 1000
+			icon,
+			zIndex: 1000,
+			optimized: true
 		});
 
 		this.vehicleMarkers.push(marker);
 
-		const vehicleData = {
+		
+		marker.vehicleData = {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
-			predicted: vehicle.predicted
+			predicted: vehicle.predicted,
+			orientation: vehicle?.orientation
 		};
 
-		const popupContainer = document.createElement('div');
-		marker.popupComponent = mount(VehiclePopupContent, {
-			target: popupContainer,
-			props: vehicleData
-		});
-
-		marker.infoWindow = new google.maps.InfoWindow({
-			content: popupContainer
-		});
-
+		
 		marker.addListener('click', () => {
-			marker.infoWindow.open(this.map, marker);
+			
+			this.cleanupInfoWindow();
+			
+			
+			const popupContainer = document.createElement('div');
+			const popupComponent = mount(VehiclePopupContent, {
+				target: popupContainer,
+				props: marker.vehicleData
+			});
+			
+			const infoWindow = new google.maps.InfoWindow({
+				content: popupContainer
+			});
+			
+			infoWindow.open(this.map, marker);
+			
+			
+			this.globalInfoWindow = infoWindow;
+			this.popupContentComponent = popupComponent;
 		});
 
 		return marker;
@@ -282,38 +423,40 @@ export default class GoogleMapProvider {
 
 		marker.setPosition({ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon });
 
-		let color;
-		if (!vehicleStatus.predicted) {
-			color = COLORS.VEHICLE_REAL_TIME_OFF;
+		
+		if (marker.vehicleData.orientation !== vehicleStatus.orientation || 
+			marker.vehicleData.predicted !== vehicleStatus.predicted) {
+			
+			const color = !vehicleStatus.predicted ? COLORS.VEHICLE_REAL_TIME_OFF : null;
+			const icon = this.getVehicleSvgCache(vehicleStatus.orientation, color);
+			marker.setIcon(icon);
 		}
 
-		const updatedIcon = createVehicleIconSvg(vehicleStatus.orientation, color);
-		marker.setIcon({
-			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIcon)}`,
-			scaledSize: new google.maps.Size(40, 40),
-			anchor: new google.maps.Point(20, 20)
-		});
-
-		const updatedData = {
+		
+		marker.vehicleData = {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicleStatus.vehicleId,
 			lastUpdateTime: vehicleStatus.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name,
-			predicted: vehicleStatus.predicted
+			predicted: vehicleStatus.predicted,
+			orientation: vehicleStatus.orientation
 		};
-
-		if (marker.popupComponent) {
-			marker.popupComponent.$set(updatedData);
+		
+		
+		if (this.globalInfoWindow && this.globalInfoWindow.anchor === marker && this.popupContentComponent) {
+			this.popupContentComponent.$set(marker.vehicleData);
 		}
 	}
 
 	removeVehicleMarker(marker) {
+		if (!marker) return;
 		marker.setMap(null);
 	}
 
 	clearVehicleMarkers() {
 		if (!this.map) return;
-
+		
+		
 		for (const marker of this.vehicleMarkers) {
 			marker.setMap(null);
 		}
@@ -323,103 +466,149 @@ export default class GoogleMapProvider {
 	cleanupInfoWindow() {
 		if (this.globalInfoWindow) {
 			this.globalInfoWindow.close();
+			this.globalInfoWindow = null;
+		}
+		
+		if (this.popupContentComponent) {
+			unmount(this.popupContentComponent);
+			this.popupContentComponent = null;
 		}
 	}
 
 	setCenter(latLng) {
+		if (!this.map) return;
 		this.map.setCenter(latLng);
 	}
 
 	getCenter() {
+		if (!this.map) return { lat: 0, lng: 0 };
 		const center = this.map.getCenter();
 		return { lat: center.lat(), lng: center.lng() };
 	}
 
 	addListener(event, callback) {
+		if (!this.map) return;
 		this.map.addListener(event, callback);
 	}
 
 	setTheme(theme) {
+		if (!this.map) return;
 		const styles = theme === 'dark' ? nightModeStyles() : null;
 		this.map.setOptions({ styles });
 	}
 
 	addUserLocationMarker(latLng) {
-		new google.maps.Marker({
-			map: this.map,
-			position: latLng,
-			title: 'Your Location',
-			icon: {
+		if (!this.map) return;
+		
+		
+		if (!this.userLocationIconDef) {
+			this.userLocationIconDef = {
 				path: google.maps.SymbolPath.CIRCLE,
 				scale: 8,
 				fillColor: '#007BFF',
 				fillOpacity: 1,
 				strokeWeight: 2,
-				strokeColor: '#FFFFFF'
-			}
+				strokeColor: '#FFFFFF',
+				optimized: true
+			};
+		}
+		
+		return new google.maps.Marker({
+			map: this.map,
+			position: latLng,
+			title: 'Your Location',
+			icon: this.userLocationIconDef,
+			optimized: true
 		});
 	}
 
 	async createPolyline(shape, addArrow = true) {
-		await window.google.maps.importLibrary('geometry');
+		if (!this.map) return null;
+		
+		
+		if (!google.maps.geometry) {
+			await google.maps.importLibrary('geometry');
+		}
 
-		const decodedPath = google.maps.geometry.encoding.decodePath(shape);
-		const path = decodedPath.map((point) => ({ lat: point.lat(), lng: point.lng() }));
+		
+		let path;
+		if (!this.pathCache) {
+			this.pathCache = new Map();
+		}
+		
+		if (this.pathCache.has(shape)) {
+			path = this.pathCache.get(shape);
+		} else {
+			const decodedPath = google.maps.geometry.encoding.decodePath(shape);
+			path = decodedPath.map(point => ({ lat: point.lat(), lng: point.lng() }));
+			this.pathCache.set(shape, path);
+		}
 
 		const polylineOptions = {
 			path,
 			geodesic: true,
 			strokeColor: COLORS.POLYLINE,
 			strokeOpacity: 1.0,
-			strokeWeight: 5
+			strokeWeight: 5,
+			clickable: false, // Better performance i think so.... 
+			zIndex: 1
 		};
 
 		if (addArrow) {
-			const arrowSymbol = {
-				path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-				scale: 2,
-				strokeColor: COLORS.POLYLINE_ARROW_STROKE,
-				strokeWeight: 3
-			};
+			// Use cached arrow symbol
+			if (!this.arrowSymbol) {
+				this.arrowSymbol = {
+					path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+					scale: 2,
+					strokeColor: COLORS.POLYLINE_ARROW_STROKE,
+					strokeWeight: 3
+				};
+			}
 
-			polylineOptions.icons = [
-				{
-					icon: arrowSymbol,
-					offset: '100%',
-					repeat: '50px'
-				}
-			];
+			polylineOptions.icons = [{
+				icon: this.arrowSymbol,
+				offset: '100%',
+				repeat: '50px'
+			}];
 		}
 
-		const polyline = new window.google.maps.Polyline(polylineOptions);
-
+		const polyline = new google.maps.Polyline(polylineOptions);
 		polyline.setMap(this.map);
 
 		return polyline;
 	}
 
-	async removePolyline(polyline) {
+	removePolyline(polyline) {
 		if (polyline && polyline.setMap) {
 			polyline.setMap(null);
 		}
-
 		return null;
 	}
 
 	panTo(lat, lng) {
+		if (!this.map) return;
 		this.map.panTo({ lat, lng });
 	}
 
 	flyTo(lat, lng, zoom = 15) {
-		this.map.setZoom(zoom);
-		this.map.setCenter({ lat, lng });
+		if (!this.map) return;
+		
+		
+		this.map.panTo({ lat, lng });
+		setTimeout(() => this.map.setZoom(zoom), 50);
 	}
+	
 	setZoom(zoom) {
+		if (!this.map) return;
 		this.map.setZoom(zoom);
 	}
 
 	getBoundingBox() {
+		if (!this.map) return { north: 0, east: 0, south: 0, west: 0 };
+		
 		const bounds = this.map.getBounds();
+		if (!bounds) return { north: 0, east: 0, south: 0, west: 0 };
+		
 		const ne = bounds.getNorthEast();
 		const sw = bounds.getSouthWest();
 		return {
@@ -428,5 +617,44 @@ export default class GoogleMapProvider {
 			south: sw.lat(),
 			west: sw.lng()
 		};
+	}
+	
+	//add proper    cleanup method
+	destroy() {
+		// Clean up all overlays
+		for (const overlay of this.overlays) {
+			overlay.setMap(null);
+		}
+		this.overlays.clear();
+		
+		
+		this.removeStopMarkers();
+		this.clearVehicleMarkers();
+		this.cleanupInfoWindow();
+		
+		
+		if (this.popupContentComponent) {
+			unmount(this.popupContentComponent);
+		}
+		
+		
+		if (this.vehicleIconCache) {
+			this.vehicleIconCache.clear();
+		}
+		if (this.pathCache) {
+			this.pathCache.clear();
+		}
+		
+		//               Clean up DOM elements
+		if (this.popupContainer && this.popupContainer.parentNode) {
+			this.popupContainer.parentNode.removeChild(this.popupContainer);
+		}
+		
+	
+		this.map = null;
+		this.globalInfoWindow = null;
+		this.popupContentComponent = null;
+		this.stopsMap.clear();
+		this.markersMap.clear();
 	}
 }

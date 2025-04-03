@@ -185,15 +185,17 @@
 		 <div class="relative rounded-md">
     <!-- Embedded Map with Marker  -->
     <iframe 
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d10000.0!2d{stop.lon}!3d{stop.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s{stop.lat}%2C{stop.lon}!5e0!3m2!1sen!2suk!4v1644558351325!5m2!1sen!2suk"
-        width="100%"
-        height="300"
-        style="border:0;"
-        loading="lazy"
-        class="rounded"
-        title="Google Maps Location with Marker">
-        allow="gesture"
-    </iframe> 
+        width="100%" 
+        height="300" 
+        frameborder="0" 
+        scrolling="no" 
+        marginheight="0" 
+        marginwidth="0" 
+        src="https://www.openstreetmap.org/export/embed.html?bbox={stop.lon-0.01}%2C{stop.lat-0.01}%2C{stop.lon+0.01}%2C{stop.lat+0.01}&amp;layer=mapnik&amp;marker={stop.lat}%2C{stop.lon}" 
+        style="border: 1px solid #ccc; border-radius: 4px;"
+        title="OpenStreetMap Location with Marker">
+    </iframe>
+    
     
     
     <!-- End Embedded Map -->

@@ -10,6 +10,11 @@ import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
 
+// Cache      for dynamic imports  to avoide   unnecessary  confligs in js  
+let leafletPromise = null;
+let maplibrePromise = null;
+let polylineDecoratorPromise = null;
+
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
@@ -22,43 +27,73 @@ export default class OpenStreetMapProvider {
 		this.vehicleMarkers = [];
 		this.maplibreLayer = 'positron';
 		this.markersMap = new Map();
+		
+		
+		this.vehicleIconCache = new Map();
+        
+        // Store for vehicle data (Svelte 5 compatible) may be much better to use svelte 5 😌  by Sanjai-Shaarugesh 
+        this.vehicleDataStore = new Map();
 	}
 
 	async initMap(element, options) {
 		if (!browser) return;
 
-		const leaflet = await import('leaflet');
-		await import('@maplibre/maplibre-gl-leaflet');
-		await import('leaflet-polylinedecorator');
+		
+		if (!leafletPromise) {
+			leafletPromise = import('leaflet');
+		}
+		if (!maplibrePromise) {
+			maplibrePromise = import('@maplibre/maplibre-gl-leaflet');
+		}
+		if (!polylineDecoratorPromise) {
+			polylineDecoratorPromise = import('leaflet-polylinedecorator');
+		}
+
+		// Parallel loading of dependencies  🟰
+		const [leaflet] = await Promise.all([
+			leafletPromise,
+			maplibrePromise,
+			polylineDecoratorPromise
+		]);
 
 		this.L = leaflet.default;
 
-		// Leaflet CSS
-		const link = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-		document.head.appendChild(link);
+		
+		if (!document.querySelector('link[href*="leaflet.css"]')) {
+			const link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+			document.head.appendChild(link);
+		}
 
-		this.map = this.L.map(element, { zoomControl: false }).setView([options.lat, options.lng], 14);
+		this.map = this.L.map(element, { 
+			zoomControl: false,
+			attributionControl: false, 
+			preferCanvas: true 
+		}).setView([options.lat, options.lng], 14);
 
 		this.L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-		// TODO: Make this configurable through env file
-
-		/*
-		 * for more styles https://github.com/teamapps-org/maplibre-gl-styles
-		 */
+		
 		this.maplibreLayer = this.L.maplibreGL({
 			style: `https://tiles.openfreemap.org/styles/${this.maplibreLayer}`,
 			interactive: true,
-			dragRotate: false
+			dragRotate: false,
+			rendererOptions: {
+				antialias: false // Disable antialiasing for better performance 🚄
+			}
 		}).addTo(this.map);
 	}
 
 	eventListeners(mapInstance, debouncedLoadMarkers) {
-		mapInstance.addListener('dragend', debouncedLoadMarkers);
-		mapInstance.addListener('zoomend', debouncedLoadMarkers);
-		mapInstance.addListener('moveend', debouncedLoadMarkers);
+		
+		const handleMapChange = () => {
+			requestAnimationFrame(debouncedLoadMarkers);
+		};
+		
+		mapInstance.addListener('dragend', handleMapChange);
+		mapInstance.addListener('zoomend', handleMapChange);
+		mapInstance.addListener('moveend', handleMapChange);
 	}
 
 	addMarker(options) {
@@ -66,12 +101,12 @@ export default class OpenStreetMapProvider {
 
 		const container = document.createElement('div');
 
-		const props = $state({
+		const props = {
 			stop: options.stop,
 			icon: options.icon || faBus,
 			onClick: options.onClick || (() => {}),
 			isHighlighted: false
-		});
+		};
 
 		mount(StopMarker, {
 			target: container,
@@ -85,7 +120,8 @@ export default class OpenStreetMapProvider {
 		});
 
 		const marker = this.L.marker([options.position.lat, options.position.lng], {
-			icon: customIcon
+			icon: customIcon,
+			riseOnHover: false // Disable z-index changes on hover for better performance for accessibility in map 🗺️
 		}).addTo(this.map);
 
 		marker.props = props;
@@ -114,9 +150,10 @@ export default class OpenStreetMapProvider {
 			iconAnchor: [16, 50]
 		});
 
-		const marker = this.L.marker([position.lat, position.lng], { icon: customIcon }).addTo(
-			this.map
-		);
+		const marker = this.L.marker([position.lat, position.lng], { 
+			icon: customIcon,
+			riseOnHover: false 
+		}).addTo(this.map);
 
 		return marker;
 	}
@@ -131,8 +168,23 @@ export default class OpenStreetMapProvider {
 		const marker = this.markersMap.get(stopId);
 		if (!marker) return;
 
-		// Update the reactive props (linked via $state)
+		
 		marker.props.isHighlighted = true;
+        
+        
+        const container = document.createElement('div');
+        mount(StopMarker, {
+            target: container,
+            props: marker.props
+        });
+        
+        const customIcon = this.L.divIcon({
+            html: container,
+            className: '',
+            iconSize: [40, 40]
+        });
+        
+        marker.setIcon(customIcon);
 	}
 
 	unHighlightMarker(stopId) {
@@ -140,23 +192,48 @@ export default class OpenStreetMapProvider {
 		if (!marker) return;
 
 		marker.props.isHighlighted = false;
+        
+        
+        const container = document.createElement('div');
+        mount(StopMarker, {
+            target: container,
+            props: marker.props
+        });
+        
+        const customIcon = this.L.divIcon({
+            html: container,
+            className: '',
+            iconSize: [40, 40]
+        });
+        
+        marker.setIcon(customIcon);
 	}
 
 	addStopMarker(stop, stopTime = null) {
-		const customIcon = L.divIcon({
-			html: `<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle"><circle cx="12" cy="12" r="10"/></svg>`,
+		if (!this.L) return null;
+		
+		
+		const circleSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle"><circle cx="12" cy="12" r="10"/></svg>';
+		
+		const customIcon = this.L.divIcon({
+			html: circleSvg,
 			className: '',
 			iconSize: [20, 20],
 			iconAnchor: [10, 10]
 		});
 
-		const marker = L.marker([stop.lat, stop.lon], { icon: customIcon }).addTo(this.map);
+		const marker = this.L.marker([stop.lat, stop.lon], { 
+			icon: customIcon,
+			riseOnHover: false 
+		}).addTo(this.map);
 
 		this.stopsMap.set(stop.id, stop);
 
 		marker.on('click', () => this.openStopMarker(stop, stopTime));
 
 		this.stopMarkers.push(marker);
+		
+		return marker;
 	}
 
 	openStopMarker(stop, stopTime = null) {
@@ -179,26 +256,45 @@ export default class OpenStreetMapProvider {
 			}
 		});
 
-		this.globalInfoWindow = L.popup()
+		this.globalInfoWindow = this.L.popup({
+			closeButton: true,
+			autoClose: true,
+			className: 'stop-popup'
+		})
 			.setLatLng([stop.lat, stop.lon])
 			.setContent(popupContainer)
 			.openOn(this.map);
 	}
 
 	removeStopMarkers() {
-		this.stopMarkers.forEach((marker) => {
-			marker.remove();
-		});
+		if (!this.map) return;
+		
+		// Remove in batch for better performance
+		const markersToRemove = this.stopMarkers.slice();
 		this.stopMarkers = [];
+		
+		// Use requestAnimationFrame for smoother rendering
+		requestAnimationFrame(() => {
+			markersToRemove.forEach(marker => {
+				marker.remove();
+			});
+		});
 	}
 
 	cleanupInfoWindow() {
 		if (this.globalInfoWindow) {
-			this.globalInfoWindow.close();
+			this.map.closePopup(this.globalInfoWindow);
+			this.globalInfoWindow = null;
+		}
+		
+		if (this.popupContentComponent) {
+			unmount(this.popupContentComponent);
+			this.popupContentComponent = null;
 		}
 	}
 
 	removeStopMarker(marker) {
+		if (!marker) return;
 		marker.remove();
 	}
 
@@ -210,9 +306,20 @@ export default class OpenStreetMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const busIconSvg = createVehicleIconSvg(vehicle?.orientation, color);
+		
+		const iconKey = `${vehicle?.orientation || 0}-${color || 'default'}`;
+		let busIconSvg;
+		
+		if (this.vehicleIconCache.has(iconKey)) {
+			busIconSvg = this.vehicleIconCache.get(iconKey);
+		} else {
+			busIconSvg = createVehicleIconSvg(vehicle?.orientation, color);
+			this.vehicleIconCache.set(iconKey, busIconSvg);
+		}
+		
+		const encodedSvg = encodeURIComponent(busIconSvg);
 		const customIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(busIconSvg)}" style="width:45px;height:45px;" />`,
+			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodedSvg}" style="width:45px;height:45px;" />`,
 			iconSize: [40, 40],
 			iconAnchor: [20, 20],
 			className: '',
@@ -221,29 +328,44 @@ export default class OpenStreetMapProvider {
 
 		const marker = this.L.marker([vehicle.position.lat, vehicle.position.lon], {
 			icon: customIcon,
-			zIndexOffset: 1000
+			zIndexOffset: 1000,
+			riseOnHover: false 
 		}).addTo(this.map);
 
 		this.vehicleMarkers.push(marker);
 
-		marker.vehicleData = {
+        // Create the vehicle data object (not using $state directly on marker property)
+        const vehicleData = {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
 			predicted: vehicle.predicted
 		};
+        
+        // Store the vehicle data with the vehicle ID as the key 🏇
+        this.vehicleDataStore.set(vehicle.vehicleId, vehicleData);
+        
+        
+        marker.vehicleDataId = vehicle.vehicleId;
 
-		marker.bindPopup(document.createElement('div'));
-
-		marker.on('popupopen', () => {
+		
+		let popupCreated = false;
+		
+		marker.on('click', () => {
+			if (!popupCreated) {
+				marker.bindPopup(document.createElement('div'));
+				popupCreated = true;
+			}
+			
 			const popupContainer = document.createElement('div');
-
+			const currentVehicleData = this.vehicleDataStore.get(marker.vehicleDataId);
+            
 			marker.popupComponent = mount(VehiclePopupContent, {
 				target: popupContainer,
-				props: marker.vehicleData
+				props: currentVehicleData
 			});
-
+			
 			marker.getPopup().setContent(popupContainer);
 		});
 
@@ -265,35 +387,72 @@ export default class OpenStreetMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const updatedIconSvg = createVehicleIconSvg(vehicleStatus.orientation, color);
+		
+		const iconKey = `${vehicleStatus.orientation || 0}-${color || 'default'}`;
+		let updatedIconSvg;
+		
+		if (this.vehicleIconCache.has(iconKey)) {
+			updatedIconSvg = this.vehicleIconCache.get(iconKey);
+		} else {
+			updatedIconSvg = createVehicleIconSvg(vehicleStatus.orientation, color);
+			this.vehicleIconCache.set(iconKey, updatedIconSvg);
+		}
+		
+		const encodedSvg = encodeURIComponent(updatedIconSvg);
 		const updatedIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" style="width:45px;height:45px;" />`,
+			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodedSvg}" style="width:45px;height:45px;" />`,
 			iconSize: [40, 40],
 			iconAnchor: [20, 20],
 			className: '',
 			zIndexOffset: 1000
 		});
 
-		marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
-		marker.setIcon(updatedIcon);
+		
+		requestAnimationFrame(() => {
+			marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
+			marker.setIcon(updatedIcon);
+		});
 
-		let vehicleData = $state({
-			...marker.vehicleData,
+		
+        const updatedVehicleData = {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicleStatus.vehicleId,
 			lastUpdateTime: vehicleStatus.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
 			predicted: vehicleStatus.predicted
-		});
+		};
+        
+        this.vehicleDataStore.set(vehicleStatus.vehicleId, updatedVehicleData);
 
-		marker.vehicleData = vehicleData;
-
+		
 		if (marker.isPopupOpen() && marker.popupComponent) {
-			marker.popupComponent = vehicleData;
+            const popupContainer = document.createElement('div');
+            
+            
+            unmount(marker.popupComponent);
+            
+            
+            marker.popupComponent = mount(VehiclePopupContent, {
+                target: popupContainer,
+                props: updatedVehicleData
+            });
+            
+            marker.getPopup().setContent(popupContainer);
 		}
 	}
+	
 	removeVehicleMarker(marker) {
 		if (marker) {
+			if (marker.popupComponent) {
+				unmount(marker.popupComponent);
+				marker.popupComponent = null;
+			}
+            
+            
+            if (marker.vehicleDataId) {
+                this.vehicleDataStore.delete(marker.vehicleDataId);
+            }
+            
 			marker.remove();
 		}
 	}
@@ -301,10 +460,28 @@ export default class OpenStreetMapProvider {
 	clearVehicleMarkers() {
 		if (!this.map) return;
 
-		this.vehicleMarkers.forEach((marker) => {
-			marker.remove();
-		});
+		// Use requestAnimationFrame for better performance during large updates 🚄
+		const markersToRemove = this.vehicleMarkers.slice();
 		this.vehicleMarkers = [];
+		
+		requestAnimationFrame(() => {
+			markersToRemove.forEach(marker => {
+				if (marker.popupComponent) {
+					unmount(marker.popupComponent);
+					marker.popupComponent = null;
+				}
+                
+                // Clean up stored vehicle data 🚍
+                if (marker.vehicleDataId) {
+                    this.vehicleDataStore.delete(marker.vehicleDataId);
+                }
+                
+				marker.remove();
+			});
+		});
+        
+        
+        this.vehicleDataStore.clear();
 	}
 
 	addListener(event, callback) {
@@ -335,7 +512,7 @@ export default class OpenStreetMapProvider {
 	}
 
 	removeMarker(marker) {
-		if (!browser || !this.map) return;
+		if (!browser || !this.map || !marker) return;
 		this.map.removeLayer(marker);
 	}
 
@@ -349,13 +526,19 @@ export default class OpenStreetMapProvider {
 			styleUrl = 'https://tiles.openfreemap.org/styles/positron';
 		}
 
-		if (this.maplibreLayer) {
-			this.map.removeLayer(this.maplibreLayer);
-		}
+		// Use requestAnimationFrame for smoother theme transition
+		requestAnimationFrame(() => {
+			if (this.maplibreLayer) {
+				this.map.removeLayer(this.maplibreLayer);
+			}
 
-		this.maplibreLayer = this.L.maplibreGL({
-			style: styleUrl
-		}).addTo(this.map);
+			this.maplibreLayer = this.L.maplibreGL({
+				style: styleUrl,
+				rendererOptions: {
+					antialias: false 
+				}
+			}).addTo(this.map);
+		});
 	}
 
 	createPolyline(points, options = { withArrow: true }) {
@@ -367,19 +550,24 @@ export default class OpenStreetMapProvider {
 			return null;
 		}
 
-		const polyline = new this.L.Polyline(decodedPolyline, {
+		// Reduce polyline precision for better performance with long routes
+		const simplifiedPolyline = this._simplifyPolyline(decodedPolyline, 0.00005);
+
+		const polyline = new this.L.Polyline(simplifiedPolyline, {
 			color: options.color || COLORS.POLYLINE,
 			weight: options.weight || 4,
-			opacity: options.opacity || 1
+			opacity: options.opacity || 1,
+			smoothFactor: 1.5 
 		}).addTo(this.map);
 
 		if (!options.withArrow) return polyline;
 
+		
 		const arrowDecorator = this.L.polylineDecorator(polyline, {
 			patterns: [
 				{
 					offset: 0,
-					repeat: 125,
+					repeat: 250, 
 					symbol: this.L.Symbol.arrowHead({
 						pixelSize: 12,
 						pathOptions: {
@@ -397,34 +585,53 @@ export default class OpenStreetMapProvider {
 
 		return polyline;
 	}
+	
+
+	
 
 	removePolyline(polyline) {
 		if (!polyline) return;
 
-		if (polyline.arrowDecorator) {
-			polyline.arrowDecorator.remove();
-			polyline.arrowDecorator = null;
-		}
+		
+		requestAnimationFrame(() => {
+			if (polyline.arrowDecorator) {
+				polyline.arrowDecorator.remove();
+				polyline.arrowDecorator = null;
+			}
 
-		polyline.remove();
+			polyline.remove();
+		});
 	}
 
 	panTo(lat, lng) {
 		if (!browser || !this.map) return;
-		this.map.panTo([lat, lng]);
+		
+		requestAnimationFrame(() => {
+			this.map.panTo([lat, lng]);
+		});
 	}
 
 	flyTo(lat, lng, zoom = 15) {
 		if (!browser || !this.map) return;
-		this.map.flyTo([lat, lng], zoom);
+		// Use requestAnimationFrame for smoother animations
+		requestAnimationFrame(() => {
+			this.map.flyTo([lat, lng], zoom, {
+				duration: 0.5 
+			});
+		});
 	}
 
 	setZoom(zoom) {
 		if (!browser || !this.map) return;
-		this.map.setZoom(zoom);
+		// Use requestAnimationFrame for smoother zooming
+		requestAnimationFrame(() => {
+			this.map.setZoom(zoom);
+		});
 	}
 
 	getBoundingBox() {
+		if (!this.map) return { north: 0, east: 0, south: 0, west: 0 };
+		
 		const bounds = this.map.getBounds();
 		const ne = bounds.getNorthEast();
 		const sw = bounds.getSouthWest();
