@@ -3,15 +3,23 @@
 	import { trapFocus } from '../../../utils/focusTrap';
 	import { applyAriaAttributes } from '../../../utils/ariaHelpers';
 
+	// Indicates whether the modal is open
 	export let isOpen = false;
+
+	// Accessible label for the modal
 	export let ariaLabel = 'Modal Pane';
+
+	// Callback function to handle modal close action
 	export let onClose;
 
 	let modalElement;
 
 	onMount(() => {
 		if (isOpen && modalElement) {
+			// Trap focus within the modal when it is open
 			const releaseFocus = trapFocus(modalElement);
+
+			// Apply ARIA attributes to ensure accessibility
 			applyAriaAttributes(modalElement, {
 				role: 'dialog',
 				'aria-modal': 'true',
