@@ -56,19 +56,6 @@
 		margin-left: 0.75rem;
 	}
 
-	.rtl .space-x-4 {
-		margin-left: 1rem;
-	}
-
-	.rtl .space-x-reverse {
-		margin-right: 1rem;
-	}
-
-	.rtl .border-l-4 {
-		border-left-width: 0;
-		border-right-width: 4px;
-	}
-
 	.rtl .left-5 {
 		left: auto;
 		right: 1.25rem;
