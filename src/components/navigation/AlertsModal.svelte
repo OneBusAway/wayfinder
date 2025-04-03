@@ -2,6 +2,9 @@
 	import { Modal, Button } from 'flowbite-svelte';
 	import { getLocaleFromNavigator } from 'svelte-i18n';
 	import { t } from 'svelte-i18n';
+	import { onMount, onDestroy } from 'svelte';
+	import { trapFocus } from '../../../utils/focusTrap';
+	import { applyAriaAttributes } from '../../../utils/ariaHelpers';
 
 	let showModal = $state(true);
 	let previouslyFocusedElement = null;
@@ -29,25 +32,20 @@
 		return getTranslation(alert.url.translation);
 	}
 
-	function trapFocus(event) {
-		const focusableElements = event.target.querySelectorAll(
-			'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]'
-		);
-		const firstElement = focusableElements[0];
-		const lastElement = focusableElements[focusableElements.length - 1];
+	let modalElement;
 
-		if (event.shiftKey) {
-			if (document.activeElement === firstElement) {
-				lastElement.focus();
-				event.preventDefault();
-			}
-		} else {
-			if (document.activeElement === lastElement) {
-				firstElement.focus();
-				event.preventDefault();
-			}
+	onMount(() => {
+		if (showModal && modalElement) {
+			const releaseFocus = trapFocus(modalElement);
+			applyAriaAttributes(modalElement, {
+				role: 'dialog',
+				'aria-modal': 'true',
+				'aria-label': 'Alerts',
+			});
+
+			return () => releaseFocus();
 		}
-	}
+	});
 
 	function handleModalOpen() {
 		previouslyFocusedElement = document.activeElement;
@@ -65,32 +63,43 @@
 	}
 </script>
 
-<Modal
-	title={getHeaderTextTranslation()}
-	bind:open={showModal}
-	autoclose
-	on:open={handleModalOpen}
-	on:close={handleModalClose}
-	aria-labelledby="alert-modal-title"
-	aria-describedby="alert-modal-description"
->
-	<p id="alert-modal-description" class="text-base leading-relaxed text-gray-500 dark:text-gray-200">
-		{getBodyTextTranslation()}
-	</p>
-	{#snippet footer()}
-		<div class="flex-1 text-right">
-			<Button
-				class="bg-gray-300 text-black hover:bg-gray-400 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-				on:click={() => (showModal = false)}
+{#if showModal}
+	<div class="modal-overlay" on:click={handleModalClose}>
+		<div
+			class="modal-content"
+			bind:this={modalElement}
+			on:click|stopPropagation
+		>
+			<Modal
+				title={getHeaderTextTranslation()}
+				bind:open={showModal}
+				autoclose
+				on:open={handleModalOpen}
+				on:close={handleModalClose}
+				aria-labelledby="alert-modal-title"
+				aria-describedby="alert-modal-description"
 			>
-				{$t('alert.close')}
-			</Button>
-			<Button
-				class="bg-brand-secondary text-white hover:bg-brand-secondary dark:bg-brand dark:hover:bg-brand-secondary"
-				on:click={() => window.open(getUrlTranslation(), '_blank')}
-			>
-				{$t('alert.more_info')}
-			</Button>
+				<p id="alert-modal-description" class="text-base leading-relaxed text-gray-500 dark:text-gray-200">
+					{getBodyTextTranslation()}
+				</p>
+				{#snippet footer()}
+					<div class="flex-1 text-right">
+						<Button
+							class="bg-gray-300 text-black hover:bg-gray-400 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+							on:click={() => (showModal = false)}
+						>
+							{$t('alert.close')}
+						</Button>
+						<Button
+							class="bg-brand-secondary text-white hover:bg-brand-secondary dark:bg-brand dark:hover:bg-brand-secondary"
+							on:click={() => window.open(getUrlTranslation(), '_blank')}
+						>
+							{$t('alert.more_info')}
+						</Button>
+					</div>
+				{/snippet}
+			</Modal>
+			<button on:click={handleModalClose} aria-label="Close modal">Close</button>
 		</div>
-	{/snippet}
-</Modal>
+	</div>
+{/if}

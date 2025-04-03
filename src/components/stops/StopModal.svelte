@@ -1,53 +1,36 @@
 <script>
-	import ModalPane from '$components/navigation/ModalPane.svelte';
-	import StopPane from '$components/stops/StopPane.svelte';
+	import { onMount, onDestroy } from 'svelte';
+	import { trapFocus } from '../../../utils/focusTrap';
+	import { applyAriaAttributes } from '../../../utils/ariaHelpers';
 
-	let { handleUpdateRouteMap, tripSelected, stop, closePane } = $props();
-	let previouslyFocusedElement = null;
+	export let isOpen = false;
+	export let onClose;
 
-	function trapFocus(event) {
-		const focusableElements = event.target.querySelectorAll(
-			'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]'
-		);
-		const firstElement = focusableElements[0];
-		const lastElement = focusableElements[focusableElements.length - 1];
+	let modalElement;
 
-		if (event.shiftKey) {
-			if (document.activeElement === firstElement) {
-				lastElement.focus();
-				event.preventDefault();
-			}
-		} else {
-			if (document.activeElement === lastElement) {
-				firstElement.focus();
-				event.preventDefault();
-			}
+	onMount(() => {
+		if (isOpen && modalElement) {
+			const releaseFocus = trapFocus(modalElement);
+			applyAriaAttributes(modalElement, {
+				role: 'dialog',
+				'aria-modal': 'true',
+				'aria-label': 'Stop Information',
+			});
+
+			return () => releaseFocus();
 		}
-	}
-
-	function handleModalOpen() {
-		previouslyFocusedElement = document.activeElement;
-		const modalElement = document.querySelector('.modal-pane');
-		modalElement.addEventListener('keydown', trapFocus);
-		modalElement.focus();
-	}
-
-	function handleModalClose() {
-		const modalElement = document.querySelector('.modal-pane');
-		modalElement.removeEventListener('keydown', trapFocus);
-		if (previouslyFocusedElement) {
-			previouslyFocusedElement.focus();
-		}
-	}
+	});
 </script>
 
-<ModalPane
-	{closePane}
-	title={stop.name}
-	on:open={handleModalOpen}
-	on:close={handleModalClose}
-	aria-labelledby="stop-modal-title"
-	aria-describedby="stop-modal-description"
->
-	<StopPane {tripSelected} {handleUpdateRouteMap} {stop} />
-</ModalPane>
+{#if isOpen}
+	<div class="modal-overlay" on:click={onClose}>
+		<div
+			class="modal-content"
+			bind:this={modalElement}
+			on:click|stopPropagation
+		>
+			<slot />
+			<button on:click={onClose} aria-label="Close modal">Close</button>
+		</div>
+	</div>
+{/if}

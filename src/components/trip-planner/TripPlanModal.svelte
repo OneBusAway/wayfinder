@@ -5,6 +5,8 @@
 	import ItineraryTab from './ItineraryTab.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
+	import { trapFocus } from '../../../utils/focusTrap';
+	import { applyAriaAttributes } from '../../../utils/ariaHelpers';
 
 	/**
 	 * @typedef {Object} Props
@@ -62,45 +64,20 @@
 	}
 
 	let previouslyFocusedElement = null;
-
-	function trapFocus(event) {
-		const focusableElements = event.target.querySelectorAll(
-			'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex="0"], [contenteditable]'
-		);
-		const firstElement = focusableElements[0];
-		const lastElement = focusableElements[focusableElements.length - 1];
-
-		if (event.shiftKey) {
-			if (document.activeElement === firstElement) {
-				lastElement.focus();
-				event.preventDefault();
-			}
-		} else {
-			if (document.activeElement === lastElement) {
-				firstElement.focus();
-				event.preventDefault();
-			}
-		}
-	}
-
-	function handleModalOpen() {
-		previouslyFocusedElement = document.activeElement;
-		const modalElement = document.querySelector('.modal-pane');
-		modalElement.addEventListener('keydown', trapFocus);
-		modalElement.focus();
-	}
-
-	function handleModalClose() {
-		const modalElement = document.querySelector('.modal-pane');
-		modalElement.removeEventListener('keydown', trapFocus);
-		if (previouslyFocusedElement) {
-			previouslyFocusedElement.focus();
-		}
-	}
+	let modalElement;
 
 	onMount(() => {
 		drawRoute();
-		handleModalOpen();
+		if (modalElement) {
+			const releaseFocus = trapFocus(modalElement);
+			applyAriaAttributes(modalElement, {
+				role: 'dialog',
+				'aria-modal': 'true',
+				'aria-label': 'Trip Planner',
+			});
+
+			return () => releaseFocus();
+		}
 	});
 	onDestroy(() => {
 		mapProvider.removePinMarker(fromMarker);
@@ -111,17 +88,17 @@
 				mapProvider.removePolyline(await polyline);
 			});
 		}
-		handleModalClose();
 	});
 </script>
 
 <ModalPane
 	{closePane}
 	title={$t('trip-planner.trip_itineraries')}
-	on:open={handleModalOpen}
-	on:close={handleModalClose}
+	on:open={() => modalElement && modalElement.focus()}
+	on:close={() => previouslyFocusedElement && previouslyFocusedElement.focus()}
 	aria-labelledby="trip-plan-modal-title"
 	aria-describedby="trip-plan-modal-description"
+	bind:this={modalElement}
 >
 	{#if loading}
 		<LoadingSpinner />
