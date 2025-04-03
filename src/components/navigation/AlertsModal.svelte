@@ -43,7 +43,7 @@
 			applyAriaAttributes(modalElement, {
 				role: 'dialog', // Defines the modal as a dialog
 				'aria-modal': 'true', // Indicates that the modal is modal and disables interaction with the background
-				'aria-label': 'Alerts', // Provides an accessible name for the modal
+				'aria-label': 'Alerts' // Provides an accessible name for the modal
 			});
 
 			// Cleanup function to release focus trapping
@@ -77,21 +77,18 @@
 
 {#if showModal}
 	<div class="modal-overlay" on:click={handleModalClose}>
-		<div
-			class="modal-content"
-			bind:this={modalElement}
-			on:click|stopPropagation
-		>
+		<div class="modal-content" bind:this={modalElement} on:click|stopPropagation>
 			<Modal
 				title={getHeaderTextTranslation()}
 				bind:open={showModal}
 				autoclose
 				on:open={handleModalOpen}
 				on:close={handleModalClose}
-				aria-labelledby="alert-modal-title" <!-- Links the modal title for screen readers -->
-				aria-describedby="alert-modal-description" <!-- Links the modal description for screen readers -->
 			>
-				<p id="alert-modal-description" class="text-base leading-relaxed text-gray-500 dark:text-gray-200">
+				<p
+					id="alert-modal-description"
+					class="text-base leading-relaxed text-gray-500 dark:text-gray-200"
+				>
 					{getBodyTextTranslation()}
 				</p>
 				{#snippet footer()}

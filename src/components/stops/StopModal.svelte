@@ -18,7 +18,7 @@
 			applyAriaAttributes(modalElement, {
 				role: 'dialog',
 				'aria-modal': 'true',
-				'aria-label': 'Stop Information',
+				'aria-label': 'Stop Information'
 			});
 
 			// Cleanup function to release focus trap when the component is destroyed.
@@ -29,11 +29,7 @@
 
 {#if isOpen}
 	<div class="modal-overlay" on:click={onClose}>
-		<div
-			class="modal-content"
-			bind:this={modalElement}
-			on:click|stopPropagation
-		>
+		<div class="modal-content" bind:this={modalElement} on:click|stopPropagation>
 			<slot />
 			<!-- Close button with ARIA label for accessibility -->
 			<button on:click={onClose} aria-label="Close modal">Close</button>

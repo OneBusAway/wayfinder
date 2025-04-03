@@ -9,6 +9,14 @@
 	import { applyAriaAttributes } from '../../../utils/ariaHelpers';
 
 	/**
+	 * Focus the modal element when it is opened.
+	 * This ensures the modal is immediately accessible to keyboard users.
+	 *
+	 * Restore focus to the previously focused element when the modal is closed.
+	 * This helps maintain a logical focus order for accessibility.
+	 */
+
+	/**
 	 * @typedef {Object} Props
 	 * @property {any} mapProvider
 	 * @property {any} [itineraries]
@@ -47,7 +55,7 @@
 		withArrow: false
 	};
 
-	// draw the current itinerary route based on the active itinerary tab
+	// Draw the current itinerary route based on the active itinerary tab
 	async function drawRoute() {
 		if (currPolylines.length > 0) {
 			currPolylines.forEach((polyline) => {
@@ -88,7 +96,7 @@
 			applyAriaAttributes(modalElement, {
 				role: 'dialog',
 				'aria-modal': 'true',
-				'aria-label': 'Trip Planner',
+				'aria-label': 'Trip Planner'
 			});
 
 			return () => releaseFocus();
@@ -129,7 +137,6 @@
 
 	{#if itineraries.length > 0}
 		<div class="tab-container">
-			<!-- eslint-disable no-unused-vars -->
 			{#each itineraries as _, index}
 				<ItineraryTab {index} {activeTab} {setActiveTab} />
 			{/each}

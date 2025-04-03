@@ -23,7 +23,7 @@
 			applyAriaAttributes(modalElement, {
 				role: 'dialog',
 				'aria-modal': 'true',
-				'aria-label': ariaLabel,
+				'aria-label': ariaLabel
 			});
 
 			return () => releaseFocus();
@@ -33,11 +33,7 @@
 
 {#if isOpen}
 	<div class="modal-overlay" on:click={onClose}>
-		<div
-			class="modal-content"
-			bind:this={modalElement}
-			on:click|stopPropagation
-		>
+		<div class="modal-content" bind:this={modalElement} on:click|stopPropagation>
 			<slot />
 			<button on:click={onClose} aria-label="Close modal">Close</button>
 		</div>
