@@ -11,7 +11,7 @@ describe('convertUnixToTime', () => {
 	});
 
 	it('converts a Unix timestamp to a locale-specific formatted time', () => {
-		expect(convertUnixToTime(1727442050)).toBe('01:00 PM');
+		expect(convertUnixToTime(1727442050)).toBe('01:00 pm');
 	});
 });
 

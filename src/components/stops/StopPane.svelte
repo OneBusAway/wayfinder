@@ -6,6 +6,7 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import SurveyModal from '$components/surveys/SurveyModal.svelte';
 	import ServiceAlerts from '$components/service-alerts/ServiceAlerts.svelte';
+	import OpenStreetMap from './OpenStreetMap.svelte';
 	import { onDestroy } from 'svelte';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
@@ -17,9 +18,9 @@
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 
 	/**
-	 * @typedef {Object} Props
-	 * @property {any} stop
-	 * @property {any} [arrivalsAndDeparturesResponse]
+	 * @typedef {Object}
+	 * @property {any}
+	 * @property {any}
 	 */
 
 	/** @type {Props} */
@@ -167,31 +168,28 @@
 	});
 </script>
 
-{#if $isLoading}
-	<p>Loading...</p>
-{:else}
-	<div>
-		{#if loading && isLoading && tripSelected}
-			<LoadingSpinner />
-		{/if}
+{#if routeShortNames()}
+	<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames().join(', ')}</h2>
+{/if}
+<div class="flex h-[700px] w-full flex-col overflow-hidden">
+	{#if $isLoading}
+		<p>Loading...</p>
+	{:else}
+		<div class="scrollbar-none flex-1 overflow-auto">
+			{#if loading && isLoading && tripSelected}
+				<LoadingSpinner />
+			{/if}
 
-		{#if error}
-			<p>{error}</p>
-		{/if}
-		{#if arrivalsAndDepartures}
-			<div class="space-y-4">
-				<div>
-					<div
-						class="relative flex flex-col gap-y-1 rounded-lg bg-brand-secondary bg-opacity-80 p-4"
-					>
-						<h1 class="h1 mb-0 text-white">{stop.name}</h1>
-						<h2 class="h2 mb-0 text-white">{$t('stop')} #{stop.id}</h2>
-						{#if routeShortNames()}
-							<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames().join(', ')}</h2>
-						{/if}
+			{#if error}
+				<p>{error}</p>
+			{/if}
+			{#if arrivalsAndDepartures}
+				<div class="space-y-4">
+					<div class="relative rounded-md">
+						<OpenStreetMap lat={stop.lat} lon={stop.lon} name={stop.name} />
 
-						{#if tripSelected}
-							<div class="mt-auto flex justify-end">
+						{#if !tripSelected}
+							<div class="absolute left-2 top-2">
 								<a
 									href={`/stops/${stop.id}/schedule`}
 									class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-secondary"
@@ -202,55 +200,92 @@
 							</div>
 						{/if}
 					</div>
-				</div>
+					<div>
+						<div
+							class="relative flex flex-col gap-y-1 rounded-lg bg-brand-secondary bg-opacity-80 p-4"
+						>
+							<h1 class="h1 mb-0 text-white">{stop.name}</h1>
 
-				{#if serviceAlerts}
-					<ServiceAlerts bind:serviceAlerts />
-				{/if}
+							<h2 class="h2 mb-0 text-white">{$t('stop')} #{stop.id}</h2>
+							{#if routeShortNames()}
+								<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames().join(', ')}</h2>
+							{/if}
 
-				{#if showHeroQuestion && currentStopSurvey}
-					<HeroQuestion
-						{currentStopSurvey}
-						{handleSkip}
-						{handleSurveyButtonClick}
-						{handleHeroQuestionChange}
-						remainingQuestionsLength={remainingSurveyQuestions.length}
-					/>
-				{/if}
-				{#if nextSurveyQuestion}
-					<SurveyModal
-						currentSurvey={currentStopSurvey}
-						{stop}
-						skipHeroQuestion={true}
-						surveyPublicId={surveyPublicIdentifier}
-					/>
-				{/if}
-
-				{#if arrivalsAndDepartures.arrivalsAndDepartures.length === 0}
-					<div class="flex items-center justify-center">
-						<p>{$t('no_arrivals_or_departures_in_next_30_minutes')}</p>
+							{#if tripSelected}
+								<div class="mt-auto flex justify-end">
+									<a
+										href={`/stops/${stop.id}/schedule`}
+										class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-secondary"
+										target="_blank"
+									>
+										{$t('schedule_for_stop.view_schedule')}
+									</a>
+								</div>
+							{/if}
+						</div>
 					</div>
-				{:else}
-					{#key arrivalsAndDepartures.stopId}
-						<Accordion {handleAccordionSelectionChanged}>
-							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
-								<AccordionItem data={arrival}>
-									{#snippet header()}
-										<span>
-											<ArrivalDeparture arrivalDeparture={arrival} />
-										</span>
-									{/snippet}
-									<TripDetailsPane
-										{stop}
-										tripId={arrival.tripId}
-										serviceDate={arrival.serviceDate}
-									/>
-								</AccordionItem>
-							{/each}
-						</Accordion>
-					{/key}
-				{/if}
-			</div>
-		{/if}
-	</div>
-{/if}
+
+					{#if serviceAlerts}
+						<ServiceAlerts bind:serviceAlerts />
+					{/if}
+
+					{#if showHeroQuestion && currentStopSurvey}
+						<HeroQuestion
+							{currentStopSurvey}
+							{handleSkip}
+							{handleSurveyButtonClick}
+							{handleHeroQuestionChange}
+							remainingQuestionsLength={remainingSurveyQuestions.length}
+						/>
+					{/if}
+					{#if nextSurveyQuestion}
+						<SurveyModal
+							currentSurvey={currentStopSurvey}
+							{stop}
+							skipHeroQuestion={true}
+							surveyPublicId={surveyPublicIdentifier}
+						/>
+					{/if}
+
+					{#if arrivalsAndDepartures.arrivalsAndDepartures.length === 0}
+						<div class="flex items-center justify-center">
+							<p>{$t('no_arrivals_or_departures_in_next_30_minutes')}</p>
+						</div>
+					{:else}
+						{#key arrivalsAndDepartures.stopId}
+							<Accordion {handleAccordionSelectionChanged}>
+								{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
+									<AccordionItem data={arrival}>
+										{#snippet header()}
+											<span>
+												<ArrivalDeparture arrivalDeparture={arrival} />
+											</span>
+										{/snippet}
+										<TripDetailsPane
+											{stop}
+											tripId={arrival.tripId}
+											serviceDate={arrival.serviceDate}
+										/>
+									</AccordionItem>
+								{/each}
+							</Accordion>
+						{/key}
+					{/if}
+				</div>
+			{/if}
+		</div>
+	{/if}
+</div>
+
+<style>
+	/* Hide scrollbar for Chrome, Safari and Opera */
+	.scrollbar-none::-webkit-scrollbar {
+		display: none;
+	}
+
+	/* Hide scrollbar for IE, Edge and Firefox */
+	.scrollbar-none {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+</style>
