@@ -1,0 +1,328 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+import TripPlanSearchField from '../TripPlanSearchField.svelte';
+import { renderWithUtils, a11yHelpers } from '../../../tests/helpers/test-utils.js';
+
+// Mock FontAwesome icons
+vi.mock('@fortawesome/svelte-fontawesome', () => ({
+	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
+}));
+
+// Mock svelte-i18n
+vi.mock('svelte-i18n', () => ({
+	t: vi.fn((key) => {
+		const translations = {
+			'trip-planner.search_for_a_place': 'Search for a place',
+			'trip-planner.loading': 'Loading'
+		};
+		return { subscribe: vi.fn((fn) => fn(translations[key] || key)) };
+	})
+}));
+
+describe('TripPlanSearchField', () => {
+	let mockOnInput;
+	let mockOnClear;
+	let mockOnSelect;
+	let user;
+	let defaultProps;
+
+	beforeEach(() => {
+		mockOnInput = vi.fn();
+		mockOnClear = vi.fn();
+		mockOnSelect = vi.fn();
+		user = userEvent.setup();
+
+		defaultProps = {
+			label: 'From:',
+			place: '',
+			results: [],
+			isLoading: false,
+			onInput: mockOnInput,
+			onClear: mockOnClear,
+			onSelect: mockOnSelect
+		};
+	});
+
+	describe('Rendering', () => {
+		it('renders with default props', () => {
+			render(TripPlanSearchField, { props: defaultProps });
+
+			expect(screen.getByLabelText('From:')).toBeInTheDocument();
+			expect(screen.getByPlaceholderText('Search for a place...')).toBeInTheDocument();
+		});
+
+		it('renders with initial place value', () => {
+			const props = { ...defaultProps, place: 'Capitol Hill' };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByDisplayValue('Capitol Hill');
+			expect(input).toBeInTheDocument();
+		});
+
+		it('shows clear button when place has value', () => {
+			const props = { ...defaultProps, place: 'Capitol Hill' };
+			render(TripPlanSearchField, { props });
+
+			const clearButton = screen.getByLabelText('Clear');
+			expect(clearButton).toBeInTheDocument();
+		});
+
+		it('hides clear button when place is empty', () => {
+			render(TripPlanSearchField, { props: defaultProps });
+
+			const clearButton = screen.queryByLabelText('Clear');
+			expect(clearButton).not.toBeInTheDocument();
+		});
+
+		it('shows loading state', () => {
+			const props = { ...defaultProps, isLoading: true };
+			render(TripPlanSearchField, { props });
+
+			expect(screen.getByText('Loading...')).toBeInTheDocument();
+		});
+
+		it('shows autocomplete results', () => {
+			const results = [
+				{
+					displayText: 'Capitol Hill, Seattle, WA, USA',
+					name: 'Capitol Hill'
+				},
+				{
+					displayText: 'University District, Seattle, WA, USA',
+					name: 'University District'
+				}
+			];
+			const props = { ...defaultProps, results };
+			render(TripPlanSearchField, { props });
+
+			expect(screen.getByText('Capitol Hill, Seattle, WA, USA')).toBeInTheDocument();
+			expect(screen.getByText('University District, Seattle, WA, USA')).toBeInTheDocument();
+		});
+	});
+
+	describe('User Interactions', () => {
+		it('calls onInput when user types', async () => {
+			render(TripPlanSearchField, { props: defaultProps });
+
+			const input = screen.getByPlaceholderText('Search for a place...');
+			await user.type(input, 'Capitol');
+
+			// onInput should be called for each character
+			expect(mockOnInput).toHaveBeenCalledWith('C');
+			expect(mockOnInput).toHaveBeenCalledWith('Ca');
+			expect(mockOnInput).toHaveBeenCalledWith('Cap');
+			expect(mockOnInput).toHaveBeenCalledWith('Capi');
+			expect(mockOnInput).toHaveBeenCalledWith('Capit');
+			expect(mockOnInput).toHaveBeenCalledWith('Capito');
+			expect(mockOnInput).toHaveBeenCalledWith('Capitol');
+		});
+
+		it('calls onClear when clear button is clicked', async () => {
+			const props = { ...defaultProps, place: 'Capitol Hill' };
+			render(TripPlanSearchField, { props });
+
+			const clearButton = screen.getByLabelText('Clear');
+			await user.click(clearButton);
+
+			expect(mockOnClear).toHaveBeenCalledOnce();
+		});
+
+		it('calls onSelect when autocomplete result is clicked', async () => {
+			const result = {
+				displayText: 'Capitol Hill, Seattle, WA, USA',
+				name: 'Capitol Hill'
+			};
+			const props = { ...defaultProps, results: [result] };
+			render(TripPlanSearchField, { props });
+
+			const resultButton = screen.getByText('Capitol Hill, Seattle, WA, USA');
+			await user.click(resultButton);
+
+			expect(mockOnSelect).toHaveBeenCalledWith(result);
+		});
+
+		it('supports keyboard navigation in autocomplete results', async () => {
+			const results = [
+				{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' },
+				{ displayText: 'University District, Seattle, WA, USA', name: 'University District' }
+			];
+			const props = { ...defaultProps, results };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByPlaceholderText('Search for a place...');
+
+			// Focus input and navigate with arrow keys
+			await user.click(input);
+			await user.keyboard('{ArrowDown}');
+
+			// First result should be focused
+			const firstResult = screen.getByText('Capitol Hill, Seattle, WA, USA');
+			expect(firstResult).toHaveFocus();
+
+			await user.keyboard('{ArrowDown}');
+
+			// Second result should be focused
+			const secondResult = screen.getByText('University District, Seattle, WA, USA');
+			expect(secondResult).toHaveFocus();
+		});
+
+		it('selects result with Enter key', async () => {
+			const result = {
+				displayText: 'Capitol Hill, Seattle, WA, USA',
+				name: 'Capitol Hill'
+			};
+			const props = { ...defaultProps, results: [result] };
+			render(TripPlanSearchField, { props });
+
+			const resultButton = screen.getByText('Capitol Hill, Seattle, WA, USA');
+			resultButton.focus();
+			await user.keyboard('{Enter}');
+
+			expect(mockOnSelect).toHaveBeenCalledWith(result);
+		});
+	});
+
+	describe('Accessibility', () => {
+		it('has proper ARIA attributes', () => {
+			render(TripPlanSearchField, { props: defaultProps });
+
+			const input = screen.getByLabelText('From:');
+			expect(input).toHaveAttribute('id', 'location-input');
+			expect(input).toHaveAttribute('type', 'text');
+
+			const label = screen.getByText('From:');
+			expect(label).toHaveAttribute('for', 'location-input');
+		});
+
+		it('clear button has proper accessibility label', () => {
+			const props = { ...defaultProps, place: 'Capitol Hill' };
+			render(TripPlanSearchField, { props });
+
+			const clearButton = screen.getByLabelText('Clear');
+			expect(clearButton).toHaveAttribute('aria-label', 'Clear');
+			expect(clearButton).toHaveAttribute('type', 'button');
+		});
+
+		it('autocomplete results are keyboard accessible', () => {
+			const results = [{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' }];
+			const props = { ...defaultProps, results };
+			render(TripPlanSearchField, { props });
+
+			const resultButton = screen.getByText('Capitol Hill, Seattle, WA, USA');
+			expect(a11yHelpers.isFocusable(resultButton)).toBe(true);
+		});
+
+		it('has proper semantic structure', () => {
+			const results = [
+				{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' },
+				{ displayText: 'University District, Seattle, WA, USA', name: 'University District' }
+			];
+			const props = { ...defaultProps, results };
+			render(TripPlanSearchField, { props });
+
+			// Results should be in a list
+			const resultsList = screen.getByRole('list', { hidden: true });
+			expect(resultsList).toBeInTheDocument();
+
+			// Each result should be a button within the list
+			const resultButtons = screen.getAllByRole('button');
+			expect(resultButtons).toHaveLength(2); // Excluding clear button which is conditional
+		});
+
+		it('supports screen readers with proper labeling', () => {
+			const props = { ...defaultProps, isLoading: true };
+			render(TripPlanSearchField, { props });
+
+			// Loading message should be announced to screen readers
+			const loadingMessage = screen.getByText('Loading...');
+			expect(loadingMessage).toBeInTheDocument();
+		});
+	});
+
+	describe('Edge Cases', () => {
+		it('handles empty results gracefully', () => {
+			const props = { ...defaultProps, results: [] };
+			render(TripPlanSearchField, { props });
+
+			const resultsList = screen.queryByRole('list', { hidden: true });
+			expect(resultsList).not.toBeInTheDocument();
+		});
+
+		it('handles null/undefined results', () => {
+			const props = { ...defaultProps, results: null };
+			expect(() => render(TripPlanSearchField, { props })).not.toThrow();
+		});
+
+		it('handles results without displayText', () => {
+			const results = [
+				{ name: 'Capitol Hill' } // Missing displayText
+			];
+			const props = { ...defaultProps, results };
+
+			expect(() => render(TripPlanSearchField, { props })).not.toThrow();
+		});
+
+		it('handles very long place names', () => {
+			const longPlaceName = 'A'.repeat(200);
+			const props = { ...defaultProps, place: longPlaceName };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByDisplayValue(longPlaceName);
+			expect(input).toBeInTheDocument();
+		});
+
+		it('handles rapid input changes', async () => {
+			render(TripPlanSearchField, { props: defaultProps });
+
+			const input = screen.getByPlaceholderText('Search for a place...');
+
+			// Simulate rapid typing
+			await user.type(input, 'Capitol Hill', { delay: 1 });
+
+			// onInput should be called for each character regardless of speed
+			expect(mockOnInput).toHaveBeenCalledTimes(12); // 'Capitol Hill'.length
+		});
+	});
+
+	describe('Integration', () => {
+		it('works with reactive place binding', async () => {
+			renderWithUtils(TripPlanSearchField, { props: defaultProps });
+
+			const input = screen.getByPlaceholderText('Search for a place...');
+			await user.type(input, 'New Place');
+
+			// The component's internal state should update
+			expect(input).toHaveValue('New Place');
+		});
+
+		it('updates when results prop changes', async () => {
+			const { component } = renderWithUtils(TripPlanSearchField, { props: defaultProps });
+
+			// Initially no results
+			expect(screen.queryByRole('list', { hidden: true })).not.toBeInTheDocument();
+
+			// Update props with results
+			const newResults = [{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' }];
+			component.$set({ results: newResults });
+
+			await waitFor(() => {
+				expect(screen.getByText('Capitol Hill, Seattle, WA, USA')).toBeInTheDocument();
+			});
+		});
+
+		it('updates when loading state changes', async () => {
+			const { component } = renderWithUtils(TripPlanSearchField, { props: defaultProps });
+
+			// Initially not loading
+			expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+
+			// Update to loading state
+			component.$set({ isLoading: true });
+
+			await waitFor(() => {
+				expect(screen.getByText('Loading...')).toBeInTheDocument();
+			});
+		});
+	});
+});
