@@ -8,13 +8,6 @@ describe('ModalPane', () => {
 
 	beforeEach(() => {
 		mockClosePane = vi.fn();
-
-		// Mock the keybinding action
-		vi.mock('$lib/keybinding', () => ({
-			keybinding: vi.fn().mockImplementation(() => ({
-				destroy: vi.fn()
-			}))
-		}));
 	});
 
 	afterEach(() => {
@@ -198,7 +191,9 @@ describe('ModalPane', () => {
 		expect(modalPane).toBeInTheDocument();
 	});
 
-	test('handles Escape key to close modal', () => {
+	test('handles Escape key to close modal', async () => {
+		const user = userEvent.setup();
+
 		render(ModalPane, {
 			props: {
 				title: 'Test Modal',
@@ -206,10 +201,9 @@ describe('ModalPane', () => {
 			}
 		});
 
-		// The component uses the keybinding action for Escape key
-		// We can verify the keybinding was set up (mocked in beforeEach)
-		const keybinding = require('$lib/keybinding').keybinding;
-		expect(keybinding).toHaveBeenCalledWith({ code: 'Escape' });
+		// Test that the keybinding is working by simulating the Escape key
+		await user.keyboard('{Escape}');
+		expect(mockClosePane).toHaveBeenCalledTimes(1);
 	});
 
 	test('close button can be focused', async () => {

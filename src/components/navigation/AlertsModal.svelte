@@ -10,22 +10,26 @@
 	const currentLanguage = String(getLocaleFromNavigator()).split('-')[0];
 
 	function getTranslation(translations) {
+		if (!translations || translations.length === 0) {
+			return '';
+		}
 		return (
 			translations.find((t) => t.language === currentLanguage)?.text ||
 			translations.find((t) => t.language === 'en')?.text ||
-			translations[0].text
+			translations[0]?.text ||
+			''
 		);
 	}
 	function getHeaderTextTranslation() {
-		return getTranslation(alert.headerText.translation);
+		return getTranslation(alert.headerText?.translation || []);
 	}
 
 	function getBodyTextTranslation() {
-		return getTranslation(alert.descriptionText.translation);
+		return getTranslation(alert.descriptionText?.translation || []);
 	}
 
 	function getUrlTranslation() {
-		return getTranslation(alert.url.translation);
+		return getTranslation(alert.url?.translation || []);
 	}
 </script>
 

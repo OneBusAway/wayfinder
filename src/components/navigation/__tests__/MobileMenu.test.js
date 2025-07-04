@@ -77,6 +77,7 @@ describe('MobileMenu', () => {
 		});
 
 		const homeLink = screen.getByRole('link', { name: 'Home' });
+		homeLink.addEventListener('click', (e) => e.preventDefault());
 		await user.click(homeLink);
 
 		expect(mockCloseMenu).toHaveBeenCalledTimes(1);
@@ -231,16 +232,19 @@ describe('MobileMenu', () => {
 			}
 		});
 
-		// Click each navigation link
+		// Click each navigation link with preventDefault to avoid navigation
 		const homeLink = screen.getByRole('link', { name: 'Home' });
+		homeLink.addEventListener('click', (e) => e.preventDefault());
 		await user.click(homeLink);
 		expect(mockCloseMenu).toHaveBeenCalledTimes(1);
 
 		const aboutLink = screen.getByRole('link', { name: 'About' });
+		aboutLink.addEventListener('click', (e) => e.preventDefault());
 		await user.click(aboutLink);
 		expect(mockCloseMenu).toHaveBeenCalledTimes(2);
 
 		const contactLink = screen.getByRole('link', { name: 'Contact' });
+		contactLink.addEventListener('click', (e) => e.preventDefault());
 		await user.click(contactLink);
 		expect(mockCloseMenu).toHaveBeenCalledTimes(3);
 	});
