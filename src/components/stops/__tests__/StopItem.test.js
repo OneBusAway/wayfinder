@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi } from 'vitest';
-import StopItem from '../StopItem.svelte';
+import StopItem from '../../StopItem.svelte';
 import { mockStopData, mockStopDataWithoutRoutes } from '../../../tests/fixtures/obaData.js';
 
 describe('StopItem', () => {

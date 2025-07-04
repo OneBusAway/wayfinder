@@ -1,37 +1,10 @@
 import { render, screen } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach, afterEach, afterAll } from 'vitest';
 import StopModal from '../StopModal.svelte';
 import { mockStopData } from '../../../tests/fixtures/obaData.js';
-import { server } from '../../../tests/setup/msw-server.js';
 
-// Mock the child components that are complex
-vi.mock('$components/navigation/ModalPane.svelte', () => {
-	return {
-		default: class MockModalPane {
-			constructor(options) {
-				this.options = options;
-			}
-
-			$set() {
-				// Mock the $set method
-			}
-		}
-	};
-});
-
-vi.mock('$components/stops/StopPane.svelte', () => {
-	return {
-		default: class MockStopPane {
-			constructor(options) {
-				this.options = options;
-			}
-
-			$set() {
-				// Mock the $set method
-			}
-		}
-	};
-});
+// Allow child components to render naturally - they should be properly implemented
 
 // Mock svelte-i18n
 vi.mock('svelte-i18n', () => ({
@@ -50,17 +23,6 @@ vi.mock('svelte-i18n', () => ({
 }));
 
 describe('StopModal', () => {
-	beforeEach(() => {
-		server.listen();
-	});
-
-	afterEach(() => {
-		server.resetHandlers();
-	});
-
-	afterAll(() => {
-		server.close();
-	});
 
 	const defaultProps = {
 		stop: mockStopData,
@@ -72,35 +34,42 @@ describe('StopModal', () => {
 	test('renders modal with stop name as title', () => {
 		render(StopModal, { props: defaultProps });
 
-		// The modal should be rendered (though mocked)
-		expect(screen.getByTestId).toBeDefined();
+		// The modal should display the stop name as the title
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 	});
 
 	test('passes correct props to ModalPane', () => {
-		const { component } = render(StopModal, { props: defaultProps });
+		render(StopModal, { props: defaultProps });
 
-		// Verify the component was rendered
-		expect(component).toBeDefined();
+		// Verify the modal pane renders with the stop name as title
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
+		// Verify the close button is rendered
+		expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
 	});
 
 	test('passes correct props to StopPane', () => {
-		const { component } = render(StopModal, { props: defaultProps });
+		render(StopModal, { props: defaultProps });
 
-		// Verify the component was rendered with proper props
-		expect(component).toBeDefined();
+		// Verify the stop pane renders with stop information
+		// The StopPane component should receive the stop prop and display stop details
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 	});
 
-	test('handles closePane function prop', () => {
+	test('handles closePane function prop', async () => {
 		const closePaneFn = vi.fn();
 		const props = {
 			...defaultProps,
 			closePane: closePaneFn
 		};
 
+		const user = userEvent.setup();
 		render(StopModal, { props });
 
-		// The closePane function should be passed through
-		expect(closePaneFn).toBeDefined();
+		// Click the close button to test the closePane function
+		const closeButton = screen.getByRole('button', { name: /close/i });
+		await user.click(closeButton);
+
+		expect(closePaneFn).toHaveBeenCalledTimes(1);
 	});
 
 	test('handles handleUpdateRouteMap function prop', () => {
@@ -112,8 +81,9 @@ describe('StopModal', () => {
 
 		render(StopModal, { props });
 
-		// The handleUpdateRouteMap function should be passed through
-		expect(updateRouteMapFn).toBeDefined();
+		// The handleUpdateRouteMap function should be passed through to StopPane
+		// We verify the component renders properly with this prop
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 	});
 
 	test('handles tripSelected function prop', () => {
@@ -125,8 +95,9 @@ describe('StopModal', () => {
 
 		render(StopModal, { props });
 
-		// The tripSelected function should be passed through
-		expect(tripSelectedFn).toBeDefined();
+		// The tripSelected function should be passed through to StopPane
+		// We verify the component renders properly with this prop
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 	});
 
 	test('handles different stop data', () => {
@@ -145,8 +116,10 @@ describe('StopModal', () => {
 			stop: differentStop
 		};
 
-		const { component } = render(StopModal, { props });
-		expect(component).toBeDefined();
+		render(StopModal, { props });
+		
+		// Should display the different stop name
+		expect(screen.getByText('Different Stop Name')).toBeInTheDocument();
 	});
 
 	test('handles missing optional props gracefully', () => {
@@ -159,6 +132,9 @@ describe('StopModal', () => {
 		expect(() => {
 			render(StopModal, { props: minimalProps });
 		}).not.toThrow();
+		
+		// Should still display the stop name
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 	});
 
 	test('stop modal passes stop name to modal title', () => {
@@ -175,22 +151,24 @@ describe('StopModal', () => {
 		render(StopModal, { props });
 
 		// The modal should receive the stop name as title
-		// This would be verified through the ModalPane mock if we had access to its props
-		expect(true).toBe(true); // Placeholder assertion
+		expect(screen.getByText('Special Bus Stop Name')).toBeInTheDocument();
 	});
 
 	test('forwards events from StopPane', () => {
-		const { component } = render(StopModal, { props: defaultProps });
+		render(StopModal, { props: defaultProps });
 
-		// The component should be set up to forward events
-		expect(component).toBeDefined();
+		// The component should be set up to forward events from StopPane
+		// Verify the component structure allows event forwarding
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 	});
 
 	test('component structure follows expected pattern', () => {
 		const { container } = render(StopModal, { props: defaultProps });
 
-		// Basic structure validation
+		// Basic structure validation - should have modal pane elements
 		expect(container.firstChild).toBeDefined();
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
 	});
 
 	test('handles null or undefined stop gracefully', () => {
@@ -199,25 +177,37 @@ describe('StopModal', () => {
 			stop: null
 		};
 
-		// This might throw an error in real usage, but we test the component boundary
+		// This should throw an error since stop.name is required
 		expect(() => {
 			render(StopModal, { props: propsWithNullStop });
 		}).toThrow(); // Expected to throw with null stop
 	});
 
 	test('component props are reactive', () => {
-		const { component } = render(StopModal, { props: defaultProps });
+		// Test that component works with different props
+		const { unmount } = render(StopModal, { props: defaultProps });
+		
+		// First render should show original stop name
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
+		
+		// Clean up first render
+		unmount();
 
-		// Update props
+		// Render with new props
 		const newStop = {
 			...mockStopData,
 			name: 'Updated Stop Name'
 		};
 
-		component.$set({ stop: newStop });
+		const newProps = {
+			...defaultProps,
+			stop: newStop
+		};
 
-		// Component should handle prop updates
-		expect(component).toBeDefined();
+		render(StopModal, { props: newProps });
+
+		// Component should handle different props and show new stop name
+		expect(screen.getByText('Updated Stop Name')).toBeInTheDocument();
 	});
 });
 
@@ -225,10 +215,20 @@ describe('StopModal', () => {
 describe('StopModal Integration', () => {
 	// These tests would use the real components instead of mocks
 	// for more comprehensive integration testing
+	
+	const integrationProps = {
+		stop: mockStopData,
+		closePane: vi.fn(),
+		handleUpdateRouteMap: vi.fn(),
+		tripSelected: vi.fn()
+	};
 
-	test('modal integration test placeholder', () => {
-		// This would test the actual integration between ModalPane and StopPane
-		// For now, we rely on the mocked component tests above
-		expect(true).toBe(true);
+	test('modal integration works properly', () => {
+		// Test the actual integration between ModalPane and StopPane
+		render(StopModal, { props: integrationProps });
+		
+		// Should render both the modal structure and stop content
+		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
 	});
 });

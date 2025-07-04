@@ -6,7 +6,15 @@ import { createMockPageStore } from '../../../tests/helpers/test-utils.js';
 // Mock the $app/stores
 vi.mock('$app/stores', () => ({
 	page: {
-		subscribe: vi.fn()
+		subscribe: vi.fn((fn) => {
+			fn({
+				url: new URL('https://example.com/stops/1_75403'),
+				params: { stopID: '1_75403' },
+				route: { id: '/stops/[stopID]' },
+				data: {}
+			});
+			return { unsubscribe: vi.fn() };
+		})
 	}
 }));
 
@@ -38,12 +46,8 @@ describe('StopPageHeader', () => {
 			url: new URL('http://localhost:5173/stops/1_75403')
 		});
 
-		// Mock the page store subscription
-		const { page } = require('$app/stores');
-		page.subscribe.mockImplementation((fn) => {
-			fn(mockPageStore._getValue());
-			return { unsubscribe: () => {} };
-		});
+		// Reset the page store mock for each test
+		vi.clearAllMocks();
 	});
 
 	const defaultProps = {
@@ -232,14 +236,14 @@ describe('StopPageHeader', () => {
 	});
 
 	test('uses semantic HTML structure', () => {
-		render(StopPageHeader, { props: defaultProps });
+		const { container } = render(StopPageHeader, { props: defaultProps });
 
 		// Main heading should be h1
 		const mainHeading = screen.getByRole('heading', { level: 1 });
 		expect(mainHeading.tagName).toBe('H1');
 
 		// Strong elements should be used for labels
-		const strongElements = screen.getAllByRole('generic').filter((el) => el.tagName === 'STRONG');
+		const strongElements = container.querySelectorAll('strong');
 		expect(strongElements.length).toBeGreaterThan(0);
 	});
 });
