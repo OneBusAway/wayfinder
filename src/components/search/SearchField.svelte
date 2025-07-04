@@ -12,7 +12,7 @@
 
 	async function handleSearch() {
 		try {
-			const trimmedValue = value.trim();
+			const trimmedValue = (value || '').trim();
 			const response = await fetch(`/api/oba/search?query=${encodeURIComponent(trimmedValue)}`);
 			const results = await response.json();
 
@@ -24,7 +24,7 @@
 	}
 
 	const onHandleSearch = (event) => {
-		const trimmedValue = value.trim();
+		const trimmedValue = (value || '').trim();
 		if (!trimmedValue) {
 			return;
 		}
@@ -68,7 +68,7 @@
 		<button
 			type="button"
 			onclick={onHandleSearch}
-			disabled={!value.trim()}
+			disabled={!(value || '').trim()}
 			class="rotate-rtl relative -ml-px inline-flex items-center gap-x-1.5 rounded-r-md px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed dark:text-gray-300 dark:hover:text-gray-900"
 		>
 			<svg

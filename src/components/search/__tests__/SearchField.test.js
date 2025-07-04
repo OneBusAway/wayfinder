@@ -10,6 +10,22 @@ vi.mock('$lib/Analytics/PlausibleAnalytics', () => ({
 	}
 }));
 
+// Mock svelte-i18n
+vi.mock('svelte-i18n', () => {
+	const translations = {
+		'search.search': 'Search'
+	};
+	
+	return {
+		t: {
+			subscribe: vi.fn((fn) => {
+				fn((key) => translations[key] || key);
+				return { unsubscribe: () => {} };
+			})
+		}
+	};
+});
+
 describe('SearchField', () => {
 	let mockHandleSearchResults;
 	let mockFetch;
@@ -51,7 +67,7 @@ describe('SearchField', () => {
 		});
 
 		// Check for accessibility labels
-		expect(screen.getByLabelText('search.search')).toBeInTheDocument();
+		expect(screen.getByLabelText('Search')).toBeInTheDocument();
 
 		// Check for placeholder text
 		const input = screen.getByRole('textbox');
@@ -448,10 +464,10 @@ describe('SearchField', () => {
 			const button = screen.getByRole('button');
 
 			// Input should have accessible name
-			expect(input).toHaveAccessibleName('search.search');
+			expect(input).toHaveAccessibleName('Search');
 
 			// Button should have accessible text
-			expect(button).toHaveAccessibleName('search.search');
+			expect(button).toHaveAccessibleName('Search');
 
 			// Icons should be hidden from screen readers
 			const searchIcon = container.querySelector('svg[aria-hidden="true"]');
