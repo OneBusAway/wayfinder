@@ -51,7 +51,7 @@ vi.mock('svelte-i18n', () => {
 		'tabs.stops-and-stations': 'Stops & Stations',
 		'tabs.plan_trip': 'Plan Trip'
 	};
-	
+
 	return {
 		t: {
 			subscribe: vi.fn((fn) => {
@@ -153,7 +153,6 @@ describe('SearchPane', () => {
 	});
 
 	describe('Tab Navigation and Accessibility', () => {
-
 		test('emits custom events for tab interactions', async () => {
 			const user = userEvent.setup();
 
@@ -217,7 +216,6 @@ describe('SearchPane', () => {
 				expect.any(Function)
 			);
 		});
-
 
 		test('handles external route selection events', () => {
 			render(SearchPane, { props: mockProps });

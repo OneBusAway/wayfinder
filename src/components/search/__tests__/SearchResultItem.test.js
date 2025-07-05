@@ -462,7 +462,7 @@ describe('SearchResultItem', () => {
 
 			expect(screen.getByText('Initial Title')).toBeInTheDocument();
 			expect(screen.getByText('Initial Subtitle')).toBeInTheDocument();
-			
+
 			unmount();
 
 			// Render with different props

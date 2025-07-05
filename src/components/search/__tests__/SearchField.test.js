@@ -15,7 +15,7 @@ vi.mock('svelte-i18n', () => {
 	const translations = {
 		'search.search': 'Search'
 	};
-	
+
 	return {
 		t: {
 			subscribe: vi.fn((fn) => {

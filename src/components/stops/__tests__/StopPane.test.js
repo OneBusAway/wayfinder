@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
-import { expect, test, describe, vi, beforeEach, afterEach, afterAll } from 'vitest';
+import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import StopPane from '../StopPane.svelte';
 import {
 	mockStopData,

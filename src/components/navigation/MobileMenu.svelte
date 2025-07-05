@@ -11,7 +11,7 @@
 >
 	<button onclick={closeMenu} aria-label="Close Menu">
 		<svg
-			class="close-icon h-6 w-6 text-gray-900 dark:text-white cursor-pointer"
+			class="close-icon h-6 w-6 cursor-pointer text-gray-900 dark:text-white"
 			fill="none"
 			stroke="currentColor"
 			viewBox="0 0 24 24"

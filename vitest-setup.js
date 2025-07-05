@@ -76,7 +76,6 @@ vi.mock('$app/stores', () => ({
 	}
 }));
 
-
 // Mock geolocation
 global.navigator = {
 	...global.navigator,

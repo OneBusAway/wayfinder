@@ -10,12 +10,12 @@ import { mockRoutesListData } from '../../../tests/fixtures/obaData.js';
 vi.mock('svelte-i18n', () => ({
 	t: {
 		subscribe: vi.fn((fn) => {
-			fn((key, options) => {
+			fn((key) => {
 				const translations = {
 					'search.all_routes': 'All Routes',
 					'search.search_for_routes': 'Search for routes',
 					'search.no_routes_found': 'No routes found',
-					'loading': 'loading'
+					loading: 'loading'
 				};
 				return translations[key] || key;
 			});
@@ -76,7 +76,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should display routes
 		expect(screen.getByPlaceholderText('Search for routes')).toBeInTheDocument(); // Search input
-		expect(screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'))).toHaveLength(mockRoutesListData.length);
+		expect(
+			screen.getAllByRole('button').filter((btn) => btn.className.includes('route-item'))
+		).toHaveLength(mockRoutesListData.length);
 	});
 
 	test('handles API error gracefully', async () => {
@@ -100,7 +102,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should handle error and not display routes
 		expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch routes:', 'Failed to fetch routes');
-		const routeButtons = screen.queryAllByRole('button').filter(btn => btn.className.includes('route-item'));
+		const routeButtons = screen
+			.queryAllByRole('button')
+			.filter((btn) => btn.className.includes('route-item'));
 		expect(routeButtons).toHaveLength(0);
 
 		consoleSpy.mockRestore();
@@ -152,7 +156,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should filter routes
 		await waitFor(() => {
-			const routeItems = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item') && btn.textContent.includes('44'));
+			const routeItems = screen
+				.getAllByRole('button')
+				.filter((btn) => btn.className.includes('route-item') && btn.textContent.includes('44'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -210,7 +216,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should find route with short name '44'
 		await waitFor(() => {
-			const routeItems = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+			const routeItems = screen
+				.getAllByRole('button')
+				.filter((btn) => btn.className.includes('route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -239,7 +247,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should find route with 'Ballard' in long name
 		await waitFor(() => {
-			const routeItems = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+			const routeItems = screen
+				.getAllByRole('button')
+				.filter((btn) => btn.className.includes('route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -268,7 +278,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should find routes operated by Sound Transit
 		await waitFor(() => {
-			const routeItems = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+			const routeItems = screen
+				.getAllByRole('button')
+				.filter((btn) => btn.className.includes('route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -297,7 +309,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should find route with 'Ballard' in long name (case insensitive)
 		await waitFor(() => {
-			const routeItems = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+			const routeItems = screen
+				.getAllByRole('button')
+				.filter((btn) => btn.className.includes('route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -326,7 +340,9 @@ describe('ViewAllRoutesModal', () => {
 		// First, search for something
 		await user.type(searchInput, '44');
 		await waitFor(() => {
-			const filteredItems = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+			const filteredItems = screen
+				.getAllByRole('button')
+				.filter((btn) => btn.className.includes('route-item'));
 			expect(filteredItems.length).toBeLessThan(mockRoutesListData.length);
 		});
 
@@ -335,7 +351,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should show all routes again
 		await waitFor(() => {
-			const allItems = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+			const allItems = screen
+				.getAllByRole('button')
+				.filter((btn) => btn.className.includes('route-item'));
 			expect(allItems).toHaveLength(mockRoutesListData.length);
 		});
 	});
@@ -360,7 +378,9 @@ describe('ViewAllRoutesModal', () => {
 		});
 
 		// Click on a route
-		const routeButtons = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+		const routeButtons = screen
+			.getAllByRole('button')
+			.filter((btn) => btn.className.includes('route-item'));
 		if (routeButtons.length > 0) {
 			await user.click(routeButtons[0]);
 			expect(mockHandleModalRouteClick).toHaveBeenCalledWith(mockRoutesListData[0]);
@@ -462,7 +482,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should be able to tab to route items
 		await user.tab();
-		const routeButtons = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+		const routeButtons = screen
+			.getAllByRole('button')
+			.filter((btn) => btn.className.includes('route-item'));
 		if (routeButtons.length > 0) {
 			expect(routeButtons[0]).toHaveFocus();
 		}
@@ -508,7 +530,9 @@ describe('ViewAllRoutesModal', () => {
 		});
 
 		// Should display all different route types
-		const routeItems = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+		const routeItems = screen
+			.getAllByRole('button')
+			.filter((btn) => btn.className.includes('route-item'));
 		expect(routeItems).toHaveLength(mockRoutesListData.length);
 	});
 
@@ -594,7 +618,9 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should find routes by description
 		await waitFor(() => {
-			const routeItems = screen.getAllByRole('button').filter(btn => btn.className.includes('route-item'));
+			const routeItems = screen
+				.getAllByRole('button')
+				.filter((btn) => btn.className.includes('route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});

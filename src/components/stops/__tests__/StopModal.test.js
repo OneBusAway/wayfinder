@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test, describe, vi, beforeEach, afterEach, afterAll } from 'vitest';
+import { expect, test, describe, vi } from 'vitest';
 import StopModal from '../StopModal.svelte';
 import { mockStopData } from '../../../tests/fixtures/obaData.js';
 
@@ -23,7 +23,6 @@ vi.mock('svelte-i18n', () => ({
 }));
 
 describe('StopModal', () => {
-
 	const defaultProps = {
 		stop: mockStopData,
 		closePane: vi.fn(),
@@ -117,7 +116,7 @@ describe('StopModal', () => {
 		};
 
 		render(StopModal, { props });
-		
+
 		// Should display the different stop name
 		expect(screen.getByText('Different Stop Name')).toBeInTheDocument();
 	});
@@ -132,7 +131,7 @@ describe('StopModal', () => {
 		expect(() => {
 			render(StopModal, { props: minimalProps });
 		}).not.toThrow();
-		
+
 		// Should still display the stop name
 		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 	});
@@ -186,10 +185,10 @@ describe('StopModal', () => {
 	test('component props are reactive', () => {
 		// Test that component works with different props
 		const { unmount } = render(StopModal, { props: defaultProps });
-		
+
 		// First render should show original stop name
 		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
-		
+
 		// Clean up first render
 		unmount();
 
@@ -215,7 +214,7 @@ describe('StopModal', () => {
 describe('StopModal Integration', () => {
 	// These tests would use the real components instead of mocks
 	// for more comprehensive integration testing
-	
+
 	const integrationProps = {
 		stop: mockStopData,
 		closePane: vi.fn(),
@@ -226,7 +225,7 @@ describe('StopModal Integration', () => {
 	test('modal integration works properly', () => {
 		// Test the actual integration between ModalPane and StopPane
 		render(StopModal, { props: integrationProps });
-		
+
 		// Should render both the modal structure and stop content
 		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();

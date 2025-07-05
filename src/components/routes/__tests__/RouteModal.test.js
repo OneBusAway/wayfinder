@@ -12,7 +12,9 @@ vi.mock('svelte-i18n', () => ({
 		subscribe: vi.fn((fn) => {
 			fn((key, options) => {
 				const translations = {
-					route_modal_title: options?.values?.name ? `Route ${options.values.name}` : 'route_modal_title'
+					route_modal_title: options?.values?.name
+						? `Route ${options.values.name}`
+						: 'route_modal_title'
 				};
 				return translations[key] || key;
 			});
@@ -93,10 +95,13 @@ describe('RouteModal', () => {
 		});
 
 		// Find and click a stop item (exclude the close button)
-		const stopButtons = screen.getAllByRole('button').filter(button => 
-			button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
-		);
-		
+		const stopButtons = screen
+			.getAllByRole('button')
+			.filter(
+				(button) =>
+					button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
+			);
+
 		if (stopButtons.length > 0) {
 			await user.click(stopButtons[0]);
 		}
@@ -219,9 +224,12 @@ describe('RouteModal', () => {
 		});
 
 		// Should be able to navigate through stops with keyboard
-		const stopButtons = screen.getAllByRole('button').filter(button => 
-			button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
-		);
+		const stopButtons = screen
+			.getAllByRole('button')
+			.filter(
+				(button) =>
+					button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
+			);
 
 		if (stopButtons.length > 0) {
 			// Focus first stop and click it
@@ -278,11 +286,14 @@ describe('RouteModal', () => {
 		});
 
 		// Should have accessible button elements
-		const stopButtons = screen.getAllByRole('button').filter(button => 
-			button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
-		);
+		const stopButtons = screen
+			.getAllByRole('button')
+			.filter(
+				(button) =>
+					button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
+			);
 		expect(stopButtons.length).toBeGreaterThan(0);
-		
+
 		// Should have accessible headings
 		expect(screen.getByRole('heading', { name: /Route: 44/ })).toBeInTheDocument();
 	});
@@ -303,9 +314,12 @@ describe('RouteModal', () => {
 			}
 		});
 
-		const stopButtons = screen.getAllByRole('button').filter(button => 
-			button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
-		);
+		const stopButtons = screen
+			.getAllByRole('button')
+			.filter(
+				(button) =>
+					button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
+			);
 		if (stopButtons.length > 0) {
 			// Should not crash when map provider throws errors
 			await user.click(stopButtons[0]);
@@ -323,9 +337,12 @@ describe('RouteModal', () => {
 			}
 		});
 
-		const stopButtons = screen.getAllByRole('button').filter(button => 
-			button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
-		);
+		const stopButtons = screen
+			.getAllByRole('button')
+			.filter(
+				(button) =>
+					button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
+			);
 		expect(stopButtons.length).toBe(mockStops.length);
 
 		// Stops should be displayed in the same order as provided
@@ -384,9 +401,12 @@ describe('RouteModal', () => {
 		});
 
 		// Each stop should have its own interaction handler
-		const stopButtons = screen.getAllByRole('button').filter(button => 
-			button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
-		);
+		const stopButtons = screen
+			.getAllByRole('button')
+			.filter(
+				(button) =>
+					button.textContent.includes('Pine St') || button.textContent.includes('15th Ave')
+			);
 
 		for (let i = 0; i < stopButtons.length && i < mockStops.length; i++) {
 			await user.click(stopButtons[i]);

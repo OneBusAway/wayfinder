@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import TripPlanSearchField from '../TripPlanSearchField.svelte';
 import { renderWithUtils, a11yHelpers } from '../../../tests/helpers/test-utils.js';
@@ -15,7 +15,7 @@ vi.mock('svelte-i18n', () => {
 		'trip-planner.search_for_a_place': 'Search for a place',
 		'trip-planner.loading': 'Loading'
 	};
-	
+
 	return {
 		t: {
 			subscribe: vi.fn((fn) => {
@@ -162,11 +162,11 @@ describe('TripPlanSearchField', () => {
 			// Results should be focusable
 			expect(firstResult).toBeInTheDocument();
 			expect(secondResult).toBeInTheDocument();
-			
+
 			// Should be able to focus on results
 			firstResult.focus();
 			expect(firstResult).toHaveFocus();
-			
+
 			secondResult.focus();
 			expect(secondResult).toHaveFocus();
 		});
