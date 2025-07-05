@@ -48,32 +48,36 @@
 
 	async function handleRouteClick(route) {
 		clearResults();
-		const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
-		const stopsForRoute = await response.json();
-		const stops = stopsForRoute.data.references.stops;
-		const polylinesData = stopsForRoute.data.entry.polylines;
+		try {
+			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
+			const stopsForRoute = await response.json();
+			const stops = stopsForRoute.data.references.stops;
+			const polylinesData = stopsForRoute.data.entry.polylines;
 
-		const midpoint = calculateMidpoint(stopsForRoute.data.references.stops);
-		mapProvider.flyTo(midpoint.lat, midpoint.lng, 12);
+			const midpoint = calculateMidpoint(stopsForRoute.data.references.stops);
+			mapProvider.flyTo(midpoint.lat, midpoint.lng, 12);
 
-		for (const polylineData of polylinesData) {
-			const shape = polylineData.points;
-			let polyline;
-			polyline = mapProvider.createPolyline(shape);
-			polylines.push(polyline);
+			for (const polylineData of polylinesData) {
+				const shape = polylineData.points;
+				let polyline;
+				polyline = mapProvider.createPolyline(shape);
+				polylines.push(polyline);
+			}
+
+			await showStopsOnRoute(stops);
+			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
+
+			const routeData = {
+				route,
+				stops,
+				polylines,
+				currentIntervalId
+			};
+
+			handleRouteSelected(routeData);
+		} catch (error) {
+			console.error('Error fetching route data:', error);
 		}
-
-		await showStopsOnRoute(stops);
-		currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
-
-		const routeData = {
-			route,
-			stops,
-			polylines,
-			currentIntervalId
-		};
-
-		handleRouteSelected(routeData);
 	}
 
 	async function showStopsOnRoute(stops) {

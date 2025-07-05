@@ -24,17 +24,12 @@ describe('keybinding action', () => {
 			})
 		};
 
-		// Set up mock window
-		const originalWindow = global.window;
-		global.window = mockWindow;
-
-		beforeEach.cleanup = () => {
-			global.window = originalWindow;
-		};
+		// Mock window globally
+		vi.stubGlobal('window', mockWindow);
 	});
 
 	afterEach(() => {
-		beforeEach.cleanup?.();
+		vi.unstubAllGlobals();
 		vi.clearAllMocks();
 		currentHandler = null;
 	});
@@ -68,9 +63,8 @@ describe('keybinding action', () => {
 		mockWindow.addEventListener.mockClear();
 		mockWindow.removeEventListener.mockClear();
 
-		// Update the params object directly
-		params.code = 'KeyB';
-		action.update();
+		// Update with new params
+		action.update({ code: 'KeyB' });
 
 		expect(mockWindow.removeEventListener).toHaveBeenCalledTimes(1);
 		expect(mockWindow.addEventListener).toHaveBeenCalledTimes(1);
@@ -94,18 +88,16 @@ describe('keybinding action', () => {
 	});
 
 	it('responds to updated key code', () => {
-		// Create params object that we'll modify
-		let params = { code: 'KeyA' };
-		const action = keybinding(node, params);
+		// Create initial binding
+		const action = keybinding(node, { code: 'KeyA' });
 
 		// Verify initial binding works
 		triggerKeydown({ code: 'KeyA' });
 		expect(node.click).toHaveBeenCalledTimes(1);
 
-		// Update params and trigger update
+		// Update with new params
 		node.click.mockClear();
-		params.code = 'KeyB';
-		action.update();
+		action.update({ code: 'KeyB' });
 
 		// Verify new binding works
 		triggerKeydown({ code: 'KeyB' });

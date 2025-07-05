@@ -10,23 +10,27 @@
  */
 export const keybinding = (node, params) => {
 	let handler;
+	let currentParams = params;
 	const removeHandler = () => window.removeEventListener('keydown', handler);
-	const setHandler = () => {
+	const setHandler = (newParams) => {
+		if (newParams !== undefined) {
+			currentParams = newParams;
+		}
 		removeHandler();
-		if (!params) {
+		if (!currentParams) {
 			return;
 		}
 
 		handler = (e) => {
 			if (
-				!!params.alt != e.altKey ||
-				!!params.shift != e.shiftKey ||
-				!!params.control != (e.ctrlKey || e.metaKey) ||
-				params.code != e.code
+				!!currentParams.alt != e.altKey ||
+				!!currentParams.shift != e.shiftKey ||
+				!!currentParams.control != (e.ctrlKey || e.metaKey) ||
+				currentParams.code != e.code
 			)
 				return;
 			e.preventDefault();
-			params.callback ? params.callback() : node.click();
+			currentParams.callback ? currentParams.callback() : node.click();
 		};
 		window.addEventListener('keydown', handler);
 	};
