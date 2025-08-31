@@ -24,7 +24,5 @@ export function convertUnixToTime(seconds) {
 	if (!seconds) return '';
 	const date = new Date(seconds * 1000);
 	const utcDate = new Date(date.toUTCString().slice(0, -4));
-	const localDateTime = utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-	return localDateTime.replace(/am|pm/, time => time.toUpperCase());
+	return utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }

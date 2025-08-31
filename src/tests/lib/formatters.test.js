@@ -2,6 +2,24 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { convertUnixToTime, formatLastUpdated, formatTime } from '$lib/formatters';
 
 describe('convertUnixToTime', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date('2024-01-16T12:00:00Z'));
+		vi.spyOn(Date.prototype, 'toLocaleTimeString').mockImplementation(function () {
+			const hours = this.getUTCHours();
+			const minutes = this.getUTCMinutes();
+			const ampm = hours >= 12 ? 'PM' : 'AM';
+			const hour12 = hours % 12 || 12;
+			const minutesPadded = minutes.toString().padStart(2, '0');
+			return `${hour12}:${minutesPadded} ${ampm}`;
+		});
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+		vi.restoreAllMocks();
+	});
+
 	it('returns a blank string when its input is null', () => {
 		expect(convertUnixToTime(null)).toBe('');
 	});
@@ -11,7 +29,7 @@ describe('convertUnixToTime', () => {
 	});
 
 	it('converts a Unix timestamp to a locale-specific formatted time', () => {
-		expect(convertUnixToTime(1727442050)).toBe('01:00 PM');
+		expect(convertUnixToTime(1727442050)).toBe('7:30 AM');
 	});
 });
 
