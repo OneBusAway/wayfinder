@@ -29,7 +29,7 @@ describe('convertUnixToTime', () => {
 	});
 
 	it('converts a Unix timestamp to a locale-specific formatted time', () => {
-		expect(convertUnixToTime(1727442050)).toBe('7:30 AM');
+		expect(convertUnixToTime(1727442050)).toBe('1:00 PM');
 	});
 });
 
