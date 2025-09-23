@@ -91,16 +91,14 @@
 		if (interval) clearInterval(interval);
 	});
 
-	let _routeShortNames = null;
-	function routeShortNames() {
-		if (!_routeShortNames && arrivalsAndDeparturesResponse?.data?.references?.routes) {
-			_routeShortNames = arrivalsAndDeparturesResponse.data.references.routes
-				.filter((r) => stop.routeIds.includes(r.id))
-				.map((r) => r.nullSafeShortName)
-				.sort();
-		}
-		return _routeShortNames;
-	}
+	let routeShortNames = $derived(
+		arrivalsAndDeparturesResponse?.data?.references?.routes
+			? arrivalsAndDeparturesResponse.data.references.routes
+					.filter((r) => stop.routeIds.includes(r.id))
+					.map((r) => r.nullSafeShortName)
+					.sort()
+			: null
+	);
 
 	function handleAccordionSelectionChanged(event) {
 		const data = event.activeData; // this is the ArrivalDeparture object plumbed into the AccordionItem
@@ -186,8 +184,8 @@
 					>
 						<h1 class="h1 mb-0 text-white">{stop.name}</h1>
 						<h2 class="h2 mb-0 text-white">{$t('stop')} #{stop.id}</h2>
-						{#if routeShortNames()}
-							<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames().join(', ')}</h2>
+						{#if routeShortNames && routeShortNames.length > 0}
+							<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames.join(', ')}</h2>
 						{/if}
 
 						{#if tripSelected}
