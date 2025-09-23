@@ -13,7 +13,7 @@
 
 	let { data } = $props();
 	const stop = data.stopData.entry;
-	const arrivalsAndDeparturesResponse = data.arrivalsAndDeparturesResponse;
+	let arrivalsAndDeparturesResponse = $state(data.arrivalsAndDeparturesData || null);
 
 	const currentUserLocation = $state($userLocation);
 
@@ -35,5 +35,5 @@
 
 <StandalonePage>
 	<StopPageHeader stopName={stop.name} stopId={stop.id} stopDirection={stop.direction} />
-	<StopPane {stop} {arrivalsAndDeparturesResponse} />
+	<StopPane {stop} bind:arrivalsAndDeparturesResponse={arrivalsAndDeparturesResponse} />
 </StandalonePage>
