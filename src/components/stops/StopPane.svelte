@@ -95,7 +95,8 @@
 		arrivalsAndDeparturesResponse?.data?.references?.routes
 			? arrivalsAndDeparturesResponse.data.references.routes
 					.filter((r) => stop.routeIds.includes(r.id))
-					.map((r) => r.nullSafeShortName)
+					// the route id will be always be required so if the shortName is missing, fall back to the id split and get the route id
+					.map((r) => r.shortName || r.id.split('_')[1])
 					.sort()
 			: null
 	);
