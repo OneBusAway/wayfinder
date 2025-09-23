@@ -35,5 +35,5 @@
 
 <StandalonePage>
 	<StopPageHeader stopName={stop.name} stopId={stop.id} stopDirection={stop.direction} />
-	<StopPane {stop} bind:arrivalsAndDeparturesResponse={arrivalsAndDeparturesResponse} />
+	<StopPane {stop} bind:arrivalsAndDeparturesResponse />
 </StandalonePage>
