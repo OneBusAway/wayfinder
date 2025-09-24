@@ -46,7 +46,22 @@
 		"on_time": "wakhtiga",
 		"min": "daqiiqo",
 		"arrives_on_time": "wakhtiga ku yimid",
-		"scheduled_not_real_time": "Jadwaleysan/maaha waqtiga dhabta ah"
+		"scheduled_not_real_time": "Jadwaleysan/maaha waqtiga dhabta ah",
+		"canceled": "La joojiyay",
+		"canceled_arrival": "Imaatinka la joojiyay",
+		"canceled_departure": "Bixitaanka la joojiyay",
+		"frequency_from": "Waa {headway} daqiiqo ka bilaabaya {time}",
+		"frequency_until": "Waa {headway} daqiiqo ilaa {time}",
+		"late_without_arrive_depart": "{delay} daqiiqo daahsan",
+		"early_without_arrive_depart": "{delay} daqiiqo goor hore",
+		"arrived_delayed": "Yimid {delay} daqiiqo daahsan",
+		"arrived_early": "Yimid {delay} daqiiqo goor hore",
+		"arrived_ontime": "Wakhtiga ku yimid",
+		"depart_delayed": "Tegay {delay} daqiiqo daahsan",
+		"depart_early": "Tegay {delay} daqiiqo goor hore",
+		"departed_ontime": "Wakhtiga ku tegay",
+		"scheduled_arrival": "Imaatinka jadwaleysan",
+		"scheduled_departure": "Bixitaanka jadwaleysan"
 	},
 	"alert": {
 		"more_info": "Macluumaad dheeraad ah",
@@ -62,12 +77,13 @@
 	"arrives": "imaataa",
 	"NA": "M/Q",
 	"time": {
-		"ago": "hore",
-		"sec": "ilbiriqsi",
-		"secs": "ilbiriqsiyaal",
-		"min": "daqiiqo",
-		"mins": "daqiiqado",
-		"minutes": "daqiiqado"
+		"ago": "ago",
+		"now": "hadda",
+		"sec": "sec",
+		"secs": "secs",
+		"min": "min",
+		"mins": "mins",
+		"minutes": "minutes"
 	},
 	"vehicle": {
 		"number": "Gaari #",

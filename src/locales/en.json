@@ -46,7 +46,22 @@
 		"on_time": "on time",
 		"min": "min",
 		"arrives_on_time": "arrives on time",
-		"scheduled_not_real_time": "Scheduled/not real-time"
+		"scheduled_not_real_time": "Scheduled/not real-time",
+		"canceled": "Canceled",
+		"canceled_arrival": "Canceled arrival",
+		"canceled_departure": "Canceled departure",
+		"frequency_from": "Every {headway} min from {time}",
+		"frequency_until": "Every {headway} min until {time}",
+		"late_without_arrive_depart": "{delay} min late",
+		"early_without_arrive_depart": "{delay} min early",
+		"arrived_delayed": "Arrived {delay} min late",
+		"arrived_early": "Arrived {delay} min early",
+		"arrived_ontime": "Arrived on time",
+		"depart_delayed": "Departed {delay} min late",
+		"depart_early": "Departed {delay} min early",
+		"departed_ontime": "Departed on time",
+		"scheduled_arrival": "Scheduled arriving at",
+		"scheduled_departure": "Scheduled departure"
 	},
 	"alert": {
 		"more_info": "More info",
@@ -63,6 +78,7 @@
 	"NA": "N/A",
 	"time": {
 		"ago": "ago",
+		"now": "now",
 		"sec": "sec",
 		"secs": "secs",
 		"min": "min",

@@ -46,7 +46,22 @@
 		"on_time": "በትክክል ጊዜ",
 		"min": "ደቂቃ",
 		"arrives_on_time": "በጊዜው ይደርሳል",
-		"scheduled_not_real_time": "ታቅዷል/እንደሚሆነ ሁኔታ"
+		"scheduled_not_real_time": "ታቅዷል/እንደሚሆነ ሁኔታ",
+		"canceled": "ተሰርዟል",
+		"canceled_arrival": "ተሰርዟል መድረሻ",
+		"canceled_departure": "ተሰርዟል መውጣት",
+		"frequency_from": "በየ {headway} ደቂቃ ከ {time}",
+		"frequency_until": "በየ {headway} ደቂቃ እስከ {time}",
+		"late_without_arrive_depart": "{delay} ደቂቃ መዘግየት",
+		"early_without_arrive_depart": "{delay} ደቂቃ ቀድሞ",
+		"arrived_delayed": "ደርሷል {delay} ደቂቃ መዘግየት",
+		"arrived_early": "ደርሷል {delay} ደቂቃ ቀድሞ",
+		"arrived_ontime": "በጊዜው ደርሷል",
+		"depart_delayed": "ተጓዘ {delay} ደቂቃ መዘግየት",
+		"depart_early": "ተጓዘ {delay} ደቂቃ ቀድሞ",
+		"departed_ontime": "በጊዜው ተጓዘ",
+		"scheduled_arrival": "ታቅዶ መድረሻ",
+		"scheduled_departure": "ታቅዶ መውጣት"
 	},
 	"alert": {
 		"more_info": "ተጨማሪ መረጃ",
@@ -62,12 +77,13 @@
 	"arrives": "ይደርሳል",
 	"NA": "አቅርኛ",
 	"time": {
-		"ago": "በፊት",
-		"sec": "ሰከንድ",
-		"secs": "ሰከንዶች",
-		"min": "ደቂቃ",
-		"mins": "ደቂቃዎች",
-		"minutes": "ደቂቃዎች"
+		"ago": "ago",
+		"now": "አሁን",
+		"sec": "sec",
+		"secs": "secs",
+		"min": "min",
+		"mins": "mins",
+		"minutes": "minutes"
 	},
 	"vehicle": {
 		"number": "ተሽከርካሪ #",
