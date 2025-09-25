@@ -46,7 +46,22 @@
 		"on_time": "في الوقت المحدد",
 		"min": "دقيقة",
 		"arrives_on_time": "يصل في الوقت المحدد",
-		"scheduled_not_real_time": "مجدول/ليس في الوقت الحقيقي"
+		"scheduled_not_real_time": "مجدول/ليس في الوقت الحقيقي",
+		"canceled": "ملغي",
+		"canceled_arrival": "وصول ملغي",
+		"canceled_departure": "مغادرة ملغية",
+		"frequency_from": "كل {headway} دقيقة من {time}",
+		"frequency_until": "كل {headway} دقيقة حتى {time}",
+		"late_without_arrive_depart": "{delay} دقيقة متأخر",
+		"early_without_arrive_depart": "{delay} دقيقة مبكر",
+		"arrived_delayed": "وصل متأخراً {delay} دقيقة",
+		"arrived_early": "وصل مبكراً {delay} دقيقة",
+		"arrived_ontime": "وصل في الوقت المحدد",
+		"depart_delayed": "غادر متأخراً {delay} دقيقة",
+		"depart_early": "غادر مبكراً {delay} دقيقة",
+		"departed_ontime": "غادر في الوقت المحدد",
+		"scheduled_arrival": "وصول مجدول",
+		"scheduled_departure": "مغادرة مجدولة"
 	},
 	"alert": {
 		"more_info": "مزيد من المعلومات",
@@ -63,11 +78,12 @@
 	"NA": "غير متاح",
 	"time": {
 		"ago": "منذ",
-		"sec": "ثانية",
-		"secs": "ثواني",
-		"min": "دقيقة",
-		"mins": "دقائق",
-		"minutes": "دقائق"
+		"now": "الآن",
+		"sec": "sec",
+		"secs": "secs",
+		"min": "min",
+		"mins": "mins",
+		"minutes": "minutes"
 	},
 	"vehicle": {
 		"number": "رقم المركبة",

@@ -46,7 +46,22 @@
 		"on_time": "oras",
 		"min": "minuto",
 		"arrives_on_time": "dumarating ng oras",
-		"scheduled_not_real_time": "Naka-iskedyul/hindi real-time"
+		"scheduled_not_real_time": "Naka-iskedyul/hindi real-time",
+		"canceled": "Nakansela",
+		"canceled_arrival": "Nakanselang pagdating",
+		"canceled_departure": "Nakanselang pag-alis",
+		"frequency_from": "Bawat {headway} minuto mula {time}",
+		"frequency_until": "Bawat {headway} minuto hanggang {time}",
+		"late_without_arrive_depart": "{delay} minutong huli",
+		"early_without_arrive_depart": "{delay} minutong maaga",
+		"arrived_delayed": "Dumating {delay} minutong huli",
+		"arrived_early": "Dumating {delay} minutong maaga",
+		"arrived_ontime": "Dumating nang oras",
+		"depart_delayed": "Umalis {delay} minutong huli",
+		"depart_early": "Umalis {delay} minutong maaga",
+		"departed_ontime": "Umalis nang oras",
+		"scheduled_arrival": "Naka-iskedyul na pagdating",
+		"scheduled_departure": "Naka-iskedyul na pag-alis"
 	},
 	"alert": {
 		"more_info": "Karagdagang impormasyon",
@@ -63,10 +78,12 @@
 	"NA": "W/A",
 	"time": {
 		"ago": "nakaraan",
-		"sec": "segundo",
-		"secs": "mga segundo",
-		"min": "minuto",
-		"mins": "mga minuto"
+		"now": "ngayon",
+		"sec": "sec",
+		"secs": "secs",
+		"min": "min",
+		"mins": "mins",
+		"minutes": "minutes"
 	},
 	"vehicle": {
 		"number": "Sasakyan #",

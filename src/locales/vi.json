@@ -46,7 +46,22 @@
 		"on_time": "đúng giờ",
 		"min": "phút",
 		"arrives_on_time": "đến đúng giờ",
-		"scheduled_not_real_time": "Lên lịch/không thời gian thực"
+		"scheduled_not_real_time": "Lên lịch/không thời gian thực",
+		"canceled": "Đã hủy",
+		"canceled_arrival": "Đến đã hủy",
+		"canceled_departure": "Đi đã hủy",
+		"frequency_from": "Mỗi {headway} phút từ {time}",
+		"frequency_until": "Mỗi {headway} phút đến {time}",
+		"late_without_arrive_depart": "{delay} phút trễ",
+		"early_without_arrive_depart": "{delay} phút sớm",
+		"arrived_delayed": "Đã đến trễ {delay} phút",
+		"arrived_early": "Đã đến sớm {delay} phút",
+		"arrived_ontime": "Đã đến đúng giờ",
+		"depart_delayed": "Đã đi trễ {delay} phút",
+		"depart_early": "Đã đi sớm {delay} phút",
+		"departed_ontime": "Đã đi đúng giờ",
+		"scheduled_arrival": "Đến theo lịch",
+		"scheduled_departure": "Đi theo lịch"
 	},
 	"alert": {
 		"more_info": "Thêm thông tin",
@@ -63,10 +78,12 @@
 	"NA": "KAD",
 	"time": {
 		"ago": "trước",
-		"sec": "giây",
-		"secs": "giây",
-		"min": "phút",
-		"mins": "phút"
+		"now": "bây giờ",
+		"sec": "sec",
+		"secs": "secs",
+		"min": "min",
+		"mins": "mins",
+		"minutes": "minutes"
 	},
 	"vehicle": {
 		"number": "Xe #",

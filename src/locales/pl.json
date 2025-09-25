@@ -46,7 +46,22 @@
 		"on_time": "na czas",
 		"min": "min",
 		"arrives_on_time": "przyjeżdża na czas",
-		"scheduled_not_real_time": "Zaplanowane/nie w czasie rzeczywistym"
+		"scheduled_not_real_time": "Zaplanowane/nie w czasie rzeczywistym",
+		"canceled": "Anulowany",
+		"canceled_arrival": "Przyjazd anulowany",
+		"canceled_departure": "Odjazd anulowany",
+		"frequency_from": "Co {headway} min od {time}",
+		"frequency_until": "Co {headway} min do {time}",
+		"late_without_arrive_depart": "{delay} min spóźnienia",
+		"early_without_arrive_depart": "{delay} min wcześniej",
+		"arrived_delayed": "Przyjechał {delay} min spóźniony",
+		"arrived_early": "Przyjechał {delay} min wcześniej",
+		"arrived_ontime": "Przyjechał na czas",
+		"depart_delayed": "Odjechał {delay} min spóźniony",
+		"depart_early": "Odjechał {delay} min wcześniej",
+		"departed_ontime": "Odjechał na czas",
+		"scheduled_arrival": "Zaplanowany przyjazd",
+		"scheduled_departure": "Zaplanowany odjazd"
 	},
 	"alert": {
 		"more_info": "Więcej informacji",
@@ -63,11 +78,12 @@
 	"NA": "N/D",
 	"time": {
 		"ago": "temu",
-		"sec": "sek",
-		"secs": "sekundy",
+		"now": "teraz",
+		"sec": "sec",
+		"secs": "secs",
 		"min": "min",
-		"mins": "minuty",
-		"minutes": "minuty"
+		"mins": "mins",
+		"minutes": "minutes"
 	},
 	"vehicle": {
 		"number": "Pojazd #",
