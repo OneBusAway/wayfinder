@@ -383,7 +383,6 @@ describe('ViewAllRoutesModal', () => {
 			.filter((btn) => btn.className.includes('route-item'));
 		if (routeButtons.length > 0) {
 			await user.click(routeButtons[0]);
-			
 
 			const sortedRoutes = [...mockRoutesListData].sort((a, b) => {
 				const getNumericValue = (route) => {
@@ -398,7 +397,7 @@ describe('ViewAllRoutesModal', () => {
 				}
 				return (a.shortName || '').localeCompare(b.shortName || '');
 			});
-			
+
 			expect(mockHandleModalRouteClick).toHaveBeenCalledWith(sortedRoutes[0]);
 		}
 	});
