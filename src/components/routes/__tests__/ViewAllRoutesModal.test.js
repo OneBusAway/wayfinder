@@ -383,7 +383,22 @@ describe('ViewAllRoutesModal', () => {
 			.filter((btn) => btn.className.includes('route-item'));
 		if (routeButtons.length > 0) {
 			await user.click(routeButtons[0]);
-			expect(mockHandleModalRouteClick).toHaveBeenCalledWith(mockRoutesListData[0]);
+
+			const sortedRoutes = [...mockRoutesListData].sort((a, b) => {
+				const getNumericValue = (route) => {
+					if (!route.shortName) return 999999;
+					const matches = route.shortName.match(/(\d+)/);
+					return matches ? parseInt(matches[1], 10) : 999999;
+				};
+				const aNumeric = getNumericValue(a);
+				const bNumeric = getNumericValue(b);
+				if (aNumeric !== bNumeric) {
+					return aNumeric - bNumeric;
+				}
+				return (a.shortName || '').localeCompare(b.shortName || '');
+			});
+
+			expect(mockHandleModalRouteClick).toHaveBeenCalledWith(sortedRoutes[0]);
 		}
 	});
 
