@@ -9,6 +9,7 @@
 	import { Datepicker } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
+	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
 
 	let selectedDate = $state(new Date());
 	let prevSelectedDate = $state(null);
@@ -144,7 +145,11 @@
 
 			<div class="mb-4 flex gap-4">
 				<div class="z-20 min-w-32 md:w-[30%]">
-					<Datepicker bind:value={selectedDate} inputClass="w-96" />
+					<Datepicker
+						bind:value={selectedDate}
+						inputClass="w-96"
+						firstDayOfWeek={getFirstDayOfWeek()}
+					/>
 				</div>
 
 				<div class="flex-1 text-right">
