@@ -77,12 +77,10 @@
 			const response = await geocodeLocation(suggestion.name);
 			if (isFrom) {
 				selectedFrom = response.location.geometry.location;
-				fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
 				fromPlace = suggestion.name;
 				fromResults = [];
 			} else {
 				selectedTo = response.location.geometry.location;
-				toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
 				toPlace = suggestion.name;
 				toResults = [];
 			}
@@ -98,12 +96,10 @@
 			fromPlace = '';
 			fromResults = [];
 			selectedFrom = null;
-			mapProvider.removePinMarker(fromMarker);
 		} else {
 			toPlace = '';
 			toResults = [];
 			selectedTo = null;
-			mapProvider.removePinMarker(toMarker);
 		}
 	}
 
@@ -131,19 +127,19 @@
 
 		loading = true;
 		try {
-			if (fromMarker) {
-				mapProvider.removePinMarker(fromMarker);
-			}
-			if (toMarker) {
-				mapProvider.removePinMarker(toMarker);
-			}
-
-			fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
-			toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
-
 			const data = await fetchTripPlan(selectedFrom, selectedTo);
 
 			if (data) {
+				if (fromMarker) {
+					mapProvider.removePinMarker(fromMarker);
+				}
+				if (toMarker) {
+					mapProvider.removePinMarker(toMarker);
+				}
+
+				fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
+				toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
+
 				const tripPlanData = {
 					data,
 					fromMarker,
