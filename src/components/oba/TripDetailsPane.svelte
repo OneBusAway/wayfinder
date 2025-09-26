@@ -109,7 +109,7 @@
 								<!-- Green checkmark to show "bus has arrived to the stop" -->
 								<FontAwesomeIcon
 									icon={faCheck}
-									class="absolute -top-1 -right-1 text-xs text-white bg-brand rounded-full p-1 border border-white"
+									class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
 								/>
 							{:else if index === busPosition}
 								<FontAwesomeIcon
@@ -117,10 +117,7 @@
 									class="absolute bg-white text-xl text-brand dark:bg-black"
 								/>
 							{:else if tripStop.stopId === stop.id}
-								<FontAwesomeIcon
-									icon={faLocationDot}
-									class="text-green-500 text-md"
-								/>
+								<FontAwesomeIcon icon={faLocationDot} class="text-md text-green-500" />
 							{/if}
 						</div>
 						<div class="ml-4 flex w-full items-center justify-between space-x-1">
