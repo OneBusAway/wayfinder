@@ -42,7 +42,9 @@
 			<TabLink href="/stops/{stopId}" current={$page.route.id === '/stops/[stopID]'}
 				>{$t('arrivals_and_departures_for_stop.title')}</TabLink
 			>
-			<TabLink href="/stops/{stopId}/schedule" current={$page.route.id === '/stops/[stopID]/schedule'}
+			<TabLink
+				href="/stops/{stopId}/schedule"
+				current={$page.route.id === '/stops/[stopID]/schedule'}
 				>{$t('schedule_for_stop.route_schedules')}</TabLink
 			>
 		</TabContainer>

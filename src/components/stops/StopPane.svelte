@@ -190,7 +190,7 @@
 						{/if}
 
 						{#if tripSelected}
-								<div class="mt-auto flex justify-end">
+							<div class="mt-auto flex justify-end">
 								<a
 									href={`/stops/${stop.id}/schedule`}
 									class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-secondary"

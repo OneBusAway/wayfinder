@@ -23,7 +23,7 @@
 	let schedulesMap = new Map();
 	let routeReference = new Map();
 	let currentDate = new Date();
-	
+
 	stopId = $page.params.stopID;
 
 	async function fetchScheduleForStop(stopId, date) {
@@ -112,7 +112,6 @@
 	}
 
 	onMount(async () => {
-
 		if (stopId) {
 			const formattedDate = currentDate.toISOString().split('T')[0];
 			await fetchScheduleForStop(stopId, formattedDate);
