@@ -39,6 +39,9 @@
 		"contact": "تواصل معنا",
 		"fares_and_tolls": "الأجرة والرسوم"
 	},
+	"navigation": {
+		"back_to_map": "العودة إلى الخريطة"
+	},
 	"status": {
 		"scheduled": "مجدول",
 		"early": "مبكر",
