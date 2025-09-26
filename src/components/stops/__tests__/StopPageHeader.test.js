@@ -280,8 +280,6 @@ describe('StopPageHeader', () => {
 	});
 
 	test('back to map button contains proper icons', () => {
-		const { container } = render(StopPageHeader, { props: defaultProps });
-
 		const backToMapButton = screen.getByRole('link', { name: /back to map/i });
 
 		const icons = backToMapButton.querySelectorAll('svg');
