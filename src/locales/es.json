@@ -39,6 +39,9 @@
 		"contact": "Contacto",
 		"fares_and_tolls": "Tarifas y peajes"
 	},
+	"navigation": {
+		"back_to_map": "Volver al Mapa"
+	},
 	"status": {
 		"scheduled": "programado",
 		"early": "temprano",

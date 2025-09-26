@@ -39,6 +39,9 @@
 		"contact": "Kontakt",
 		"fares_and_tolls": "Opłaty i myta"
 	},
+	"navigation": {
+		"back_to_map": "Powrót do Mapy"
+	},
 	"status": {
 		"scheduled": "zaplanowany",
 		"early": "wcześnie",

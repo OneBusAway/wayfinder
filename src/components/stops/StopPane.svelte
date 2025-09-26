@@ -194,7 +194,6 @@
 								<a
 									href={`/stops/${stop.id}/schedule`}
 									class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-secondary"
-									target="_blank"
 								>
 									{$t('schedule_for_stop.view_schedule')}
 								</a>

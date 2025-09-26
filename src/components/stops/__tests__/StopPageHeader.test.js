@@ -28,7 +28,8 @@ vi.mock('svelte-i18n', () => ({
 					'schedule_for_stop.stop_id': 'Stop ID',
 					'schedule_for_stop.direction': 'Direction',
 					'arrivals_and_departures_for_stop.title': 'Arrivals & Departures',
-					'schedule_for_stop.route_schedules': 'Route Schedules'
+					'schedule_for_stop.route_schedules': 'Route Schedules',
+					'navigation.back_to_map': 'Back to Map'
 				};
 				return translations[key] || key;
 			});
@@ -81,8 +82,11 @@ describe('StopPageHeader', () => {
 	test('has proper header styling classes', () => {
 		render(StopPageHeader, { props: defaultProps });
 
+		const mainContainer = screen.getByRole('heading', { level: 1 }).closest('.my-4');
+		expect(mainContainer).toHaveClass('my-4');
+
 		const headerContainer = screen.getByRole('heading', { level: 1 }).parentElement;
-		expect(headerContainer).toHaveClass('my-4', 'text-center');
+		expect(headerContainer).toHaveClass('text-center');
 	});
 
 	test('stop ID section has proper styling', () => {
@@ -218,13 +222,19 @@ describe('StopPageHeader', () => {
 		const heading = screen.getByRole('heading', { level: 1 });
 		expect(heading).toBeInTheDocument();
 
-		// Check tab navigation is accessible
-		const tabLinks = screen.getAllByRole('link');
-		expect(tabLinks).toHaveLength(2);
+		const allLinks = screen.getAllByRole('link');
+		expect(allLinks).toHaveLength(3);
 
-		// Check that each tab link has proper text content
-		expect(tabLinks[0]).toHaveTextContent(/arrivals & departures/i);
-		expect(tabLinks[1]).toHaveTextContent(/route schedules/i);
+		const backToMapLink = screen.getByRole('link', { name: /back to map/i });
+		expect(backToMapLink).toBeInTheDocument();
+		expect(backToMapLink).toHaveAttribute('href', '/');
+
+		const tabLinks = allLinks.filter(
+			(link) =>
+				link.textContent.includes('Arrivals & Departures') ||
+				link.textContent.includes('Route Schedules')
+		);
+		expect(tabLinks).toHaveLength(2);
 	});
 
 	test('information sections have proper layout', () => {
@@ -245,5 +255,36 @@ describe('StopPageHeader', () => {
 		// Strong elements should be used for labels
 		const strongElements = container.querySelectorAll('strong');
 		expect(strongElements.length).toBeGreaterThan(0);
+	});
+
+	test('renders back to map button with proper styling and functionality', () => {
+		render(StopPageHeader, { props: defaultProps });
+
+		const backToMapButton = screen.getByRole('link', { name: /back to map/i });
+
+		expect(backToMapButton).toBeInTheDocument();
+		expect(backToMapButton).toHaveAttribute('href', '/');
+
+		expect(backToMapButton).toHaveClass(
+			'inline-flex',
+			'items-center',
+			'gap-2',
+			'rounded-md',
+			'bg-brand',
+			'px-4',
+			'py-2',
+			'text-sm',
+			'font-medium',
+			'text-white'
+		);
+	});
+
+	test('back to map button contains proper icons', () => {
+		render(StopPageHeader, { props: defaultProps });
+
+		const backToMapButton = screen.getByRole('link', { name: /back to map/i });
+
+		const icons = backToMapButton.querySelectorAll('svg');
+		expect(icons).toHaveLength(2); // Arrow left and map icons
 	});
 });

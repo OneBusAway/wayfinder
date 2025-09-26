@@ -39,6 +39,9 @@
 		"contact": "Makipag-ugnayan",
 		"fares_and_tolls": "Pamasahe at mga buwis"
 	},
+	"navigation": {
+		"back_to_map": "Bumalik sa Mapa"
+	},
 	"status": {
 		"scheduled": "naka-iskedyul",
 		"early": "maaga",

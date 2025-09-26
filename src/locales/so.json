@@ -39,6 +39,9 @@
 		"contact": "Nala soo xiriir",
 		"fares_and_tolls": "Lacagta iyo cashuuraha"
 	},
+	"navigation": {
+		"back_to_map": "Ku noqo Khariidadda"
+	},
 	"status": {
 		"scheduled": "jadwaleysan",
 		"early": "goor hore",

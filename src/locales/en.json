@@ -39,6 +39,9 @@
 		"contact": "Contact",
 		"fares_and_tolls": "Fares & Tolls"
 	},
+	"navigation": {
+		"back_to_map": "Back to Map"
+	},
 	"status": {
 		"scheduled": "scheduled",
 		"early": "early",
