@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { faBus, faPersonWalking } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { convertUnixToTime } from '$lib/formatters';
+	import { formatSecondsFromMidnight } from '$lib/formatters';
 
 	/**
 	 * @typedef {Object} Props
@@ -119,7 +119,7 @@
 								{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 							</div>
 							<div class="whitespace-nowrap text-sm text-gray-500">
-								{convertUnixToTime(tripStop.arrivalTime)}
+								{formatSecondsFromMidnight(tripStop.arrivalTime)}
 							</div>
 						</div>
 					</div>

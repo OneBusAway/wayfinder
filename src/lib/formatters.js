@@ -26,3 +26,19 @@ export function convertUnixToTime(seconds) {
 	const utcDate = new Date(date.toUTCString().slice(0, -4));
 	return utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
+
+export function formatSecondsFromMidnight(secondsSinceMidnight) {
+	if (secondsSinceMidnight === null || secondsSinceMidnight === undefined) return '';
+
+	// Create a date at midnight and add the seconds
+	const date = new Date();
+	// Set to midnight
+	date.setHours(0, 0, 0, 0);
+	date.setSeconds(secondsSinceMidnight);
+
+	return date.toLocaleTimeString([], {
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: true
+	});
+}
