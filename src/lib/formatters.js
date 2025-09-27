@@ -30,15 +30,17 @@ export function convertUnixToTime(seconds) {
 export function formatSecondsFromMidnight(secondsSinceMidnight) {
 	if (secondsSinceMidnight === null || secondsSinceMidnight === undefined) return '';
 
-	// Create a date at midnight and add the seconds
-	const date = new Date();
-	// Set to midnight
-	date.setHours(0, 0, 0, 0);
-	date.setSeconds(secondsSinceMidnight);
+	// Ensure secondsSinceMidnight is within [0, 86399] to handle overflow/underflow
+	const safeSeconds = ((secondsSinceMidnight % 86400) + 86400) % 86400;
+
+	// Create a date at Unix epoch midnight and add the safe seconds
+	const date = new Date(0);
+	date.setUTCSeconds(safeSeconds);
 
 	return date.toLocaleTimeString([], {
 		hour: 'numeric',
 		minute: '2-digit',
-		hour12: true
+		hour12: true,
+		timeZone: 'UTC'
 	});
 }
