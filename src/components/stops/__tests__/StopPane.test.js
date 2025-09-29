@@ -164,7 +164,7 @@ describe('StopPane', () => {
 		// Component should render but not show arrival data since fetch is pending
 		// Check that the main content areas are not present
 		expect(screen.queryByText('Pine St & 3rd Ave')).not.toBeInTheDocument();
-		expect(screen.queryByText('Stop #1_75403')).not.toBeInTheDocument();
+		expect(screen.queryByText('Stop #75403')).not.toBeInTheDocument();
 	});
 
 	test('displays arrival data when provided directly', async () => {
@@ -197,7 +197,7 @@ describe('StopPane', () => {
 			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
 		});
 
-		expect(screen.getByText('Stop #1_75403')).toBeInTheDocument();
+		expect(screen.getByText('Stop #75403')).toBeInTheDocument();
 		expect(screen.getByText('Routes: 10, 11')).toBeInTheDocument();
 	});
 
@@ -219,7 +219,7 @@ describe('StopPane', () => {
 			{ timeout: 3000 }
 		);
 
-		expect(screen.getByText('Stop #1_75403')).toBeInTheDocument();
+		expect(screen.getByText('Stop #75403')).toBeInTheDocument();
 		expect(screen.getByText('Routes: 10, 11')).toBeInTheDocument();
 	});
 
@@ -262,7 +262,7 @@ describe('StopPane', () => {
 
 		await waitFor(() => {
 			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
-			expect(screen.getByText('Stop #1_75403')).toBeInTheDocument();
+			expect(screen.getByText('Stop #75403')).toBeInTheDocument();
 		});
 	});
 
@@ -498,7 +498,7 @@ describe('StopPane', () => {
 
 			const headings = screen.getAllByRole('heading', { level: 2 });
 			expect(headings).toHaveLength(2);
-			expect(headings[0]).toHaveTextContent('Stop #1_75403');
+			expect(headings[0]).toHaveTextContent('Stop #75403');
 			expect(headings[1]).toHaveTextContent('Routes: 10, 11');
 		});
 	});
