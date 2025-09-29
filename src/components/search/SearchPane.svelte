@@ -12,6 +12,7 @@
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
+	import { removeAgencyPrefix } from '$lib/utils';
 
 	let {
 		clearPolylines,
@@ -171,7 +172,7 @@
 						<SearchResultItem
 							on:click={() => handleRouteClick(route)}
 							icon={prioritizedRouteTypeForDisplay(route.type)}
-							title={`${$t('route')} ${route.nullSafeShortName || route.id}`}
+							title={`${$t('route')} ${removeAgencyPrefix(route.nullSafeShortName || route.id)}`}
 							subtitle={route.description}
 						/>
 					{/each}
