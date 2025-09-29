@@ -28,6 +28,10 @@ See `.env.example` for an example of the required keys and values.
 - `PUBLIC_ANALYTICS_ENABLED` - boolean: (optional).
 - `PUBLIC_ANALYTICS_API_HOST` - string: (optional).
 
+## Calendar Configuration
+
+- `PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK` - number: (optional) Sets the first day of the week for calendar components. Use 0 for Monday, 1 for Tuesday, 2 for Wednesday, 3 for Thursday, 4 for Friday, 5 for Saturday, 6 for Sunday. Defaults to 0 (Monday).
+
 ### OBA Server
 
 - `PUBLIC_OBA_SERVER_URL` - string: (required) Your OBA API server's URL.
