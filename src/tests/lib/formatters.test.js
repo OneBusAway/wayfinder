@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { convertUnixToTime, formatLastUpdated, formatTime } from '$lib/formatters';
+import {
+	convertUnixToTime,
+	formatSecondsFromMidnight,
+	formatLastUpdated,
+	formatTime
+} from '$lib/formatters';
 
 describe('convertUnixToTime', () => {
 	it('returns a blank string when its input is null', () => {
@@ -12,6 +17,32 @@ describe('convertUnixToTime', () => {
 
 	it('converts a Unix timestamp to a locale-specific formatted time', () => {
 		expect(convertUnixToTime(1727442050)).toBe('01:00 PM');
+	});
+});
+
+describe('formatSecondsFromMidnight', () => {
+	it('returns a blank string when its input is null', () => {
+		expect(formatSecondsFromMidnight(null)).toBe('');
+	});
+
+	it('returns a blank string when its input is undefined', () => {
+		expect(formatSecondsFromMidnight(undefined)).toBe('');
+	});
+
+	it('converts seconds since midnight to 12-hour time format', () => {
+		expect(formatSecondsFromMidnight(38280)).toBe('10:38 AM'); // 10:38 AM
+		expect(formatSecondsFromMidnight(13080)).toBe('3:38 AM'); // 3:38 AM
+		expect(formatSecondsFromMidnight(0)).toBe('12:00 AM'); // midnight
+		expect(formatSecondsFromMidnight(43200)).toBe('12:00 PM'); // noon
+		expect(formatSecondsFromMidnight(86399)).toBe('11:59 PM'); // 11:59 PM
+	});
+
+	it('handles times after midnight (next day service)', () => {
+		expect(formatSecondsFromMidnight(90000)).toBe('1:00 AM'); // 25:00 -> 1:00 AM next day
+	});
+
+	it('handles negative times (before midnight)', () => {
+		expect(formatSecondsFromMidnight(-3600)).toBe('11:00 PM'); // -1 hour -> 11:00 PM previous day
 	});
 });
 
