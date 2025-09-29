@@ -39,6 +39,9 @@
 		"contact": "እኛን ያነጋግሩ",
 		"fares_and_tolls": "ክፍያዎች እና ግብሶች"
 	},
+	"navigation": {
+		"back_to_map": "ወደ ካርታ ተመለስ"
+	},
 	"status": {
 		"scheduled": "ታቅዷል",
 		"early": "በስተ ቀድሞ",

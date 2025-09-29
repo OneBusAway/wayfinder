@@ -39,6 +39,9 @@
 		"contact": "Liên hệ",
 		"fares_and_tolls": "Phí và lệ phí"
 	},
+	"navigation": {
+		"back_to_map": "Quay lại Bản đồ"
+	},
 	"status": {
 		"scheduled": "đã lên lịch",
 		"early": "sớm",

@@ -1,8 +1,8 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
-	import { faBus, faPersonWalking } from '@fortawesome/free-solid-svg-icons';
+	import { faBus, faLocationDot, faCheck } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { convertUnixToTime } from '$lib/formatters';
+	import { formatSecondsFromMidnight } from '$lib/formatters';
 
 	/**
 	 * @typedef {Object} Props
@@ -101,17 +101,23 @@
 						<div
 							class="relative flex size-8 items-center justify-center rounded-md border border-neutral-400 bg-white dark:bg-neutral-800"
 						>
-							{#if index === busPosition}
+							{#if index === busPosition && tripStop.stopId === stop.id}
 								<FontAwesomeIcon
 									icon={faBus}
 									class="absolute bg-white text-xl text-brand dark:bg-black"
 								/>
-							{/if}
-							{#if tripStop.stopId === stop.id}
+								<!-- Green checkmark to show "bus has arrived to the stop" -->
 								<FontAwesomeIcon
-									icon={faPersonWalking}
-									class="absolute bottom-0 right-0 size-2 rounded-br-md rounded-tl-md border-l border-t bg-neutral-50/80 px-1 py-0.5 text-sm text-blue-500 dark:bg-black"
+									icon={faCheck}
+									class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
 								/>
+							{:else if index === busPosition}
+								<FontAwesomeIcon
+									icon={faBus}
+									class="absolute bg-white text-xl text-brand dark:bg-black"
+								/>
+							{:else if tripStop.stopId === stop.id}
+								<FontAwesomeIcon icon={faLocationDot} class="text-md text-green-500" />
 							{/if}
 						</div>
 						<div class="ml-4 flex w-full items-center justify-between space-x-1">
@@ -119,7 +125,7 @@
 								{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 							</div>
 							<div class="whitespace-nowrap text-sm text-gray-500">
-								{convertUnixToTime(tripStop.arrivalTime)}
+								{formatSecondsFromMidnight(tripStop.arrivalTime)}
 							</div>
 						</div>
 					</div>

@@ -26,3 +26,21 @@ export function convertUnixToTime(seconds) {
 	const utcDate = new Date(date.toUTCString().slice(0, -4));
 	return utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
+
+export function formatSecondsFromMidnight(secondsSinceMidnight) {
+	if (secondsSinceMidnight === null || secondsSinceMidnight === undefined) return '';
+
+	// Ensure secondsSinceMidnight is within [0, 86399] to handle overflow/underflow
+	const safeSeconds = ((secondsSinceMidnight % 86400) + 86400) % 86400;
+
+	// Create a date at Unix epoch midnight and add the safe seconds
+	const date = new Date(0);
+	date.setUTCSeconds(safeSeconds);
+
+	return date.toLocaleTimeString([], {
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: true,
+		timeZone: 'UTC'
+	});
+}
