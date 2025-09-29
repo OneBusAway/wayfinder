@@ -142,7 +142,9 @@
 
 	function clearAllMarkers() {
 		markers.forEach((markerObj) => {
-			mapInstance.removeMarker(markerObj);
+			if (markerObj && mapInstance) {
+				mapInstance.removeMarker(markerObj);
+			}
 		});
 		markers = [];
 	}
@@ -223,7 +225,9 @@
 			window.removeEventListener('themeChange', handleThemeChange);
 		}
 		markers.forEach(({ markerObj, element }) => {
-			mapProvider.removeMarker(markerObj);
+			if (markerObj && mapProvider) {
+				mapProvider.removeMarker(markerObj);
+			}
 			if (element && element.parentNode) {
 				element.parentNode.removeChild(element);
 			}

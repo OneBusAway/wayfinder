@@ -24,6 +24,8 @@
 	let routeReference = new Map();
 	let currentDate = new Date();
 
+	stopId = $page.params.stopID;
+
 	async function fetchScheduleForStop(stopId, date) {
 		try {
 			emptySchedules = false;
@@ -110,11 +112,11 @@
 	}
 
 	onMount(async () => {
-		const formattedDate = currentDate.toISOString().split('T')[0];
-		await fetchScheduleForStop(stopId, formattedDate);
+		if (stopId) {
+			const formattedDate = currentDate.toISOString().split('T')[0];
+			await fetchScheduleForStop(stopId, formattedDate);
+		}
 	});
-
-	stopId = $page.params.stopID;
 
 	$effect(() => {
 		if (selectedDate && selectedDate !== prevSelectedDate) {
