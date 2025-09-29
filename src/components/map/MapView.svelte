@@ -37,20 +37,18 @@
 	let mapInstance = $state(null);
 	let mapElement = $state();
 	let allStops = $state([]);
-
-	let markers = [];
+	 // O(1) lookup for existing stops
+	let allStopsMap = new Map();
 	let stopsCache = new Map();
 
 	function cacheKey(zoomLevel, boundingBox) {
-		const decimalPlaces = 2; // 2 decimal places equals between 0.5 and 1.1 km depending on where you are in the world.
-		const roundedBox = {
-			north: boundingBox.north.toFixed(decimalPlaces),
-			south: boundingBox.south.toFixed(decimalPlaces),
-			east: boundingBox.east.toFixed(decimalPlaces),
-			west: boundingBox.west.toFixed(decimalPlaces)
-		};
+		const multiplier = 100; // 2 decimal places
+		const north = Math.round(boundingBox.north * multiplier);
+		const south = Math.round(boundingBox.south * multiplier);
+		const east = Math.round(boundingBox.east * multiplier);
+		const west = Math.round(boundingBox.west * multiplier);
 
-		return `${roundedBox.north}_${roundedBox.south}_${roundedBox.east}_${roundedBox.west}_${zoomLevel}`;
+		return `${north}_${south}_${east}_${west}_${zoomLevel}`;
 	}
 
 	function getBoundingBox() {
@@ -132,25 +130,39 @@
 
 		const routeLookup = new Map(routeReference.map((route) => [route.id, route]));
 
-		// merge the stops routeIds with the route data
+		// merge the stops routeIds with the route data and deduplicate efficiently
 		newStops.forEach((stop) => {
-			stop.routes = stop.routeIds.map((routeId) => routeLookup.get(routeId)).filter(Boolean);
+			if (!allStopsMap.has(stop.id)) {
+				stop.routes = stop.routeIds?.map((routeId) => routeLookup.get(routeId)).filter(Boolean) || [];
+				allStopsMap.set(stop.id, stop);
+			}
 		});
 
-		allStops = [...new Map([...allStops, ...newStops].map((stop) => [stop.id, stop])).values()];
+		allStops = Array.from(allStopsMap.values());
 	}
 
 	function clearAllMarkers() {
-		markers.forEach((markerObj) => {
-			mapInstance.removeMarker(markerObj);
-		});
-		markers = [];
+		if (mapInstance && mapInstance.clearAllStopMarkers) {
+			mapInstance.clearAllStopMarkers();
+		}
 	}
 
 	function updateMarkers() {
 		if (!selectedRoute && !isTripPlanModeActive) {
-			allStops.forEach((s) => addMarker(s));
+			batchAddMarkers(allStops);
 		}
+	}
+
+	// Batch operation to add multiple markers efficiently
+	function batchAddMarkers(stops) {
+		const stopsToAdd = stops.filter(s => !mapInstance.hasMarker(s.id));
+		
+		if (stopsToAdd.length === 0) return;
+		
+		// Group DOM operations to minimize reflows/repaints
+		requestAnimationFrame(() => {
+			stopsToAdd.forEach(s => addMarker(s));
+		});
 	}
 
 	function addMarker(s) {
@@ -159,22 +171,25 @@
 			return;
 		}
 
-		// // check if the marker already exists
-		const existingMarker = markers.find((marker) => marker.stop.id === s.id);
-
-		// if it does, don't add it again
-		if (existingMarker) {
+		// Delegate marker existence check to provider
+		if (mapInstance.hasMarker(s.id)) {
 			return;
 		}
 
 		let icon = faBus;
 
 		if (s.routes && s.routes.length > 0) {
-			const routeTypes = new Set(s.routes.map((r) => r.type));
-			let prioritizedType = routePriorities.find((type) => routeTypes.has(type));
-			if (prioritizedType === undefined) {
-				prioritizedType = RouteType.UNKNOWN;
+			const routeTypes = s.routes.map((r) => r.type);
+			let prioritizedType = RouteType.UNKNOWN;
+			
+			// Optimized priority lookup - check highest priority first
+			for (const priority of routePriorities) {
+				if (routeTypes.includes(priority)) {
+					prioritizedType = priority;
+					break;
+				}
 			}
+			
 			icon = prioritizedRouteTypeForDisplay(prioritizedType);
 		}
 
@@ -187,8 +202,7 @@
 			}
 		});
 
-		markerObj.stop = s;
-		markers.push(markerObj);
+		return markerObj;
 	}
 
 	function handleThemeChange(event) {
@@ -202,17 +216,22 @@
 		userLocation.set({ lat: latitude, lng: longitude });
 	}
 
+	// Store event handlers for proper cleanup
+	let planTripHandler, tabSwitchHandler;
+
 	onMount(async () => {
 		await initMap();
 		isMapLoaded.set(true);
 		if (browser) {
 			const darkMode = document.documentElement.classList.contains('dark');
-			window.addEventListener('planTripTabClicked', () => {
-				isTripPlanModeActive = true;
-			});
-			window.addEventListener('tabSwitched', () => {
-				isTripPlanModeActive = false;
-			});
+			
+			// Store handlers for cleanup
+			planTripHandler = () => { isTripPlanModeActive = true; };
+			tabSwitchHandler = () => { isTripPlanModeActive = false; };
+			
+			window.addEventListener('planTripTabClicked', planTripHandler);
+			window.addEventListener('tabSwitched', tabSwitchHandler);
+			
 			const event = new CustomEvent('themeChange', { detail: { darkMode } });
 			window.dispatchEvent(event);
 		}
@@ -221,20 +240,22 @@
 	onDestroy(() => {
 		if (browser) {
 			window.removeEventListener('themeChange', handleThemeChange);
+		
+			if (planTripHandler) window.removeEventListener('planTripTabClicked', planTripHandler);
+			if (tabSwitchHandler) window.removeEventListener('tabSwitched', tabSwitchHandler);
 		}
-		markers.forEach(({ markerObj, element }) => {
-			mapProvider.removeMarker(markerObj);
-			if (element && element.parentNode) {
-				element.parentNode.removeChild(element);
-			}
-		});
+
+		clearAllMarkers();
+		
+		allStopsMap.clear();
+		stopsCache.clear();
 	});
 	$effect(() => {
 		if (selectedRoute) {
 			clearAllMarkers();
 			updateMarkers();
 		} else if (!isTripPlanModeActive) {
-			allStops.forEach((s) => addMarker(s));
+			batchAddMarkers(allStops);
 		}
 	});
 	$effect(() => {
