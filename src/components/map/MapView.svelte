@@ -37,7 +37,7 @@
 	let mapInstance = $state(null);
 	let mapElement = $state();
 	let allStops = $state([]);
-	 // O(1) lookup for existing stops
+	// O(1) lookup for existing stops
 	let allStopsMap = new Map();
 	let stopsCache = new Map();
 
@@ -133,7 +133,8 @@
 		// merge the stops routeIds with the route data and deduplicate efficiently
 		newStops.forEach((stop) => {
 			if (!allStopsMap.has(stop.id)) {
-				stop.routes = stop.routeIds?.map((routeId) => routeLookup.get(routeId)).filter(Boolean) || [];
+				stop.routes =
+					stop.routeIds?.map((routeId) => routeLookup.get(routeId)).filter(Boolean) || [];
 				allStopsMap.set(stop.id, stop);
 			}
 		});
@@ -155,13 +156,13 @@
 
 	// Batch operation to add multiple markers efficiently
 	function batchAddMarkers(stops) {
-		const stopsToAdd = stops.filter(s => !mapInstance.hasMarker(s.id));
-		
+		const stopsToAdd = stops.filter((s) => !mapInstance.hasMarker(s.id));
+
 		if (stopsToAdd.length === 0) return;
-		
+
 		// Group DOM operations to minimize reflows/repaints
 		requestAnimationFrame(() => {
-			stopsToAdd.forEach(s => addMarker(s));
+			stopsToAdd.forEach((s) => addMarker(s));
 		});
 	}
 
@@ -181,7 +182,7 @@
 		if (s.routes && s.routes.length > 0) {
 			const routeTypes = s.routes.map((r) => r.type);
 			let prioritizedType = RouteType.UNKNOWN;
-			
+
 			// Optimized priority lookup - check highest priority first
 			for (const priority of routePriorities) {
 				if (routeTypes.includes(priority)) {
@@ -189,7 +190,7 @@
 					break;
 				}
 			}
-			
+
 			icon = prioritizedRouteTypeForDisplay(prioritizedType);
 		}
 
@@ -224,14 +225,18 @@
 		isMapLoaded.set(true);
 		if (browser) {
 			const darkMode = document.documentElement.classList.contains('dark');
-			
+
 			// Store handlers for cleanup
-			planTripHandler = () => { isTripPlanModeActive = true; };
-			tabSwitchHandler = () => { isTripPlanModeActive = false; };
-			
+			planTripHandler = () => {
+				isTripPlanModeActive = true;
+			};
+			tabSwitchHandler = () => {
+				isTripPlanModeActive = false;
+			};
+
 			window.addEventListener('planTripTabClicked', planTripHandler);
 			window.addEventListener('tabSwitched', tabSwitchHandler);
-			
+
 			const event = new CustomEvent('themeChange', { detail: { darkMode } });
 			window.dispatchEvent(event);
 		}
@@ -240,13 +245,13 @@
 	onDestroy(() => {
 		if (browser) {
 			window.removeEventListener('themeChange', handleThemeChange);
-		
+
 			if (planTripHandler) window.removeEventListener('planTripTabClicked', planTripHandler);
 			if (tabSwitchHandler) window.removeEventListener('tabSwitched', tabSwitchHandler);
 		}
 
 		clearAllMarkers();
-		
+
 		allStopsMap.clear();
 		stopsCache.clear();
 	});

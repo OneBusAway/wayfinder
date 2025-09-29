@@ -106,7 +106,6 @@ export default class GoogleMapProvider {
 			markerObj.element.parentNode.removeChild(markerObj.element);
 		}
 
-
 		for (const [stopId, storedMarker] of this.markersMap.entries()) {
 			if (storedMarker === markerObj) {
 				this.markersMap.delete(stopId);
@@ -125,7 +124,7 @@ export default class GoogleMapProvider {
 
 	clearAllStopMarkers() {
 		if (!this.map) return;
-		
+
 		// Clear the main stop markers
 		for (const marker of this.markersMap.values()) {
 			this.removeMarker(marker);

@@ -337,7 +337,7 @@ export default class OpenStreetMapProvider {
 	removeMarker(marker) {
 		if (!browser || !this.map || !marker) return;
 		this.map.removeLayer(marker);
-		
+
 		for (const [stopId, storedMarker] of this.markersMap.entries()) {
 			if (storedMarker === marker) {
 				this.markersMap.delete(stopId);
@@ -348,7 +348,7 @@ export default class OpenStreetMapProvider {
 
 	clearAllStopMarkers() {
 		if (!browser || !this.map) return;
-		
+
 		// Clear the main stop markers
 		for (const marker of this.markersMap.values()) {
 			this.map.removeLayer(marker);
