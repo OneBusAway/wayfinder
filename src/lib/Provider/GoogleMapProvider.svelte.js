@@ -105,6 +105,31 @@ export default class GoogleMapProvider {
 		if (markerObj.element && markerObj.element.parentNode) {
 			markerObj.element.parentNode.removeChild(markerObj.element);
 		}
+
+		for (const [stopId, storedMarker] of this.markersMap.entries()) {
+			if (storedMarker === markerObj) {
+				this.markersMap.delete(stopId);
+				break;
+			}
+		}
+	}
+
+	hasMarker(stopId) {
+		return this.markersMap.has(stopId);
+	}
+
+	getMarker(stopId) {
+		return this.markersMap.get(stopId);
+	}
+
+	clearAllStopMarkers() {
+		if (!this.map) return;
+
+		// Clear the main stop markers
+		for (const marker of this.markersMap.values()) {
+			this.removeMarker(marker);
+		}
+		this.markersMap.clear();
 	}
 
 	addStopMarker(stop, stopTime = null) {
