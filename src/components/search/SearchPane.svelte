@@ -17,6 +17,7 @@
 		clearPolylines,
 		handleRouteSelected,
 		handleViewAllRoutes,
+		handleStopMarkerSelect,
 		handleTripPlan,
 		cssClasses = '',
 		mapProvider = null,
@@ -42,8 +43,17 @@
 
 	function handleStopClick(stop) {
 		clearResults();
-		mapProvider.panTo(stop.lat, stop.lon);
-		mapProvider.setZoom(20);
+
+		const markerOptions = {
+			stop: stop,
+			position: { lat: stop.lat, lng: stop.lon },
+			onClick: () => handleStopMarkerSelect(stop)
+		};
+		mapProvider.addMarker(markerOptions);
+
+		mapProvider.flyTo(stop.lat, stop.lon, 20);
+
+		handleStopMarkerSelect(stop);
 	}
 
 	async function handleRouteClick(route) {
@@ -82,7 +92,7 @@
 
 	async function showStopsOnRoute(stops) {
 		for (const stop of stops) {
-			mapProvider.addStopMarker(stop, null);
+			mapProvider.addStopRouteMarker(stop, null);
 		}
 	}
 
