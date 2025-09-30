@@ -53,7 +53,9 @@
 
 		mapProvider.flyTo(stop.lat, stop.lon, 20);
 
-		handleStopMarkerSelect(stop);
+		setTimeout(() => {
+			handleStopMarkerSelect(stop);
+		}, 100);
 	}
 
 	async function handleRouteClick(route) {
