@@ -132,7 +132,7 @@ export default class GoogleMapProvider {
 		this.markersMap.clear();
 	}
 
-	addStopMarker(stop, stopTime = null) {
+	addStopRouteMarker(stop, stopTime = null) {
 		const marker = new google.maps.Marker({
 			position: { lat: stop.lat, lng: stop.lon },
 			map: this.map,
