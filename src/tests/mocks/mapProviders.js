@@ -162,7 +162,7 @@ export function createMockMapProvider() {
 		}),
 
 		// Stop marker management
-		addStopMarker: vi.fn((stop) => {
+		addStopRouteMarker: vi.fn((stop) => {
 			const markerId = `stop_marker_${markerIdCounter++}`;
 			const marker = {
 				...mockLeafletMarker,
