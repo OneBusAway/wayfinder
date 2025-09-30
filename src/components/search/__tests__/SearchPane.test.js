@@ -74,7 +74,7 @@ describe('SearchPane', () => {
 			setZoom: vi.fn(),
 			flyTo: vi.fn(),
 			createPolyline: vi.fn().mockReturnValue('polyline-mock'),
-			addStopMarker: vi.fn(),
+			addStopRouteMarker: vi.fn(),
 			clearVehicleMarkers: vi.fn()
 		};
 
