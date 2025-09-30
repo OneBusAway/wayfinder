@@ -70,7 +70,7 @@ export default class OpenStreetMapProvider {
 			stop: options.stop,
 			icon: options.icon || faBus,
 			onClick: options.onClick || (() => {}),
-			isHighlighted: false
+			isHighlighted: options.isHighlighted ?? false
 		});
 
 		mount(StopMarker, {
@@ -142,7 +142,7 @@ export default class OpenStreetMapProvider {
 		marker.props.isHighlighted = false;
 	}
 
-	addStopMarker(stop, stopTime = null) {
+	addStopRouteMarker(stop, stopTime = null) {
 		const customIcon = L.divIcon({
 			html: `<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle"><circle cx="12" cy="12" r="10"/></svg>`,
 			className: '',
