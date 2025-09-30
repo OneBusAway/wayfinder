@@ -1,12 +1,16 @@
 <script>
+	import { removeAgencyPrefix } from '$lib/utils';
+
 	let { handleModalRouteClick, route } = $props();
 
 	function getDisplayRouteName() {
-		if (route.shortName && route.longName) {
-			return `${route.shortName} - ${route.longName}`;
-		} else if (route.shortName && route.description) {
-			return `${route.shortName} - ${route.description}`;
-		} else if (!route.shortName && (route.longName || route.description)) {
+		const cleanShortName = route.shortName ? removeAgencyPrefix(route.shortName) : null;
+
+		if (cleanShortName && route.longName) {
+			return `${cleanShortName} - ${route.longName}`;
+		} else if (cleanShortName && route.description) {
+			return `${cleanShortName} - ${route.description}`;
+		} else if (!cleanShortName && (route.longName || route.description)) {
 			return `${route.agencyInfo.name} - ${route.longName || route.description}`;
 		}
 	}

@@ -7,6 +7,7 @@
 	import { page } from '$app/stores';
 
 	import { t } from 'svelte-i18n';
+	import { removeAgencyPrefix } from '$lib/utils';
 	let { stopName, stopId, stopDirection } = $props();
 </script>
 
@@ -30,7 +31,7 @@
 			<div class="rounded-md bg-gray-50 px-2 py-1">
 				<FontAwesomeIcon icon={faMapMarkerAlt} />
 				<strong>{$t('schedule_for_stop.stop_id')}:</strong>
-				{stopId}
+				{removeAgencyPrefix(stopId)}
 			</div>
 			<div class="rounded-md bg-gray-50 px-2 py-1">
 				<CompassArrow {stopDirection} />

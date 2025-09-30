@@ -69,7 +69,7 @@ describe('StopPageHeader', () => {
 		render(StopPageHeader, { props: defaultProps });
 
 		expect(screen.getByText('Stop ID:')).toBeInTheDocument();
-		expect(screen.getByText('1_75403')).toBeInTheDocument();
+		expect(screen.getByText('75403')).toBeInTheDocument();
 	});
 
 	test('displays stop direction with proper label', () => {
@@ -178,7 +178,7 @@ describe('StopPageHeader', () => {
 
 		render(StopPageHeader, { props: propsWithDifferentId });
 
-		expect(screen.getByText('1_12345')).toBeInTheDocument();
+		expect(screen.getByText('12345')).toBeInTheDocument();
 
 		// Check that tab links use the new stop ID
 		const arrivalsTab = screen.getByRole('link', { name: /arrivals & departures/i });

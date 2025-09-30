@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { debounce } from '$lib/utils';
+import { debounce, removeAgencyPrefix } from '$lib/utils';
 
 describe('debounce', () => {
 	beforeEach(() => {
@@ -103,5 +103,37 @@ describe('debounce', () => {
 		vi.advanceTimersByTime(100);
 
 		expect(mockFn).toBeCalledTimes(1);
+	});
+});
+
+describe('removeAgencyPrefix', () => {
+	it('should remove agency prefix from ID strings', () => {
+		expect(removeAgencyPrefix('MTS_41242')).toBe('41242');
+		expect(removeAgencyPrefix('1_75403')).toBe('75403');
+		expect(removeAgencyPrefix('40_12345')).toBe('12345');
+	});
+
+	it('should return original string if no underscore found', () => {
+		expect(removeAgencyPrefix('41242')).toBe('41242');
+		expect(removeAgencyPrefix('NoPrefix')).toBe('NoPrefix');
+	});
+
+	it('should handle null and undefined inputs', () => {
+		expect(removeAgencyPrefix(null)).toBe(null);
+		expect(removeAgencyPrefix(undefined)).toBe(undefined);
+	});
+
+	it('should handle non-string inputs', () => {
+		expect(removeAgencyPrefix(123)).toBe(123);
+		expect(removeAgencyPrefix({})).toStrictEqual({});
+	});
+
+	it('should handle empty strings', () => {
+		expect(removeAgencyPrefix('')).toBe('');
+	});
+
+	it('should handle strings with multiple underscores', () => {
+		expect(removeAgencyPrefix('1_2_3_4')).toBe('2_3_4');
+		expect(removeAgencyPrefix('agency_route_stop')).toBe('route_stop');
 	});
 });

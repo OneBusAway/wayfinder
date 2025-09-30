@@ -15,6 +15,7 @@
 	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
 	import analytics from '$lib/Analytics/PlausibleAnalytics';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
+	import { removeAgencyPrefix } from '$lib/utils';
 
 	/**
 	 * @typedef {Object} Props
@@ -184,7 +185,7 @@
 						class="relative flex flex-col gap-y-1 rounded-lg bg-brand-secondary bg-opacity-80 p-4"
 					>
 						<h1 class="h1 mb-0 text-white">{stop.name}</h1>
-						<h2 class="h2 mb-0 text-white">{$t('stop')} #{stop.id}</h2>
+						<h2 class="h2 mb-0 text-white">{$t('stop')} #{removeAgencyPrefix(stop.id)}</h2>
 						{#if routeShortNames && routeShortNames.length > 0}
 							<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames.join(', ')}</h2>
 						{/if}
