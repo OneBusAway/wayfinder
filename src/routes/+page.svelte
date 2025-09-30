@@ -218,6 +218,7 @@
 				{handleViewAllRoutes}
 				{clearPolylines}
 				{handleTripPlan}
+				handleStopMarkerSelect={handleStopMarkerSelect}
 			>
 				{#snippet childContent()}
 					<SurveyLauncher />
