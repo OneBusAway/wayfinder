@@ -80,6 +80,7 @@
 
 	onDestroy(() => {
 		clearInterval(interval);
+		interval = null;
 	});
 </script>
 

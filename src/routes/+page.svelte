@@ -23,7 +23,7 @@
 	let currentModal = $state(null);
 	let stop = $state();
 	let selectedTrip = $state(null);
-	let showRoute = $state(false);
+	let isRouteSelected = $state(false);
 	let selectedRoute = $state(null);
 	let showRouteMap = $state(false);
 	let mapProvider = $state(null);
@@ -49,10 +49,26 @@
 	};
 
 	function handleStopMarkerSelect(stopData) {
+		if (currentModal === Modal.ROUTE || selectedRoute || isRouteSelected) {
+			mapProvider.clearAllPolylines();
+			mapProvider.removeStopMarkers();
+			mapProvider.clearVehicleMarkers();
+			if (currentIntervalId) {
+				clearInterval(currentIntervalId);
+				currentIntervalId = null;
+			}
+			selectedRoute = null;
+			isRouteSelected = false;
+			selectedTrip = null;
+		}
 		currentModal = Modal.STOP;
 		stop = stopData;
 		pushState(`/stops/${stop.id}`);
 		loadSurveys(stop, getUserId());
+
+		if (mapProvider && mapProvider.flyTo) {
+			mapProvider.flyTo(stopData.lat, stopData.lon, 16);
+		}
 
 		if (currentHighlightedStopId !== null) {
 			mapProvider.unHighlightMarker(currentHighlightedStopId);
@@ -79,22 +95,23 @@
 		});
 		window.dispatchEvent(customEvent);
 		currentModal = null;
+		isRouteSelected = true;
 	}
 
 	function closePane() {
 		pushState('/');
 		if (polylines) {
-			clearPolylines();
+			mapProvider.clearAllPolylines();
 			mapProvider.removeStopMarkers();
 			mapProvider.cleanupInfoWindow();
 			mapProvider.clearVehicleMarkers();
 			clearInterval(currentIntervalId);
 		}
+		mapProvider.unHighlightMarker(currentHighlightedStopId);
 		stop = null;
 		selectedTrip = null;
 		selectedRoute = null;
-		showRoute = false;
-		mapProvider.unHighlightMarker(currentHighlightedStopId);
+		isRouteSelected = false;
 		currentHighlightedStopId = null;
 		currentModal = null;
 	}
@@ -102,15 +119,24 @@
 	function tripSelected(event) {
 		if (event.detail) {
 			selectedTrip = event.detail;
-			showRoute = true;
+			isRouteSelected = true;
 			selectedRoute = {
 				id: event.detail.routeId,
 				shortName: event.detail.routeShortName
 			};
+
+			if (stop && mapProvider && mapProvider.updatePopupContent) {
+				const arrivalTime = event.detail.predictedArrivalTime || event.detail.scheduledArrivalTime;
+				mapProvider.updatePopupContent(stop, arrivalTime);
+			}
 		} else {
 			selectedTrip = null;
-			showRoute = false;
+			isRouteSelected = false;
 			selectedRoute = null;
+
+			if (stop && mapProvider && mapProvider.updatePopupContent) {
+				mapProvider.updatePopupContent(stop, null);
+			}
 		}
 	}
 
@@ -132,6 +158,7 @@
 		stops = routeData.stops;
 		currentIntervalId = routeData.currentIntervalId;
 		currentModal = Modal.ROUTE;
+		isRouteSelected = true;
 		analytics.reportRouteClicked(selectedRoute.id);
 	}
 
@@ -253,8 +280,9 @@
 	<MapContainer
 		{selectedTrip}
 		{selectedRoute}
+		{stop}
 		{handleStopMarkerSelect}
-		{showRoute}
+		{isRouteSelected}
 		{showRouteMap}
 		bind:mapProvider
 	/>

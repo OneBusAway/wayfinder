@@ -15,7 +15,6 @@
 	import { removeAgencyPrefix } from '$lib/utils';
 
 	let {
-		clearPolylines,
 		handleRouteSelected,
 		handleViewAllRoutes,
 		handleStopMarkerSelect,
@@ -108,7 +107,7 @@
 
 	function clearResults() {
 		if (polylines) {
-			clearPolylines();
+			mapProvider.clearAllPolylines();
 		}
 		routes = null;
 		stops = null;
