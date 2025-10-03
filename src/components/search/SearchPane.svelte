@@ -59,6 +59,10 @@
 	}
 
 	async function handleRouteClick(route) {
+		mapProvider.clearAllPolylines();
+		mapProvider.removeStopMarkers();
+		mapProvider.clearVehicleMarkers();
+		clearVehicleMarkersMap(mapProvider);
 		clearResults();
 		try {
 			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
