@@ -112,6 +112,7 @@
 		selectedTrip = null;
 		selectedRoute = null;
 		isRouteSelected = false;
+		showRouteMap = false;
 		currentHighlightedStopId = null;
 		currentModal = null;
 	}
