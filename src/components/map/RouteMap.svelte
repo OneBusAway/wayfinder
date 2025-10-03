@@ -62,7 +62,7 @@
 		for (const stopTime of stopTimes) {
 			const stop = stops.find((s) => s.id === stopTime.stopId);
 			if (stop && isMounted) {
-				mapProvider.addStopMarker(stop, stopTime);
+				mapProvider.addStopRouteMarker(stop, stopTime);
 			}
 		}
 
