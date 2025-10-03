@@ -186,12 +186,6 @@
 		}
 	}
 
-	function updateMarkers() {
-		if (!selectedRoute && !isTripPlanModeActive) {
-			batchAddMarkers(allStops);
-		}
-	}
-
 	// Batch operation to add multiple markers efficiently
 	function batchAddMarkers(stops) {
 		const stopsToAdd = stops.filter((s) => !mapInstance.hasMarker(s.id));

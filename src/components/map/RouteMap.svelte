@@ -4,7 +4,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	let { mapProvider, tripId, currentSelectedStop = null } = $props();
 	let shapeId = null;
-	let polyline;
 	let tripData = null;
 	let shapeData = null;
 	let isMounted = true;
@@ -56,7 +55,7 @@
 			shapeData = await shapeResponse.json();
 			const shapePoints = shapeData?.data?.entry?.points;
 			if (shapePoints && isMounted) {
-				polyline = await mapProvider.createPolyline(shapePoints);
+				await mapProvider.createPolyline(shapePoints);
 			}
 		}
 
