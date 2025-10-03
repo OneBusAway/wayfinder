@@ -499,8 +499,6 @@ export default class OpenStreetMapProvider {
 			}
 		});
 
-		console.log('Done clearing polylines');
-
 		this.polylines = [];
 	}
 
