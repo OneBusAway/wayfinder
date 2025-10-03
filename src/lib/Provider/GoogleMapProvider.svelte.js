@@ -55,7 +55,6 @@ export default class GoogleMapProvider {
 
 	addMarker(options) {
 		try {
-
 			if (this.markersMap.has(options.stop.id)) {
 				return this.markersMap.get(options.stop.id);
 			}
@@ -79,9 +78,11 @@ export default class GoogleMapProvider {
 			const container = document.createElement('div');
 			document.body.appendChild(container);
 
-			const handleClick = options.onClick || (() => {
-				console.warn('⚠️ No onClick handler provided for marker:', options.stop.name);
-			});
+			const handleClick =
+				options.onClick ||
+				(() => {
+					console.warn('⚠️ No onClick handler provided for marker:', options.stop.name);
+				});
 
 			const props = $state({
 				stop: options.stop,
