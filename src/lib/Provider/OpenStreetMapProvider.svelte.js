@@ -92,7 +92,7 @@ export default class OpenStreetMapProvider {
 		const props = $state({
 			stop: options.stop,
 			icon: icon,
-			onClick: handleClick,
+			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false
 		});
 

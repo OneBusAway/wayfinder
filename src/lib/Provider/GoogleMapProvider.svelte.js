@@ -78,16 +78,10 @@ export default class GoogleMapProvider {
 			const container = document.createElement('div');
 			document.body.appendChild(container);
 
-			const handleClick =
-				options.onClick ||
-				(() => {
-					console.warn('⚠️ No onClick handler provided for marker:', options.stop.name);
-				});
-
 			const props = $state({
 				stop: options.stop,
 				icon: icon,
-				onClick: handleClick,
+				onClick: options.onClick,
 				isHighlighted: options.isHighlighted ?? false
 			});
 
