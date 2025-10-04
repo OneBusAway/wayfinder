@@ -2,9 +2,8 @@
 	import { calculateMidpoint } from '$lib/mathUtils';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { onMount, onDestroy } from 'svelte';
-	let { mapProvider, tripId } = $props();
+	let { mapProvider, tripId, currentSelectedStop = null } = $props();
 	let shapeId = null;
-	let polyline;
 	let tripData = null;
 	let shapeData = null;
 	let isMounted = true;
@@ -23,17 +22,25 @@
 		if (loadRouteDataPromise) {
 			await loadRouteDataPromise;
 		}
+
 		await Promise.all([
-			mapProvider.removePolyline(await polyline),
+			mapProvider.clearAllPolylines(),
 			mapProvider.removeStopMarkers(),
 			mapProvider.cleanupInfoWindow(),
+			mapProvider.clearVehicleMarkers(),
 			clearInterval(currentIntervalId),
-			clearVehicleMarkersMap(mapProvider),
-			mapProvider.clearVehicleMarkers()
+			clearVehicleMarkersMap(mapProvider)
 		]);
+
+		if (currentSelectedStop) {
+			mapProvider.flyTo(currentSelectedStop.lat, currentSelectedStop.lon, 18);
+		}
 	});
 
 	async function loadRouteData() {
+		mapProvider.clearAllPolylines();
+		mapProvider.removeStopMarkers();
+
 		const tripResponse = await fetch(`/api/oba/trip-details/${tripId}`);
 		tripData = await tripResponse.json();
 
@@ -48,7 +55,7 @@
 			shapeData = await shapeResponse.json();
 			const shapePoints = shapeData?.data?.entry?.points;
 			if (shapePoints && isMounted) {
-				polyline = await mapProvider.createPolyline(shapePoints);
+				await mapProvider.createPolyline(shapePoints);
 			}
 		}
 

@@ -15,7 +15,6 @@
 	import { removeAgencyPrefix } from '$lib/utils';
 
 	let {
-		clearPolylines,
 		handleRouteSelected,
 		handleViewAllRoutes,
 		handleStopMarkerSelect,
@@ -60,6 +59,10 @@
 	}
 
 	async function handleRouteClick(route) {
+		mapProvider.clearAllPolylines();
+		mapProvider.removeStopMarkers();
+		mapProvider.clearVehicleMarkers();
+		clearVehicleMarkersMap(mapProvider);
 		clearResults();
 		try {
 			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
@@ -108,7 +111,7 @@
 
 	function clearResults() {
 		if (polylines) {
-			clearPolylines();
+			mapProvider.clearAllPolylines();
 		}
 		routes = null;
 		stops = null;

@@ -10,7 +10,7 @@
 	import { MapSource } from './../config/mapSource.js';
 
 	let apiKey = env.PUBLIC_OBA_GOOGLE_MAPS_API_KEY;
-	let { handleStopMarkerSelect, mapProvider = $bindable(), ...restProps } = $props();
+	let { handleStopMarkerSelect, mapProvider = $bindable(), stop, ...restProps } = $props();
 
 	onMount(() => {
 		if (PUBLIC_OBA_MAP_PROVIDER === MapSource.Google) {
@@ -24,7 +24,7 @@
 </script>
 
 {#if mapProvider}
-	<MapView {handleStopMarkerSelect} {mapProvider} {...restProps} />
+	<MapView {handleStopMarkerSelect} {mapProvider} {stop} {...restProps} />
 {:else}
 	<FullPageLoadingSpinner />
 {/if}

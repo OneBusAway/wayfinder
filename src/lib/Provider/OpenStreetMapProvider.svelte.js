@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
 import StopMarker from '$components/map/StopMarker.svelte';
 import { faBus } from '@fortawesome/free-solid-svg-icons';
+import { RouteType, routePriorities, prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 import './../../assets/styles/leaflet-map.css';
 import PolylineUtil from 'polyline-encoded';
 import { COLORS } from '$lib/colors';
@@ -22,6 +23,7 @@ export default class OpenStreetMapProvider {
 		this.vehicleMarkers = [];
 		this.maplibreLayer = 'positron';
 		this.markersMap = new Map();
+		this.polylines = []; // Track all polylines for easy cleanup
 	}
 
 	async initMap(element, options) {
@@ -64,12 +66,33 @@ export default class OpenStreetMapProvider {
 	addMarker(options) {
 		if (!browser || !this.map) return null;
 
+		// Check if marker already exists for this stop
+		if (this.markersMap.has(options.stop.id)) {
+			return this.markersMap.get(options.stop.id);
+		}
+
+		let icon = options.icon || faBus;
+
+		if (!options.icon && options.stop.routes && options.stop.routes.length > 0) {
+			const routeTypes = options.stop.routes.map((r) => r.type);
+			let prioritizedType = RouteType.UNKNOWN;
+
+			for (const priority of routePriorities) {
+				if (routeTypes.includes(priority)) {
+					prioritizedType = priority;
+					break;
+				}
+			}
+
+			icon = prioritizedRouteTypeForDisplay(prioritizedType);
+		}
+
 		const container = document.createElement('div');
 
 		const props = $state({
 			stop: options.stop,
-			icon: options.icon || faBus,
-			onClick: options.onClick || (() => {}),
+			icon: icon,
+			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false
 		});
 
@@ -91,7 +114,6 @@ export default class OpenStreetMapProvider {
 		marker.props = props;
 
 		this.markersMap.set(options.stop.id, marker);
-
 		return marker;
 	}
 
@@ -183,6 +205,25 @@ export default class OpenStreetMapProvider {
 			.setLatLng([stop.lat, stop.lon])
 			.setContent(popupContainer)
 			.openOn(this.map);
+	}
+
+	updatePopupContent(stop, arrivalTime = null) {
+		if (this.popupContentComponent && this.globalInfoWindow) {
+			unmount(this.popupContentComponent);
+
+			const popupContainer = document.createElement('div');
+
+			this.popupContentComponent = mount(PopupContent, {
+				target: popupContainer,
+				props: {
+					stopName: stop.name,
+					arrivalTime: arrivalTime,
+					handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
+				}
+			});
+
+			this.globalInfoWindow.setContent(popupContainer);
+		}
 	}
 
 	removeStopMarkers() {
@@ -398,6 +439,8 @@ export default class OpenStreetMapProvider {
 			opacity: options.opacity || 1
 		}).addTo(this.map);
 
+		this.polylines.push(polyline);
+
 		if (!options.withArrow) return polyline;
 
 		const arrowDecorator = this.L.polylineDecorator(polyline, {
@@ -432,6 +475,35 @@ export default class OpenStreetMapProvider {
 		}
 
 		polyline.remove();
+
+		const index = this.polylines.indexOf(polyline);
+		if (index > -1) {
+			this.polylines.splice(index, 1);
+		}
+	}
+
+	/**
+	 * Clears all polylines from the map and resets the tracking array.
+	 * This provides a centralized way to manage polyline cleanup for better state management.
+	 */
+	clearAllPolylines() {
+		if (!browser || !this.map) return;
+
+		this.polylines.forEach((polyline) => {
+			if (polyline) {
+				if (polyline.arrowDecorator) {
+					polyline.arrowDecorator.remove();
+					polyline.arrowDecorator = null;
+				}
+				polyline.remove();
+			}
+		});
+
+		this.polylines = [];
+	}
+
+	getPolylinesCount() {
+		return this.polylines.length;
 	}
 
 	panTo(lat, lng) {

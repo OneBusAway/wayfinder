@@ -75,7 +75,10 @@ describe('SearchPane', () => {
 			flyTo: vi.fn(),
 			createPolyline: vi.fn().mockReturnValue('polyline-mock'),
 			addStopRouteMarker: vi.fn(),
-			clearVehicleMarkers: vi.fn()
+			clearVehicleMarkers: vi.fn(),
+			clearAllPolylines: vi.fn(),
+			removeStopMarkers: vi.fn(),
+			addMarker: vi.fn()
 		};
 
 		// Mock props

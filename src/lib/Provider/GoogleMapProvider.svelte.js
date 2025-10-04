@@ -1,6 +1,7 @@
 import { loadGoogleMapsLibrary, createMap, nightModeStyles } from '$lib/googleMaps';
 import StopMarker from '$components/map/StopMarker.svelte';
 import { faBus } from '@fortawesome/free-solid-svg-icons';
+import { RouteType, routePriorities, prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
@@ -19,6 +20,7 @@ export default class GoogleMapProvider {
 		this.vehicleMarkers = [];
 		this.markersMap = new Map();
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
+		this.polylines = []; // Track all polylines for easy cleanup
 	}
 
 	async initMap(element, options) {
@@ -53,14 +55,34 @@ export default class GoogleMapProvider {
 
 	addMarker(options) {
 		try {
+			if (this.markersMap.has(options.stop.id)) {
+				return this.markersMap.get(options.stop.id);
+			}
+
+			let icon = options.icon || faBus;
+
+			if (!options.icon && options.stop.routes && options.stop.routes.length > 0) {
+				const routeTypes = options.stop.routes.map((r) => r.type);
+				let prioritizedType = RouteType.UNKNOWN;
+
+				for (const priority of routePriorities) {
+					if (routeTypes.includes(priority)) {
+						prioritizedType = priority;
+						break;
+					}
+				}
+
+				icon = prioritizedRouteTypeForDisplay(prioritizedType);
+			}
+
 			const container = document.createElement('div');
 			document.body.appendChild(container);
 
 			const props = $state({
 				stop: options.stop,
-				icon: options.icon || faBus,
-				onClick: options.onClick || (() => {}),
-				isHighlighted: false
+				icon: icon,
+				onClick: options.onClick,
+				isHighlighted: options.isHighlighted ?? false
 			});
 
 			const marker = mount(StopMarker, {
@@ -179,6 +201,24 @@ export default class GoogleMapProvider {
 		});
 
 		this.globalInfoWindow.open(this.map, this.markersMap.get(stop.id));
+	}
+
+	updatePopupContent(stop, arrivalTime = null) {
+		if (this.popupContentComponent && this.globalInfoWindow) {
+			// Unmount and remount the component with new props
+			unmount(this.popupContentComponent);
+
+			const popupContainer = this.globalInfoWindow.getContent();
+
+			this.popupContentComponent = mount(PopupContent, {
+				target: popupContainer,
+				props: {
+					stopName: stop.name,
+					arrivalTime: arrivalTime,
+					handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
+				}
+			});
+		}
 	}
 
 	highlightMarker(stopId) {
@@ -420,6 +460,8 @@ export default class GoogleMapProvider {
 
 		polyline.setMap(this.map);
 
+		this.polylines.push(polyline);
+
 		return polyline;
 	}
 
@@ -428,7 +470,36 @@ export default class GoogleMapProvider {
 			polyline.setMap(null);
 		}
 
+		// Remove from tracking array
+		const index = this.polylines.indexOf(polyline);
+		if (index > -1) {
+			this.polylines.splice(index, 1);
+		}
+
 		return null;
+	}
+
+	/**
+	 * Clears all polylines from the map and resets the tracking array.
+	 * This provides a centralized way to manage polyline cleanup for better state management.
+	 */
+	clearAllPolylines() {
+		// Remove all polylines from the map
+		this.polylines.forEach((polyline) => {
+			if (polyline && polyline.setMap) {
+				polyline.setMap(null);
+			}
+		});
+
+		this.polylines = [];
+	}
+
+	/**
+	 * Returns the number of currently active polylines on the map.
+	 * Useful for debugging and state management.
+	 */
+	getPolylinesCount() {
+		return this.polylines.length;
 	}
 
 	panTo(lat, lng) {
