@@ -67,10 +67,38 @@
 		try {
 			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
 			const stopsForRoute = await response.json();
-			const stops = stopsForRoute.data.references.stops;
+			const stopsMap = new Map(stopsForRoute.data.references.stops.map((stop) => [stop.id, stop]));
 			const polylinesData = stopsForRoute.data.entry.polylines;
 
-			const midpoint = calculateMidpoint(stopsForRoute.data.references.stops);
+			const stopGroupings = stopsForRoute.data.entry.stopGroupings;
+			let orderedStops = [];
+			const seenStopIds = new Set();
+
+			if (stopGroupings && stopGroupings.length > 0) {
+				stopGroupings.forEach((grouping) => {
+					if (grouping.stopGroups && grouping.stopGroups.length > 0) {
+						grouping.stopGroups.forEach((group) => {
+							if (group.stopIds && group.stopIds.length > 0) {
+								group.stopIds.forEach((stopId) => {
+									if (!seenStopIds.has(stopId)) {
+										const stop = stopsMap.get(stopId);
+										if (stop) {
+											orderedStops.push(stop);
+											seenStopIds.add(stopId);
+										}
+									}
+								});
+							}
+						});
+					}
+				});
+			}
+
+			if (orderedStops.length === 0) {
+				orderedStops = stopsForRoute.data.references.stops;
+			}
+
+			const midpoint = calculateMidpoint(orderedStops);
 			mapProvider.flyTo(midpoint.lat, midpoint.lng, 12);
 
 			for (const polylineData of polylinesData) {
@@ -80,12 +108,12 @@
 				polylines.push(polyline);
 			}
 
-			await showStopsOnRoute(stops);
+			await showStopsOnRoute(orderedStops);
 			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
 
 			const routeData = {
 				route,
-				stops,
+				stops: orderedStops,
 				polylines,
 				currentIntervalId
 			};
