@@ -171,6 +171,7 @@ describe('bingGeocode', () => {
 		});
 
 		const result = await bingGeocode({ apiKey, query });
+		console.log(result);
 		expect(result).toEqual({
 			name: 'Space Needle',
 			formatted_address: 'Space Needle',
