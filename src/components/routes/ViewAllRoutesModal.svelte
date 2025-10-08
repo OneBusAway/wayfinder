@@ -4,6 +4,7 @@
 	import RouteItem from '$components/RouteItem.svelte';
 	import { onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
+	import { filterAndSortRoutes } from '$lib/routeUtils';
 
 	let { handleModalRouteClick, closePane } = $props();
 
@@ -45,38 +46,7 @@
 	}
 
 	function filterRoutes() {
-		const lowerCaseQuery = query.toLowerCase();
-		filteredRoutes = routes
-			.filter((route) => {
-				const shortName = route.shortName?.toLowerCase();
-				const longNameOrDescription = (route.longName || route.description || '').toLowerCase();
-				const agencyName = route.agencyInfo?.name?.toLowerCase();
-
-				return (
-					shortName?.includes(lowerCaseQuery) ||
-					longNameOrDescription.includes(lowerCaseQuery) ||
-					agencyName?.includes(lowerCaseQuery)
-				);
-			})
-			.sort((a, b) => {
-				const getNumericValue = (route) => {
-					if (!route.shortName) return Number.MAX_SAFE_INTEGER; // Put routes without shortName at the end
-
-					const matches = route.shortName.match(/(\d+)/);
-					return matches ? parseInt(matches[1], 10) : Number.MAX_SAFE_INTEGER;
-				};
-
-				const aNumeric = getNumericValue(a);
-				const bNumeric = getNumericValue(b);
-
-				// Case 1: Both have numeric values, sort numerically
-				if (aNumeric !== bNumeric) {
-					return aNumeric - bNumeric;
-				}
-
-				// Case 2: One has numeric value, the other doesn't, numeric comes first
-				return (a.shortName || '').localeCompare(b.shortName || '');
-			});
+		filteredRoutes = filterAndSortRoutes(routes, query);
 	}
 </script>
 
