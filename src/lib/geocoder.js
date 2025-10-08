@@ -113,7 +113,7 @@ export async function bingGeocode({ apiKey, query, bounds = null }) {
 				lng: coordinates[1]
 			}
 		},
-		formatted_address: result.name,
+		formatted_address: result.address.formattedAddress,
 		name: result.name
 	});
 }
