@@ -1,4 +1,5 @@
 import { fetchAutocompleteResults } from '$lib/geocoder';
+import { getBoundsCache } from '$src/hooks.server.js';
 
 import { PRIVATE_OBA_GEOCODER_PROVIDER as geocoderProvider } from '$env/static/private';
 
@@ -9,7 +10,14 @@ let geocoderApiKey = env.PRIVATE_OBA_GEOCODER_API_KEY;
 export async function GET({ url }) {
 	const searchInput = url.searchParams.get('query')?.trim();
 
-	const suggestions = await fetchAutocompleteResults(geocoderProvider, searchInput, geocoderApiKey);
+	const bounds = getBoundsCache();
+
+	const suggestions = await fetchAutocompleteResults(
+		geocoderProvider,
+		searchInput,
+		geocoderApiKey,
+		bounds
+	);
 
 	return new Response(
 		JSON.stringify({

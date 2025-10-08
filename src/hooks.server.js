@@ -1,11 +1,17 @@
 import oba from '$lib/obaSdk.js';
+import { calculateBoundsFromAgencies } from '$lib/mathUtils.js';
 
 let routesCache = null;
+let agenciesCache = null;
+let boundsCache = null;
 
 async function fetchRoutesData() {
 	try {
 		const agenciesResponse = await oba.agenciesWithCoverage.list();
 		const agencies = agenciesResponse.data.list;
+
+		agenciesCache = agencies;
+		boundsCache = calculateBoundsFromAgencies(agencies);
 
 		const routesPromises = agencies.map(async (agency) => {
 			const routesResponse = await oba.routesForAgency.list(agency.agencyId);
@@ -44,4 +50,12 @@ export async function handle({ event, resolve }) {
 
 export function getRoutesCache() {
 	return routesCache;
+}
+
+export function getAgenciesCache() {
+	return agenciesCache;
+}
+
+export function getBoundsCache() {
+	return boundsCache;
 }

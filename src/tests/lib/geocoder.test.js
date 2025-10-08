@@ -47,6 +47,56 @@ describe('googleGeocode', () => {
 		const result = await googleGeocode({ apiKey, query });
 		expect(result).toBeNull();
 	});
+
+	it('includes bounds parameter in URL when bounds are provided', async () => {
+		const bounds = {
+			north: 48.0,
+			south: 47.0,
+			east: -121.0,
+			west: -122.0
+		};
+
+		const fakeResponse = {
+			status: 'OK',
+			results: [
+				{
+					geometry: { location: { lat: 47.6205, lng: -122.3493 } },
+					formatted_address: 'Space Needle, Seattle, WA'
+				}
+			]
+		};
+
+		global.fetch.mockResolvedValue({
+			json: async () => fakeResponse
+		});
+
+		await googleGeocode({ apiKey, query, bounds });
+
+		const fetchCall = global.fetch.mock.calls[0][0];
+		expect(fetchCall).toContain('bounds=47,-122|48,-121');
+	});
+
+	it('does not include bounds parameter when bounds are null', async () => {
+		const fakeResponse = {
+			status: 'OK',
+			results: [
+				{
+					geometry: { location: { lat: 47.6205, lng: -122.3493 } },
+					formatted_address: 'Space Needle, Seattle, WA'
+				}
+			]
+		};
+
+		global.fetch.mockResolvedValue({
+			json: async () => fakeResponse
+		});
+
+		await googleGeocode({ apiKey, query, bounds: null });
+
+		// Verify fetch was called without bounds parameter
+		const fetchCall = global.fetch.mock.calls[0][0];
+		expect(fetchCall).not.toContain('bounds=');
+	});
 });
 
 describe('googlePlacesAutocomplete', () => {
@@ -101,6 +151,7 @@ describe('bingGeocode', () => {
 
 	it('returns geocoding result on valid response', async () => {
 		const fakeResponse = {
+			statusCode: 200,
 			resourceSets: [
 				{
 					estimatedTotal: 1,
@@ -122,7 +173,7 @@ describe('bingGeocode', () => {
 		const result = await bingGeocode({ apiKey, query });
 		expect(result).toEqual({
 			name: 'Space Needle',
-			formatted_address: 'Space Needle, Seattle, WA',
+			formatted_address: 'Space Needle',
 			geometry: { location: { lat: 47.6205, lng: -122.3493 } }
 		});
 	});
@@ -138,6 +189,64 @@ describe('bingGeocode', () => {
 
 		const result = await bingGeocode({ apiKey, query });
 		expect(result).toBeNull();
+	});
+
+	it('includes userLocation parameter in URL when bounds are provided', async () => {
+		const bounds = {
+			north: 48.0,
+			south: 47.0,
+			east: -121.0,
+			west: -122.0
+		};
+
+		const fakeResponse = {
+			statusCode: 200,
+			resourceSets: [
+				{
+					resources: [
+						{
+							point: { coordinates: [47.6205, -122.3493] },
+							name: 'Space Needle'
+						}
+					]
+				}
+			]
+		};
+
+		global.fetch.mockResolvedValue({
+			json: async () => fakeResponse
+		});
+
+		await bingGeocode({ apiKey, query, bounds });
+
+		const fetchCall = global.fetch.mock.calls[0][0];
+		expect(fetchCall).toContain('userLocation=47.5,-121.5');
+	});
+
+	it('does not include userLocation parameter when bounds are null', async () => {
+		const fakeResponse = {
+			statusCode: 200,
+			resourceSets: [
+				{
+					resources: [
+						{
+							point: { coordinates: [47.6205, -122.3493] },
+							name: 'Space Needle'
+						}
+					]
+				}
+			]
+		};
+
+		global.fetch.mockResolvedValue({
+			json: async () => fakeResponse
+		});
+
+		await bingGeocode({ apiKey, query, bounds: null });
+
+		// Verify fetch was called without userLocation parameter
+		const fetchCall = global.fetch.mock.calls[0][0];
+		expect(fetchCall).not.toContain('userLocation=');
 	});
 });
 
