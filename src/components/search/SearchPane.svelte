@@ -58,6 +58,44 @@
 		}, 100);
 	}
 
+	/**
+	 * Extracts and deduplicates stops from the OBA API stopGroupings structure.
+	 * Iterates through the nested stopGroupings to build a flat, ordered list of unique stops.
+	 * Maintains the order of stops as they appear in the groupings while preventing duplicates.
+	 *
+	 * @param {Array} stopGroupings - Array of stop grouping objects from the OBA API, where each
+	 *                                 grouping contains stopGroups with arrays of stopIds
+	 * @param {Map<string, Object>} stopsMap - Map of stop IDs to stop objects for quick lookups
+	 * @returns {Array<Object>} Ordered array of unique stop objects
+	 */
+	function extractOrderedStops(stopGroupings, stopsMap) {
+		if (!stopGroupings) return [];
+		if (stopGroupings.length === 0) return [];
+
+		let orderedStops = [];
+		let seenStopIds = new Set();
+
+		stopGroupings.forEach((grouping) => {
+			if (!grouping.stopGroups || grouping.stopGroups.length === 0) return;
+
+			grouping.stopGroups.forEach((group) => {
+				if (!group || group.stopIds.length === 0) return;
+
+				group.stopIds.forEach((stopId) => {
+					if (!seenStopIds.has(stopId)) {
+						const stop = stopsMap.get(stopId);
+						if (stop) {
+							orderedStops.push(stop);
+							seenStopIds.add(stopId);
+						}
+					}
+				});
+			});
+		});
+
+		return orderedStops;
+	}
+
 	async function handleRouteClick(route) {
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
@@ -67,10 +105,17 @@
 		try {
 			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
 			const stopsForRoute = await response.json();
-			const stops = stopsForRoute.data.references.stops;
+			const stopsMap = new Map(stopsForRoute.data.references.stops.map((stop) => [stop.id, stop]));
 			const polylinesData = stopsForRoute.data.entry.polylines;
 
-			const midpoint = calculateMidpoint(stopsForRoute.data.references.stops);
+			const stopGroupings = stopsForRoute.data.entry.stopGroupings;
+			let orderedStops = extractOrderedStops(stopGroupings, stopsMap);
+
+			if (orderedStops.length === 0) {
+				orderedStops = stopsForRoute.data.references.stops;
+			}
+
+			const midpoint = calculateMidpoint(orderedStops);
 			mapProvider.flyTo(midpoint.lat, midpoint.lng, 12);
 
 			for (const polylineData of polylinesData) {
@@ -80,12 +125,12 @@
 				polylines.push(polyline);
 			}
 
-			await showStopsOnRoute(stops);
+			await showStopsOnRoute(orderedStops);
 			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
 
 			const routeData = {
 				route,
-				stops,
+				stops: orderedStops,
 				polylines,
 				currentIntervalId
 			};
