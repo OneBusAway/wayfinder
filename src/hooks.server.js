@@ -1,61 +1,8 @@
-import oba from '$lib/obaSdk.js';
-import { calculateBoundsFromAgencies } from '$lib/mathUtils.js';
-
-let routesCache = null;
-let agenciesCache = null;
-let boundsCache = null;
-
-async function fetchRoutesData() {
-	try {
-		const agenciesResponse = await oba.agenciesWithCoverage.list();
-		const agencies = agenciesResponse.data.list;
-
-		agenciesCache = agencies;
-		boundsCache = calculateBoundsFromAgencies(agencies);
-
-		const routesPromises = agencies.map(async (agency) => {
-			const routesResponse = await oba.routesForAgency.list(agency.agencyId);
-			const routes = routesResponse.data.list;
-			const references = routesResponse.data.references;
-
-			const agencyReferenceMap = new Map(references.agencies.map((agency) => [agency.id, agency]));
-
-			routes.forEach((route) => {
-				route.agencyInfo = agencyReferenceMap.get(route.agencyId);
-			});
-
-			return routes;
-		});
-
-		const routes = await Promise.all(routesPromises);
-		return routes.flat();
-	} catch (error) {
-		console.error('Error fetching routes:', error);
-		return null;
-	}
-}
-
-async function preloadRoutesData() {
-	if (!routesCache) {
-		routesCache = await fetchRoutesData();
-	}
-}
-
-preloadRoutesData();
+import { preloadRoutesData } from '$lib/serverCache.js';
 
 export async function handle({ event, resolve }) {
 	await preloadRoutesData();
 	return resolve(event);
 }
 
-export function getRoutesCache() {
-	return routesCache;
-}
-
-export function getAgenciesCache() {
-	return agenciesCache;
-}
-
-export function getBoundsCache() {
-	return boundsCache;
-}
+export { getRoutesCache, getAgenciesCache, getBoundsCache } from '$lib/serverCache.js';

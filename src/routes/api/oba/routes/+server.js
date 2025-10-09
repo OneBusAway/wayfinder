@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getRoutesCache } from '$src/hooks.server';
+import { getRoutesCache } from '$lib/serverCache.js';
 
 export async function GET() {
 	const cachedRoutes = getRoutesCache();

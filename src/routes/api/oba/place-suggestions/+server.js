@@ -1,5 +1,5 @@
 import { fetchAutocompleteResults } from '$lib/geocoder';
-import { getBoundsCache } from '$src/hooks.server.js';
+import { getBoundsCache } from '$lib/serverCache.js';
 
 import { PRIVATE_OBA_GEOCODER_PROVIDER as geocoderProvider } from '$env/static/private';
 

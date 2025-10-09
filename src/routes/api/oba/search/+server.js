@@ -1,7 +1,7 @@
 import { OnebusawaySDK } from 'onebusaway-sdk';
 
 import { bingGeocode, googleGeocode } from '$lib/geocoder';
-import { getBoundsCache } from '$src/hooks.server.js';
+import { getBoundsCache } from '$lib/serverCache.js';
 
 import {
 	PUBLIC_OBA_SERVER_URL as baseUrl,
