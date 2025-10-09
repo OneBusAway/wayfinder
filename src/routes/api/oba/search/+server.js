@@ -1,6 +1,7 @@
 import { OnebusawaySDK } from 'onebusaway-sdk';
 
 import { bingGeocode, googleGeocode } from '$lib/geocoder';
+import { getBoundsCache } from '$lib/serverCache.js';
 
 import {
 	PUBLIC_OBA_SERVER_URL as baseUrl,
@@ -40,21 +41,23 @@ async function stopSearch(query) {
 	return oba.stopsForLocation.list(params);
 }
 
-async function locationSearch(query) {
+async function locationSearch(query, bounds) {
 	if (geocoderProvider === 'google') {
-		return googleGeocode({ apiKey: geocoderApiKey, query });
+		return googleGeocode({ apiKey: geocoderApiKey, query, bounds });
 	} else if (geocoderProvider === 'bing') {
-		return bingGeocode({ apiKey: geocoderApiKey, query });
+		return bingGeocode({ apiKey: geocoderApiKey, query, bounds });
 	}
 }
 
 export async function GET({ url }) {
 	const searchInput = url.searchParams.get('query')?.trim();
 
+	const bounds = getBoundsCache();
+
 	const [routeResponse, stopResponse, locationResponse] = await Promise.all([
 		routeSearch(searchInput),
 		stopSearch(searchInput),
-		locationSearch(searchInput)
+		locationSearch(searchInput, bounds)
 	]);
 
 	return new Response(
