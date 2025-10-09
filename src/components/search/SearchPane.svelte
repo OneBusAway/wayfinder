@@ -58,6 +58,44 @@
 		}, 100);
 	}
 
+	/**
+	 * Extracts and deduplicates stops from the OBA API stopGroupings structure.
+	 * Iterates through the nested stopGroupings to build a flat, ordered list of unique stops.
+	 * Maintains the order of stops as they appear in the groupings while preventing duplicates.
+	 *
+	 * @param {Array} stopGroupings - Array of stop grouping objects from the OBA API, where each
+	 *                                 grouping contains stopGroups with arrays of stopIds
+	 * @param {Map<string, Object>} stopsMap - Map of stop IDs to stop objects for quick lookups
+	 * @returns {Array<Object>} Ordered array of unique stop objects
+	 */
+	function extractOrderedStops(stopGroupings, stopsMap) {
+		if (!stopGroupings) return [];
+		if (stopGroupings.length === 0) return [];
+
+		let orderedStops = [];
+		let seenStopIds = new Set();
+
+		stopGroupings.forEach((grouping) => {
+			if (!grouping.stopGroups || grouping.stopGroups.length === 0) return;
+
+			grouping.stopGroups.forEach((group) => {
+				if (!group || group.stopIds.length === 0) return;
+
+				group.stopIds.forEach((stopId) => {
+					if (!seenStopIds.has(stopId)) {
+						const stop = stopsMap.get(stopId);
+						if (stop) {
+							orderedStops.push(stop);
+							seenStopIds.add(stopId);
+						}
+					}
+				});
+			});
+		});
+
+		return orderedStops;
+	}
+
 	async function handleRouteClick(route) {
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
@@ -71,28 +109,7 @@
 			const polylinesData = stopsForRoute.data.entry.polylines;
 
 			const stopGroupings = stopsForRoute.data.entry.stopGroupings;
-			let orderedStops = [];
-			const seenStopIds = new Set();
-
-			if (stopGroupings && stopGroupings.length > 0) {
-				stopGroupings.forEach((grouping) => {
-					if (grouping.stopGroups && grouping.stopGroups.length > 0) {
-						grouping.stopGroups.forEach((group) => {
-							if (group.stopIds && group.stopIds.length > 0) {
-								group.stopIds.forEach((stopId) => {
-									if (!seenStopIds.has(stopId)) {
-										const stop = stopsMap.get(stopId);
-										if (stop) {
-											orderedStops.push(stop);
-											seenStopIds.add(stopId);
-										}
-									}
-								});
-							}
-						});
-					}
-				});
-			}
+			let orderedStops = extractOrderedStops(stopGroupings, stopsMap);
 
 			if (orderedStops.length === 0) {
 				orderedStops = stopsForRoute.data.references.stops;
