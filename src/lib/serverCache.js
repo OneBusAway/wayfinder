@@ -82,7 +82,11 @@ async function fetchRoutesData() {
 		const routes = await Promise.all(routesPromises);
 		return routes.flat();
 	} catch (error) {
-		console.error('Error fetching routes:', error);
+		console.error('Error fetching routes:', {
+			error: error.message,
+			stack: error.stack,
+			timestamp: new Date().toISOString()
+		});
 		return null;
 	}
 }
@@ -109,22 +113,24 @@ export async function preloadRoutesData(forceRefresh = false) {
 
 	// Start loading
 	cacheState = 'loading';
-	initializationPromise = fetchRoutesData()
+	const promise = fetchRoutesData()
 		.then((routes) => {
 			routesCache = routes;
 			cacheTimestamp = routes ? now : null;
 			cacheState = routes ? 'loaded' : 'error';
-			initializationPromise = null;
 			return routes;
 		})
 		.catch((error) => {
 			console.error('Error in preloadRoutesData:', error);
 			cacheState = 'error';
-			initializationPromise = null;
 			return null;
+		})
+		.finally(() => {
+			initializationPromise = null;
 		});
 
-	await initializationPromise;
+	initializationPromise = promise;
+	await promise;
 }
 
 /**

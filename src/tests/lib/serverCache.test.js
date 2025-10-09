@@ -187,7 +187,9 @@ describe('serverCache', () => {
 		it('should handle API errors gracefully', async () => {
 			mockAgenciesWithCoverageList.mockRejectedValue(new Error('API Error'));
 
-			const { preloadRoutesData, getRoutesCache, getCacheState } = await import('$lib/serverCache.js');
+			const { preloadRoutesData, getRoutesCache, getCacheState } = await import(
+				'$lib/serverCache.js'
+			);
 
 			// Should not throw
 			await expect(preloadRoutesData()).resolves.not.toThrow();
@@ -197,7 +199,7 @@ describe('serverCache', () => {
 			expect(getCacheState()).toBe('error');
 		});
 
-		it('should log errors to console', async () => {
+		it('should log errors to console with enhanced context', async () => {
 			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 			mockAgenciesWithCoverageList.mockRejectedValue(new Error('API Error'));
 
@@ -205,7 +207,14 @@ describe('serverCache', () => {
 
 			await preloadRoutesData();
 
-			expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching routes:', expect.any(Error));
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				'Error fetching routes:',
+				expect.objectContaining({
+					error: 'API Error',
+					stack: expect.any(String),
+					timestamp: expect.any(String)
+				})
+			);
 
 			consoleErrorSpy.mockRestore();
 		});
