@@ -7,12 +7,11 @@
 	import Accordion from '$components/containers/Accordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import { Datepicker } from 'flowbite-svelte';
-	import { onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
 
 	let selectedDate = $state(new Date());
-	let prevSelectedDate = $state(null);
+	let prevSelectedDate = $state(new Date());
 	let emptySchedules = $state(false);
 	let schedules = $state([]);
 	let stopName = $state('');
@@ -111,13 +110,6 @@
 		}
 		allRoutesExpanded = !allRoutesExpanded;
 	}
-
-	onMount(async () => {
-		if (stopId) {
-			const formattedDate = currentDate.toISOString().split('T')[0];
-			await fetchScheduleForStop(stopId, formattedDate);
-		}
-	});
 
 	$effect(() => {
 		if (selectedDate && selectedDate !== prevSelectedDate) {
