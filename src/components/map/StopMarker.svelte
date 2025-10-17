@@ -35,14 +35,17 @@
 			: ''
 	);
 
-	const labelPosition = $derived(() => {
-		if (!stop?.direction) return 'bottom';
-		const dir = stop.direction.toLowerCase();
-		if (dir === 's' || dir === 'se' || dir === 'sw') {
-			return 'side';
-		}
-		return 'bottom';
-	});
+	const labelPosition = $derived(
+		(() => {
+			if (!stop?.direction) return 'bottom';
+			const dir = stop.direction.toLowerCase();
+			// If direction is south/southeast/southwest, position label to the side
+			if (dir === 's' || dir === 'se' || dir === 'sw') {
+				return 'side';
+			}
+			return 'bottom';
+		})()
+	);
 
 	function toggleRoutesList(event) {
 		event.stopPropagation();
@@ -67,7 +70,7 @@
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
-			class="routes-label {isExpanded ? 'expanded' : ''} position-{labelPosition()}"
+			class="routes-label {isExpanded ? 'expanded' : ''} position-{labelPosition}"
 			onclick={toggleRoutesList}
 		>
 			<span class="label-text">{routesLabelText}</span>
