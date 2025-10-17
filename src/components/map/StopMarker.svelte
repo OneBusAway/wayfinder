@@ -193,14 +193,19 @@
 
 	.routes-label.expanded {
 		@apply font-semibold;
-		@apply bg-brand/10 dark:bg-brand/20;
+		@apply bg-brand/10 dark:bg-neutral-700;
 		@apply border-brand-secondary dark:border-brand;
 		white-space: normal;
 		max-width: 250px;
+		color: #1f2937;
+	}
+
+	:global(.dark) .routes-label.expanded {
+		color: #ffffff;
 	}
 
 	.expand-indicator {
-		@apply ml-1 text-sm font-bold text-gray-500 dark:text-gray-400;
+		@apply ml-1 text-sm font-bold text-gray-500 dark:text-gray-300;
 		transition: color 0.2s ease;
 	}
 </style>
