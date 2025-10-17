@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test, describe, vi, beforeEach } from 'vitest';
+import { expect, test, describe, vi } from 'vitest';
 import StopMarker from '../map/StopMarker.svelte';
 import { faBus } from '@fortawesome/free-solid-svg-icons';
 

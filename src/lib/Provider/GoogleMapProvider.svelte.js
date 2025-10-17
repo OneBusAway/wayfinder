@@ -98,6 +98,8 @@ export default class GoogleMapProvider {
 				props
 			});
 
+			this.markersMap.set(options.stop.id, marker);
+
 			const overlay = new google.maps.OverlayView();
 			overlay.onAdd = function () {
 				this.getPanes().overlayMouseTarget.appendChild(container);
