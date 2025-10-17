@@ -21,6 +21,8 @@ export default class GoogleMapProvider {
 		this.markersMap = new Map();
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
 		this.polylines = []; // Track all polylines for easy cleanup
+		this.showStopsRoutesAtZoom = 16;
+		this.routeLabelsVisible = false;
 	}
 
 	async initMap(element, options) {
@@ -44,6 +46,11 @@ export default class GoogleMapProvider {
 			element,
 			lat: options.lat,
 			lng: options.lng
+		});
+
+		// Update route labels (on stops) visibility on zoom changes
+		this.map.addListener('zoom_changed', () => {
+			this.updateMarkersRouteLabelVisibility();
 		});
 	}
 
@@ -82,7 +89,8 @@ export default class GoogleMapProvider {
 				stop: options.stop,
 				icon: icon,
 				onClick: options.onClick,
-				isHighlighted: options.isHighlighted ?? false
+				isHighlighted: options.isHighlighted ?? false,
+				showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom
 			});
 
 			const marker = mount(StopMarker, {
@@ -108,7 +116,11 @@ export default class GoogleMapProvider {
 				container.parentNode.removeChild(container);
 			};
 			overlay.setMap(this.map);
-			return { overlay, element: container };
+
+			const markerObj = { overlay, element: container, props };
+			this.markersMap.set(options.stop.id, markerObj);
+
+			return markerObj;
 		} catch (error) {
 			console.error('Error adding marker:', error);
 			return null;
@@ -152,6 +164,23 @@ export default class GoogleMapProvider {
 			this.removeMarker(marker);
 		}
 		this.markersMap.clear();
+	}
+
+	updateMarkersRouteLabelVisibility() {
+		if (!this.map) return;
+
+		const shouldShow = this.map.getZoom() >= this.showStopsRoutesAtZoom;
+
+		if (this.routeLabelsVisible === shouldShow) return;
+
+		this.routeLabelsVisible = shouldShow;
+
+		// Batch update all markers
+		for (const marker of this.markersMap.values()) {
+			if (marker?.props) {
+				marker.props.showRoutesLabel = shouldShow;
+			}
+		}
 	}
 
 	addStopRouteMarker(stop, stopTime = null) {
