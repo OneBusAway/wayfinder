@@ -8,10 +8,46 @@
 	 * @property {any} onClick
 	 * @property {any} icon
 	 * @property {boolean} [isHighlighted]
+	 * @property {boolean} [showRoutesLabel]
 	 */
 
 	/** @type {Props} */
-	let { stop, onClick, icon, isHighlighted = false } = $props();
+	let { stop, onClick, icon, isHighlighted = false, showRoutesLabel = false } = $props();
+
+	const MAX_ROUTES_TO_SHOW = 3;
+	let isExpanded = $state(false);
+
+	const routeNames = $derived(
+		(stop?.routes || [])
+			.map((r) => r?.shortName || r?.code || (r?.id ? String(r.id).split('_').pop() : null))
+			.filter(Boolean)
+	);
+
+	const displayedRouteNames = $derived(
+		isExpanded ? routeNames : routeNames.slice(0, MAX_ROUTES_TO_SHOW)
+	);
+
+	const remainingRoutesCount = $derived(Math.max(0, routeNames.length - MAX_ROUTES_TO_SHOW));
+
+	const routesLabelText = $derived(
+		displayedRouteNames.length > 0
+			? `${displayedRouteNames.join(', ')}${!isExpanded && remainingRoutesCount > 0 ? ' +' + remainingRoutesCount : ''}`
+			: ''
+	);
+
+	const labelPosition = $derived(() => {
+		if (!stop?.direction) return 'bottom';
+		const dir = stop.direction.toLowerCase();
+		if (dir === 's' || dir === 'se' || dir === 'sw') {
+			return 'side';
+		}
+		return 'bottom';
+	});
+
+	function toggleRoutesList(event) {
+		event.stopPropagation();
+		isExpanded = !isExpanded;
+	}
 </script>
 
 <button
@@ -26,6 +62,20 @@
 			</span>
 		{/if}
 	</span>
+
+	{#if showRoutesLabel && routesLabelText}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="routes-label {isExpanded ? 'expanded' : ''} position-{labelPosition()}"
+			onclick={toggleRoutesList}
+		>
+			<span class="label-text">{routesLabelText}</span>
+			{#if remainingRoutesCount > 0 && !isExpanded}
+				<span class="expand-indicator" title="Click to see all routes">⋯</span>
+			{/if}
+		</div>
+	{/if}
 </button>
 
 <style lang="postcss">
@@ -97,5 +147,57 @@
 		top: -17px;
 		left: -10px;
 		transform: rotate(315deg);
+	}
+
+	.routes-label {
+		position: absolute;
+		@apply whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium;
+		@apply bg-white/95 dark:bg-neutral-800;
+		@apply text-gray-800 dark:text-white;
+		@apply border-2 border-gray-300 dark:border-neutral-600;
+		@apply shadow-lg dark:shadow-xl;
+		@apply cursor-pointer;
+		@apply transition-colors duration-200 ease-in-out;
+		pointer-events: auto;
+		z-index: 10;
+		max-width: 200px;
+		backdrop-filter: blur(4px);
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
+	.routes-label.position-bottom {
+		top: calc(100% + 6px);
+		left: 50%;
+		transform: translateX(-50%);
+	}
+
+	.routes-label.position-side {
+		top: 50%;
+		left: calc(100% + 6px);
+		transform: translateY(-50%);
+	}
+
+	.routes-label:hover {
+		@apply bg-white dark:bg-neutral-700;
+		@apply border-brand shadow-xl;
+	}
+
+	.routes-label:hover .expand-indicator {
+		@apply text-brand;
+	}
+
+	.routes-label.expanded {
+		@apply font-semibold;
+		@apply bg-brand/10 dark:bg-brand/20;
+		@apply border-brand-secondary dark:border-brand;
+		white-space: normal;
+		max-width: 250px;
+	}
+
+	.expand-indicator {
+		@apply ml-1 text-sm font-bold text-gray-500 dark:text-gray-400;
+		transition: color 0.2s ease;
 	}
 </style>
