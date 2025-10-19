@@ -5,6 +5,16 @@
 	import ItineraryTab from './ItineraryTab.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
+	import { trapFocus } from '../../../utils/focusTrap';
+	import { applyAriaAttributes } from '../../../utils/ariaHelpers';
+
+	/**
+	 * Focus the modal element when it is opened.
+	 * This ensures the modal is immediately accessible to keyboard users.
+	 *
+	 * Restore focus to the previously focused element when the modal is closed.
+	 * This helps maintain a logical focus order for accessibility.
+	 */
 
 	/**
 	 * @typedef {Object} Props
@@ -45,7 +55,7 @@
 		withArrow: false
 	};
 
-	// draw the current itinerary route based on the active itinerary tab
+	// Draw the current itinerary route based on the active itinerary tab
 	async function drawRoute() {
 		if (currPolylines.length > 0) {
 			currPolylines.forEach((polyline) => {
@@ -61,8 +71,36 @@
 		});
 	}
 
+	let previouslyFocusedElement = null;
+	let modalElement;
+
+	/**
+	 * Trap focus within the modal element when it is mounted.
+	 * This ensures keyboard navigation is restricted to the modal for accessibility.
+	 */
 	onMount(() => {
 		drawRoute();
+		if (modalElement) {
+			/**
+			 * Release focus trapping when the modal is destroyed.
+			 * @returns {Function} A cleanup function to release focus trapping.
+			 */
+			const releaseFocus = trapFocus(modalElement);
+
+			/**
+			 * Apply ARIA attributes to the modal for screen reader support.
+			 * - role: 'dialog' indicates the element is a dialog.
+			 * - aria-modal: 'true' informs assistive technologies that the dialog is modal.
+			 * - aria-label: Provides a label for the dialog.
+			 */
+			applyAriaAttributes(modalElement, {
+				role: 'dialog',
+				'aria-modal': 'true',
+				'aria-label': 'Trip Planner'
+			});
+
+			return () => releaseFocus();
+		}
 	});
 	onDestroy(() => {
 		mapProvider.removePinMarker(fromMarker);
@@ -76,14 +114,29 @@
 	});
 </script>
 
-<ModalPane {closePane} title={$t('trip-planner.trip_itineraries')}>
+<ModalPane
+	{closePane}
+	title={$t('trip-planner.trip_itineraries')}
+	/**
+	 * Focus the modal element when it is opened.
+	 * This ensures the modal is immediately accessible to keyboard users.
+	 */
+	on:open={() => modalElement && modalElement.focus()}
+	/**
+	 * Restore focus to the previously focused element when the modal is closed.
+	 * This helps maintain a logical focus order for accessibility.
+	 */
+	on:close={() => previouslyFocusedElement && previouslyFocusedElement.focus()}
+	aria-labelledby="trip-plan-modal-title"
+	aria-describedby="trip-plan-modal-description"
+	bind:this={modalElement}
+>
 	{#if loading}
 		<LoadingSpinner />
 	{/if}
 
 	{#if itineraries.length > 0}
 		<div class="tab-container">
-			<!-- eslint-disable no-unused-vars -->
 			{#each itineraries as _, index}
 				<ItineraryTab {index} {activeTab} {setActiveTab} />
 			{/each}
