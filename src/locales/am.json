@@ -124,6 +124,10 @@
 		"more_info": "ተጨማሪ መረጃ",
 		"close": "ዝጋ",
 		"service_alerts": "አገልግሎት ማስጠንቀቂያዎች",
+		"service_alert": "አገልግሎት ማስጠንቀቂያ",
+		"advice": "ምክር",
+		"no_summary": "ለዚህ ማስጠንቀቂያ ምንም ማጠቃለያ የለም",
+		"no_description": "ለዚህ ማስጠንቀቂያ ዝርዝር መግለጫ የለም",
 		"page": "ገፅ",
 		"show": "አሳይ",
 		"hide": "ደብቅ"

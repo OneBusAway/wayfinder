@@ -124,6 +124,10 @@
 		"more_info": "Thêm thông tin",
 		"close": "Đóng",
 		"service_alerts": "Thông báo dịch vụ",
+		"service_alert": "Thông báo dịch vụ",
+		"advice": "Lời khuyên",
+		"no_summary": "Không có tóm tắt cho thông báo này",
+		"no_description": "Không có mô tả chi tiết cho thông báo này",
 		"page": "Trang",
 		"show": "Hiển thị",
 		"hide": "Ẩn"
