@@ -125,6 +125,10 @@
 		"more_info": "Más información",
 		"close": "Cerrar",
 		"service_alerts": "Alertas de servicio",
+		"service_alert": "Alerta de servicio",
+		"advice": "Consejo",
+		"no_summary": "No hay resumen disponible para esta alerta",
+		"no_description": "No hay descripción detallada disponible para esta alerta",
 		"page": "Página",
 		"show": "Mostrar",
 		"hide": "Ocultar"

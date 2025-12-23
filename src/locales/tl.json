@@ -125,6 +125,10 @@
 		"more_info": "Karagdagang impormasyon",
 		"close": "Isara",
 		"service_alerts": "Mga abiso ng serbisyo",
+		"service_alert": "Abiso ng serbisyo",
+		"advice": "Payo",
+		"no_summary": "Walang buod na available para sa abisong ito",
+		"no_description": "Walang detalyadong paglalarawan na available para sa abisong ito",
 		"page": "Pahina",
 		"show": "Ipakita",
 		"hide": "Itago"

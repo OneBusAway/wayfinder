@@ -124,6 +124,10 @@
 		"more_info": "Macluumaad dheeri ah",
 		"close": "Xidho",
 		"service_alerts": "Ogeysiisyada adeegga",
+		"service_alert": "Ogeysiiska adeegga",
+		"advice": "Talo",
+		"no_summary": "Koob-soo-koob ma jiro ogeysiiskan",
+		"no_description": "Sharax faahfaahsan ma jiro ogeysiiskan",
 		"page": "Bogga",
 		"show": "Muujin",
 		"hide": "Qari"
