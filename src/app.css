@@ -4,19 +4,19 @@
 
 @layer components {
 	.h1 {
-		@apply mb-4 text-2xl font-semibold text-text-primary-light dark:text-gray-300;
+		@apply text-primary-light mb-4 text-2xl font-semibold dark:text-gray-300;
 	}
 
 	.h2 {
-		@apply mb-4 text-xl font-semibold text-text-primary-light dark:text-gray-300;
+		@apply text-primary-light mb-4 text-xl font-semibold dark:text-gray-300;
 	}
 
 	.h3 {
-		@apply mb-2 text-lg font-semibold text-text-primary-light dark:text-text-primary-dark;
+		@apply text-primary-light dark:text-primary-dark mb-2 text-lg font-semibold;
 	}
 
 	.modal-pane {
-		@apply rounded-lg border-border-custom-light bg-nav-bg-light/90 px-4 shadow-lg dark:border-border-custom-dark dark:bg-nav-bg-dark dark:text-text-primary-dark dark:shadow-lg dark:shadow-gray-200/10;
+		@apply dark:text-primary-dark rounded-lg border-border-custom-light bg-nav-bg-light/90 px-4 shadow-lg dark:border-border-custom-dark dark:bg-nav-bg-dark dark:shadow-lg dark:shadow-gray-200/10;
 	}
 
 	.tab-container {
@@ -32,13 +32,11 @@
 	}
 
 	.button {
-		
-		@apply rounded-md bg-nav-bg-light px-3 py-2 text-sm font-semibold text-text-primary-light shadow-sm ring-1 ring-inset ring-border-custom-light hover:bg-gray-50 dark:bg-nav-bg-dark dark:text-text-primary-dark dark:ring-border-custom-dark dark:hover:bg-gray-800;
-	
+		@apply text-primary-light dark:text-primary-dark rounded-md bg-nav-bg-light px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-inset ring-border-custom-light hover:bg-gray-50 dark:bg-nav-bg-dark dark:ring-border-custom-dark dark:hover:bg-gray-800;
 	}
 
 	.button--primary {
-		@apply rounded-md bg-brand-secondary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand focus-visible:outline focus-visible: outline-2 focus-visible: outline-offset-2 focus-visible:outline-brand;
+		@apply rounded-md bg-brand-secondary px-3 py-2 text-sm font-semibold text-white shadow-sm outline-2 outline-offset-2 hover:bg-brand focus-visible:outline focus-visible:outline-brand;
 	}
 
 	.rtl {
@@ -68,7 +66,7 @@
 
 	.rtl .border-l-4 {
 		border-left-width: 0;
-		border-right-width:  4px;
+		border-right-width: 4px;
 	}
 
 	.rtl .left-5 {

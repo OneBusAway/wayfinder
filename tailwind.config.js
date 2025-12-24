@@ -10,18 +10,18 @@ export default {
 		'./node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}'
 	],
 
-	theme: {
-		extend:  {
-			colors: {
+	theme:{
+		extend:{
+			colors:{
 				brand: process.env.PUBLIC_APP_PRIMARY_COLOR || '#78aa36',
 				'brand-secondary': process.env.PUBLIC_APP_SECONDARY_COLOR || '#486621',
-				// Custom UI colors for theming
+	
 				'nav-bg-light': process.env.PUBLIC_APP_NAV_BG_COLOR || '#ffffff',
 				'nav-bg-dark': process.env.PUBLIC_APP_NAV_BG_COLOR_DARK || '#000000',
-				'text-primary-light': process.env.PUBLIC_APP_TEXT_PRIMARY_COLOR || '#111827',
-				'text-primary-dark': process. env.PUBLIC_APP_TEXT_PRIMARY_COLOR_DARK || '#ffffff',
+				'primary-light': process.env.PUBLIC_APP_TEXT_PRIMARY_COLOR || '#111827',
+				'primary-dark': process.env.PUBLIC_APP_TEXT_PRIMARY_COLOR_DARK || '#ffffff',
 				'border-custom-light': process.env.PUBLIC_APP_BORDER_COLOR || '#6b7280',
-				'border-custom-dark': process. env.PUBLIC_APP_BORDER_COLOR_DARK || '#374151',
+				'border-custom-dark': process.env.PUBLIC_APP_BORDER_COLOR_DARK || '#374151',
 				// flowbite-svelte
 				primary: {
 					50: '#FFF5F2',
