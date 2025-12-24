@@ -28,7 +28,7 @@
 					use:keybinding={{ code: 'Escape' }}
 					class="close-button"
 				>
-					<FontAwesomeIcon icon={faX} class="font-black text-black dark:text-white" />
+										<FontAwesomeIcon icon={faX} class="font-black text-text-primary-light dark:text-text-primary-dark" />
 					<span class="sr-only">Close</span>
 				</button>
 			</div>

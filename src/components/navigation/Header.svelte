@@ -99,7 +99,7 @@
 </script>
 
 <div
-	class="bg-blur-md flex items-center justify-between border-b border-gray-500 bg-white/80 px-4 dark:bg-black dark:text-white md:flex-row md:px-8"
+	class="bg-blur-md flex items-center justify-between border-b border-border-custom-light bg-nav-bg-light/80 px-4 dark:border-border-custom-dark dark:bg-nav-bg-dark dark:text-text-primary-dark md:flex-row md:px-8"
 	bind:this={navContainer}
 >
 	<div class="flex flex-1 items-center justify-between md:flex-none">
@@ -108,7 +108,7 @@
 				<a href="/" class="block">
 					<img src={PUBLIC_OBA_LOGO_URL} alt={PUBLIC_OBA_REGION_NAME} class="h-10 rounded-sm" />
 				</a>
-				<a href="/" class="block text-xl font-extrabold">
+								<a href="/" class="block text-xl font-extrabold text-text-primary-light dark:text-text-primary-dark">
 					{PUBLIC_OBA_REGION_NAME}
 				</a>
 			</div>
@@ -119,8 +119,8 @@
 				<div class="no-scrollbar flex gap-x-4 overflow-x-auto">
 					{#if headerLinks && Object.keys(headerLinks).length > 0}
 						{#each Object.entries(headerLinks) as [key, value]}
-							<div class="flex-shrink-0 rounded-md border bg-white/80 dark:bg-gray-800">
-								<a href={value} class="block px-2 py-1 font-semibold text-gray-900 dark:text-white"
+														<div class="flex-shrink-0 rounded-md border border-border-custom-light bg-nav-bg-light/80 dark:border-border-custom-dark dark:bg-gray-800">
+															<a href={value} class="block px-2 py-1 font-semibold text-text-primary-light dark:text-text-primary-dark"
 									>{key}</a
 								>
 							</div>
@@ -135,7 +135,7 @@
 		{#if shouldShowMobile}
 			<button onclick={toggleNavbar} aria-label="Toggle navigation menu" class="mr-2">
 				<svg
-					class="burger-icon h-6 w-6 text-gray-900 dark:text-white"
+										class="burger-icon h-6 w-6 text-text-primary-light dark:text-text-primary-dark"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"

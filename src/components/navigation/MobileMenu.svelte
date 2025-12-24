@@ -6,12 +6,12 @@
 </script>
 
 <div
-	class="fixed inset-0 z-50 flex flex-col items-center justify-center space-y-6 bg-white p-4 dark:bg-black"
+		class="fixed inset-0 z-50 flex flex-col items-center justify-center space-y-6 bg-nav-bg-light p-4 dark:bg-nav-bg-dark"
 	transition:fly={{ x: 1000, duration: 300 }}
 >
 	<button onclick={closeMenu} aria-label="Close Menu">
 		<svg
-			class="close-icon h-6 w-6 cursor-pointer text-gray-900 dark:text-white"
+						class="close-icon h-6 w-6 cursor-pointer text-text-primary-light dark:text-text-primary-dark"
 			fill="none"
 			stroke="currentColor"
 			viewBox="0 0 24 24"
@@ -26,7 +26,7 @@
 		{#each Object.entries(headerLinks) as [key, value]}
 			<a
 				href={value}
-				class="block text-xl font-semibold text-gray-900 dark:text-white"
+							class="block text-xl font-semibold text-text-primary-light dark:text-text-primary-dark"
 				onclick={closeMenu}>{key}</a
 			>
 		{/each}

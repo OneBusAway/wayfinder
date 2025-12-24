@@ -4,27 +4,27 @@
 
 @layer components {
 	.h1 {
-		@apply mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-300;
+		@apply mb-4 text-2xl font-semibold text-text-primary-light dark:text-gray-300;
 	}
 
 	.h2 {
-		@apply mb-4 text-xl font-semibold text-gray-900 dark:text-gray-300;
+		@apply mb-4 text-xl font-semibold text-text-primary-light dark:text-gray-300;
 	}
 
 	.h3 {
-		@apply mb-2 text-lg font-semibold dark:text-white;
+		@apply mb-2 text-lg font-semibold text-text-primary-light dark:text-text-primary-dark;
 	}
 
 	.modal-pane {
-		@apply rounded-lg border-gray-500 bg-white/90 px-4 shadow-lg dark:bg-black dark:text-white dark:shadow-lg dark:shadow-gray-200/10;
+		@apply rounded-lg border-border-custom-light bg-nav-bg-light/90 px-4 shadow-lg dark:border-border-custom-dark dark:bg-nav-bg-dark dark:text-text-primary-dark dark:shadow-lg dark:shadow-gray-200/10;
 	}
 
 	.tab-container {
-		@apply flex border-b border-gray-300;
+		@apply flex border-b border-border-custom-light dark:border-border-custom-dark;
 	}
 
 	.tab-container__item {
-		@apply -mb-px px-4 py-2 font-semibold text-gray-500;
+		@apply -mb-px px-4 py-2 font-semibold text-gray-500 dark:text-gray-400;
 	}
 
 	.tab-container__item--active {
@@ -32,11 +32,13 @@
 	}
 
 	.button {
-		@apply rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
+		
+		@apply rounded-md bg-nav-bg-light px-3 py-2 text-sm font-semibold text-text-primary-light shadow-sm ring-1 ring-inset ring-border-custom-light hover:bg-gray-50 dark:bg-nav-bg-dark dark:text-text-primary-dark dark:ring-border-custom-dark dark:hover:bg-gray-800;
+	
 	}
 
 	.button--primary {
-		@apply rounded-md bg-brand-secondary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-secondary;
+		@apply rounded-md bg-brand-secondary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand focus-visible:outline focus-visible: outline-2 focus-visible: outline-offset-2 focus-visible:outline-brand;
 	}
 
 	.rtl {
@@ -66,7 +68,7 @@
 
 	.rtl .border-l-4 {
 		border-left-width: 0;
-		border-right-width: 4px;
+		border-right-width:  4px;
 	}
 
 	.rtl .left-5 {
