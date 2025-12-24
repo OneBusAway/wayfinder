@@ -24,6 +24,8 @@ export default class OpenStreetMapProvider {
 		this.maplibreLayer = 'positron';
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
+		this.showStopsRoutesAtZoom = 16;
+		this.routeLabelsVisible = false;
 	}
 
 	async initMap(element, options) {
@@ -55,6 +57,11 @@ export default class OpenStreetMapProvider {
 			interactive: true,
 			dragRotate: false
 		}).addTo(this.map);
+
+		// Update route labels (on stops) visibility on zoom changes
+		this.map.on('zoomend', () => {
+			this.updateMarkersRouteLabelVisibility();
+		});
 	}
 
 	eventListeners(mapInstance, debouncedLoadMarkers) {
@@ -93,7 +100,8 @@ export default class OpenStreetMapProvider {
 			stop: options.stop,
 			icon: icon,
 			onClick: options.onClick,
-			isHighlighted: options.isHighlighted ?? false
+			isHighlighted: options.isHighlighted ?? false,
+			showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom
 		});
 
 		mount(StopMarker, {
@@ -115,6 +123,23 @@ export default class OpenStreetMapProvider {
 
 		this.markersMap.set(options.stop.id, marker);
 		return marker;
+	}
+
+	updateMarkersRouteLabelVisibility() {
+		if (!this.map) return;
+
+		const shouldShow = this.map.getZoom() >= this.showStopsRoutesAtZoom;
+
+		if (this.routeLabelsVisible === shouldShow) return;
+
+		this.routeLabelsVisible = shouldShow;
+
+		// Batch update all markers
+		for (const marker of this.markersMap.values()) {
+			if (marker?.props) {
+				marker.props.showRoutesLabel = shouldShow;
+			}
+		}
 	}
 
 	addPinMarker(position, text) {
