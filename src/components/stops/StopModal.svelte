@@ -1,23 +1,38 @@
-<!--
-    @component
-    A modal component that displays stop information using StopPane.
-
-    @prop {boolean} showAllStops - Flag to control visibility of all stops
-    @prop {Object} stop - Stop object containing stop details
-
-    @fires {CustomEvent} close - Emitted when the modal is closed
-    @fires {CustomEvent} tripSelected - Forwarded from StopPane when a trip is selected
-    @fires {CustomEvent} updateRouteMap - Forwarded from StopPane when route map needs updating
-    @fires {CustomEvent} showAllStops - Forwarded from StopPane when all stops should be shown
--->
-
 <script>
-	import ModalPane from '$components/navigation/ModalPane.svelte';
-	import StopPane from '$components/stops/StopPane.svelte';
+	import { onMount, onDestroy } from 'svelte';
+	import { trapFocus } from '../../../utils/focusTrap';
+	import { applyAriaAttributes } from '../../../utils/ariaHelpers';
 
-	let { handleUpdateRouteMap, tripSelected, stop, closePane } = $props();
+	export let isOpen = false;
+	export let onClose;
+
+	let modalElement;
+
+	onMount(() => {
+		// Ensure focus is trapped within the modal when it is open
+		// and restore focus to the previously focused element when the modal is closed.
+		if (isOpen && modalElement) {
+			const releaseFocus = trapFocus(modalElement);
+
+			// Apply ARIA attributes to enhance accessibility for screen readers.
+			applyAriaAttributes(modalElement, {
+				role: 'dialog',
+				'aria-modal': 'true',
+				'aria-label': 'Stop Information'
+			});
+
+			// Cleanup function to release focus trap when the component is destroyed.
+			return () => releaseFocus();
+		}
+	});
 </script>
 
-<ModalPane {closePane} title={stop.name}>
-	<StopPane {tripSelected} {handleUpdateRouteMap} {stop} />
-</ModalPane>
+{#if isOpen}
+	<div class="modal-overlay" on:click={onClose}>
+		<div class="modal-content" bind:this={modalElement} on:click|stopPropagation>
+			<slot />
+			<!-- Close button with ARIA label for accessibility -->
+			<button on:click={onClose} aria-label="Close modal">Close</button>
+		</div>
+	</div>
+{/if}
