@@ -30,7 +30,7 @@
 			break;
 		case 'BUS':
 			icon = faBus;
-			iconColor = 'text-brand-secondary';
+			iconColor = 'text-brand-accent';
 			break;
 		case 'TRAIN':
 			icon = faTrain;

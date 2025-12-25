@@ -16,7 +16,7 @@
 	<div class="mt-auto flex justify-center">
 		<button
 			type="button"
-			class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-secondary"
+			class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent"
 			onclick={handleStopMarkerSelect}
 		>
 			{$t('view_stop_information')}

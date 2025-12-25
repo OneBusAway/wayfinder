@@ -62,7 +62,7 @@ describe('StopPageHeader', () => {
 
 		const heading = screen.getByRole('heading', { level: 1 });
 		expect(heading).toHaveTextContent('Pine St & 3rd Ave');
-		expect(heading).toHaveClass('text-3xl', 'font-bold', 'text-brand-secondary');
+		expect(heading).toHaveClass('text-3xl', 'font-bold', 'text-brand-accent');
 	});
 
 	test('displays stop ID with proper label', () => {

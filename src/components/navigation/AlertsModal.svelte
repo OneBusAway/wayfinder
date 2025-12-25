@@ -46,7 +46,7 @@
 				{$t('alert.close')}
 			</Button>
 			<Button
-				class="bg-brand-secondary text-white hover:bg-brand-secondary dark:bg-brand dark:hover:bg-brand-secondary"
+				class="bg-brand-accent text-white hover:bg-brand-accent dark:bg-brand dark:hover:bg-brand-accent"
 				on:click={() => window.open(getUrlTranslation(), '_blank')}
 			>
 				{$t('alert.more_info')}

@@ -62,10 +62,7 @@
 			<h3 class="font-medium text-gray-700 dark:text-white">
 				{$t('service_alerts.service_alerts')} ({serviceAlerts.length})
 			</h3>
-			<button
-				class="text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-500"
-				onclick={toggleAlerts}
-			>
+			<button class="text-sm font-medium text-brand-accent" onclick={toggleAlerts}>
 				{isAlertsHidden ? $t('service_alerts.show') : $t('service_alerts.hide')}
 			</button>
 		</div>

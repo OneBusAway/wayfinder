@@ -7,6 +7,9 @@
 	import { locale } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 	import analytics from '$lib/Analytics/PlausibleAnalytics.js';
+	import { env } from '$env/dynamic/public';
+
+	const faviconUrl = env.PUBLIC_FAVICON_URL || '/favicon-32x32.png';
 
 	/**
 	 * @typedef {Object} Props
@@ -29,6 +32,10 @@
 		analytics.reportPageView('/');
 	});
 </script>
+
+<svelte:head>
+	<link rel="icon" type="image/png" sizes="32x32" href={faviconUrl} />
+</svelte:head>
 
 <div class="flex h-dvh w-full flex-col">
 	<Header />

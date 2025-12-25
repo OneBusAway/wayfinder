@@ -99,43 +99,45 @@
 </script>
 
 <div
-	class="bg-blur-md flex items-center justify-between border-b border-gray-500 bg-white/80 px-4 dark:bg-black dark:text-white md:flex-row md:px-8"
+	class="flex items-center justify-between border-b border-gray-500 bg-brand/80 text-brand-foreground backdrop-blur-md dark:bg-surface-dark dark:text-surface-foreground-dark md:flex-row md:px-8"
 	bind:this={navContainer}
 >
-	<div class="flex flex-1 items-center justify-between md:flex-none">
-		<div class="logo-container flex w-full items-center gap-4 px-2 py-2 md:w-auto">
-			<div class="flex items-center justify-center gap-x-2">
-				<a href="/" class="block">
-					<img src={PUBLIC_OBA_LOGO_URL} alt={PUBLIC_OBA_REGION_NAME} class="h-10 rounded-sm" />
-				</a>
-				<a href="/" class="block text-xl font-extrabold">
-					{PUBLIC_OBA_REGION_NAME}
-				</a>
+	<div class="logo-container flex items-center gap-4 px-2 py-2">
+		<div class="flex items-center justify-center gap-x-2">
+			<a href="/" class="block">
+				<img src={PUBLIC_OBA_LOGO_URL} alt={PUBLIC_OBA_REGION_NAME} class="h-10 rounded-sm" />
+			</a>
+			<a href="/" class="block text-xl font-extrabold text-brand-foreground">
+				{PUBLIC_OBA_REGION_NAME}
+			</a>
+		</div>
+	</div>
+
+	<div class="flex-1"></div>
+
+	{#if !shouldShowMobile}
+		<div class="flex items-center px-2 py-2" bind:this={linksContainer}>
+			<div class="no-scrollbar flex gap-x-4 overflow-x-auto">
+				{#if headerLinks && Object.keys(headerLinks).length > 0}
+					{#each Object.entries(headerLinks) as [key, value]}
+						<div class="flex-shrink-0 rounded-md border bg-surface/80 dark:bg-surface-dark">
+							<a
+								href={value}
+								class="block px-2 py-1 font-semibold text-surface-foreground dark:text-surface-foreground-dark"
+								>{key}</a
+							>
+						</div>
+					{/each}
+				{/if}
 			</div>
 		</div>
-
-		{#if !shouldShowMobile}
-			<div class="flex items-center px-2 py-2" bind:this={linksContainer}>
-				<div class="no-scrollbar flex gap-x-4 overflow-x-auto">
-					{#if headerLinks && Object.keys(headerLinks).length > 0}
-						{#each Object.entries(headerLinks) as [key, value]}
-							<div class="flex-shrink-0 rounded-md border bg-white/80 dark:bg-gray-800">
-								<a href={value} class="block px-2 py-1 font-semibold text-gray-900 dark:text-white"
-									>{key}</a
-								>
-							</div>
-						{/each}
-					{/if}
-				</div>
-			</div>
-		{/if}
-	</div>
+	{/if}
 
 	<div class="flex items-center">
 		{#if shouldShowMobile}
 			<button onclick={toggleNavbar} aria-label="Toggle navigation menu" class="mr-2">
 				<svg
-					class="burger-icon h-6 w-6 text-gray-900 dark:text-white"
+					class="burger-icon h-6 w-6 text-brand-foreground dark:text-surface-foreground-dark"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
