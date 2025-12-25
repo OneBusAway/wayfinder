@@ -110,16 +110,16 @@ describe('Header', () => {
 
 		const header = container.querySelector('div');
 		expect(header).toHaveClass(
-			'bg-blur-md',
 			'flex',
 			'items-center',
 			'justify-between',
 			'border-b',
 			'border-gray-500',
-			'bg-white/80',
-			'px-4',
-			'dark:bg-black',
-			'dark:text-white'
+			'bg-brand/80',
+			'text-brand-foreground',
+			'backdrop-blur-md',
+			'dark:bg-surface-dark',
+			'dark:text-surface-foreground-dark'
 		);
 	});
 

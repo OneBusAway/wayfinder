@@ -133,7 +133,7 @@ describe('MobileMenu', () => {
 		const menuContainer = container.querySelector('div');
 		expect(menuContainer).toHaveClass('fixed', 'inset-0', 'z-50');
 		expect(menuContainer).toHaveClass('flex', 'flex-col', 'items-center', 'justify-center');
-		expect(menuContainer).toHaveClass('space-y-6', 'bg-white', 'p-4', 'dark:bg-black');
+		expect(menuContainer).toHaveClass('space-y-6', 'bg-surface', 'p-4', 'dark:bg-surface-dark');
 	});
 
 	test('close button has correct styling', () => {
@@ -150,7 +150,12 @@ describe('MobileMenu', () => {
 		// Check SVG icon styling
 		const closeIcon = container.querySelector('.close-icon');
 		expect(closeIcon).toBeInTheDocument();
-		expect(closeIcon).toHaveClass('h-6', 'w-6', 'text-gray-900', 'dark:text-white');
+		expect(closeIcon).toHaveClass(
+			'h-6',
+			'w-6',
+			'text-surface-foreground',
+			'dark:text-surface-foreground-dark'
+		);
 	});
 
 	test('navigation links have proper styling', () => {
@@ -163,7 +168,7 @@ describe('MobileMenu', () => {
 
 		const homeLink = screen.getByRole('link', { name: 'Home' });
 		expect(homeLink).toHaveClass('block', 'text-xl', 'font-semibold');
-		expect(homeLink).toHaveClass('text-gray-900', 'dark:text-white');
+		expect(homeLink).toHaveClass('text-surface-foreground', 'dark:text-surface-foreground-dark');
 	});
 
 	test('navigation links container has proper styling', () => {

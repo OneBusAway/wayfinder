@@ -15,7 +15,7 @@
 	<div class="mb-4 flex justify-start">
 		<a
 			href="/"
-			class="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
+			class="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-accent focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2"
 		>
 			<FontAwesomeIcon icon={faArrowLeft} class="h-4 w-4" />
 			<FontAwesomeIcon icon={faMap} class="h-4 w-4" />
@@ -24,7 +24,7 @@
 	</div>
 
 	<div class="text-center">
-		<h1 class="flex items-center justify-center gap-2 text-3xl font-bold text-brand-secondary">
+		<h1 class="flex items-center justify-center gap-2 text-3xl font-bold text-brand-accent">
 			{stopName}
 		</h1>
 		<div class="text-normal mt-2 flex items-center justify-center gap-x-8 text-gray-700">
