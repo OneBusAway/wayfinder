@@ -56,21 +56,34 @@
 		margin-left: 0.75rem;
 	}
 
-	.rtl .space-x-4 {
-		margin-left: 1rem;
-	}
-
-	.rtl .space-x-reverse {
-		margin-right: 1rem;
-	}
-
-	.rtl .border-l-4 {
-		border-left-width: 0;
-		border-right-width: 4px;
-	}
-
 	.rtl .left-5 {
 		left: auto;
 		right: 1.25rem;
+	}
+
+	.collapsible-list {
+		@apply flex flex-col;
+	}
+
+	.collapsible-list__item {
+		@apply mb-2 rounded-md border border-gray-300 p-2;
+	}
+
+	@media (max-width: 768px) {
+		.collapsible-list__item {
+			@apply mb-1 p-1;
+		}
+	}
+
+	@media (hover: hover) {
+		.collapsible-list__item:hover {
+			@apply bg-gray-100;
+		}
+	}
+
+	@media (pointer: coarse) {
+		.collapsible-list__item {
+			@apply p-3;
+		}
 	}
 }
