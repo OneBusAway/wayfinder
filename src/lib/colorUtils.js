@@ -114,3 +114,71 @@ export function generatePalette(baseHex, fallbackHex = '#486621') {
 
 	return palette;
 }
+
+/**
+ * Lightens a color by mixing it with white
+ * Simple and clear implementation for better visibility in dark mode
+ * @param {string} hexColor - Original hex color (e.g., "#ff0000")
+ * @param {number} amount - Amount to lighten (0-1, where 1 is pure white)
+ * @returns {string} Lightened hex color
+ */
+export function lightenColor(hexColor, amount) {
+	if (!hexColor) return '#ffffff';
+
+	const rgb = hexToRgb(hexColor);
+	if (!rgb) return '#ffffff';
+
+	const white = { r: 255, g: 255, b: 255 };
+	const lightened = mixColors(rgb, white, amount);
+
+	return rgbToHex(lightened.r, lightened.g, lightened.b);
+}
+
+/**
+ * Calculates perceived brightness of a color (0-255)
+ * Uses standard luminance formula
+ * @param {{r: number, g: number, b: number}} rgb - RGB color object
+ * @returns {number} Brightness value (0-255)
+ */
+export function getBrightness(rgb) {
+	// Standard luminance formula
+	return 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
+}
+
+/**
+ * Adjusts a color for better visibility in dark mode
+ * Method: lightens dark colors by mixing with white
+ * @param {string} hexColor - Original hex color (e.g., "#ff0000")
+ * @returns {string} Adjusted hex color for dark mode
+ */
+export function adjustColorForDarkMode(hexColor) {
+	if (!hexColor) return '#ffffff';
+
+	const rgb = hexToRgb(hexColor);
+	if (!rgb) return '#ffffff';
+
+	const brightness = getBrightness(rgb);
+
+	let category;
+	if (brightness < 100) {
+		category = 'very-dark';
+	} else if (brightness < 150) {
+		category = 'dark';
+	} else if (brightness < 180) {
+		category = 'somewhat-dark';
+	} else {
+		category = 'bright';
+	}
+
+	switch (category) {
+		case 'very-dark':
+			return lightenColor(hexColor, 0.5); // Mix 50% with white
+		case 'dark':
+			return lightenColor(hexColor, 0.35); // Mix 35% with white
+		case 'somewhat-dark':
+			return lightenColor(hexColor, 0.2); // Mix 20% with white
+		case 'bright':
+		default:
+			return hexColor;
+	}
+}

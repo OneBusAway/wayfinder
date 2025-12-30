@@ -106,7 +106,11 @@ describe('RouteItem', () => {
 		});
 
 		const routeNameElement = screen.getByText('44 - Ballard - University District');
-		expect(routeNameElement).toHaveStyle('color: #0066CC');
+		expect(routeNameElement).toHaveStyle('--route-color-light: #0066CC');
+		expect(routeNameElement).toHaveAttribute(
+			'class',
+			expect.stringContaining('text-[var(--route-color-light)]')
+		);
 	});
 
 	test('calls handleModalRouteClick when clicked', async () => {
@@ -220,7 +224,11 @@ describe('RouteItem', () => {
 		expect(screen.getByText('1 Line - Seattle - University of Washington')).toBeInTheDocument();
 
 		const routeNameElement = screen.getByText('1 Line - Seattle - University of Washington');
-		expect(routeNameElement).toHaveStyle('color: #0077C0');
+		expect(routeNameElement).toHaveStyle('--route-color-light: #0077C0');
+		expect(routeNameElement).toHaveAttribute(
+			'class',
+			expect.stringContaining('text-[var(--route-color-light)]')
+		);
 	});
 
 	test('displays ferry route with agency name when no short name', () => {
@@ -240,7 +248,11 @@ describe('RouteItem', () => {
 		const routeNameElement = screen.getByText(
 			'Washington State Ferries - Fauntleroy - Vashon Island'
 		);
-		expect(routeNameElement).toHaveStyle('color: #018571');
+		expect(routeNameElement).toHaveStyle('--route-color-light: #018571');
+		expect(routeNameElement).toHaveAttribute(
+			'class',
+			expect.stringContaining('text-[var(--route-color-light)]')
+		);
 	});
 
 	test('displays rail route correctly', () => {
@@ -256,7 +268,11 @@ describe('RouteItem', () => {
 		expect(screen.getByText('N Line - Seattle - Everett')).toBeInTheDocument();
 
 		const routeNameElement = screen.getByText('N Line - Seattle - Everett');
-		expect(routeNameElement).toHaveStyle('color: #8CC8A0');
+		expect(routeNameElement).toHaveStyle('--route-color-light: #8CC8A0');
+		expect(routeNameElement).toHaveAttribute(
+			'class',
+			expect.stringContaining('text-[var(--route-color-light)]')
+		);
 	});
 
 	test('handles missing or invalid route colors gracefully', () => {
@@ -413,7 +429,7 @@ describe('RouteItem', () => {
 		});
 
 		const darkRouteElement = screen.getByText('44 - Ballard - University District');
-		expect(darkRouteElement).toHaveStyle('color: #000000');
+		expect(darkRouteElement).toHaveStyle('--route-color-light: #000000');
 	});
 
 	test('handles various route color formats', () => {
@@ -433,6 +449,53 @@ describe('RouteItem', () => {
 		});
 
 		const redRouteElement = screen.getByText('44 - Ballard - University District');
-		expect(redRouteElement).toHaveStyle('color: #FF0000');
+		expect(redRouteElement).toHaveStyle('--route-color-light: #FF0000');
+	});
+
+	test('applies dark mode color adjustments for dark colors', () => {
+		const handleModalRouteClick = vi.fn();
+
+		const darkBlueRoute = {
+			...mockRouteWithShortAndLong,
+			color: '00629b'
+		};
+
+		render(RouteItem, {
+			props: {
+				route: darkBlueRoute,
+				handleModalRouteClick
+			}
+		});
+
+		const routeElement = screen.getByText('44 - Ballard - University District');
+		expect(routeElement).toHaveStyle('--route-color-light: #00629b');
+
+		const darkModeColor = routeElement.style.getPropertyValue('--route-color-dark');
+		expect(darkModeColor).toBeDefined();
+		expect(darkModeColor).not.toBe('#00629b');
+	});
+
+	test('dark mode colors are lighter than original for dark colors', () => {
+		const handleModalRouteClick = vi.fn();
+
+		const veryDarkRoute = {
+			...mockRouteWithShortAndLong,
+			color: '1a1a1a'
+		};
+
+		render(RouteItem, {
+			props: {
+				route: veryDarkRoute,
+				handleModalRouteClick
+			}
+		});
+
+		const routeElement = screen.getByText('44 - Ballard - University District');
+		const lightColor = routeElement.style.getPropertyValue('--route-color-light');
+		const darkColor = routeElement.style.getPropertyValue('--route-color-dark');
+
+		expect(lightColor).toBe('#1a1a1a');
+		expect(darkColor).toBeDefined();
+		expect(darkColor).not.toBe(lightColor);
 	});
 });

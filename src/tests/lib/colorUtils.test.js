@@ -1,5 +1,13 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import { hexToRgb, rgbToHex, mixColors, generatePalette } from '$lib/colorUtils.js';
+import {
+	hexToRgb,
+	rgbToHex,
+	mixColors,
+	generatePalette,
+	lightenColor,
+	getBrightness,
+	adjustColorForDarkMode
+} from '$lib/colorUtils.js';
 
 describe('colorUtils', () => {
 	describe('hexToRgb', () => {
@@ -234,6 +242,190 @@ describe('colorUtils', () => {
 
 			Object.values(palette).forEach((value) => {
 				expect(value).toMatch(hexRegex);
+			});
+		});
+	});
+
+	describe('lightenColor', () => {
+		test('should lighten a dark color by 50%', () => {
+			const result = lightenColor('#000000', 0.5);
+			expect(result).toBe('#808080'); // Mid-gray
+		});
+
+		test('should lighten a color by 25%', () => {
+			const result = lightenColor('#000000', 0.25);
+			expect(result).toBe('#404040'); // Dark gray
+		});
+
+		test('should return white when mixing 100% with white', () => {
+			const result = lightenColor('#ff0000', 1.0);
+			expect(result).toBe('#ffffff');
+		});
+
+		test('should not change color when amount is 0', () => {
+			const result = lightenColor('#ff0000', 0);
+			expect(result).toBe('#ff0000');
+		});
+
+		test('should handle 3-digit hex colors', () => {
+			const result = lightenColor('#f00', 0.5);
+			expect(result).toBe('#ff8080');
+		});
+
+		test('should return white for null or undefined input', () => {
+			expect(lightenColor(null, 0.5)).toBe('#ffffff');
+			expect(lightenColor(undefined, 0.5)).toBe('#ffffff');
+			expect(lightenColor('', 0.5)).toBe('#ffffff');
+		});
+
+		test('should return white for invalid hex color', () => {
+			const result = lightenColor('not-a-color', 0.5);
+			expect(result).toBe('#ffffff');
+		});
+	});
+
+	describe('getBrightness', () => {
+		test('should return 0 for pure black', () => {
+			const rgb = { r: 0, g: 0, b: 0 };
+			const brightness = getBrightness(rgb);
+			expect(brightness).toBe(0);
+		});
+
+		test('should return 255 for pure white', () => {
+			const rgb = { r: 255, g: 255, b: 255 };
+			const brightness = getBrightness(rgb);
+			expect(brightness).toBe(255);
+		});
+
+		test('should calculate brightness for pure red using luminance formula', () => {
+			const rgb = { r: 255, g: 0, b: 0 };
+			const brightness = getBrightness(rgb);
+			// 0.299 * 255 = 76.245
+			expect(brightness).toBeCloseTo(76.245, 2);
+		});
+
+		test('should calculate brightness for pure green using luminance formula', () => {
+			const rgb = { r: 0, g: 255, b: 0 };
+			const brightness = getBrightness(rgb);
+			// 0.587 * 255 = 149.685
+			expect(brightness).toBeCloseTo(149.685, 2);
+		});
+
+		test('should calculate brightness for pure blue using luminance formula', () => {
+			const rgb = { r: 0, g: 0, b: 255 };
+			const brightness = getBrightness(rgb);
+			// 0.114 * 255 = 29.07
+			expect(brightness).toBeCloseTo(29.07, 2);
+		});
+
+		test('should calculate brightness for gray correctly', () => {
+			const rgb = { r: 128, g: 128, b: 128 };
+			const brightness = getBrightness(rgb);
+			expect(brightness).toBeCloseTo(128, 5);
+		});
+
+		test('should handle typical route colors', () => {
+			// Dark blue like #00629b
+			const darkBlue = hexToRgb('#00629b');
+			const darkBlueBrightness = getBrightness(darkBlue);
+			expect(darkBlueBrightness).toBeLessThan(100);
+
+			// Orange like #ff6600
+			const orange = hexToRgb('#ff6600');
+			const orangeBrightness = getBrightness(orange);
+			expect(orangeBrightness).toBeGreaterThan(100);
+		});
+	});
+
+	describe('adjustColorForDarkMode', () => {
+		test('should significantly lighten very dark colors (brightness < 100)', () => {
+			const darkBlue = '#00629b';
+			const adjusted = adjustColorForDarkMode(darkBlue);
+			const originalRgb = hexToRgb(darkBlue);
+			const adjustedRgb = hexToRgb(adjusted);
+
+			// Adjusted color should be significantly lighter
+			expect(getBrightness(adjustedRgb)).toBeGreaterThan(getBrightness(originalRgb) * 2);
+		});
+
+		test('should moderately lighten dark colors (brightness 100-150)', () => {
+			const darkGreen = '#486621'; // This has brightness around 100
+			const adjusted = adjustColorForDarkMode(darkGreen);
+			const originalRgb = hexToRgb(darkGreen);
+			const adjustedRgb = hexToRgb(adjusted);
+
+			// Should be lighter but not as much as very dark colors
+			expect(getBrightness(adjustedRgb)).toBeGreaterThan(getBrightness(originalRgb));
+		});
+
+		test('should slightly lighten somewhat dark colors (brightness 150-180)', () => {
+			const mediumColor = '#808080'; // Mid-gray, brightness = 128
+			const adjusted = adjustColorForDarkMode(mediumColor);
+			const originalRgb = hexToRgb(mediumColor);
+			const adjustedRgb = hexToRgb(adjusted);
+
+			// Should be slightly lighter
+			expect(getBrightness(adjustedRgb)).toBeGreaterThan(getBrightness(originalRgb));
+		});
+
+		test('should not change bright colors (brightness >= 180)', () => {
+			const brightColor = '#ffff00'; // Yellow, very bright
+			const adjusted = adjustColorForDarkMode(brightColor);
+			expect(adjusted).toBe(brightColor);
+		});
+
+		test('should return white for null or undefined input', () => {
+			expect(adjustColorForDarkMode(null)).toBe('#ffffff');
+			expect(adjustColorForDarkMode(undefined)).toBe('#ffffff');
+			expect(adjustColorForDarkMode('')).toBe('#ffffff');
+		});
+
+		test('should return white for invalid hex color', () => {
+			const result = adjustColorForDarkMode('invalid-color');
+			expect(result).toBe('#ffffff');
+		});
+
+		test('should handle colors with # prefix', () => {
+			const result = adjustColorForDarkMode('#000000');
+			expect(result).toBeDefined();
+			expect(result).toMatch(/^#[0-9a-f]{6}$/i);
+		});
+
+		test('should handle colors without # prefix', () => {
+			const result = adjustColorForDarkMode('000000');
+			expect(result).toBeDefined();
+			expect(result).toMatch(/^#[0-9a-f]{6}$/i);
+		});
+
+		test('should preserve hue while lightening', () => {
+			// Pure red should remain reddish when lightened
+			const red = '#8b0000'; // Dark red
+			const adjusted = adjustColorForDarkMode(red);
+			const adjustedRgb = hexToRgb(adjusted);
+
+			// Red component should still be dominant
+			expect(adjustedRgb.r).toBeGreaterThan(adjustedRgb.g);
+			expect(adjustedRgb.r).toBeGreaterThan(adjustedRgb.b);
+		});
+
+		test('should handle real-world route colors', () => {
+			const routeColors = [
+				'#00629b', // Dark blue
+				'#ff6600', // Orange
+				'#008000', // Green
+				'#800080', // Purple
+				'#ffd700' // Gold
+			];
+
+			routeColors.forEach((color) => {
+				const adjusted = adjustColorForDarkMode(color);
+				expect(adjusted).toBeDefined();
+				expect(adjusted).toMatch(/^#[0-9a-f]{6}$/i);
+
+				// Adjusted version should be at least as bright as original
+				const originalBrightness = getBrightness(hexToRgb(color));
+				const adjustedBrightness = getBrightness(hexToRgb(adjusted));
+				expect(adjustedBrightness).toBeGreaterThanOrEqual(originalBrightness);
 			});
 		});
 	});
