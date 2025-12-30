@@ -9,7 +9,7 @@
 	import analytics from '$lib/Analytics/PlausibleAnalytics.js';
 	import { env } from '$env/dynamic/public';
 
-	const faviconUrl = env.PUBLIC_FAVICON_URL || '/favicon-32x32.png';
+	const faviconUrl = env.FAVICON_URL || '/favicon-32x32.png';
 
 	/**
 	 * @typedef {Object} Props
