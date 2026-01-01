@@ -6,8 +6,8 @@
 </script>
 
 <div
-	class="fixed inset-0 z-50 flex flex-col items-center justify-center space-y-6 bg-surface p-4 dark:bg-surface-dark"
-	transition:fly={{ x: 1000, duration: 300 }}
+	class="fixed inset-x-0 bottom-0 z-50 h-1/2 flex flex-col items-center justify-start space-y-6 bg-surface p-4 dark:bg-surface-dark sm:h-full sm:inset-0"
+	transition:fly={{ y: 500, duration: 300 }}
 >
 	<button onclick={closeMenu} aria-label="Close Menu">
 		<svg
@@ -22,7 +22,7 @@
 		</svg>
 	</button>
 
-	<div class="flex flex-col items-center gap-4">
+	<div class="flex flex-col items-center gap-4 pt-2">
 		{#each Object.entries(headerLinks) as [key, value]}
 			<a
 				href={value}
