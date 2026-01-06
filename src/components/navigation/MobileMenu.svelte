@@ -1,6 +1,5 @@
 <script>
 	import { fly } from 'svelte/transition';
-	import ThemeSwitcher from '$lib/ThemeSwitch/ThemeSwitcher.svelte';
 
 	let { headerLinks = {}, closeMenu } = $props();
 </script>
@@ -30,10 +29,6 @@
 				onclick={closeMenu}>{key}</a
 			>
 		{/each}
-	</div>
-
-	<div>
-		<ThemeSwitcher />
 	</div>
 </div>
 

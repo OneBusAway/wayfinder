@@ -96,19 +96,6 @@ describe('MobileMenu', () => {
 		expect(closeButton).toHaveAttribute('aria-label', 'Close Menu');
 	});
 
-	test('renders theme switcher component', () => {
-		render(MobileMenu, {
-			props: {
-				headerLinks: mockHeaderLinks,
-				closeMenu: mockCloseMenu
-			}
-		});
-
-		// Theme switcher should be present (it's a checkbox with sr-only class)
-		const themeToggle = screen.getByRole('checkbox', { name: 'Toggle theme' });
-		expect(themeToggle).toBeInTheDocument();
-	});
-
 	test('handles empty header links gracefully', () => {
 		render(MobileMenu, {
 			props: {
@@ -117,9 +104,8 @@ describe('MobileMenu', () => {
 			}
 		});
 
-		// Should still render close button and theme switcher
+		// Should still render close button
 		expect(screen.getByRole('button', { name: 'Close Menu' })).toBeInTheDocument();
-		expect(screen.getByRole('checkbox', { name: 'Toggle theme' })).toBeInTheDocument();
 	});
 
 	test('applies correct CSS classes for full-screen overlay', () => {
@@ -263,7 +249,6 @@ describe('MobileMenu', () => {
 
 		// Should render with empty headerLinks object
 		expect(screen.getByRole('button', { name: 'Close Menu' })).toBeInTheDocument();
-		expect(screen.getByRole('checkbox', { name: 'Toggle theme' })).toBeInTheDocument();
 	});
 
 	test('accessibility: close button can be focused', async () => {
@@ -298,22 +283,7 @@ describe('MobileMenu', () => {
 		expect(homeLink).toHaveFocus();
 	});
 
-	test('accessibility: theme switcher can be focused', async () => {
-		render(MobileMenu, {
-			props: {
-				headerLinks: mockHeaderLinks,
-				closeMenu: mockCloseMenu
-			}
-		});
-
-		const themeToggle = screen.getByRole('checkbox', { name: 'Toggle theme' });
-
-		// Focus the theme toggle
-		themeToggle.focus();
-		expect(themeToggle).toHaveFocus();
-	});
-
-	test('renders in correct order: close button, links, theme switcher', () => {
+	test('renders in correct order: close button, then links', () => {
 		const { container } = render(MobileMenu, {
 			props: {
 				headerLinks: mockHeaderLinks,
@@ -321,17 +291,14 @@ describe('MobileMenu', () => {
 			}
 		});
 
-		const elements = Array.from(container.querySelectorAll('button, a, input'));
+		const elements = Array.from(container.querySelectorAll('button, a'));
 
 		// First element should be the close button
 		expect(elements[0]).toHaveAttribute('aria-label', 'Close Menu');
 
-		// Middle elements should be navigation links
+		// Rest should be navigation links
 		expect(elements[1]).toHaveAttribute('href', '/');
 		expect(elements[2]).toHaveAttribute('href', '/about');
-
-		// Last element should be theme toggle
-		expect(elements[elements.length - 1]).toHaveAttribute('aria-label', 'Toggle theme');
 	});
 
 	test('handles single navigation link', () => {
