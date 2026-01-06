@@ -1,5 +1,6 @@
 <script>
 	import { pushState } from '$app/navigation';
+	import { page } from '$app/stores';
 	import SearchPane from '$components/search/SearchPane.svelte';
 	import MapContainer from '$components/MapContainer.svelte';
 	import RouteModal from '$components/routes/RouteModal.svelte';
@@ -10,7 +11,11 @@
 	import StopModal from '$components/stops/StopModal.svelte';
 	import TripPlanModal from '$components/trip-planner/TripPlanModal.svelte';
 	import { browser } from '$app/environment';
-	import { PUBLIC_OBA_REGION_NAME } from '$env/static/public';
+	import {
+		PUBLIC_OBA_REGION_NAME,
+		PUBLIC_OBA_REGION_CENTER_LAT,
+		PUBLIC_OBA_REGION_CENTER_LNG
+	} from '$env/static/public';
 	import SurveyModal from '$components/surveys/SurveyModal.svelte';
 	import { loadSurveys } from '$lib/Surveys/surveyUtils';
 	import { showSurveyModal } from '$stores/surveyStore';
@@ -19,6 +24,14 @@
 	import { userLocation } from '$src/stores/userLocationStore';
 	import { analyticsDistanceToStop } from '$lib/Analytics/plausibleUtils';
 	import SurveyLauncher from '$components/surveys/SurveyLauncher.svelte';
+	import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
+
+	// Parse initial coordinates from URL query parameters
+	const initialCoords = parseInitialCoordinates(
+		$page.url.searchParams,
+		Number(PUBLIC_OBA_REGION_CENTER_LAT),
+		Number(PUBLIC_OBA_REGION_CENTER_LNG)
+	);
 
 	let currentModal = $state(null);
 	let stop = $state();
@@ -222,6 +235,11 @@
 			window.addEventListener('planTripTabClicked', () => {
 				closePane();
 			});
+
+			// Clean URL params after coordinates have been captured
+			if (initialCoords) {
+				cleanUrlParams();
+			}
 		}
 	});
 </script>
@@ -285,6 +303,7 @@
 		{handleStopMarkerSelect}
 		{isRouteSelected}
 		{showRouteMap}
+		{initialCoords}
 		bind:mapProvider
 	/>
 {/if}

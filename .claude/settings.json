@@ -1,15 +1,15 @@
 {
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:github.com)",
-      "Bash(cat:*)",
-      "Bash(gh issue edit:*)",
-      "Bash(grep:*)",
-      "Bash(npm run prepush:*)",
-      "Bash(find:*)",
-      "Bash(sort:*)",
-      "Bash(npm run build:*)",
-      "Bash(npm run test:*)"
-    ]
-  }
+	"permissions": {
+		"allow": [
+			"WebFetch(domain:github.com)",
+			"Bash(cat:*)",
+			"Bash(gh issue edit:*)",
+			"Bash(grep:*)",
+			"Bash(npm run prepush:*)",
+			"Bash(find:*)",
+			"Bash(sort:*)",
+			"Bash(npm run build:*)",
+			"Bash(npm run test:*)"
+		]
+	}
 }

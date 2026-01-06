@@ -20,6 +20,7 @@
 	 * @property {boolean} [showRouteMap]
 	 * @property {any} [mapProvider]
 	 * @property {any} [stop] - Currently selected stop to preserve visual context
+	 * @property {{ lat: number, lng: number } | null} [initialCoords] - Optional initial coordinates from URL params
 	 */
 
 	/** @type {Props} */
@@ -30,7 +31,8 @@
 		isRouteSelected = false,
 		showRouteMap = false,
 		mapProvider = null,
-		stop = null
+		stop = null,
+		initialCoords = null
 	} = $props();
 
 	let isTripPlanModeActive = $state(false);
@@ -132,14 +134,26 @@
 
 	async function initMap() {
 		try {
+			// Use URL-provided coordinates if available, otherwise use region center
+			const mapCenterLat = initialCoords?.lat ?? Number(initialLat);
+			const mapCenterLng = initialCoords?.lng ?? Number(initialLng);
+
 			await mapProvider.initMap(mapElement, {
-				lat: Number(initialLat),
-				lng: Number(initialLng)
+				lat: mapCenterLat,
+				lng: mapCenterLng
 			});
 
 			mapInstance = mapProvider;
 
-			await loadStopsAndAddMarkers(initialLat, initialLng, true);
+			// If we have initial coordinates from URL, update the user location store
+			// and add a user location marker
+			if (initialCoords) {
+				const coords = { lat: mapCenterLat, lng: mapCenterLng };
+				userLocation.set(coords);
+				mapInstance.addUserLocationMarker(coords);
+			}
+
+			await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
 
 			const debouncedLoadMarkers = debounce(async () => {
 				if (mapMode !== Modes.NORMAL) {
