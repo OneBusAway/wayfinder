@@ -9,6 +9,8 @@
 	import ThemeSwitcher from '$lib/ThemeSwitch/ThemeSwitcher.svelte';
 	import MobileMenu from './MobileMenu.svelte';
 
+	const showRegionName = __SHOW_REGION_NAME_IN_NAV_BAR__;
+
 	let isMobileMenuOpen = $state(false);
 	let shouldShowMobile = $state(false);
 	let navContainer;
@@ -107,9 +109,11 @@
 			<a href="/" class="block">
 				<img src={PUBLIC_OBA_LOGO_URL} alt={PUBLIC_OBA_REGION_NAME} class="h-10 rounded-sm" />
 			</a>
-			<a href="/" class="block text-xl font-extrabold text-brand-foreground">
-				{PUBLIC_OBA_REGION_NAME}
-			</a>
+			{#if showRegionName}
+				<a href="/" class="block text-xl font-extrabold text-brand-foreground">
+					{PUBLIC_OBA_REGION_NAME}
+				</a>
+			{/if}
 		</div>
 	</div>
 

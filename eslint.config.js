@@ -16,7 +16,8 @@ export default [
 				...globals.node,
 				L: 'readonly',
 				google: 'readonly',
-				$state: 'readonly'
+				$state: 'readonly',
+				__SHOW_REGION_NAME_IN_NAV_BAR__: 'readonly'
 			}
 		}
 	},
