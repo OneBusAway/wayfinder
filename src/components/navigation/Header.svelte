@@ -6,7 +6,6 @@
 	} from '$env/static/public';
 
 	import { onMount } from 'svelte';
-	import ThemeSwitcher from '$lib/ThemeSwitch/ThemeSwitcher.svelte';
 	import MobileMenu from './MobileMenu.svelte';
 
 	const showRegionName = __SHOW_REGION_NAME_IN_NAV_BAR__;
@@ -17,7 +16,6 @@
 	let linksContainer = $state(null);
 	let cachedLinksWidth = 0;
 
-	const THEME_SWITCHER_WIDTH = 56; // Width of the theme switcher component in pixels
 	const EXTRA_PADDING = 32; // Extra padding to account for padding and margins in pixels
 	const LINKS_GAP = '1rem'; // Matches gap-x-4 in the template
 	const LINK_PADDING = '0.25rem 0.5rem'; // Matches px-2 py-1 in the template
@@ -37,7 +35,7 @@
 
 		const navWidth = navContainer.clientWidth;
 		const logoWidth = navContainer.querySelector('.logo-container')?.clientWidth || 0;
-		const availableWidth = navWidth - logoWidth - THEME_SWITCHER_WIDTH - EXTRA_PADDING;
+		const availableWidth = navWidth - logoWidth - EXTRA_PADDING;
 
 		let linksWidth = 0;
 		if (linksContainer) {
@@ -137,30 +135,24 @@
 		</div>
 	{/if}
 
-	<div class="flex items-center">
-		{#if shouldShowMobile}
-			<button onclick={toggleNavbar} aria-label="Toggle navigation menu" class="mr-2">
-				<svg
-					class="burger-icon h-6 w-6 text-brand-foreground dark:text-surface-foreground-dark"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M4 6h16M4 12h16m-7 6h7"
-					></path>
-				</svg>
-			</button>
-		{:else}
-			<div class={shouldShowMobile ? '' : 'flex'}>
-				<ThemeSwitcher />
-			</div>
-		{/if}
-	</div>
+	{#if shouldShowMobile}
+		<button onclick={toggleNavbar} aria-label="Toggle navigation menu" class="mr-2">
+			<svg
+				class="burger-icon h-6 w-6 text-brand-foreground dark:text-surface-foreground-dark"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M4 6h16M4 12h16m-7 6h7"
+				></path>
+			</svg>
+		</button>
+	{/if}
 </div>
 
 {#if isMobileMenuOpen}
