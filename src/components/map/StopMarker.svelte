@@ -123,7 +123,7 @@
 	}
 
 	.highlight {
-		@apply scale-125 border-brand drop-shadow-md;
+		@apply scale-125 border-brand-accent drop-shadow-md;
 	}
 
 	.custom-marker:hover {

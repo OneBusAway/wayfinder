@@ -118,7 +118,7 @@
 									class="absolute bg-white text-xl text-brand dark:bg-black"
 								/>
 							{:else if tripStop.stopId === stop.id}
-								<FontAwesomeIcon icon={faLocationDot} class="text-md text-green-500" />
+								<FontAwesomeIcon icon={faLocationDot} class="text-md text-brand-accent" />
 							{/if}
 						</div>
 						<div class="ml-4 flex w-full items-center justify-between space-x-1">

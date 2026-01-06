@@ -124,6 +124,10 @@
 		"more_info": "More info",
 		"close": "Close",
 		"service_alerts": "Service Alerts",
+		"service_alert": "Service Alert",
+		"advice": "Advice",
+		"no_summary": "No summary available for this alert",
+		"no_description": "No detailed description available for this alert",
 		"page": "Page",
 		"show": "Show",
 		"hide": "Hide"

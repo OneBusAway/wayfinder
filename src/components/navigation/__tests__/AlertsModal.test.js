@@ -300,12 +300,8 @@ describe('AlertsModal', () => {
 		});
 
 		const moreInfoButton = screen.getByRole('button', { name: 'More Info' });
-		expect(moreInfoButton).toHaveClass(
-			'bg-brand-secondary',
-			'text-white',
-			'hover:bg-brand-secondary'
-		);
-		expect(moreInfoButton).toHaveClass('dark:bg-brand', 'dark:hover:bg-brand-secondary');
+		expect(moreInfoButton).toHaveClass('bg-brand-accent', 'text-white', 'hover:bg-brand-accent');
+		expect(moreInfoButton).toHaveClass('dark:bg-brand', 'dark:hover:bg-brand-accent');
 	});
 
 	test('modal description has correct styling', () => {

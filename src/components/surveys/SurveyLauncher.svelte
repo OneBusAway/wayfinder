@@ -28,7 +28,7 @@
 				{currentSurvey.name}
 			</h2>
 			<span
-				class="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900 dark:text-green-300"
+				class="rounded-full bg-brand-accent px-3 py-1 text-xs font-medium text-brand-foreground"
 			>
 				New Survey
 			</span>

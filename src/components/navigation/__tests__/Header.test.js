@@ -9,6 +9,9 @@ vi.mock('$env/static/public', () => ({
 	PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}'
 }));
 
+// Set default value for the global define
+globalThis.__SHOW_REGION_NAME_IN_NAV_BAR__ = true;
+
 // Mock ThemeSwitcher component
 vi.mock('$lib/ThemeSwitch/ThemeSwitcher.svelte', () => ({
 	default: () => '<div data-testid="theme-switcher">Theme Switcher</div>'
@@ -110,16 +113,16 @@ describe('Header', () => {
 
 		const header = container.querySelector('div');
 		expect(header).toHaveClass(
-			'bg-blur-md',
 			'flex',
 			'items-center',
 			'justify-between',
 			'border-b',
 			'border-gray-500',
-			'bg-white/80',
-			'px-4',
-			'dark:bg-black',
-			'dark:text-white'
+			'bg-brand/80',
+			'text-brand-foreground',
+			'backdrop-blur-md',
+			'dark:bg-surface-dark',
+			'dark:text-surface-foreground-dark'
 		);
 	});
 
@@ -129,5 +132,46 @@ describe('Header', () => {
 		const regionLinks = screen.getAllByRole('link', { name: /test region/i });
 		const textLink = regionLinks.find((link) => link.textContent === 'Test Region');
 		expect(textLink).toHaveClass('block', 'text-xl', 'font-extrabold');
+	});
+});
+
+describe('Header with region name hidden', () => {
+	beforeEach(() => {
+		globalThis.__SHOW_REGION_NAME_IN_NAV_BAR__ = false;
+
+		// Mock ResizeObserver
+		global.ResizeObserver = vi.fn().mockImplementation(() => ({
+			observe: vi.fn(),
+			unobserve: vi.fn(),
+			disconnect: vi.fn()
+		}));
+	});
+
+	afterEach(() => {
+		globalThis.__SHOW_REGION_NAME_IN_NAV_BAR__ = true;
+		vi.restoreAllMocks();
+	});
+
+	test('hides region name text when config is false', () => {
+		render(Header);
+
+		// Region name text should not be present
+		expect(screen.queryByText('Test Region')).not.toBeInTheDocument();
+	});
+
+	test('logo alt text still uses region name for accessibility', () => {
+		render(Header);
+
+		// Logo should still have the region name as alt text
+		const logo = screen.getByRole('img');
+		expect(logo).toHaveAttribute('alt', 'Test Region');
+	});
+
+	test('only logo link exists when region name is hidden', () => {
+		render(Header);
+
+		// Should only have one link for the logo
+		const links = screen.getAllByRole('link', { name: /test region/i });
+		expect(links).toHaveLength(1);
 	});
 });

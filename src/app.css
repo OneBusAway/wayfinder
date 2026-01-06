@@ -4,19 +4,19 @@
 
 @layer components {
 	.h1 {
-		@apply mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-300;
+		@apply mb-4 text-2xl font-semibold text-surface-foreground dark:text-surface-foreground-dark;
 	}
 
 	.h2 {
-		@apply mb-4 text-xl font-semibold text-gray-900 dark:text-gray-300;
+		@apply mb-4 text-xl font-semibold text-surface-foreground dark:text-surface-foreground-dark;
 	}
 
 	.h3 {
-		@apply mb-2 text-lg font-semibold dark:text-white;
+		@apply mb-2 text-lg font-semibold dark:text-surface-foreground-dark;
 	}
 
 	.modal-pane {
-		@apply rounded-lg border-gray-500 bg-white/90 px-4 shadow-lg dark:bg-black dark:text-white dark:shadow-lg dark:shadow-gray-200/10;
+		@apply rounded-lg border-gray-500 bg-surface/90 px-4 shadow-lg dark:bg-surface-dark dark:text-surface-foreground-dark dark:shadow-lg dark:shadow-gray-200/10;
 	}
 
 	.tab-container {
@@ -28,15 +28,15 @@
 	}
 
 	.tab-container__item--active {
-		@apply border-b-2 border-brand-secondary text-brand-secondary;
+		@apply border-b-2 border-brand-accent text-brand-accent;
 	}
 
 	.button {
-		@apply rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
+		@apply rounded-md bg-surface px-3 py-2 text-sm font-semibold text-surface-foreground shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
 	}
 
 	.button--primary {
-		@apply rounded-md bg-brand-secondary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-secondary;
+		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
 	}
 
 	.rtl {

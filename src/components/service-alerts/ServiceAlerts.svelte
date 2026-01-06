@@ -62,10 +62,7 @@
 			<h3 class="font-medium text-gray-700 dark:text-white">
 				{$t('service_alerts.service_alerts')} ({serviceAlerts.length})
 			</h3>
-			<button
-				class="text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-500"
-				onclick={toggleAlerts}
-			>
+			<button class="text-sm font-medium text-brand-accent" onclick={toggleAlerts}>
 				{isAlertsHidden ? $t('service_alerts.show') : $t('service_alerts.hide')}
 			</button>
 		</div>
@@ -107,14 +104,32 @@
 	<div class="center" onkeydown={handleKeydown} role="button" tabindex="0">
 		<Modal
 			outsideclose={true}
-			title={modalAlert?.summary?.value}
+			title={modalAlert?.summary?.value || $t('service_alerts.service_alert')}
 			bind:open={$modalOpen}
 			size="3xl"
 			class="relative w-full max-w-3xl rounded-xl bg-white p-8 text-gray-900 shadow-2xl dark:bg-gray-800 dark:text-gray-100"
 		>
-			<p class="mt-3 text-base leading-relaxed text-gray-800 dark:text-gray-200">
-				{modalAlert?.description?.value}
-			</p>
+			{#if !modalAlert?.summary?.value}
+				<p class="mb-3 italic text-gray-500 dark:text-gray-400">
+					{$t('service_alerts.no_summary')}
+				</p>
+			{/if}
+			{#if modalAlert?.description?.value}
+				<p class="mt-3 text-base leading-relaxed text-gray-800 dark:text-gray-200">
+					{modalAlert.description.value}
+				</p>
+			{:else}
+				<p class="mt-3 italic text-gray-500 dark:text-gray-400">
+					{$t('service_alerts.no_description')}
+				</p>
+			{/if}
+			{#if modalAlert?.advice?.value}
+				<div class="mt-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+					<p class="text-sm font-medium text-blue-800 dark:text-blue-200">
+						{$t('service_alerts.advice')}: {modalAlert.advice.value}
+					</p>
+				</div>
+			{/if}
 		</Modal>
 	</div>
 {/if}
