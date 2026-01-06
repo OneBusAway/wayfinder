@@ -189,7 +189,7 @@
 		margin: 0;
 		font: inherit;
 		cursor: pointer;
-		
+
 		position: absolute;
 		@apply whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium;
 		background-color: rgba(255, 255, 255, 0.95);
