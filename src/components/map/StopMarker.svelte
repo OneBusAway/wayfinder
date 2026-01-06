@@ -233,7 +233,7 @@
 
 	.routes-label.expanded {
 		@apply font-semibold;
-		@apply border-4 border-brand-secondary dark:border-brand;
+		@apply border-4 border-brand dark:border-brand;
 		@apply text-gray-800 dark:text-white;
 		white-space: normal;
 		max-width: 250px;
