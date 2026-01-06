@@ -110,6 +110,29 @@ describe('Route Labels Feature', () => {
 			expect(screen.queryByText('⋯')).not.toBeInTheDocument();
 		});
 
+		test('collapses back to 3 routes when clicked again', async () => {
+			const user = userEvent.setup();
+			const onClick = vi.fn();
+
+			render(StopMarker, {
+				props: {
+					stop: mockStopWithManyRoutes,
+					onClick,
+					icon: faBus,
+					showRoutesLabel: true
+				}
+			});
+
+			const routeLabel = screen.getByText(/7, 10, 49/).closest('.routes-label');
+
+			await user.click(routeLabel);
+			expect(screen.getByText(/345/)).toBeInTheDocument();
+
+			await user.click(routeLabel);
+			expect(screen.queryByText(/345/)).not.toBeInTheDocument();
+			expect(screen.getByText('⋯')).toBeInTheDocument();
+		});
+
 		test('clicking route label does not trigger marker onClick', async () => {
 			const user = userEvent.setup();
 			const onClick = vi.fn();
