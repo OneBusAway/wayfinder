@@ -48,30 +48,50 @@
 	);
 
 	function toggleRoutesList(event) {
+		event.preventDefault();
 		event.stopPropagation();
 		isExpanded = !isExpanded;
 	}
+
+	function handleRoutesLabelKeydown(event) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			event.stopPropagation();
+			toggleRoutesList(event);
+		}
+	}
+
+	$effect(() => {
+		if (!showRoutesLabel) {
+			isExpanded = false;
+		}
+	});
 </script>
 
-<button
-	class="custom-marker dark:border-[#5a2c2c] {isHighlighted ? 'highlight' : ''}"
-	onclick={onClick}
->
-	<span class="bus-icon dark:text-white">
-		<FontAwesomeIcon {icon} class=" text-black" />
-		{#if stop.direction}
-			<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
-				<FontAwesomeIcon icon={faCaretUp} class="dark:text-white" />
-			</span>
-		{/if}
-	</span>
+<div class="marker-container">
+	<button
+		class="custom-marker dark:border-[#5a2c2c] {isHighlighted ? 'highlight' : ''}"
+		onclick={onClick}
+	>
+		<span class="bus-icon dark:text-white">
+			<FontAwesomeIcon {icon} class=" text-black" />
+			{#if stop.direction}
+				<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
+					<FontAwesomeIcon icon={faCaretUp} class="dark:text-white" />
+				</span>
+			{/if}
+		</span>
+	</button>
 
 	{#if showRoutesLabel && routesLabelText}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
+			role="button"
+			tabindex="0"
 			class="routes-label {isExpanded ? 'expanded' : ''} position-{labelPosition}"
 			onclick={toggleRoutesList}
+			onkeydown={handleRoutesLabelKeydown}
+			aria-expanded={isExpanded}
+			aria-label={isExpanded ? 'Collapse route list' : `Show all ${routeNames.length} routes`}
 		>
 			<span class="label-text">{routesLabelText}</span>
 			{#if remainingRoutesCount > 0 && !isExpanded}
@@ -79,9 +99,19 @@
 			{/if}
 		</div>
 	{/if}
-</button>
+</div>
 
 <style lang="postcss">
+	.marker-container {
+		position: relative;
+		display: inline-block;
+		pointer-events: none;
+	}
+
+	.marker-container > * {
+		pointer-events: auto;
+	}
+
 	.custom-marker {
 		@apply h-8 w-8 rounded-md;
 		@apply bg-white/80 dark:bg-neutral-200;
@@ -153,13 +183,19 @@
 	}
 
 	.routes-label {
+		background: none;
+		border: none;
+		padding: 0;
+		margin: 0;
+		font: inherit;
+		cursor: pointer;
+		
 		position: absolute;
 		@apply whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium;
-		@apply bg-white/95 dark:bg-neutral-800;
-		@apply text-gray-800 dark:text-white;
-		@apply border-2 border-gray-300 dark:border-neutral-600;
-		@apply shadow-lg dark:shadow-xl;
-		@apply cursor-pointer;
+		background-color: rgba(255, 255, 255, 0.95);
+		color: #1f2937;
+		@apply border-4 border-gray-300 hover:border-brand focus:border-brand active:border-brand;
+		@apply shadow-lg;
 		@apply transition-colors duration-200 ease-in-out;
 		pointer-events: auto;
 		z-index: 10;
@@ -168,6 +204,15 @@
 		display: flex;
 		align-items: center;
 		gap: 0.25rem;
+		outline: none;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.routes-label:focus {
+		outline: 2px solid;
+		@apply outline-brand;
+		outline-offset: 2px;
 	}
 
 	.routes-label.position-bottom {
@@ -182,30 +227,37 @@
 		transform: translateY(-50%);
 	}
 
-	.routes-label:hover {
-		@apply bg-white dark:bg-neutral-700;
-		@apply border-brand shadow-xl;
-	}
-
 	.routes-label:hover .expand-indicator {
 		@apply text-brand;
 	}
 
 	.routes-label.expanded {
 		@apply font-semibold;
-		@apply bg-brand/10 dark:bg-neutral-700;
-		@apply border-brand-secondary dark:border-brand;
+		@apply border-4 border-brand-secondary dark:border-brand;
+		@apply text-gray-800 dark:text-white;
 		white-space: normal;
 		max-width: 250px;
-		color: #1f2937;
+		flex-wrap: wrap;
+		overflow: visible;
+		line-height: 1.4;
 	}
 
-	:global(.dark) .routes-label.expanded {
-		color: #ffffff;
+	.label-text {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		min-width: 0;
+		flex: 1 1 auto;
+	}
+
+	.routes-label.expanded .label-text {
+		white-space: normal;
+		overflow: visible;
 	}
 
 	.expand-indicator {
 		@apply ml-1 text-sm font-bold text-gray-500 dark:text-gray-300;
 		transition: color 0.2s ease;
+		flex-shrink: 0;
 	}
 </style>
