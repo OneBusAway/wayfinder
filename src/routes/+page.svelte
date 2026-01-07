@@ -246,6 +246,13 @@
 
 <svelte:head>
 	<title>{PUBLIC_OBA_REGION_NAME}</title>
+	<link
+		rel="manifest"
+		href="/api/manifest?start=/&name={encodeURIComponent(PUBLIC_OBA_REGION_NAME)}"
+	/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+	<meta name="apple-mobile-web-app-title" content={PUBLIC_OBA_REGION_NAME} />
 </svelte:head>
 
 {#if showAlertModal}
