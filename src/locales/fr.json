@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "Planifiez votre trajet",
+		"itinerary": "Itinéraire",
+		"duration": "Durée",
+		"start_time": "Heure de départ",
+		"end_time": "Heure d'arrivée",
+		"minutes": "min",
+		"distance": "Distance :",
+		"end": "Arrivée",
+		"start": "Départ",
+		"meters": "mètres",
+		"no_itineraries_found": "Aucun itinéraire trouvé",
+		"loading": "Chargement",
+		"planning": "Planification",
+		"from": "De",
+		"to": "À",
+		"search_for_a_place": "Rechercher un lieu",
+		"trip_itineraries": "Itinéraires de trajet"
+	},
+	"tabs": {
+		"stops-and-stations": "Arrêts et stations",
+		"plan_trip": "Planifier un trajet"
+	},
+	"search": {
+		"placeholder": "Rechercher des arrêts, lignes et lieux",
+		"results_for": "Résultats de recherche pour",
+		"clear_results": "Effacer les résultats",
+		"search": "Rechercher",
+		"click_here": "Cliquez ici",
+		"for_a_list_of_available_routes": "pour la liste des lignes disponibles",
+		"search_for_routes": "Rechercher des lignes...",
+		"no_routes_found": "Aucune ligne trouvée",
+		"all_routes": "Toutes les lignes"
+	},
+	"header": {
+		"home": "Accueil",
+		"about": "À propos",
+		"contact": "Contact",
+		"fares_and_tolls": "Tarifs et péages"
+	},
+	"navigation": {
+		"back_to_map": "Retour à la carte"
+	},
+	"status": {
+		"scheduled": "prévu",
+		"early": "en avance",
+		"late": "en retard",
+		"on_time": "à l'heure",
+		"min": "min",
+		"arrives_on_time": "arrive à l'heure",
+		"scheduled_not_real_time": "Horaire prévu (non temps réel)",
+		"canceled": "Annulé",
+		"canceled_arrival": "Arrivée annulée",
+		"canceled_departure": "Départ annulé",
+		"frequency_from": "Toutes les {headway} min à partir de {time}",
+		"frequency_until": "Toutes les {headway} min jusqu'à {time}",
+		"late_without_arrive_depart": "{delay} min de retard",
+		"early_without_arrive_depart": "{delay} min d'avance",
+		"arrived_delayed": "Arrivé avec {delay} min de retard",
+		"arrived_early": "Arrivé avec {delay} min d'avance",
+		"arrived_ontime": "Arrivé à l'heure",
+		"depart_delayed": "Parti avec {delay} min de retard",
+		"depart_early": "Parti avec {delay} min d'avance",
+		"departed_ontime": "Parti à l'heure",
+		"scheduled_arrival": "Arrivée prévue à",
+		"scheduled_departure": "Départ prévu"
+	},
+	"alert": {
+		"more_info": "Plus d'infos",
+		"close": "Fermer"
+	},
+	"arrivals_and_departures": "Arrivées et départs",
+	"no_arrivals_or_departures_in_next_30_minutes": "Aucune arrivée ni départ dans les 30 prochaines minutes",
+	"stop": "Arrêt",
+	"routes": "Lignes",
+	"route": "ligne",
+	"route_modal_title": "Ligne {name}",
+	"loading": "Chargement",
+	"arrives": "arrive",
+	"NA": "N/D",
+	"time": {
+		"ago": "il y a",
+		"now": "maintenant",
+		"sec": "sec",
+		"secs": "sec",
+		"min": "min",
+		"mins": "min",
+		"minutes": "minutes"
+	},
+	"vehicle": {
+		"number": "Véhicule n°",
+		"data_updated": "Données mises à jour",
+		"no_real_time_data": "Nous n'avons pas de données en temps réel pour ce véhicule actuellement.",
+		"next_stop": "Prochain arrêt :"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "Arrivées et départs"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "Voir les horaires",
+		"no_am_schedules_available": "Aucun horaire disponible le matin",
+		"no_pm_schedules_available": "Aucun horaire disponible l'après-midi",
+		"minutes": "Minutes",
+		"hour": "Heure",
+		"show_all_routes": "Afficher toutes les lignes",
+		"collapse_all_routes": "Réduire toutes les lignes",
+		"route_schedules": "Horaires des lignes",
+		"no_schedules_available": "Aucun horaire disponible pour la date sélectionnée.",
+		"stop_id": "ID de l'arrêt",
+		"direction": "Direction"
+	},
+	"direction": {
+		"N": "Nord",
+		"NE": "Nord-est",
+		"E": "Est",
+		"SE": "Sud-est",
+		"S": "Sud",
+		"SW": "Sud-ouest",
+		"W": "Ouest",
+		"NW": "Nord-ouest"
+	},
+	"service_alerts": {
+		"more_info": "Plus d'infos",
+		"close": "Fermer",
+		"service_alerts": "Alertes de service",
+		"service_alert": "Alerte de service",
+		"advice": "Conseil",
+		"no_summary": "Aucun résumé disponible pour cette alerte",
+		"no_description": "Aucune description détaillée disponible pour cette alerte",
+		"page": "Page",
+		"show": "Afficher",
+		"hide": "Masquer"
+	},
+	"view_stop_information": "Voir les informations de l'arrêt",
+	"stop_details": {
+		"view_details": "Voir les détails"
+	}
+}
