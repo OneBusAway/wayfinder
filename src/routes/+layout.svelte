@@ -4,6 +4,7 @@
 	import { config } from '@fortawesome/fontawesome-svg-core';
 	import '@fortawesome/fontawesome-svg-core/styles.css';
 	import '$lib/i18n';
+	import { isRTL } from '$lib/i18n';
 	import { locale } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 	import analytics from '$lib/Analytics/PlausibleAnalytics.js';
@@ -25,10 +26,11 @@
 		initSystemTheme();
 
 		locale.subscribe((lang) => {
-			if (lang === 'ar') {
-				document.documentElement.classList.add('rtl');
+			let classList = document.documentElement.classList;
+			if (isRTL(lang)) {
+				classList.add('rtl');
 			} else {
-				document.documentElement.classList.remove('rtl');
+				classList.remove('rtl');
 			}
 		});
 

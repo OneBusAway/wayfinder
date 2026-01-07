@@ -1,3 +1,19 @@
+/**
+ * Initializes internationalization (i18n) support for the application.
+ *
+ * Configures svelte-i18n with English as the fallback locale and registers
+ * lazy-loaded translations for 23 additional languages. The initial locale
+ * is automatically detected from the browser's navigator settings.
+ *
+ * Supported locales:
+ * - Fallback: English (en)
+ * - Lazy-loaded: Amharic (am), Arabic (ar), Spanish (es), Persian (fa),
+ *   French (fr), Hindi (hi), Haitian Creole (ht), Japanese (ja),
+ *   Khmer (km), Korean (ko), Lao (lo), Oromo (om), Punjabi (pa),
+ *   Polish (pl), Portuguese (pt), Russian (ru), Samoan (sm),
+ *   Somali (so), Tigrinya (ti), Tagalog (tl), Ukrainian (uk),
+ *   Vietnamese (vi), Chinese Simplified (zh-CN), Chinese Traditional (zh-TW)
+ */
 import { init, addMessages, register, getLocaleFromNavigator } from 'svelte-i18n';
 
 // English loaded synchronously as the fallback locale
@@ -34,3 +50,17 @@ init({
 	fallbackLocale: 'en',
 	initialLocale: getLocaleFromNavigator()
 });
+
+/**
+ * Determines if a given language uses right-to-left (RTL) text direction.
+ *
+ * @param {string} lang - The language code to check (case-insensitive)
+ * @returns {boolean} True if the language uses RTL direction, false otherwise
+ *
+ * @example
+ * isRTL('ar'); // true
+ * isRTL('en'); // false
+ */
+export function isRTL(lang) {
+	return ['ar', 'fa', 'he', 'ur'].includes(lang.toLowerCase());
+}

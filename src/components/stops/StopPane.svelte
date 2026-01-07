@@ -183,9 +183,9 @@
 				<div>
 					<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent bg-opacity-80 p-4">
 						<h1 class="h1 mb-0 text-white">{stop.name}</h1>
-						<h2 class="h2 mb-0 text-white">{$t('stop')} #{removeAgencyPrefix(stop.id)}</h2>
+						<h2 class="h2 mb-0 text-white">{$isLoading ? '' : $t('stop')} #{removeAgencyPrefix(stop.id)}</h2>
 						{#if routeShortNames && routeShortNames.length > 0}
-							<h2 class="h2 mb-0 text-white">{$t('routes')}: {routeShortNames.join(', ')}</h2>
+							<h2 class="h2 mb-0 text-white">{$isLoading ? '' : $t('routes')}: {routeShortNames.join(', ')}</h2>
 						{/if}
 
 						{#if tripSelected}
@@ -194,13 +194,13 @@
 									href={`/stops/${stop.id}`}
 									class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent"
 								>
-									{$t('stop_details.view_details')}
+									{$isLoading ? '' : $t('stop_details.view_details')}
 								</a>
 								<a
 									href={`/stops/${stop.id}/schedule`}
 									class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent"
 								>
-									{$t('schedule_for_stop.view_schedule')}
+									{$isLoading ? '' : $t('schedule_for_stop.view_schedule')}
 								</a>
 							</div>
 						{/if}
@@ -231,7 +231,7 @@
 
 				{#if arrivalsAndDepartures.arrivalsAndDepartures.length === 0}
 					<div class="flex items-center justify-center">
-						<p>{$t('no_arrivals_or_departures_in_next_30_minutes')}</p>
+						<p>{$isLoading ? '' : $t('no_arrivals_or_departures_in_next_30_minutes')}</p>
 					</div>
 				{:else}
 					{#key arrivalsAndDepartures.stopId}

@@ -8,7 +8,7 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import { Datepicker } from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import { t } from 'svelte-i18n';
+	import { t, isLoading } from 'svelte-i18n';
 	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
 
 	let selectedDate = $state(new Date());
@@ -133,7 +133,7 @@
 </script>
 
 <svelte:head>
-	<title>{stopName} - {$t('schedule_for_stop.route_schedules')}</title>
+	<title>{stopName}{$isLoading ? '' : ` - ${$t('schedule_for_stop.route_schedules')}`}</title>
 	{#if stopName}
 		<link
 			rel="manifest"
@@ -153,7 +153,7 @@
 	<div class="flex flex-col">
 		<div class="flex flex-1 flex-col">
 			<h2 class="mb-4 text-2xl font-bold text-gray-800">
-				{$t('schedule_for_stop.route_schedules')}
+				{$isLoading ? '' : $t('schedule_for_stop.route_schedules')}
 			</h2>
 
 			<div class="mb-4 flex gap-4">
@@ -167,9 +167,11 @@
 
 				<div class="flex-1 text-right">
 					<button class="button" onclick={toggleAllRoutes}>
-						{allRoutesExpanded
-							? $t('schedule_for_stop.collapse_all_routes')
-							: $t('schedule_for_stop.show_all_routes')}
+						{$isLoading
+							? ''
+							: allRoutesExpanded
+								? $t('schedule_for_stop.collapse_all_routes')
+								: $t('schedule_for_stop.show_all_routes')}
 					</button>
 				</div>
 			</div>
@@ -179,7 +181,7 @@
 			>
 				{#if emptySchedules}
 					<p class="text-center text-gray-700 dark:text-gray-400">
-						{$t('schedule_for_stop.no_schedules_available')}
+						{$isLoading ? '' : $t('schedule_for_stop.no_schedules_available')}
 					</p>
 				{:else}
 					<Accordion bind:this={accordionComponent}>

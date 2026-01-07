@@ -3,7 +3,7 @@
 	import StopPageHeader from '$components/stops/StopPageHeader.svelte';
 	import StandalonePage from '$components/StandalonePage.svelte';
 	import '$lib/i18n.js';
-	import { t } from 'svelte-i18n';
+	import { t, isLoading } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 	import { loadSurveys } from '$lib/Surveys/surveyUtils.js';
 	import { getUserId } from '$lib/utils/user.js';
@@ -30,7 +30,7 @@
 </script>
 
 <svelte:head>
-	<title>{stop.name} - {$t('arrivals_and_departures_for_stop.title')}</title>
+	<title>{stop.name}{$isLoading ? '' : ` - ${$t('arrivals_and_departures_for_stop.title')}`}</title>
 	<link
 		rel="manifest"
 		href="/api/manifest?start=/stops/{encodeURIComponent(stop.id)}&name={encodeURIComponent(

@@ -1,5 +1,5 @@
 <script>
-	import { t } from 'svelte-i18n';
+	import { t, isLoading } from 'svelte-i18n';
 
 	let { schedule } = $props();
 
@@ -34,10 +34,10 @@
 		<thead class="bg-gray-100 text-gray-800 dark:bg-gray-900">
 			<tr>
 				<th class="cursor-pointer px-6 py-3 text-left dark:text-white"
-					>{$t('schedule_for_stop.hour')}</th
+					>{$isLoading ? '' : $t('schedule_for_stop.hour')}</th
 				>
 				<th class="cursor-pointer px-6 py-3 text-left dark:text-white"
-					>{$t('schedule_for_stop.minutes')}</th
+					>{$isLoading ? '' : $t('schedule_for_stop.minutes')}</th
 				>
 			</tr>
 		</thead>
@@ -51,7 +51,7 @@
 			{#if renderScheduleTable(schedule).amTimes.length === 0}
 				<tr>
 					<td colspan="2" class="border px-6 py-3 text-center text-gray-500 dark:border-gray-700">
-						{$t('schedule_for_stop.no_am_schedules_available')}
+						{$isLoading ? '' : $t('schedule_for_stop.no_am_schedules_available')}
 					</td>
 				</tr>
 			{:else}
@@ -85,7 +85,7 @@
 			{#if renderScheduleTable(schedule).pmTimes.length === 0}
 				<tr>
 					<td colspan="2" class="border px-6 py-3 text-center text-gray-500">
-						{$t('schedule_for_stop.no_pm_schedules_available')}
+						{$isLoading ? '' : $t('schedule_for_stop.no_pm_schedules_available')}
 					</td>
 				</tr>
 			{:else}
