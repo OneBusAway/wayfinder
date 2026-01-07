@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "Спланувати поїздку",
+		"itinerary": "Маршрут",
+		"duration": "Тривалість",
+		"start_time": "Час відправлення",
+		"end_time": "Час прибуття",
+		"minutes": "хв",
+		"distance": "Відстань:",
+		"end": "Кінець",
+		"start": "Початок",
+		"meters": "метрів",
+		"no_itineraries_found": "Маршрутів не знайдено",
+		"loading": "Завантаження",
+		"planning": "Планування",
+		"from": "Звідки",
+		"to": "Куди",
+		"search_for_a_place": "Пошук місця",
+		"trip_itineraries": "Варіанти маршруту"
+	},
+	"tabs": {
+		"stops-and-stations": "Зупинки та станції",
+		"plan_trip": "Спланувати поїздку"
+	},
+	"search": {
+		"placeholder": "Пошук зупинок, маршрутів та місць",
+		"results_for": "Результати пошуку для",
+		"clear_results": "Очистити результати",
+		"search": "Пошук",
+		"click_here": "Натисніть тут",
+		"for_a_list_of_available_routes": "для перегляду доступних маршрутів",
+		"search_for_routes": "Пошук маршрутів...",
+		"no_routes_found": "Маршрутів не знайдено",
+		"all_routes": "Усі маршрути"
+	},
+	"header": {
+		"home": "Головна",
+		"about": "Про нас",
+		"contact": "Контакти",
+		"fares_and_tolls": "Тарифи та оплата"
+	},
+	"navigation": {
+		"back_to_map": "Назад до карти"
+	},
+	"status": {
+		"scheduled": "за розкладом",
+		"early": "раніше",
+		"late": "із запізненням",
+		"on_time": "вчасно",
+		"min": "хв",
+		"arrives_on_time": "прибуває вчасно",
+		"scheduled_not_real_time": "За розкладом (без даних у реальному часі)",
+		"canceled": "Скасовано",
+		"canceled_arrival": "Прибуття скасовано",
+		"canceled_departure": "Відправлення скасовано",
+		"frequency_from": "Кожні {headway} хв з {time}",
+		"frequency_until": "Кожні {headway} хв до {time}",
+		"late_without_arrive_depart": "Запізнення {delay} хв",
+		"early_without_arrive_depart": "Раніше на {delay} хв",
+		"arrived_delayed": "Прибув із запізненням {delay} хв",
+		"arrived_early": "Прибув раніше на {delay} хв",
+		"arrived_ontime": "Прибув вчасно",
+		"depart_delayed": "Відправився із запізненням {delay} хв",
+		"depart_early": "Відправився раніше на {delay} хв",
+		"departed_ontime": "Відправився вчасно",
+		"scheduled_arrival": "Прибуття за розкладом о",
+		"scheduled_departure": "Відправлення за розкладом"
+	},
+	"alert": {
+		"more_info": "Детальніше",
+		"close": "Закрити"
+	},
+	"arrivals_and_departures": "Прибуття та відправлення",
+	"no_arrivals_or_departures_in_next_30_minutes": "Немає прибуттів або відправлень протягом наступних 30 хвилин",
+	"stop": "Зупинка",
+	"routes": "Маршрути",
+	"route": "маршрут",
+	"route_modal_title": "Маршрут {name}",
+	"loading": "Завантаження",
+	"arrives": "прибуває",
+	"NA": "Н/Д",
+	"time": {
+		"ago": "тому",
+		"now": "зараз",
+		"sec": "сек",
+		"secs": "сек",
+		"min": "хв",
+		"mins": "хв",
+		"minutes": "хвилин"
+	},
+	"vehicle": {
+		"number": "Транспорт №",
+		"data_updated": "Дані оновлено",
+		"no_real_time_data": "Наразі немає даних у реальному часі для цього транспорту.",
+		"next_stop": "Наступна зупинка:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "Прибуття та відправлення"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "Переглянути розклад",
+		"no_am_schedules_available": "Немає розкладу на першу половину дня",
+		"no_pm_schedules_available": "Немає розкладу на другу половину дня",
+		"minutes": "Хвилини",
+		"hour": "Година",
+		"show_all_routes": "Показати всі маршрути",
+		"collapse_all_routes": "Згорнути всі маршрути",
+		"route_schedules": "Розклад маршрутів",
+		"no_schedules_available": "Немає розкладу на обрану дату.",
+		"stop_id": "ID зупинки",
+		"direction": "Напрямок"
+	},
+	"direction": {
+		"N": "Північ",
+		"NE": "Північний схід",
+		"E": "Схід",
+		"SE": "Південний схід",
+		"S": "Південь",
+		"SW": "Південний захід",
+		"W": "Захід",
+		"NW": "Північний захід"
+	},
+	"service_alerts": {
+		"more_info": "Детальніше",
+		"close": "Закрити",
+		"service_alerts": "Сервісні сповіщення",
+		"service_alert": "Сервісне сповіщення",
+		"advice": "Порада",
+		"no_summary": "Опис для цього сповіщення недоступний",
+		"no_description": "Детальний опис для цього сповіщення недоступний",
+		"page": "Сторінка",
+		"show": "Показати",
+		"hide": "Сховати"
+	},
+	"view_stop_information": "Переглянути інформацію про зупинку",
+	"stop_details": {
+		"view_details": "Детальніше"
+	}
+}

@@ -11,6 +11,7 @@ import simplifiedChinese from '../locales/zh-CN.json';
 import traditionalChinese from '../locales/zh-TW.json';
 import somali from '../locales/so.json';
 import tagalog from '../locales/tl.json';
+import ukrainian from '../locales/uk.json';
 import vietnamese from '../locales/vi.json';
 
 addMessages('am', amharic);
@@ -22,6 +23,7 @@ addMessages('pl', polish);
 addMessages('ru', russian);
 addMessages('so', somali);
 addMessages('tl', tagalog);
+addMessages('uk', ukrainian);
 addMessages('vi', vietnamese);
 addMessages('zh-CN', simplifiedChinese);
 addMessages('zh-TW', traditionalChinese);
