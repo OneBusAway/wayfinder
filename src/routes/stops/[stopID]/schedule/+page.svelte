@@ -134,6 +134,17 @@
 
 <svelte:head>
 	<title>{stopName} - {$t('schedule_for_stop.route_schedules')}</title>
+	{#if stopName}
+		<link
+			rel="manifest"
+			href="/api/manifest?start=/stops/{encodeURIComponent(
+				stopId
+			)}/schedule&name={encodeURIComponent(stopName)}"
+		/>
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="apple-mobile-web-app-title" content={stopName} />
+	{/if}
 </svelte:head>
 
 <StandalonePage>

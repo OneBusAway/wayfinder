@@ -31,6 +31,15 @@
 
 <svelte:head>
 	<title>{stop.name} - {$t('arrivals_and_departures_for_stop.title')}</title>
+	<link
+		rel="manifest"
+		href="/api/manifest?start=/stops/{encodeURIComponent(stop.id)}&name={encodeURIComponent(
+			stop.name
+		)}"
+	/>
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+	<meta name="apple-mobile-web-app-title" content={stop.name} />
 </svelte:head>
 
 <StandalonePage>
