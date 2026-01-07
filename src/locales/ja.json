@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "旅程を計画する",
+		"itinerary": "旅程",
+		"duration": "所要時間",
+		"start_time": "出発時刻",
+		"end_time": "到着時刻",
+		"minutes": "分",
+		"distance": "距離:",
+		"end": "終点",
+		"start": "出発",
+		"meters": "メートル",
+		"no_itineraries_found": "旅程が見つかりませんでした",
+		"loading": "読み込み中",
+		"planning": "計画中",
+		"from": "出発地",
+		"to": "目的地",
+		"search_for_a_place": "場所を検索",
+		"trip_itineraries": "旅程一覧"
+	},
+	"tabs": {
+		"stops-and-stations": "停留所と駅",
+		"plan_trip": "旅程を計画"
+	},
+	"search": {
+		"placeholder": "停留所、路線、場所を検索",
+		"results_for": "検索結果:",
+		"clear_results": "検索結果をクリア",
+		"search": "検索",
+		"click_here": "こちらをクリック",
+		"for_a_list_of_available_routes": "利用可能な路線一覧を表示",
+		"search_for_routes": "路線を検索...",
+		"no_routes_found": "路線が見つかりませんでした",
+		"all_routes": "全路線"
+	},
+	"header": {
+		"home": "ホーム",
+		"about": "サービス概要",
+		"contact": "お問い合わせ",
+		"fares_and_tolls": "運賃・料金"
+	},
+	"navigation": {
+		"back_to_map": "地図に戻る"
+	},
+	"status": {
+		"scheduled": "予定",
+		"early": "早着",
+		"late": "遅延",
+		"on_time": "定刻",
+		"min": "分",
+		"arrives_on_time": "定刻到着",
+		"scheduled_not_real_time": "時刻表/リアルタイムではありません",
+		"canceled": "運休",
+		"canceled_arrival": "到着運休",
+		"canceled_departure": "出発運休",
+		"frequency_from": "{time}から{headway}分間隔",
+		"frequency_until": "{time}まで{headway}分間隔",
+		"late_without_arrive_depart": "{delay}分遅延",
+		"early_without_arrive_depart": "{delay}分早着",
+		"arrived_delayed": "{delay}分遅れで到着",
+		"arrived_early": "{delay}分早く到着",
+		"arrived_ontime": "定刻に到着",
+		"depart_delayed": "{delay}分遅れで出発",
+		"depart_early": "{delay}分早く出発",
+		"departed_ontime": "定刻に出発",
+		"scheduled_arrival": "到着予定時刻",
+		"scheduled_departure": "出発予定時刻"
+	},
+	"alert": {
+		"more_info": "詳細情報",
+		"close": "閉じる"
+	},
+	"arrivals_and_departures": "到着・出発",
+	"no_arrivals_or_departures_in_next_30_minutes": "今後30分以内の到着・出発はありません",
+	"stop": "停留所",
+	"routes": "路線",
+	"route": "路線",
+	"route_modal_title": "{name}系統",
+	"loading": "読み込み中",
+	"arrives": "到着",
+	"NA": "該当なし",
+	"time": {
+		"ago": "前",
+		"now": "今",
+		"sec": "秒",
+		"secs": "秒",
+		"min": "分",
+		"mins": "分",
+		"minutes": "分"
+	},
+	"vehicle": {
+		"number": "車両番号",
+		"data_updated": "データ更新日時",
+		"no_real_time_data": "この車両のリアルタイムデータは現在ありません。",
+		"next_stop": "次の停留所:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "到着・出発"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "時刻表を見る",
+		"no_am_schedules_available": "午前の時刻表はありません",
+		"no_pm_schedules_available": "午後の時刻表はありません",
+		"minutes": "分",
+		"hour": "時",
+		"show_all_routes": "全路線を表示",
+		"collapse_all_routes": "全路線を折りたたむ",
+		"route_schedules": "路線時刻表",
+		"no_schedules_available": "選択した日付の時刻表はありません。",
+		"stop_id": "停留所ID",
+		"direction": "方面"
+	},
+	"direction": {
+		"N": "北",
+		"NE": "北東",
+		"E": "東",
+		"SE": "南東",
+		"S": "南",
+		"SW": "南西",
+		"W": "西",
+		"NW": "北西"
+	},
+	"service_alerts": {
+		"more_info": "詳細情報",
+		"close": "閉じる",
+		"service_alerts": "運行情報",
+		"service_alert": "運行情報",
+		"advice": "お知らせ",
+		"no_summary": "この通知の概要はありません",
+		"no_description": "この通知の詳細説明はありません",
+		"page": "ページ",
+		"show": "表示",
+		"hide": "非表示"
+	},
+	"view_stop_information": "停留所情報を見る",
+	"stop_details": {
+		"view_details": "詳細を見る"
+	}
+}

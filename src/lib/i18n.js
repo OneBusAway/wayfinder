@@ -16,11 +16,13 @@ import vietnamese from '../locales/vi.json';
 import punjabi from '../locales/pa.json';
 import khmer from '../locales/km.json';
 import lao from '../locales/lo.json';
+import japanese from '../locales/ja.json';
 
 addMessages('am', amharic);
 addMessages('ar', arabic);
 addMessages('en', english);
 addMessages('es', spanish);
+addMessages('ja', japanese);
 addMessages('ko', korean);
 addMessages('km', khmer);
 addMessages('lo', lao);
