@@ -13,6 +13,7 @@ import somali from '../locales/so.json';
 import tagalog from '../locales/tl.json';
 import ukrainian from '../locales/uk.json';
 import vietnamese from '../locales/vi.json';
+import punjabi from '../locales/pa.json';
 
 addMessages('am', amharic);
 addMessages('ar', arabic);
@@ -25,6 +26,7 @@ addMessages('so', somali);
 addMessages('tl', tagalog);
 addMessages('uk', ukrainian);
 addMessages('vi', vietnamese);
+addMessages('pa', punjabi);
 addMessages('zh-CN', simplifiedChinese);
 addMessages('zh-TW', traditionalChinese);
 

@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "ਆਪਣੀ ਯਾਤਰਾ ਦੀ ਯੋਜਨਾ ਬਣਾਓ",
+		"itinerary": "ਯਾਤਰਾ ਸੂਚੀ",
+		"duration": "ਸਮਾਂ",
+		"start_time": "ਸ਼ੁਰੂਆਤੀ ਸਮਾਂ",
+		"end_time": "ਸਮਾਪਤੀ ਸਮਾਂ",
+		"minutes": "ਮਿੰਟ",
+		"distance": "ਦੂਰੀ:",
+		"end": "ਅੰਤ",
+		"start": "ਸ਼ੁਰੂ",
+		"meters": "ਮੀਟਰ",
+		"no_itineraries_found": "ਕੋਈ ਯਾਤਰਾ ਸੂਚੀ ਨਹੀਂ ਮਿਲੀ",
+		"loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ",
+		"planning": "ਯੋਜਨਾ ਬਣਾ ਰਿਹਾ ਹੈ",
+		"from": "ਤੋਂ",
+		"to": "ਤੱਕ",
+		"search_for_a_place": "ਕੋਈ ਥਾਂ ਖੋਜੋ",
+		"trip_itineraries": "ਯਾਤਰਾ ਸੂਚੀਆਂ"
+	},
+	"tabs": {
+		"stops-and-stations": "ਸਟਾਪ ਅਤੇ ਸਟੇਸ਼ਨ",
+		"plan_trip": "ਯਾਤਰਾ ਦੀ ਯੋਜਨਾ ਬਣਾਓ"
+	},
+	"search": {
+		"placeholder": "ਸਟਾਪ, ਰੂਟ ਅਤੇ ਥਾਵਾਂ ਖੋਜੋ",
+		"results_for": "ਖੋਜ ਨਤੀਜੇ",
+		"clear_results": "ਨਤੀਜੇ ਸਾਫ਼ ਕਰੋ",
+		"search": "ਖੋਜੋ",
+		"click_here": "ਇੱਥੇ ਕਲਿੱਕ ਕਰੋ",
+		"for_a_list_of_available_routes": "ਉਪਲਬਧ ਰੂਟਾਂ ਦੀ ਸੂਚੀ ਲਈ",
+		"search_for_routes": "ਰੂਟ ਖੋਜੋ...",
+		"no_routes_found": "ਕੋਈ ਰੂਟ ਨਹੀਂ ਮਿਲੇ",
+		"all_routes": "ਸਾਰੇ ਰੂਟ"
+	},
+	"header": {
+		"home": "ਮੁੱਖ ਪੰਨਾ",
+		"about": "ਸਾਡੇ ਬਾਰੇ",
+		"contact": "ਸੰਪਰਕ",
+		"fares_and_tolls": "ਕਿਰਾਏ ਅਤੇ ਟੋਲ"
+	},
+	"navigation": {
+		"back_to_map": "ਨਕਸ਼ੇ ਤੇ ਵਾਪਸ ਜਾਓ"
+	},
+	"status": {
+		"scheduled": "ਨਿਰਧਾਰਿਤ",
+		"early": "ਜਲਦੀ",
+		"late": "ਦੇਰੀ ਨਾਲ",
+		"on_time": "ਸਮੇਂ ਸਿਰ",
+		"min": "ਮਿੰਟ",
+		"arrives_on_time": "ਸਮੇਂ ਸਿਰ ਪਹੁੰਚਦਾ ਹੈ",
+		"scheduled_not_real_time": "ਨਿਰਧਾਰਿਤ/ਅਸਲ-ਸਮੇਂ ਨਹੀਂ",
+		"canceled": "ਰੱਦ ਕੀਤਾ ਗਿਆ",
+		"canceled_arrival": "ਆਗਮਨ ਰੱਦ",
+		"canceled_departure": "ਰਵਾਨਗੀ ਰੱਦ",
+		"frequency_from": "ਹਰ {headway} ਮਿੰਟ {time} ਤੋਂ",
+		"frequency_until": "ਹਰ {headway} ਮਿੰਟ {time} ਤੱਕ",
+		"late_without_arrive_depart": "{delay} ਮਿੰਟ ਦੇਰੀ ਨਾਲ",
+		"early_without_arrive_depart": "{delay} ਮਿੰਟ ਜਲਦੀ",
+		"arrived_delayed": "{delay} ਮਿੰਟ ਦੇਰੀ ਨਾਲ ਪਹੁੰਚਿਆ",
+		"arrived_early": "{delay} ਮਿੰਟ ਜਲਦੀ ਪਹੁੰਚਿਆ",
+		"arrived_ontime": "ਸਮੇਂ ਸਿਰ ਪਹੁੰਚਿਆ",
+		"depart_delayed": "{delay} ਮਿੰਟ ਦੇਰੀ ਨਾਲ ਰਵਾਨਾ ਹੋਇਆ",
+		"depart_early": "{delay} ਮਿੰਟ ਜਲਦੀ ਰਵਾਨਾ ਹੋਇਆ",
+		"departed_ontime": "ਸਮੇਂ ਸਿਰ ਰਵਾਨਾ ਹੋਇਆ",
+		"scheduled_arrival": "ਨਿਰਧਾਰਿਤ ਆਗਮਨ",
+		"scheduled_departure": "ਨਿਰਧਾਰਿਤ ਰਵਾਨਗੀ"
+	},
+	"alert": {
+		"more_info": "ਹੋਰ ਜਾਣਕਾਰੀ",
+		"close": "ਬੰਦ ਕਰੋ"
+	},
+	"arrivals_and_departures": "ਆਗਮਨ ਅਤੇ ਰਵਾਨਗੀਆਂ",
+	"no_arrivals_or_departures_in_next_30_minutes": "ਅਗਲੇ 30 ਮਿੰਟਾਂ ਵਿੱਚ ਕੋਈ ਆਗਮਨ ਜਾਂ ਰਵਾਨਗੀ ਨਹੀਂ",
+	"stop": "ਸਟਾਪ",
+	"routes": "ਰੂਟ",
+	"route": "ਰੂਟ",
+	"route_modal_title": "ਰੂਟ {name}",
+	"loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ",
+	"arrives": "ਪਹੁੰਚਦਾ ਹੈ",
+	"NA": "ਉਪਲਬਧ ਨਹੀਂ",
+	"time": {
+		"ago": "ਪਹਿਲਾਂ",
+		"now": "ਹੁਣ",
+		"sec": "ਸਕਿੰਟ",
+		"secs": "ਸਕਿੰਟ",
+		"min": "ਮਿੰਟ",
+		"mins": "ਮਿੰਟ",
+		"minutes": "ਮਿੰਟ"
+	},
+	"vehicle": {
+		"number": "ਵਾਹਨ #",
+		"data_updated": "ਡਾਟਾ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ",
+		"no_real_time_data": "ਸਾਡੇ ਕੋਲ ਇਸ ਸਮੇਂ ਇਸ ਵਾਹਨ ਲਈ ਅਸਲ-ਸਮੇਂ ਦਾ ਡਾਟਾ ਨਹੀਂ ਹੈ।",
+		"next_stop": "ਅਗਲਾ ਸਟਾਪ:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "ਆਗਮਨ ਅਤੇ ਰਵਾਨਗੀਆਂ"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "ਸਮਾਂ-ਸਾਰਣੀ ਦੇਖੋ",
+		"no_am_schedules_available": "ਸਵੇਰ ਦੀ ਕੋਈ ਸਮਾਂ-ਸਾਰਣੀ ਉਪਲਬਧ ਨਹੀਂ",
+		"no_pm_schedules_available": "ਸ਼ਾਮ ਦੀ ਕੋਈ ਸਮਾਂ-ਸਾਰਣੀ ਉਪਲਬਧ ਨਹੀਂ",
+		"minutes": "ਮਿੰਟ",
+		"hour": "ਘੰਟਾ",
+		"show_all_routes": "ਸਾਰੇ ਰੂਟ ਦਿਖਾਓ",
+		"collapse_all_routes": "ਸਾਰੇ ਰੂਟ ਸਮੇਟੋ",
+		"route_schedules": "ਰੂਟ ਸਮਾਂ-ਸਾਰਣੀਆਂ",
+		"no_schedules_available": "ਚੁਣੀ ਗਈ ਤਾਰੀਖ ਲਈ ਕੋਈ ਸਮਾਂ-ਸਾਰਣੀ ਉਪਲਬਧ ਨਹੀਂ।",
+		"stop_id": "ਸਟਾਪ ID",
+		"direction": "ਦਿਸ਼ਾ"
+	},
+	"direction": {
+		"N": "ਉੱਤਰ",
+		"NE": "ਉੱਤਰ-ਪੂਰਬ",
+		"E": "ਪੂਰਬ",
+		"SE": "ਦੱਖਣ-ਪੂਰਬ",
+		"S": "ਦੱਖਣ",
+		"SW": "ਦੱਖਣ-ਪੱਛਮ",
+		"W": "ਪੱਛਮ",
+		"NW": "ਉੱਤਰ-ਪੱਛਮ"
+	},
+	"service_alerts": {
+		"more_info": "ਹੋਰ ਜਾਣਕਾਰੀ",
+		"close": "ਬੰਦ ਕਰੋ",
+		"service_alerts": "ਸੇਵਾ ਚੇਤਾਵਨੀਆਂ",
+		"service_alert": "ਸੇਵਾ ਚੇਤਾਵਨੀ",
+		"advice": "ਸਲਾਹ",
+		"no_summary": "ਇਸ ਚੇਤਾਵਨੀ ਲਈ ਕੋਈ ਸਾਰ ਉਪਲਬਧ ਨਹੀਂ",
+		"no_description": "ਇਸ ਚੇਤਾਵਨੀ ਲਈ ਕੋਈ ਵਿਸਤ੍ਰਿਤ ਵੇਰਵਾ ਉਪਲਬਧ ਨਹੀਂ",
+		"page": "ਪੰਨਾ",
+		"show": "ਦਿਖਾਓ",
+		"hide": "ਲੁਕਾਓ"
+	},
+	"view_stop_information": "ਸਟਾਪ ਜਾਣਕਾਰੀ ਦੇਖੋ",
+	"stop_details": {
+		"view_details": "ਵੇਰਵੇ ਦੇਖੋ"
+	}
+}
