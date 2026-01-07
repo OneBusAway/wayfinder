@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "Планирование поездки",
+		"itinerary": "Маршрут",
+		"duration": "Продолжительность",
+		"start_time": "Время отправления",
+		"end_time": "Время прибытия",
+		"minutes": "мин",
+		"distance": "Расстояние:",
+		"end": "Конец",
+		"start": "Начало",
+		"meters": "метров",
+		"no_itineraries_found": "Маршруты не найдены",
+		"loading": "Загрузка",
+		"planning": "Планирование",
+		"from": "Откуда",
+		"to": "Куда",
+		"search_for_a_place": "Поиск места",
+		"trip_itineraries": "Варианты маршрута"
+	},
+	"tabs": {
+		"stops-and-stations": "Остановки и станции",
+		"plan_trip": "Спланировать поездку"
+	},
+	"search": {
+		"placeholder": "Поиск остановок, маршрутов и мест",
+		"results_for": "Результаты поиска для",
+		"clear_results": "Очистить результаты",
+		"search": "Поиск",
+		"click_here": "Нажмите здесь",
+		"for_a_list_of_available_routes": "для списка доступных маршрутов",
+		"search_for_routes": "Поиск маршрутов...",
+		"no_routes_found": "Маршруты не найдены",
+		"all_routes": "Все маршруты"
+	},
+	"header": {
+		"home": "Главная",
+		"about": "О нас",
+		"contact": "Контакты",
+		"fares_and_tolls": "Тарифы и сборы"
+	},
+	"navigation": {
+		"back_to_map": "Назад к карте"
+	},
+	"status": {
+		"scheduled": "по расписанию",
+		"early": "раньше",
+		"late": "с опозданием",
+		"on_time": "вовремя",
+		"min": "мин",
+		"arrives_on_time": "прибывает вовремя",
+		"scheduled_not_real_time": "По расписанию (без данных в реальном времени)",
+		"canceled": "Отменён",
+		"canceled_arrival": "Прибытие отменено",
+		"canceled_departure": "Отправление отменено",
+		"frequency_from": "Каждые {headway} мин с {time}",
+		"frequency_until": "Каждые {headway} мин до {time}",
+		"late_without_arrive_depart": "Опоздание {delay} мин",
+		"early_without_arrive_depart": "Раньше на {delay} мин",
+		"arrived_delayed": "Прибыл с опозданием на {delay} мин",
+		"arrived_early": "Прибыл раньше на {delay} мин",
+		"arrived_ontime": "Прибыл вовремя",
+		"depart_delayed": "Отправился с опозданием на {delay} мин",
+		"depart_early": "Отправился раньше на {delay} мин",
+		"departed_ontime": "Отправился вовремя",
+		"scheduled_arrival": "Прибытие по расписанию в",
+		"scheduled_departure": "Отправление по расписанию"
+	},
+	"alert": {
+		"more_info": "Подробнее",
+		"close": "Закрыть"
+	},
+	"arrivals_and_departures": "Прибытие и отправление",
+	"no_arrivals_or_departures_in_next_30_minutes": "Нет прибытий или отправлений в ближайшие 30 минут",
+	"stop": "Остановка",
+	"routes": "Маршруты",
+	"route": "маршрут",
+	"route_modal_title": "Маршрут {name}",
+	"loading": "Загрузка",
+	"arrives": "прибывает",
+	"NA": "Н/Д",
+	"time": {
+		"ago": "назад",
+		"now": "сейчас",
+		"sec": "сек",
+		"secs": "сек",
+		"min": "мин",
+		"mins": "мин",
+		"minutes": "минут"
+	},
+	"vehicle": {
+		"number": "Транспорт №",
+		"data_updated": "Данные обновлены",
+		"no_real_time_data": "Данные в реальном времени для этого транспорта сейчас недоступны.",
+		"next_stop": "Следующая остановка:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "Прибытие и отправление"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "Посмотреть расписание",
+		"no_am_schedules_available": "Нет расписания на первую половину дня",
+		"no_pm_schedules_available": "Нет расписания на вторую половину дня",
+		"minutes": "Минуты",
+		"hour": "Час",
+		"show_all_routes": "Показать все маршруты",
+		"collapse_all_routes": "Свернуть все маршруты",
+		"route_schedules": "Расписание маршрутов",
+		"no_schedules_available": "Нет расписания на выбранную дату.",
+		"stop_id": "ID остановки",
+		"direction": "Направление"
+	},
+	"direction": {
+		"N": "Север",
+		"NE": "Северо-восток",
+		"E": "Восток",
+		"SE": "Юго-восток",
+		"S": "Юг",
+		"SW": "Юго-запад",
+		"W": "Запад",
+		"NW": "Северо-запад"
+	},
+	"service_alerts": {
+		"more_info": "Подробнее",
+		"close": "Закрыть",
+		"service_alerts": "Оповещения о работе транспорта",
+		"service_alert": "Оповещение",
+		"advice": "Рекомендация",
+		"no_summary": "Краткое описание для этого оповещения недоступно",
+		"no_description": "Подробное описание для этого оповещения недоступно",
+		"page": "Страница",
+		"show": "Показать",
+		"hide": "Скрыть"
+	},
+	"view_stop_information": "Информация об остановке",
+	"stop_details": {
+		"view_details": "Подробнее"
+	}
+}
