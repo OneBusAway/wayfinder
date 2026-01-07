@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "規劃您的行程",
+		"itinerary": "行程路線",
+		"duration": "行程時間",
+		"start_time": "出發時間",
+		"end_time": "抵達時間",
+		"minutes": "分鐘",
+		"distance": "距離：",
+		"end": "終點",
+		"start": "起點",
+		"meters": "公尺",
+		"no_itineraries_found": "找不到行程路線",
+		"loading": "載入中",
+		"planning": "規劃中",
+		"from": "從",
+		"to": "到",
+		"search_for_a_place": "搜尋地點",
+		"trip_itineraries": "行程方案"
+	},
+	"tabs": {
+		"stops-and-stations": "站牌與車站",
+		"plan_trip": "規劃行程"
+	},
+	"search": {
+		"placeholder": "搜尋站牌、路線和地點",
+		"results_for": "搜尋結果",
+		"clear_results": "清除結果",
+		"search": "搜尋",
+		"click_here": "點擊這裡",
+		"for_a_list_of_available_routes": "查看可用路線列表",
+		"search_for_routes": "搜尋路線...",
+		"no_routes_found": "找不到路線",
+		"all_routes": "所有路線"
+	},
+	"header": {
+		"home": "首頁",
+		"about": "關於",
+		"contact": "聯絡我們",
+		"fares_and_tolls": "票價與費用"
+	},
+	"navigation": {
+		"back_to_map": "返回地圖"
+	},
+	"status": {
+		"scheduled": "預定",
+		"early": "提早",
+		"late": "延誤",
+		"on_time": "準點",
+		"min": "分鐘",
+		"arrives_on_time": "準點到達",
+		"scheduled_not_real_time": "預定時間／非即時",
+		"canceled": "已取消",
+		"canceled_arrival": "到站已取消",
+		"canceled_departure": "發車已取消",
+		"frequency_from": "從 {time} 起每 {headway} 分鐘一班",
+		"frequency_until": "每 {headway} 分鐘一班，直到 {time}",
+		"late_without_arrive_depart": "延誤 {delay} 分鐘",
+		"early_without_arrive_depart": "提早 {delay} 分鐘",
+		"arrived_delayed": "延誤 {delay} 分鐘到達",
+		"arrived_early": "提早 {delay} 分鐘到達",
+		"arrived_ontime": "準點到達",
+		"depart_delayed": "延誤 {delay} 分鐘發車",
+		"depart_early": "提早 {delay} 分鐘發車",
+		"departed_ontime": "準點發車",
+		"scheduled_arrival": "預定到站時間",
+		"scheduled_departure": "預定發車時間"
+	},
+	"alert": {
+		"more_info": "更多資訊",
+		"close": "關閉"
+	},
+	"arrivals_and_departures": "到站與發車",
+	"no_arrivals_or_departures_in_next_30_minutes": "未來 30 分鐘內沒有到站或發車班次",
+	"stop": "站牌",
+	"routes": "路線",
+	"route": "路線",
+	"route_modal_title": "路線 {name}",
+	"loading": "載入中",
+	"arrives": "到達",
+	"NA": "無資料",
+	"time": {
+		"ago": "前",
+		"now": "現在",
+		"sec": "秒",
+		"secs": "秒",
+		"min": "分鐘",
+		"mins": "分鐘",
+		"minutes": "分鐘"
+	},
+	"vehicle": {
+		"number": "車輛編號",
+		"data_updated": "資料更新時間",
+		"no_real_time_data": "目前沒有此車輛的即時資料。",
+		"next_stop": "下一站："
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "到站與發車"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "查看時刻表",
+		"no_am_schedules_available": "沒有上午班次",
+		"no_pm_schedules_available": "沒有下午班次",
+		"minutes": "分",
+		"hour": "時",
+		"show_all_routes": "顯示所有路線",
+		"collapse_all_routes": "收合所有路線",
+		"route_schedules": "路線時刻表",
+		"no_schedules_available": "所選日期沒有班次。",
+		"stop_id": "站牌編號",
+		"direction": "方向"
+	},
+	"direction": {
+		"N": "北",
+		"NE": "東北",
+		"E": "東",
+		"SE": "東南",
+		"S": "南",
+		"SW": "西南",
+		"W": "西",
+		"NW": "西北"
+	},
+	"service_alerts": {
+		"more_info": "更多資訊",
+		"close": "關閉",
+		"service_alerts": "服務公告",
+		"service_alert": "服務公告",
+		"advice": "建議",
+		"no_summary": "此公告無摘要",
+		"no_description": "此公告無詳細說明",
+		"page": "頁",
+		"show": "顯示",
+		"hide": "隱藏"
+	},
+	"view_stop_information": "查看站牌資訊",
+	"stop_details": {
+		"view_details": "查看詳情"
+	}
+}

@@ -7,6 +7,7 @@ import spanish from '../locales/es.json';
 import polish from '../locales/pl.json';
 import russian from '../locales/ru.json';
 import simplifiedChinese from '../locales/zh-CN.json';
+import traditionalChinese from '../locales/zh-TW.json';
 import somali from '../locales/so.json';
 import tagalog from '../locales/tl.json';
 import vietnamese from '../locales/vi.json';
@@ -21,6 +22,7 @@ addMessages('so', somali);
 addMessages('tl', tagalog);
 addMessages('vi', vietnamese);
 addMessages('zh-CN', simplifiedChinese);
+addMessages('zh-TW', traditionalChinese);
 
 init({
 	fallbackLocale: 'en',
