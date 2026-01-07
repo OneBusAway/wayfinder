@@ -1,24 +1,18 @@
-import { init, addMessages, getLocaleFromNavigator } from 'svelte-i18n';
+import { init, addMessages, register, getLocaleFromNavigator } from 'svelte-i18n';
 
-import amharic from '../locales/am.json';
-import arabic from '../locales/ar.json';
+// English loaded synchronously as the fallback locale
 import english from '../locales/en.json';
-import spanish from '../locales/es.json';
-import polish from '../locales/pl.json';
-import simplifiedChinese from '../locales/zh-CN.json';
-import somali from '../locales/so.json';
-import tagalog from '../locales/tl.json';
-import vietnamese from '../locales/vi.json';
-
-addMessages('am', amharic);
-addMessages('ar', arabic);
 addMessages('en', english);
-addMessages('es', spanish);
-addMessages('pl', polish);
-addMessages('so', somali);
-addMessages('tl', tagalog);
-addMessages('vi', vietnamese);
-addMessages('zh-CN', simplifiedChinese);
+
+// Other locales registered with lazy loaders
+register('am', () => import('../locales/am.json').then((m) => m.default));
+register('ar', () => import('../locales/ar.json').then((m) => m.default));
+register('es', () => import('../locales/es.json').then((m) => m.default));
+register('pl', () => import('../locales/pl.json').then((m) => m.default));
+register('so', () => import('../locales/so.json').then((m) => m.default));
+register('tl', () => import('../locales/tl.json').then((m) => m.default));
+register('vi', () => import('../locales/vi.json').then((m) => m.default));
+register('zh-CN', () => import('../locales/zh-CN.json').then((m) => m.default));
 
 init({
 	fallbackLocale: 'en',
