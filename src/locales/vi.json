@@ -131,5 +131,9 @@
 		"page": "Trang",
 		"show": "Hiển thị",
 		"hide": "Ẩn"
+	},
+	"view_stop_information": "Xem thông tin trạm dừng",
+	"stop_details": {
+		"view_details": "Xem chi tiết"
 	}
 }
