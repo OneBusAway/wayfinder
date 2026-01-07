@@ -35,6 +35,12 @@ vi.mock('svelte-i18n', () => ({
 			});
 			return { unsubscribe: () => {} };
 		})
+	},
+	isLoading: {
+		subscribe: vi.fn((fn) => {
+			fn(false);
+			return { unsubscribe: () => {} };
+		})
 	}
 }));
 

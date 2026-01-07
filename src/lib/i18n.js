@@ -44,7 +44,7 @@ register('tl', () => import('../locales/tl.json').then((m) => m.default));
 register('uk', () => import('../locales/uk.json').then((m) => m.default));
 register('vi', () => import('../locales/vi.json').then((m) => m.default));
 register('zh-CN', () => import('../locales/zh-CN.json').then((m) => m.default));
-register('zh-TW', () => import('../locales/zh-TW.json').then((m) => m.default))
+register('zh-TW', () => import('../locales/zh-TW.json').then((m) => m.default));
 
 init({
 	fallbackLocale: 'en',
