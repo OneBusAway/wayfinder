@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "መገሻኻ ውጠን",
+		"itinerary": "መስመር መገሻ",
+		"duration": "ንውሓት ግዜ",
+		"start_time": "ናይ ጅማሮ ሰዓት",
+		"end_time": "ናይ መወዳእታ ሰዓት",
+		"minutes": "ደቂቕ",
+		"distance": "ርሕቀት:",
+		"end": "መወዳእታ",
+		"start": "ጅማሮ",
+		"meters": "ሜትሮ",
+		"no_itineraries_found": "መስመር መገሻ ኣይተረኽበን",
+		"loading": "ይጽዕን ኣሎ",
+		"planning": "ይውጠን ኣሎ",
+		"from": "ካብ",
+		"to": "ናብ",
+		"search_for_a_place": "ቦታ ድለ",
+		"trip_itineraries": "መስመራት መገሻ"
+	},
+	"tabs": {
+		"stops-and-stations": "መዕረፊታትን መደበራትን",
+		"plan_trip": "መገሻ ውጠን"
+	},
+	"search": {
+		"placeholder": "መዕረፊታት፣ መስመራትን ቦታታትን ድለ",
+		"results_for": "ውጽኢት ድልያ ንኣብ",
+		"clear_results": "ውጽኢት ደምስስ",
+		"search": "ድለ",
+		"click_here": "ኣብዚ ጠውቕ",
+		"for_a_list_of_available_routes": "ዝርዝር ዘለዉ መስመራት ንምርኣይ",
+		"search_for_routes": "መስመራት ድለ...",
+		"no_routes_found": "መስመር ኣይተረኽበን",
+		"all_routes": "ኩሎም መስመራት"
+	},
+	"header": {
+		"home": "መበገሲ",
+		"about": "ብዛዕባና",
+		"contact": "ርኸቡና",
+		"fares_and_tolls": "ዋጋታትን ክፍሊታትን"
+	},
+	"navigation": {
+		"back_to_map": "ናብ ካርታ ተመለስ"
+	},
+	"status": {
+		"scheduled": "ዝተመደበ",
+		"early": "ቀልጢፉ",
+		"late": "ደንጉዩ",
+		"on_time": "ብሰዓቱ",
+		"min": "ደቂቕ",
+		"arrives_on_time": "ብሰዓቱ ይበጽሕ",
+		"scheduled_not_real_time": "ዝተመደበ/ብቐጥታ ዘይኮነ",
+		"canceled": "ተሰሪዙ",
+		"canceled_arrival": "ምብጻሕ ተሰሪዙ",
+		"canceled_departure": "ምብጋስ ተሰሪዙ",
+		"frequency_from": "ኣብ ነፍሲ ወከፍ {headway} ደቂቕ ካብ {time}",
+		"frequency_until": "ኣብ ነፍሲ ወከፍ {headway} ደቂቕ ክሳብ {time}",
+		"late_without_arrive_depart": "{delay} ደቂቕ ደንጉዩ",
+		"early_without_arrive_depart": "{delay} ደቂቕ ቀልጢፉ",
+		"arrived_delayed": "{delay} ደቂቕ ደንጉዩ በጺሑ",
+		"arrived_early": "{delay} ደቂቕ ቀልጢፉ በጺሑ",
+		"arrived_ontime": "ብሰዓቱ በጺሑ",
+		"depart_delayed": "{delay} ደቂቕ ደንጉዩ ተበጊሱ",
+		"depart_early": "{delay} ደቂቕ ቀልጢፉ ተበጊሱ",
+		"departed_ontime": "ብሰዓቱ ተበጊሱ",
+		"scheduled_arrival": "ዝተመደበ ምብጻሕ",
+		"scheduled_departure": "ዝተመደበ ምብጋስ"
+	},
+	"alert": {
+		"more_info": "ተወሳኺ ሓበሬታ",
+		"close": "ዕጸው"
+	},
+	"arrivals_and_departures": "ምብጻሕን ምብጋስን",
+	"no_arrivals_or_departures_in_next_30_minutes": "ኣብ ዝመጽእ 30 ደቂቕ ዝኾነ ምብጻሕ ወይ ምብጋስ የለን",
+	"stop": "መዕረፊ",
+	"routes": "መስመራት",
+	"route": "መስመር",
+	"route_modal_title": "መስመር {name}",
+	"loading": "ይጽዕን ኣሎ",
+	"arrives": "ይበጽሕ",
+	"NA": "የለን",
+	"time": {
+		"ago": "ቅድሚ",
+		"now": "ሕጂ",
+		"sec": "ካልኢት",
+		"secs": "ካልኢታት",
+		"min": "ደቂቕ",
+		"mins": "ደቃይቕ",
+		"minutes": "ደቃይቕ"
+	},
+	"vehicle": {
+		"number": "ተሽከርካሪ #",
+		"data_updated": "ሓበሬታ ተሓዲሱ",
+		"no_real_time_data": "ብቐጥታ ዝኾነ ሓበሬታ ናይዚ ተሽከርካሪ ሕጂ የብልናን።",
+		"next_stop": "ዝስዕብ መዕረፊ:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "ምብጻሕን ምብጋስን"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "መደብ ርአ",
+		"no_am_schedules_available": "ናይ ቅድሚ ቀትሪ መደብ የለን",
+		"no_pm_schedules_available": "ናይ ድሕሪ ቀትሪ መደብ የለን",
+		"minutes": "ደቃይቕ",
+		"hour": "ሰዓት",
+		"show_all_routes": "ኩሎም መስመራት ኣርኢ",
+		"collapse_all_routes": "ኩሎም መስመራት ጽመቕ",
+		"route_schedules": "መደባት መስመር",
+		"no_schedules_available": "ንዝተመርጸ ዕለት ዝኾነ መደብ የለን።",
+		"stop_id": "መለለዪ መዕረፊ",
+		"direction": "ኣንፈት"
+	},
+	"direction": {
+		"N": "ሰሜን",
+		"NE": "ሰሜን-ምብራቕ",
+		"E": "ምብራቕ",
+		"SE": "ደቡብ-ምብራቕ",
+		"S": "ደቡብ",
+		"SW": "ደቡብ-ምዕራብ",
+		"W": "ምዕራብ",
+		"NW": "ሰሜን-ምዕራብ"
+	},
+	"service_alerts": {
+		"more_info": "ተወሳኺ ሓበሬታ",
+		"close": "ዕጸው",
+		"service_alerts": "ናይ ኣገልግሎት ምልክታታት",
+		"service_alert": "ናይ ኣገልግሎት ምልክታ",
+		"advice": "ምኽሪ",
+		"no_summary": "ንዚ ምልክታ ጽማቝ ሓበሬታ የለን",
+		"no_description": "ንዚ ምልክታ ዝርዝር መግለጺ የለን",
+		"page": "ገጽ",
+		"show": "ኣርኢ",
+		"hide": "ሕባእ"
+	},
+	"view_stop_information": "ሓበሬታ መዕረፊ ርአ",
+	"stop_details": {
+		"view_details": "ዝርዝር ርአ"
+	}
+}
