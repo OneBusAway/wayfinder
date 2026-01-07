@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "规划您的行程",
+		"itinerary": "行程方案",
+		"duration": "时长",
+		"start_time": "出发时间",
+		"end_time": "到达时间",
+		"minutes": "分钟",
+		"distance": "距离：",
+		"end": "终点",
+		"start": "起点",
+		"meters": "米",
+		"no_itineraries_found": "未找到行程方案",
+		"loading": "加载中",
+		"planning": "规划中",
+		"from": "从",
+		"to": "到",
+		"search_for_a_place": "搜索地点",
+		"trip_itineraries": "行程方案"
+	},
+	"tabs": {
+		"stops-and-stations": "站点",
+		"plan_trip": "规划行程"
+	},
+	"search": {
+		"placeholder": "搜索站点、线路和地点",
+		"results_for": "搜索结果",
+		"clear_results": "清除结果",
+		"search": "搜索",
+		"click_here": "点击此处",
+		"for_a_list_of_available_routes": "查看可用线路列表",
+		"search_for_routes": "搜索线路...",
+		"no_routes_found": "未找到线路",
+		"all_routes": "所有线路"
+	},
+	"header": {
+		"home": "首页",
+		"about": "关于",
+		"contact": "联系我们",
+		"fares_and_tolls": "票价信息"
+	},
+	"navigation": {
+		"back_to_map": "返回地图"
+	},
+	"status": {
+		"scheduled": "计划",
+		"early": "提前",
+		"late": "晚点",
+		"on_time": "准点",
+		"min": "分钟",
+		"arrives_on_time": "准点到达",
+		"scheduled_not_real_time": "计划时间/非实时",
+		"canceled": "已取消",
+		"canceled_arrival": "到站已取消",
+		"canceled_departure": "发车已取消",
+		"frequency_from": "从 {time} 起每 {headway} 分钟一班",
+		"frequency_until": "每 {headway} 分钟一班，直到 {time}",
+		"late_without_arrive_depart": "晚点 {delay} 分钟",
+		"early_without_arrive_depart": "提前 {delay} 分钟",
+		"arrived_delayed": "已到达，晚点 {delay} 分钟",
+		"arrived_early": "已到达，提前 {delay} 分钟",
+		"arrived_ontime": "已准点到达",
+		"depart_delayed": "已发车，晚点 {delay} 分钟",
+		"depart_early": "已发车，提前 {delay} 分钟",
+		"departed_ontime": "已准点发车",
+		"scheduled_arrival": "计划到达时间",
+		"scheduled_departure": "计划发车时间"
+	},
+	"alert": {
+		"more_info": "更多信息",
+		"close": "关闭"
+	},
+	"arrivals_and_departures": "到站与发车",
+	"no_arrivals_or_departures_in_next_30_minutes": "未来30分钟内无到站或发车信息",
+	"stop": "站点",
+	"routes": "线路",
+	"route": "线路",
+	"route_modal_title": "{name} 线路",
+	"loading": "加载中",
+	"arrives": "到达",
+	"NA": "暂无",
+	"time": {
+		"ago": "前",
+		"now": "现在",
+		"sec": "秒",
+		"secs": "秒",
+		"min": "分钟",
+		"mins": "分钟",
+		"minutes": "分钟"
+	},
+	"vehicle": {
+		"number": "车辆编号",
+		"data_updated": "数据更新于",
+		"no_real_time_data": "暂无该车辆的实时数据。",
+		"next_stop": "下一站："
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "到站与发车"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "查看时刻表",
+		"no_am_schedules_available": "暂无上午时刻表",
+		"no_pm_schedules_available": "暂无下午时刻表",
+		"minutes": "分钟",
+		"hour": "小时",
+		"show_all_routes": "展开所有线路",
+		"collapse_all_routes": "收起所有线路",
+		"route_schedules": "线路时刻表",
+		"no_schedules_available": "所选日期暂无时刻表。",
+		"stop_id": "站点编号",
+		"direction": "方向"
+	},
+	"direction": {
+		"N": "北",
+		"NE": "东北",
+		"E": "东",
+		"SE": "东南",
+		"S": "南",
+		"SW": "西南",
+		"W": "西",
+		"NW": "西北"
+	},
+	"service_alerts": {
+		"more_info": "更多信息",
+		"close": "关闭",
+		"service_alerts": "服务通知",
+		"service_alert": "服务通知",
+		"advice": "建议",
+		"no_summary": "该通知暂无摘要",
+		"no_description": "该通知暂无详细描述",
+		"page": "页",
+		"show": "显示",
+		"hide": "隐藏"
+	},
+	"view_stop_information": "查看站点信息",
+	"stop_details": {
+		"view_details": "查看详情"
+	}
+}
