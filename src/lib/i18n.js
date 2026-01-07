@@ -14,12 +14,14 @@ import tagalog from '../locales/tl.json';
 import ukrainian from '../locales/uk.json';
 import vietnamese from '../locales/vi.json';
 import punjabi from '../locales/pa.json';
+import khmer from '../locales/km.json';
 
 addMessages('am', amharic);
 addMessages('ar', arabic);
 addMessages('en', english);
 addMessages('es', spanish);
 addMessages('ko', korean);
+addMessages('km', khmer);
 addMessages('pl', polish);
 addMessages('ru', russian);
 addMessages('so', somali);
