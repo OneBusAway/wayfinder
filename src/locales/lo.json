@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "ວາງແຜນການເດີນທາງ",
+		"itinerary": "ລາຍການເດີນທາງ",
+		"duration": "ໄລຍະເວລາ",
+		"start_time": "ເວລາເລີ່ມຕົ້ນ",
+		"end_time": "ເວລາສິ້ນສຸດ",
+		"minutes": "ນາທີ",
+		"distance": "ໄລຍະທາງ:",
+		"end": "ສິ້ນສຸດ",
+		"start": "ເລີ່ມຕົ້ນ",
+		"meters": "ແມັດ",
+		"no_itineraries_found": "ບໍ່ພົບລາຍການເດີນທາງ",
+		"loading": "ກຳລັງໂຫລດ",
+		"planning": "ກຳລັງວາງແຜນ",
+		"from": "ຈາກ",
+		"to": "ໄປ",
+		"search_for_a_place": "ຄົ້ນຫາສະຖານທີ່",
+		"trip_itineraries": "ລາຍການເດີນທາງ"
+	},
+	"tabs": {
+		"stops-and-stations": "ປ້າຍ ແລະ ສະຖານີ",
+		"plan_trip": "ວາງແຜນການເດີນທາງ"
+	},
+	"search": {
+		"placeholder": "ຄົ້ນຫາປ້າຍ, ເສັ້ນທາງ, ແລະ ສະຖານທີ່",
+		"results_for": "ຜົນການຄົ້ນຫາສຳລັບ",
+		"clear_results": "ລຶບຜົນການຄົ້ນຫາ",
+		"search": "ຄົ້ນຫາ",
+		"click_here": "ກົດທີ່ນີ້",
+		"for_a_list_of_available_routes": "ເພື່ອເບິ່ງລາຍການເສັ້ນທາງທີ່ມີ",
+		"search_for_routes": "ຄົ້ນຫາເສັ້ນທາງ...",
+		"no_routes_found": "ບໍ່ພົບເສັ້ນທາງ",
+		"all_routes": "ທຸກເສັ້ນທາງ"
+	},
+	"header": {
+		"home": "ໜ້າຫຼັກ",
+		"about": "ກ່ຽວກັບ",
+		"contact": "ຕິດຕໍ່",
+		"fares_and_tolls": "ຄ່າໂດຍສານ ແລະ ຄ່າທຳນຽມ"
+	},
+	"navigation": {
+		"back_to_map": "ກັບໄປແຜນທີ່"
+	},
+	"status": {
+		"scheduled": "ຕາມກຳນົດ",
+		"early": "ໄວ",
+		"late": "ຊ້າ",
+		"on_time": "ຕົງເວລາ",
+		"min": "ນາທີ",
+		"arrives_on_time": "ມາຮອດຕົງເວລາ",
+		"scheduled_not_real_time": "ຕາມກຳນົດ/ບໍ່ແມ່ນເວລາຈິງ",
+		"canceled": "ຍົກເລີກແລ້ວ",
+		"canceled_arrival": "ການມາຮອດຖືກຍົກເລີກ",
+		"canceled_departure": "ການອອກເດີນທາງຖືກຍົກເລີກ",
+		"frequency_from": "ທຸກໆ {headway} ນາທີ ຈາກ {time}",
+		"frequency_until": "ທຸກໆ {headway} ນາທີ ຈົນຮອດ {time}",
+		"late_without_arrive_depart": "ຊ້າ {delay} ນາທີ",
+		"early_without_arrive_depart": "ໄວ {delay} ນາທີ",
+		"arrived_delayed": "ມາຮອດຊ້າ {delay} ນາທີ",
+		"arrived_early": "ມາຮອດໄວ {delay} ນາທີ",
+		"arrived_ontime": "ມາຮອດຕົງເວລາ",
+		"depart_delayed": "ອອກເດີນທາງຊ້າ {delay} ນາທີ",
+		"depart_early": "ອອກເດີນທາງໄວ {delay} ນາທີ",
+		"departed_ontime": "ອອກເດີນທາງຕົງເວລາ",
+		"scheduled_arrival": "ກຳນົດມາຮອດເວລາ",
+		"scheduled_departure": "ກຳນົດອອກເດີນທາງ"
+	},
+	"alert": {
+		"more_info": "ຂໍ້ມູນເພີ່ມເຕີມ",
+		"close": "ປິດ"
+	},
+	"arrivals_and_departures": "ການມາຮອດ ແລະ ການອອກເດີນທາງ",
+	"no_arrivals_or_departures_in_next_30_minutes": "ບໍ່ມີການມາຮອດ ຫຼື ການອອກເດີນທາງໃນ 30 ນາທີຕໍ່ໄປ",
+	"stop": "ປ້າຍ",
+	"routes": "ເສັ້ນທາງ",
+	"route": "ເສັ້ນທາງ",
+	"route_modal_title": "ເສັ້ນທາງ {name}",
+	"loading": "ກຳລັງໂຫລດ",
+	"arrives": "ມາຮອດ",
+	"NA": "ບໍ່ມີຂໍ້ມູນ",
+	"time": {
+		"ago": "ກ່ອນ",
+		"now": "ດຽວນີ້",
+		"sec": "ວິນາທີ",
+		"secs": "ວິນາທີ",
+		"min": "ນາທີ",
+		"mins": "ນາທີ",
+		"minutes": "ນາທີ"
+	},
+	"vehicle": {
+		"number": "ລົດເລກ #",
+		"data_updated": "ຂໍ້ມູນອັບເດດແລ້ວ",
+		"no_real_time_data": "ພວກເຮົາບໍ່ມີຂໍ້ມູນເວລາຈິງສຳລັບລົດຄັນນີ້ໃນຕອນນີ້.",
+		"next_stop": "ປ້າຍຕໍ່ໄປ:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "ການມາຮອດ ແລະ ການອອກເດີນທາງ"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "ເບິ່ງຕາຕະລາງ",
+		"no_am_schedules_available": "ບໍ່ມີຕາຕະລາງຕອນເຊົ້າ",
+		"no_pm_schedules_available": "ບໍ່ມີຕາຕະລາງຕອນແລງ",
+		"minutes": "ນາທີ",
+		"hour": "ຊົ່ວໂມງ",
+		"show_all_routes": "ສະແດງທຸກເສັ້ນທາງ",
+		"collapse_all_routes": "ຫຍໍ້ທຸກເສັ້ນທາງ",
+		"route_schedules": "ຕາຕະລາງເສັ້ນທາງ",
+		"no_schedules_available": "ບໍ່ມີຕາຕະລາງສຳລັບວັນທີ່ເລືອກ.",
+		"stop_id": "ລະຫັດປ້າຍ",
+		"direction": "ທິດທາງ"
+	},
+	"direction": {
+		"N": "ເໜືອ",
+		"NE": "ຕາເວັນອອກສຽງເໜືອ",
+		"E": "ຕາເວັນອອກ",
+		"SE": "ຕາເວັນອອກສຽງໃຕ້",
+		"S": "ໃຕ້",
+		"SW": "ຕາເວັນຕົກສຽງໃຕ້",
+		"W": "ຕາເວັນຕົກ",
+		"NW": "ຕາເວັນຕົກສຽງເໜືອ"
+	},
+	"service_alerts": {
+		"more_info": "ຂໍ້ມູນເພີ່ມເຕີມ",
+		"close": "ປິດ",
+		"service_alerts": "ການແຈ້ງເຕືອນການບໍລິການ",
+		"service_alert": "ການແຈ້ງເຕືອນການບໍລິການ",
+		"advice": "ຄຳແນະນຳ",
+		"no_summary": "ບໍ່ມີບົດສະຫຼຸບສຳລັບການແຈ້ງເຕືອນນີ້",
+		"no_description": "ບໍ່ມີລາຍລະອຽດສຳລັບການແຈ້ງເຕືອນນີ້",
+		"page": "ໜ້າ",
+		"show": "ສະແດງ",
+		"hide": "ເຊື່ອງ"
+	},
+	"view_stop_information": "ເບິ່ງຂໍ້ມູນປ້າຍ",
+	"stop_details": {
+		"view_details": "ເບິ່ງລາຍລະອຽດ"
+	}
+}

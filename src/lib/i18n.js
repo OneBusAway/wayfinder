@@ -15,6 +15,7 @@ import ukrainian from '../locales/uk.json';
 import vietnamese from '../locales/vi.json';
 import punjabi from '../locales/pa.json';
 import khmer from '../locales/km.json';
+import lao from '../locales/lo.json';
 
 addMessages('am', amharic);
 addMessages('ar', arabic);
@@ -22,6 +23,7 @@ addMessages('en', english);
 addMessages('es', spanish);
 addMessages('ko', korean);
 addMessages('km', khmer);
+addMessages('lo', lao);
 addMessages('pl', polish);
 addMessages('ru', russian);
 addMessages('so', somali);
