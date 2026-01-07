@@ -131,5 +131,9 @@
 		"page": "صفحة",
 		"show": "عرض",
 		"hide": "إخفاء"
+	},
+	"view_stop_information": "عرض معلومات المحطة",
+	"stop_details": {
+		"view_details": "عرض التفاصيل"
 	}
 }

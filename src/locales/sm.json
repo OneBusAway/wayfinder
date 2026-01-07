@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "Fuafua Lau Malaga",
+		"itinerary": "Lisi o le Malaga",
+		"duration": "Umi o le Taimi",
+		"start_time": "Taimi Amata",
+		"end_time": "Taimi Faʻaiʻu",
+		"minutes": "min",
+		"distance": "Mamao:",
+		"end": "Faʻaiʻu",
+		"start": "Amata",
+		"meters": "mita",
+		"no_itineraries_found": "E leai ni malaga na maua",
+		"loading": "O loʻo utaina",
+		"planning": "O loʻo fuafuaina",
+		"from": "Mai",
+		"to": "I",
+		"search_for_a_place": "Saili se nofoaga",
+		"trip_itineraries": "Lisi o Malaga"
+	},
+	"tabs": {
+		"stops-and-stations": "Nofoaga Taofi ma Fale Taʻavale",
+		"plan_trip": "Fuafua se Malaga"
+	},
+	"search": {
+		"placeholder": "Saili mo nofoaga taofi, auala, ma nofoaga",
+		"results_for": "Taunuʻuga o le sailiga mo",
+		"clear_results": "Tapeʻe taunuʻuga",
+		"search": "Saili",
+		"click_here": "Kiliki iinei",
+		"for_a_list_of_available_routes": "mo se lisi o auala o loʻo avanoa",
+		"search_for_routes": "Saili mo auala...",
+		"no_routes_found": "E leai ni auala na maua",
+		"all_routes": "Auala Uma"
+	},
+	"header": {
+		"home": "Aiga",
+		"about": "Faʻamatalaga",
+		"contact": "Fesoʻotaʻi",
+		"fares_and_tolls": "Pasese ma Totogi"
+	},
+	"navigation": {
+		"back_to_map": "Toe foi i le Faʻafanua"
+	},
+	"status": {
+		"scheduled": "fuataina",
+		"early": "vave",
+		"late": "tuai",
+		"on_time": "taimi saʻo",
+		"min": "min",
+		"arrives_on_time": "taunuʻu i le taimi saʻo",
+		"scheduled_not_real_time": "Fuataina/e le o le taimi moni",
+		"canceled": "Faʻaleaogaina",
+		"canceled_arrival": "Taunuʻuga faʻaleaogaina",
+		"canceled_departure": "Folau atu faʻaleaogaina",
+		"frequency_from": "I {headway} min mai le {time}",
+		"frequency_until": "I {headway} min seʻia oʻo i le {time}",
+		"late_without_arrive_depart": "{delay} min tuai",
+		"early_without_arrive_depart": "{delay} min vave",
+		"arrived_delayed": "Taunuʻu {delay} min tuai",
+		"arrived_early": "Taunuʻu {delay} min vave",
+		"arrived_ontime": "Taunuʻu i le taimi saʻo",
+		"depart_delayed": "Folau atu {delay} min tuai",
+		"depart_early": "Folau atu {delay} min vave",
+		"departed_ontime": "Folau atu i le taimi saʻo",
+		"scheduled_arrival": "Fuataina taunuʻu i le",
+		"scheduled_departure": "Fuataina folau atu"
+	},
+	"alert": {
+		"more_info": "Faʻamatalaga atili",
+		"close": "Tapuni"
+	},
+	"arrivals_and_departures": "Taunuʻuga ma alu atu",
+	"no_arrivals_or_departures_in_next_30_minutes": "E leai ni taunuʻuga poʻo ni alu atu i le 30 minute o loʻo sosoo",
+	"stop": "Nofoaga Taofi",
+	"routes": "Auala",
+	"route": "auala",
+	"route_modal_title": "Auala {name}",
+	"loading": "O loʻo utaina",
+	"arrives": "taunuʻu",
+	"NA": "Leai",
+	"time": {
+		"ago": "talu ai",
+		"now": "nei",
+		"sec": "sek",
+		"secs": "sek",
+		"min": "min",
+		"mins": "min",
+		"minutes": "minute"
+	},
+	"vehicle": {
+		"number": "Taʻavale #",
+		"data_updated": "Faʻamatalaga faʻafouina",
+		"no_real_time_data": "E leai ni faʻamatalaga taimi moni mo lenei taʻavale i le taimi nei.",
+		"next_stop": "Nofoaga taofi e sosoo ai:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "Taunuʻuga ma Alu Atu"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "Vaʻai Fuataga",
+		"no_am_schedules_available": "E leai ni fuataga o le taeao o loʻo avanoa",
+		"no_pm_schedules_available": "E leai ni fuataga o le afiafi o loʻo avanoa",
+		"minutes": "Minute",
+		"hour": "Itulā",
+		"show_all_routes": "Faʻaali Auala Uma",
+		"collapse_all_routes": "Faʻapuupuu Auala Uma",
+		"route_schedules": "Fuataga o Auala",
+		"no_schedules_available": "E leai ni fuataga o loʻo avanoa mo le aso na filifilia.",
+		"stop_id": "Numera o le Nofoaga Taofi",
+		"direction": "Itu"
+	},
+	"direction": {
+		"N": "Matu",
+		"NE": "Matu-Sasaʻe",
+		"E": "Sasaʻe",
+		"SE": "Saute-Sasaʻe",
+		"S": "Saute",
+		"SW": "Saute-Sisifo",
+		"W": "Sisifo",
+		"NW": "Matu-Sisifo"
+	},
+	"service_alerts": {
+		"more_info": "Faʻamatalaga atili",
+		"close": "Tapuni",
+		"service_alerts": "Lapataiga o Auaunaga",
+		"service_alert": "Lapataiga o le Auaunaga",
+		"advice": "Fautuaga",
+		"no_summary": "E leai se aotelega o loʻo avanoa mo lenei lapataiga",
+		"no_description": "E leai se faʻamatalaga auiliili o loʻo avanoa mo lenei lapataiga",
+		"page": "Itulau",
+		"show": "Faʻaali",
+		"hide": "Natia"
+	},
+	"view_stop_information": "Vaʻai Faʻamatalaga o le Nofoaga Taofi",
+	"stop_details": {
+		"view_details": "Vaʻai Faʻamatalaga"
+	}
+}

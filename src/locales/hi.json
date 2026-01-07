@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "अपनी यात्रा की योजना बनाएं",
+		"itinerary": "यात्रा कार्यक्रम",
+		"duration": "अवधि",
+		"start_time": "प्रारंभ समय",
+		"end_time": "समाप्ति समय",
+		"minutes": "मिनट",
+		"distance": "दूरी:",
+		"end": "समाप्त",
+		"start": "शुरू",
+		"meters": "मीटर",
+		"no_itineraries_found": "कोई यात्रा कार्यक्रम नहीं मिला",
+		"loading": "लोड हो रहा है",
+		"planning": "योजना बन रही है",
+		"from": "से",
+		"to": "तक",
+		"search_for_a_place": "स्थान खोजें",
+		"trip_itineraries": "यात्रा विकल्प"
+	},
+	"tabs": {
+		"stops-and-stations": "स्टॉप और स्टेशन",
+		"plan_trip": "यात्रा की योजना बनाएं"
+	},
+	"search": {
+		"placeholder": "स्टॉप, मार्ग और स्थान खोजें",
+		"results_for": "खोज परिणाम",
+		"clear_results": "परिणाम साफ़ करें",
+		"search": "खोजें",
+		"click_here": "यहां क्लिक करें",
+		"for_a_list_of_available_routes": "उपलब्ध मार्गों की सूची के लिए",
+		"search_for_routes": "मार्ग खोजें...",
+		"no_routes_found": "कोई मार्ग नहीं मिला",
+		"all_routes": "सभी मार्ग"
+	},
+	"header": {
+		"home": "होम",
+		"about": "परिचय",
+		"contact": "संपर्क",
+		"fares_and_tolls": "किराया और शुल्क"
+	},
+	"navigation": {
+		"back_to_map": "मानचित्र पर वापस जाएं"
+	},
+	"status": {
+		"scheduled": "निर्धारित",
+		"early": "जल्दी",
+		"late": "देरी से",
+		"on_time": "समय पर",
+		"min": "मिनट",
+		"arrives_on_time": "समय पर पहुंचेगा",
+		"scheduled_not_real_time": "निर्धारित/वास्तविक समय नहीं",
+		"canceled": "रद्द",
+		"canceled_arrival": "आगमन रद्द",
+		"canceled_departure": "प्रस्थान रद्द",
+		"frequency_from": "हर {headway} मिनट में {time} से",
+		"frequency_until": "हर {headway} मिनट में {time} तक",
+		"late_without_arrive_depart": "{delay} मिनट देरी से",
+		"early_without_arrive_depart": "{delay} मिनट जल्दी",
+		"arrived_delayed": "{delay} मिनट देरी से पहुंची",
+		"arrived_early": "{delay} मिनट जल्दी पहुंची",
+		"arrived_ontime": "समय पर पहुंची",
+		"depart_delayed": "{delay} मिनट देरी से रवाना हुई",
+		"depart_early": "{delay} मिनट जल्दी रवाना हुई",
+		"departed_ontime": "समय पर रवाना हुई",
+		"scheduled_arrival": "निर्धारित आगमन समय",
+		"scheduled_departure": "निर्धारित प्रस्थान"
+	},
+	"alert": {
+		"more_info": "अधिक जानकारी",
+		"close": "बंद करें"
+	},
+	"arrivals_and_departures": "आगमन और प्रस्थान",
+	"no_arrivals_or_departures_in_next_30_minutes": "अगले 30 मिनट में कोई आगमन या प्रस्थान नहीं",
+	"stop": "स्टॉप",
+	"routes": "मार्ग",
+	"route": "मार्ग",
+	"route_modal_title": "मार्ग {name}",
+	"loading": "लोड हो रहा है",
+	"arrives": "पहुंचेगा",
+	"NA": "उपलब्ध नहीं",
+	"time": {
+		"ago": "पहले",
+		"now": "अभी",
+		"sec": "सेकंड",
+		"secs": "सेकंड",
+		"min": "मिनट",
+		"mins": "मिनट",
+		"minutes": "मिनट"
+	},
+	"vehicle": {
+		"number": "वाहन #",
+		"data_updated": "डेटा अपडेट किया गया",
+		"no_real_time_data": "इस वाहन के लिए वास्तविक समय डेटा उपलब्ध नहीं है।",
+		"next_stop": "अगला स्टॉप:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "आगमन और प्रस्थान"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "समय सारणी देखें",
+		"no_am_schedules_available": "सुबह की समय सारणी उपलब्ध नहीं",
+		"no_pm_schedules_available": "दोपहर की समय सारणी उपलब्ध नहीं",
+		"minutes": "मिनट",
+		"hour": "घंटा",
+		"show_all_routes": "सभी मार्ग दिखाएं",
+		"collapse_all_routes": "सभी मार्ग छुपाएं",
+		"route_schedules": "मार्ग समय सारणी",
+		"no_schedules_available": "चयनित तिथि के लिए कोई समय सारणी उपलब्ध नहीं।",
+		"stop_id": "स्टॉप आईडी",
+		"direction": "दिशा"
+	},
+	"direction": {
+		"N": "उत्तर",
+		"NE": "उत्तर-पूर्व",
+		"E": "पूर्व",
+		"SE": "दक्षिण-पूर्व",
+		"S": "दक्षिण",
+		"SW": "दक्षिण-पश्चिम",
+		"W": "पश्चिम",
+		"NW": "उत्तर-पश्चिम"
+	},
+	"service_alerts": {
+		"more_info": "अधिक जानकारी",
+		"close": "बंद करें",
+		"service_alerts": "सेवा सूचनाएं",
+		"service_alert": "सेवा सूचना",
+		"advice": "सलाह",
+		"no_summary": "इस सूचना के लिए कोई सारांश उपलब्ध नहीं",
+		"no_description": "इस सूचना के लिए कोई विस्तृत विवरण उपलब्ध नहीं",
+		"page": "पृष्ठ",
+		"show": "दिखाएं",
+		"hide": "छुपाएं"
+	},
+	"view_stop_information": "स्टॉप जानकारी देखें",
+	"stop_details": {
+		"view_details": "विवरण देखें"
+	}
+}

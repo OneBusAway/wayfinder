@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "Planifye Vwayaj Ou",
+		"itinerary": "Itinerè",
+		"duration": "Dire",
+		"start_time": "Lè Kòmanse",
+		"end_time": "Lè Fini",
+		"minutes": "min",
+		"distance": "Distans:",
+		"end": "Fen",
+		"start": "Kòmanse",
+		"meters": "mèt",
+		"no_itineraries_found": "Pa jwenn okenn itinerè",
+		"loading": "Ap chaje",
+		"planning": "Ap planifye",
+		"from": "Soti",
+		"to": "Ale",
+		"search_for_a_place": "Chèche yon kote",
+		"trip_itineraries": "Itinerè Vwayaj"
+	},
+	"tabs": {
+		"stops-and-stations": "Estasyon ak Arè",
+		"plan_trip": "Planifye yon Vwayaj"
+	},
+	"search": {
+		"placeholder": "Chèche arè, wout, ak kote",
+		"results_for": "Rezilta rechèch pou",
+		"clear_results": "Efase rezilta",
+		"search": "Chèche",
+		"click_here": "Klike la",
+		"for_a_list_of_available_routes": "pou yon lis wout ki disponib",
+		"search_for_routes": "Chèche wout...",
+		"no_routes_found": "Pa jwenn okenn wout",
+		"all_routes": "Tout Wout"
+	},
+	"header": {
+		"home": "Akèy",
+		"about": "Konsènan",
+		"contact": "Kontak",
+		"fares_and_tolls": "Tarif ak Peyaj"
+	},
+	"navigation": {
+		"back_to_map": "Retounen nan Kat la"
+	},
+	"status": {
+		"scheduled": "pwograme",
+		"early": "bonè",
+		"late": "anreta",
+		"on_time": "alè",
+		"min": "min",
+		"arrives_on_time": "rive alè",
+		"scheduled_not_real_time": "Pwograme/pa an tan reyèl",
+		"canceled": "Anile",
+		"canceled_arrival": "Arive anile",
+		"canceled_departure": "Depa anile",
+		"frequency_from": "Chak {headway} min apati {time}",
+		"frequency_until": "Chak {headway} min jiska {time}",
+		"late_without_arrive_depart": "{delay} min anreta",
+		"early_without_arrive_depart": "{delay} min bonè",
+		"arrived_delayed": "Rive {delay} min anreta",
+		"arrived_early": "Rive {delay} min bonè",
+		"arrived_ontime": "Rive alè",
+		"depart_delayed": "Pati {delay} min anreta",
+		"depart_early": "Pati {delay} min bonè",
+		"departed_ontime": "Pati alè",
+		"scheduled_arrival": "Arive pwograme a",
+		"scheduled_departure": "Depa pwograme"
+	},
+	"alert": {
+		"more_info": "Plis enfòmasyon",
+		"close": "Fèmen"
+	},
+	"arrivals_and_departures": "Arive ak depa",
+	"no_arrivals_or_departures_in_next_30_minutes": "Pa gen arive oswa depa nan 30 minit kap vini yo",
+	"stop": "Arè",
+	"routes": "Wout",
+	"route": "wout",
+	"route_modal_title": "Wout {name}",
+	"loading": "Ap chaje",
+	"arrives": "rive",
+	"NA": "Pa disponib",
+	"time": {
+		"ago": "pase",
+		"now": "kounye a",
+		"sec": "sek",
+		"secs": "sek",
+		"min": "min",
+		"mins": "min",
+		"minutes": "minit"
+	},
+	"vehicle": {
+		"number": "Machin #",
+		"data_updated": "Done mete ajou",
+		"no_real_time_data": "Nou pa gen done an tan reyèl pou machin sa a kounye a.",
+		"next_stop": "Pwochen arè:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "Arive ak Depa"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "Gade Orè",
+		"no_am_schedules_available": "Pa gen orè maten disponib",
+		"no_pm_schedules_available": "Pa gen orè apremidi disponib",
+		"minutes": "Minit",
+		"hour": "Lè",
+		"show_all_routes": "Montre Tout Wout",
+		"collapse_all_routes": "Fèmen Tout Wout",
+		"route_schedules": "Orè Wout",
+		"no_schedules_available": "Pa gen orè disponib pou dat ou chwazi a.",
+		"stop_id": "ID Arè",
+		"direction": "Direksyon"
+	},
+	"direction": {
+		"N": "Nò",
+		"NE": "Nòdès",
+		"E": "Lès",
+		"SE": "Sidès",
+		"S": "Sid",
+		"SW": "Sidwès",
+		"W": "Lwès",
+		"NW": "Nòdwès"
+	},
+	"service_alerts": {
+		"more_info": "Plis enfòmasyon",
+		"close": "Fèmen",
+		"service_alerts": "Avètisman Sèvis",
+		"service_alert": "Avètisman Sèvis",
+		"advice": "Konsèy",
+		"no_summary": "Pa gen rezime disponib pou avètisman sa a",
+		"no_description": "Pa gen deskripsyon detaye disponib pou avètisman sa a",
+		"page": "Paj",
+		"show": "Montre",
+		"hide": "Kache"
+	},
+	"view_stop_information": "Gade Enfòmasyon Arè",
+	"stop_details": {
+		"view_details": "Gade Detay"
+	}
+}

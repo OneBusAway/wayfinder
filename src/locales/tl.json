@@ -132,5 +132,9 @@
 		"page": "Pahina",
 		"show": "Ipakita",
 		"hide": "Itago"
+	},
+	"view_stop_information": "Tingnan ang impormasyon ng hintuan",
+	"stop_details": {
+		"view_details": "Tingnan ang detalye"
 	}
 }

@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "برنامه‌ریزی سفر",
+		"itinerary": "مسیر سفر",
+		"duration": "مدت زمان",
+		"start_time": "زمان شروع",
+		"end_time": "زمان پایان",
+		"minutes": "دقیقه",
+		"distance": "مسافت:",
+		"end": "پایان",
+		"start": "شروع",
+		"meters": "متر",
+		"no_itineraries_found": "مسیری یافت نشد",
+		"loading": "در حال بارگذاری",
+		"planning": "در حال برنامه‌ریزی",
+		"from": "از",
+		"to": "به",
+		"search_for_a_place": "جستجوی مکان",
+		"trip_itineraries": "مسیرهای سفر"
+	},
+	"tabs": {
+		"stops-and-stations": "ایستگاه‌ها",
+		"plan_trip": "برنامه‌ریزی سفر"
+	},
+	"search": {
+		"placeholder": "جستجوی ایستگاه، خط و مکان",
+		"results_for": "نتایج جستجو برای",
+		"clear_results": "پاک کردن نتایج",
+		"search": "جستجو",
+		"click_here": "اینجا کلیک کنید",
+		"for_a_list_of_available_routes": "برای مشاهده لیست خطوط",
+		"search_for_routes": "جستجوی خطوط...",
+		"no_routes_found": "خطی یافت نشد",
+		"all_routes": "همه خطوط"
+	},
+	"header": {
+		"home": "خانه",
+		"about": "درباره ما",
+		"contact": "تماس با ما",
+		"fares_and_tolls": "کرایه و عوارض"
+	},
+	"navigation": {
+		"back_to_map": "بازگشت به نقشه"
+	},
+	"status": {
+		"scheduled": "برنامه‌ریزی شده",
+		"early": "زودتر",
+		"late": "با تأخیر",
+		"on_time": "به موقع",
+		"min": "دقیقه",
+		"arrives_on_time": "به موقع می‌رسد",
+		"scheduled_not_real_time": "برنامه‌ریزی شده/بدون اطلاعات لحظه‌ای",
+		"canceled": "لغو شده",
+		"canceled_arrival": "ورود لغو شده",
+		"canceled_departure": "حرکت لغو شده",
+		"frequency_from": "هر {headway} دقیقه از {time}",
+		"frequency_until": "هر {headway} دقیقه تا {time}",
+		"late_without_arrive_depart": "{delay} دقیقه تأخیر",
+		"early_without_arrive_depart": "{delay} دقیقه زودتر",
+		"arrived_delayed": "با {delay} دقیقه تأخیر رسید",
+		"arrived_early": "{delay} دقیقه زودتر رسید",
+		"arrived_ontime": "به موقع رسید",
+		"depart_delayed": "با {delay} دقیقه تأخیر حرکت کرد",
+		"depart_early": "{delay} دقیقه زودتر حرکت کرد",
+		"departed_ontime": "به موقع حرکت کرد",
+		"scheduled_arrival": "ورود برنامه‌ریزی شده",
+		"scheduled_departure": "حرکت برنامه‌ریزی شده"
+	},
+	"alert": {
+		"more_info": "اطلاعات بیشتر",
+		"close": "بستن"
+	},
+	"arrivals_and_departures": "ورود و خروج",
+	"no_arrivals_or_departures_in_next_30_minutes": "ورود یا خروجی در ۳۰ دقیقه آینده وجود ندارد",
+	"stop": "ایستگاه",
+	"routes": "خطوط",
+	"route": "خط",
+	"route_modal_title": "خط {name}",
+	"loading": "در حال بارگذاری",
+	"arrives": "می‌رسد",
+	"NA": "نامشخص",
+	"time": {
+		"ago": "پیش",
+		"now": "اکنون",
+		"sec": "ثانیه",
+		"secs": "ثانیه",
+		"min": "دقیقه",
+		"mins": "دقیقه",
+		"minutes": "دقیقه"
+	},
+	"vehicle": {
+		"number": "شماره وسیله نقلیه",
+		"data_updated": "آخرین به‌روزرسانی",
+		"no_real_time_data": "اطلاعات لحظه‌ای برای این وسیله نقلیه در دسترس نیست.",
+		"next_stop": "ایستگاه بعدی:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "ورود و خروج"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "مشاهده برنامه زمانی",
+		"no_am_schedules_available": "برنامه‌ای برای صبح موجود نیست",
+		"no_pm_schedules_available": "برنامه‌ای برای بعدازظهر موجود نیست",
+		"minutes": "دقیقه",
+		"hour": "ساعت",
+		"show_all_routes": "نمایش همه خطوط",
+		"collapse_all_routes": "جمع کردن همه خطوط",
+		"route_schedules": "برنامه زمانی خطوط",
+		"no_schedules_available": "برنامه‌ای برای تاریخ انتخاب شده موجود نیست.",
+		"stop_id": "شناسه ایستگاه",
+		"direction": "جهت"
+	},
+	"direction": {
+		"N": "شمال",
+		"NE": "شمال شرقی",
+		"E": "شرق",
+		"SE": "جنوب شرقی",
+		"S": "جنوب",
+		"SW": "جنوب غربی",
+		"W": "غرب",
+		"NW": "شمال غربی"
+	},
+	"service_alerts": {
+		"more_info": "اطلاعات بیشتر",
+		"close": "بستن",
+		"service_alerts": "اطلاعیه‌های خدمات",
+		"service_alert": "اطلاعیه خدمات",
+		"advice": "توصیه",
+		"no_summary": "خلاصه‌ای برای این اطلاعیه موجود نیست",
+		"no_description": "توضیحات تکمیلی برای این اطلاعیه موجود نیست",
+		"page": "صفحه",
+		"show": "نمایش",
+		"hide": "پنهان"
+	},
+	"view_stop_information": "مشاهده اطلاعات ایستگاه",
+	"stop_details": {
+		"view_details": "مشاهده جزئیات"
+	}
+}

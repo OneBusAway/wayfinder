@@ -131,5 +131,9 @@
 		"page": "ገፅ",
 		"show": "አሳይ",
 		"hide": "ደብቅ"
+	},
+	"view_stop_information": "የማቆሚያ መረጃ ይመልከቱ",
+	"stop_details": {
+		"view_details": "ዝርዝሮችን ይመልከቱ"
 	}
 }

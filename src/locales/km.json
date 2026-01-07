@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "រៀបចំការធ្វើដំណើររបស់អ្នក",
+		"itinerary": "កាលវិភាគធ្វើដំណើរ",
+		"duration": "រយៈពេល",
+		"start_time": "ម៉ោងចេញដំណើរ",
+		"end_time": "ម៉ោងដល់គោលដៅ",
+		"minutes": "នាទី",
+		"distance": "ចម្ងាយ៖",
+		"end": "ចុង",
+		"start": "ចាប់ផ្ដើម",
+		"meters": "ម៉ែត្រ",
+		"no_itineraries_found": "រកមិនឃើញកាលវិភាគធ្វើដំណើរទេ",
+		"loading": "កំពុងផ្ទុក",
+		"planning": "កំពុងរៀបចំ",
+		"from": "ពី",
+		"to": "ទៅ",
+		"search_for_a_place": "ស្វែងរកទីកន្លែង",
+		"trip_itineraries": "កាលវិភាគធ្វើដំណើរ"
+	},
+	"tabs": {
+		"stops-and-stations": "ចំណតនិងស្ថានីយ៍",
+		"plan_trip": "រៀបចំការធ្វើដំណើរ"
+	},
+	"search": {
+		"placeholder": "ស្វែងរកចំណត ផ្លូវ និងទីកន្លែង",
+		"results_for": "លទ្ធផលស្វែងរកសម្រាប់",
+		"clear_results": "សម្អាតលទ្ធផល",
+		"search": "ស្វែងរក",
+		"click_here": "ចុចទីនេះ",
+		"for_a_list_of_available_routes": "សម្រាប់បញ្ជីផ្លូវដែលមាន",
+		"search_for_routes": "ស្វែងរកផ្លូវ...",
+		"no_routes_found": "រកមិនឃើញផ្លូវទេ",
+		"all_routes": "ផ្លូវទាំងអស់"
+	},
+	"header": {
+		"home": "ទំព័រដើម",
+		"about": "អំពី",
+		"contact": "ទំនាក់ទំនង",
+		"fares_and_tolls": "តម្លៃសំបុត្រនិងថ្លៃសេវា"
+	},
+	"navigation": {
+		"back_to_map": "ត្រឡប់ទៅផែនទី"
+	},
+	"status": {
+		"scheduled": "កាលវិភាគ",
+		"early": "មុនម៉ោង",
+		"late": "យឺត",
+		"on_time": "ទាន់ម៉ោង",
+		"min": "នាទី",
+		"arrives_on_time": "មកដល់ទាន់ម៉ោង",
+		"scheduled_not_real_time": "កាលវិភាគ/មិនមែនពេលវេលាជាក់ស្តែង",
+		"canceled": "បានលុបចោល",
+		"canceled_arrival": "បានលុបចោលការមកដល់",
+		"canceled_departure": "បានលុបចោលការចេញដំណើរ",
+		"frequency_from": "រៀងរាល់ {headway} នាទី ចាប់ពី {time}",
+		"frequency_until": "រៀងរាល់ {headway} នាទី រហូតដល់ {time}",
+		"late_without_arrive_depart": "យឺត {delay} នាទី",
+		"early_without_arrive_depart": "មុន {delay} នាទី",
+		"arrived_delayed": "មកដល់យឺត {delay} នាទី",
+		"arrived_early": "មកដល់មុន {delay} នាទី",
+		"arrived_ontime": "មកដល់ទាន់ម៉ោង",
+		"depart_delayed": "ចេញដំណើរយឺត {delay} នាទី",
+		"depart_early": "ចេញដំណើរមុន {delay} នាទី",
+		"departed_ontime": "ចេញដំណើរទាន់ម៉ោង",
+		"scheduled_arrival": "គ្រោងមកដល់នៅម៉ោង",
+		"scheduled_departure": "គ្រោងចេញដំណើរ"
+	},
+	"alert": {
+		"more_info": "ព័ត៌មានបន្ថែម",
+		"close": "បិទ"
+	},
+	"arrivals_and_departures": "ការមកដល់និងចេញដំណើរ",
+	"no_arrivals_or_departures_in_next_30_minutes": "គ្មានការមកដល់ឬចេញដំណើរក្នុង ៣០ នាទីខាងមុខទេ",
+	"stop": "ចំណត",
+	"routes": "ផ្លូវ",
+	"route": "ផ្លូវ",
+	"route_modal_title": "ផ្លូវ {name}",
+	"loading": "កំពុងផ្ទុក",
+	"arrives": "មកដល់",
+	"NA": "មិនមាន",
+	"time": {
+		"ago": "មុន",
+		"now": "ឥឡូវ",
+		"sec": "វិនាទី",
+		"secs": "វិនាទី",
+		"min": "នាទី",
+		"mins": "នាទី",
+		"minutes": "នាទី"
+	},
+	"vehicle": {
+		"number": "រថយន្តលេខ",
+		"data_updated": "ទិន្នន័យបានធ្វើបច្ចុប្បន្នភាព",
+		"no_real_time_data": "យើងមិនមានទិន្នន័យពេលវេលាជាក់ស្តែងសម្រាប់រថយន្តនេះឥឡូវទេ។",
+		"next_stop": "ចំណតបន្ទាប់៖"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "ការមកដល់និងចេញដំណើរ"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "មើលកាលវិភាគ",
+		"no_am_schedules_available": "គ្មានកាលវិភាគពេលព្រឹកទេ",
+		"no_pm_schedules_available": "គ្មានកាលវិភាគពេលល្ងាចទេ",
+		"minutes": "នាទី",
+		"hour": "ម៉ោង",
+		"show_all_routes": "បង្ហាញផ្លូវទាំងអស់",
+		"collapse_all_routes": "បង្រួមផ្លូវទាំងអស់",
+		"route_schedules": "កាលវិភាគផ្លូវ",
+		"no_schedules_available": "គ្មានកាលវិភាគសម្រាប់កាលបរិច្ឆេទដែលបានជ្រើសរើសទេ។",
+		"stop_id": "លេខសម្គាល់ចំណត",
+		"direction": "ទិសដៅ"
+	},
+	"direction": {
+		"N": "ខាងជើង",
+		"NE": "ខាងឦសាន",
+		"E": "ខាងកើត",
+		"SE": "ខាងអាគ្នេយ៍",
+		"S": "ខាងត្បូង",
+		"SW": "ខាងនិរតី",
+		"W": "ខាងលិច",
+		"NW": "ខាងពាយ័ព្យ"
+	},
+	"service_alerts": {
+		"more_info": "ព័ត៌មានបន្ថែម",
+		"close": "បិទ",
+		"service_alerts": "ការជូនដំណឹងសេវាកម្ម",
+		"service_alert": "ការជូនដំណឹងសេវាកម្ម",
+		"advice": "ដំបូន្មាន",
+		"no_summary": "គ្មានសេចក្តីសង្ខេបសម្រាប់ការជូនដំណឹងនេះទេ",
+		"no_description": "គ្មានការពិពណ៌នាលម្អិតសម្រាប់ការជូនដំណឹងនេះទេ",
+		"page": "ទំព័រ",
+		"show": "បង្ហាញ",
+		"hide": "លាក់"
+	},
+	"view_stop_information": "មើលព័ត៌មានចំណត",
+	"stop_details": {
+		"view_details": "មើលព័ត៌មានលម្អិត"
+	}
+}

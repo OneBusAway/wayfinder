@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "Planeje Sua Viagem",
+		"itinerary": "Itinerário",
+		"duration": "Duração",
+		"start_time": "Horário de Partida",
+		"end_time": "Horário de Chegada",
+		"minutes": "min",
+		"distance": "Distância:",
+		"end": "Fim",
+		"start": "Início",
+		"meters": "metros",
+		"no_itineraries_found": "Nenhum itinerário encontrado",
+		"loading": "Carregando",
+		"planning": "Planejando",
+		"from": "De",
+		"to": "Para",
+		"search_for_a_place": "Buscar um local",
+		"trip_itineraries": "Itinerários de Viagem"
+	},
+	"tabs": {
+		"stops-and-stations": "Paradas e Estações",
+		"plan_trip": "Planejar uma Viagem"
+	},
+	"search": {
+		"placeholder": "Buscar paradas, linhas e locais",
+		"results_for": "Resultados da busca para",
+		"clear_results": "Limpar resultados",
+		"search": "Buscar",
+		"click_here": "Clique aqui",
+		"for_a_list_of_available_routes": "para ver a lista de linhas disponíveis",
+		"search_for_routes": "Buscar linhas...",
+		"no_routes_found": "Nenhuma linha encontrada",
+		"all_routes": "Todas as Linhas"
+	},
+	"header": {
+		"home": "Início",
+		"about": "Sobre",
+		"contact": "Contato",
+		"fares_and_tolls": "Tarifas e Pedágios"
+	},
+	"navigation": {
+		"back_to_map": "Voltar ao Mapa"
+	},
+	"status": {
+		"scheduled": "programado",
+		"early": "adiantado",
+		"late": "atrasado",
+		"on_time": "no horário",
+		"min": "min",
+		"arrives_on_time": "chega no horário",
+		"scheduled_not_real_time": "Programado/sem tempo real",
+		"canceled": "Cancelado",
+		"canceled_arrival": "Chegada cancelada",
+		"canceled_departure": "Partida cancelada",
+		"frequency_from": "A cada {headway} min a partir das {time}",
+		"frequency_until": "A cada {headway} min até as {time}",
+		"late_without_arrive_depart": "{delay} min atrasado",
+		"early_without_arrive_depart": "{delay} min adiantado",
+		"arrived_delayed": "Chegou com {delay} min de atraso",
+		"arrived_early": "Chegou {delay} min adiantado",
+		"arrived_ontime": "Chegou no horário",
+		"depart_delayed": "Partiu com {delay} min de atraso",
+		"depart_early": "Partiu {delay} min adiantado",
+		"departed_ontime": "Partiu no horário",
+		"scheduled_arrival": "Chegada prevista às",
+		"scheduled_departure": "Partida prevista"
+	},
+	"alert": {
+		"more_info": "Mais informações",
+		"close": "Fechar"
+	},
+	"arrivals_and_departures": "Chegadas e partidas",
+	"no_arrivals_or_departures_in_next_30_minutes": "Nenhuma chegada ou partida nos próximos 30 minutos",
+	"stop": "Parada",
+	"routes": "Linhas",
+	"route": "linha",
+	"route_modal_title": "Linha {name}",
+	"loading": "Carregando",
+	"arrives": "chega",
+	"NA": "N/D",
+	"time": {
+		"ago": "atrás",
+		"now": "agora",
+		"sec": "seg",
+		"secs": "segs",
+		"min": "min",
+		"mins": "mins",
+		"minutes": "minutos"
+	},
+	"vehicle": {
+		"number": "Veículo nº",
+		"data_updated": "Dados atualizados",
+		"no_real_time_data": "Não temos dados em tempo real para este veículo no momento.",
+		"next_stop": "Próxima parada:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "Chegadas e Partidas"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "Ver Horários",
+		"no_am_schedules_available": "Nenhum horário disponível pela manhã",
+		"no_pm_schedules_available": "Nenhum horário disponível à tarde",
+		"minutes": "Minutos",
+		"hour": "Hora",
+		"show_all_routes": "Mostrar Todas as Linhas",
+		"collapse_all_routes": "Recolher Todas as Linhas",
+		"route_schedules": "Horários das Linhas",
+		"no_schedules_available": "Nenhum horário disponível para a data selecionada.",
+		"stop_id": "ID da Parada",
+		"direction": "Direção"
+	},
+	"direction": {
+		"N": "Norte",
+		"NE": "Nordeste",
+		"E": "Leste",
+		"SE": "Sudeste",
+		"S": "Sul",
+		"SW": "Sudoeste",
+		"W": "Oeste",
+		"NW": "Noroeste"
+	},
+	"service_alerts": {
+		"more_info": "Mais informações",
+		"close": "Fechar",
+		"service_alerts": "Alertas de Serviço",
+		"service_alert": "Alerta de Serviço",
+		"advice": "Aviso",
+		"no_summary": "Nenhum resumo disponível para este alerta",
+		"no_description": "Nenhuma descrição detalhada disponível para este alerta",
+		"page": "Página",
+		"show": "Mostrar",
+		"hide": "Ocultar"
+	},
+	"view_stop_information": "Ver Informações da Parada",
+	"stop_details": {
+		"view_details": "Ver Detalhes"
+	}
+}
