@@ -20,6 +20,7 @@ import punjabi from '../locales/pa.json';
 import khmer from '../locales/km.json';
 import lao from '../locales/lo.json';
 import japanese from '../locales/ja.json';
+import oromo from '../locales/om.json';
 
 addMessages('am', amharic);
 addMessages('ar', arabic);
@@ -31,6 +32,7 @@ addMessages('ja', japanese);
 addMessages('ko', korean);
 addMessages('km', khmer);
 addMessages('lo', lao);
+addMessages('om', oromo);
 addMessages('pl', polish);
 addMessages('ru', russian);
 addMessages('so', somali);

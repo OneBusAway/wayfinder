@@ -1,0 +1,139 @@
+{
+	"trip-planner": {
+		"plan_your_trip": "Imala Kee Karoorfadhu",
+		"itinerary": "Karoorsa Imala",
+		"duration": "Turtii",
+		"start_time": "Yeroo Jalqabaa",
+		"end_time": "Yeroo Xumuraa",
+		"minutes": "daqiiqaa",
+		"distance": "Fageenya:",
+		"end": "Xumura",
+		"start": "Jalqaba",
+		"meters": "meetira",
+		"no_itineraries_found": "Karoorsi imala hin argamne",
+		"loading": "Fe'aa jira",
+		"planning": "Karoorsaa jira",
+		"from": "Irraa",
+		"to": "Gara",
+		"search_for_a_place": "Bakka barbaadi",
+		"trip_itineraries": "Karoorsawwan Imala"
+	},
+	"tabs": {
+		"stops-and-stations": "Dhaabbii fi Buufataalee",
+		"plan_trip": "Imala Karoorfadhu"
+	},
+	"search": {
+		"placeholder": "Dhaabbii, sarara fi bakkeewwan barbaadi",
+		"results_for": "Bu'aa barbaacha",
+		"clear_results": "Bu'aa haqi",
+		"search": "Barbaadi",
+		"click_here": "As cuqaasi",
+		"for_a_list_of_available_routes": "tarree sararawwan jiraniif",
+		"search_for_routes": "Sarara barbaadi...",
+		"no_routes_found": "Sarari hin argamne",
+		"all_routes": "Sarara Hunda"
+	},
+	"header": {
+		"home": "Mana",
+		"about": "Waa'ee",
+		"contact": "Qunnamtii",
+		"fares_and_tolls": "Gatii fi Kaffaltii"
+	},
+	"navigation": {
+		"back_to_map": "Gara Kaartaatti Deebi'i"
+	},
+	"status": {
+		"scheduled": "sagantaa'e",
+		"early": "dursee",
+		"late": "turee",
+		"on_time": "yeroo isaa",
+		"min": "daqiiqaa",
+		"arrives_on_time": "yeroo isaatti ga'a",
+		"scheduled_not_real_time": "Sagantaa'e/yeroo qabatamaa miti",
+		"canceled": "Haqame",
+		"canceled_arrival": "Dhufaatiin haqame",
+		"canceled_departure": "Ka'umsi haqame",
+		"frequency_from": "Daqiiqaa {headway} hundaan {time} irraa",
+		"frequency_until": "Daqiiqaa {headway} hundaan hanga {time}",
+		"late_without_arrive_depart": "Daqiiqaa {delay} turee",
+		"early_without_arrive_depart": "Daqiiqaa {delay} dursee",
+		"arrived_delayed": "Daqiiqaa {delay} turee ga'e",
+		"arrived_early": "Daqiiqaa {delay} dursee ga'e",
+		"arrived_ontime": "Yeroo isaatti ga'e",
+		"depart_delayed": "Daqiiqaa {delay} turee ka'e",
+		"depart_early": "Daqiiqaa {delay} dursee ka'e",
+		"departed_ontime": "Yeroo isaatti ka'e",
+		"scheduled_arrival": "Sagantaa ga'umsaa",
+		"scheduled_departure": "Sagantaa ka'umsaa"
+	},
+	"alert": {
+		"more_info": "Odeeffannoo dabalataa",
+		"close": "Cufi"
+	},
+	"arrivals_and_departures": "Dhufaatii fi ka'umsa",
+	"no_arrivals_or_departures_in_next_30_minutes": "Daqiiqaa 30 itti aanu keessatti dhufaatii ykn ka'umsi hin jiru",
+	"stop": "Dhaabbii",
+	"routes": "Sararawwan",
+	"route": "sarara",
+	"route_modal_title": "Sarara {name}",
+	"loading": "Fe'aa jira",
+	"arrives": "ni ga'a",
+	"NA": "Hin jiru",
+	"time": {
+		"ago": "dura",
+		"now": "amma",
+		"sec": "sek",
+		"secs": "sek",
+		"min": "daqiiqaa",
+		"mins": "daqiiqaa",
+		"minutes": "daqiiqaawwan"
+	},
+	"vehicle": {
+		"number": "Konkolaataa #",
+		"data_updated": "Odeeffannoon haaromfame",
+		"no_real_time_data": "Amma odeeffannoo yeroo qabatamaa konkolaataa kanaaf hin qabnu.",
+		"next_stop": "Dhaabbii itti aanu:"
+	},
+	"arrivals_and_departures_for_stop": {
+		"title": "Dhufaatii fi Ka'umsa"
+	},
+	"schedule_for_stop": {
+		"view_schedule": "Sagantaa Ilaali",
+		"no_am_schedules_available": "Sagantaan ganama hin jiru",
+		"no_pm_schedules_available": "Sagantaan galgala hin jiru",
+		"minutes": "Daqiiqaawwan",
+		"hour": "Sa'aatii",
+		"show_all_routes": "Sarara Hunda Agarsiisi",
+		"collapse_all_routes": "Sarara Hunda Dhoksi",
+		"route_schedules": "Sagantaa Sararaa",
+		"no_schedules_available": "Guyyaa filatameef sagantaan hin jiru.",
+		"stop_id": "Eenyummaa Dhaabbii",
+		"direction": "Kallattii"
+	},
+	"direction": {
+		"N": "Kaaba",
+		"NE": "Kaaba-Baha",
+		"E": "Baha",
+		"SE": "Kibba-Baha",
+		"S": "Kibba",
+		"SW": "Kibba-Dhiha",
+		"W": "Dhiha",
+		"NW": "Kaaba-Dhiha"
+	},
+	"service_alerts": {
+		"more_info": "Odeeffannoo dabalataa",
+		"close": "Cufi",
+		"service_alerts": "Beeksisa Tajaajilaa",
+		"service_alert": "Beeksisa Tajaajilaa",
+		"advice": "Gorsa",
+		"no_summary": "Beeksisa kanaaf cuunfaan hin jiru",
+		"no_description": "Beeksisa kanaaf ibsi bal'aan hin jiru",
+		"page": "Fuula",
+		"show": "Agarsiisi",
+		"hide": "Dhoksi"
+	},
+	"view_stop_information": "Odeeffannoo Dhaabbii Ilaali",
+	"stop_details": {
+		"view_details": "Bal'inaan Ilaali"
+	}
+}
