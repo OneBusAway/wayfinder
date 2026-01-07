@@ -132,5 +132,8 @@
 		"show": "Show",
 		"hide": "Hide"
 	},
-	"view_stop_information": "View Stop Information"
+	"view_stop_information": "View Stop Information",
+	"stop_details": {
+		"view_details": "View Details"
+	}
 }
