@@ -16,7 +16,9 @@
 		"from": "出発地",
 		"to": "目的地",
 		"search_for_a_place": "場所を検索",
-		"trip_itineraries": "旅程一覧"
+		"trip_itineraries": "旅程一覧",
+		"show_steps": "手順を表示",
+		"hide_steps": "手順を非表示"
 	},
 	"tabs": {
 		"stops-and-stations": "停留所と駅",

@@ -16,7 +16,9 @@
 		"from": "Soti",
 		"to": "Ale",
 		"search_for_a_place": "Chèche yon kote",
-		"trip_itineraries": "Itinerè Vwayaj"
+		"trip_itineraries": "Itinerè Vwayaj",
+		"show_steps": "Montre etap yo",
+		"hide_steps": "Kache etap yo"
 	},
 	"tabs": {
 		"stops-and-stations": "Estasyon ak Arè",

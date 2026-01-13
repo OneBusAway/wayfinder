@@ -16,7 +16,9 @@
 		"from": "ពី",
 		"to": "ទៅ",
 		"search_for_a_place": "ស្វែងរកទីកន្លែង",
-		"trip_itineraries": "កាលវិភាគធ្វើដំណើរ"
+		"trip_itineraries": "កាលវិភាគធ្វើដំណើរ",
+		"show_steps": "បង្ហាញជំហាន",
+		"hide_steps": "លាក់ជំហាន"
 	},
 	"tabs": {
 		"stops-and-stations": "ចំណតនិងស្ថានីយ៍",

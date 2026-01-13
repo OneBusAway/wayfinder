@@ -189,12 +189,12 @@
 
 	<button
 		onclick={planTrip}
-		class="mt-4 flex w-full items-center justify-center rounded-md bg-brand py-2 text-white shadow-md transition-colors hover:bg-brand-accent disabled:cursor-not-allowed disabled:bg-gray-300 dark:bg-green-800 dark:hover:bg-green-900 disabled:dark:bg-gray-700/50 disabled:dark:text-gray-400"
+		class="mt-4 flex w-full items-center justify-center rounded-md bg-brand py-2 text-brand-foreground shadow-md transition-colors hover:bg-brand-accent disabled:cursor-not-allowed disabled:bg-gray-300 dark:bg-green-800 dark:hover:bg-green-900 disabled:dark:bg-gray-700/50 disabled:dark:text-gray-400"
 		disabled={!selectedFrom || !selectedTo}
 	>
 		{#if loading}
 			<svg
-				class="mr-2 h-5 w-5 animate-spin text-white disabled:dark:text-gray-400"
+				class="mr-2 h-5 w-5 animate-spin text-brand-foreground disabled:dark:text-gray-400"
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
 				viewBox="0 0 24 24"

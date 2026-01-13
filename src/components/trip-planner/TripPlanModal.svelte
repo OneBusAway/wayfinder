@@ -88,21 +88,41 @@
 	{/if}
 
 	{#if itineraries.length > 0}
-		<div class="tab-container">
-			<!-- eslint-disable no-unused-vars -->
-			{#each itineraries as _, index}
-				<ItineraryTab {index} {activeTab} {setActiveTab} />
+		<div class="itinerary-tabs">
+			{#each itineraries as itinerary, index}
+				<ItineraryTab {index} {activeTab} {setActiveTab} {itinerary} />
 			{/each}
 		</div>
 
-		<div class="p-4">
+		<div class="py-4">
 			{#if itineraries[activeTab]}
-				<ItineraryDetails itinerary={itineraries[activeTab]} {expandedSteps} {toggleSteps} />
+				{#key activeTab}
+					<div class="animate-fade-in">
+						<ItineraryDetails itinerary={itineraries[activeTab]} {expandedSteps} {toggleSteps} />
+					</div>
+				{/key}
 			{/if}
 		</div>
-	{:else}
-		<div class="flex h-full items-center justify-center text-gray-400 dark:text-gray-500">
+	{:else if !loading}
+		<div class="flex h-full items-center justify-center py-12 text-gray-400 dark:text-gray-500">
 			{$t('trip-planner.no_itineraries_found')}
 		</div>
 	{/if}
 </ModalPane>
+
+<style>
+	.animate-fade-in {
+		animation: fadeIn 0.2s ease-out;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+</style>

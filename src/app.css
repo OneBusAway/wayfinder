@@ -31,6 +31,35 @@
 		@apply border-b-2 border-brand-accent text-brand-accent;
 	}
 
+	/* Pill-style itinerary tabs */
+	.itinerary-tabs {
+		@apply flex gap-2 overflow-x-auto px-1 py-3;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	.itinerary-tabs::-webkit-scrollbar {
+		display: none;
+	}
+
+	.itinerary-tab {
+		@apply flex flex-shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full px-4 py-2;
+		@apply bg-gray-100 text-sm font-medium text-gray-700;
+		@apply transition-all duration-200 ease-out;
+		@apply hover:bg-gray-200;
+		@apply dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700;
+	}
+
+	.itinerary-tab:active {
+		@apply scale-95;
+	}
+
+	.itinerary-tab--active {
+		@apply bg-brand text-brand-foreground shadow-md;
+		@apply hover:bg-brand;
+		@apply dark:bg-brand dark:text-brand-foreground dark:hover:bg-brand;
+	}
+
 	.button {
 		@apply rounded-md bg-surface px-3 py-2 text-sm font-semibold text-surface-foreground shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
 	}

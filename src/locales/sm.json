@@ -16,7 +16,9 @@
 		"from": "Mai",
 		"to": "I",
 		"search_for_a_place": "Saili se nofoaga",
-		"trip_itineraries": "Lisi o Malaga"
+		"trip_itineraries": "Lisi o Malaga",
+		"show_steps": "Faʻaali laasaga",
+		"hide_steps": "Natia laasaga"
 	},
 	"tabs": {
 		"stops-and-stations": "Nofoaga Taofi ma Fale Taʻavale",

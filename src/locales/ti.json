@@ -16,7 +16,9 @@
 		"from": "ካብ",
 		"to": "ናብ",
 		"search_for_a_place": "ቦታ ድለ",
-		"trip_itineraries": "መስመራት መገሻ"
+		"trip_itineraries": "መስመራት መገሻ",
+		"show_steps": "ስጉምትታት ኣርኢ",
+		"hide_steps": "ስጉምትታት ሕባእ"
 	},
 	"tabs": {
 		"stops-and-stations": "መዕረፊታትን መደበራትን",

@@ -16,7 +16,9 @@
 		"from": "از",
 		"to": "به",
 		"search_for_a_place": "جستجوی مکان",
-		"trip_itineraries": "مسیرهای سفر"
+		"trip_itineraries": "مسیرهای سفر",
+		"show_steps": "نمایش مراحل",
+		"hide_steps": "پنهان کردن مراحل"
 	},
 	"tabs": {
 		"stops-and-stations": "ایستگاه‌ها",

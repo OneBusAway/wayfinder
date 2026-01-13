@@ -16,7 +16,9 @@
 		"from": "Từ",
 		"to": "Đến",
 		"search_for_a_place": "Tìm kiếm địa điểm",
-		"trip_itineraries": "Lịch trình chuyến đi"
+		"trip_itineraries": "Lịch trình chuyến đi",
+		"show_steps": "Hiện các bước",
+		"hide_steps": "Ẩn các bước"
 	},
 	"tabs": {
 		"stops-and-stations": "Trạm dừng và nhà ga",

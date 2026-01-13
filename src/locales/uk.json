@@ -16,7 +16,9 @@
 		"from": "Звідки",
 		"to": "Куди",
 		"search_for_a_place": "Пошук місця",
-		"trip_itineraries": "Варіанти маршруту"
+		"trip_itineraries": "Варіанти маршруту",
+		"show_steps": "Показати кроки",
+		"hide_steps": "Сховати кроки"
 	},
 	"tabs": {
 		"stops-and-stations": "Зупинки та станції",

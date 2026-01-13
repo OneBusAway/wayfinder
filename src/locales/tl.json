@@ -16,7 +16,9 @@
 		"from": "Mula sa",
 		"to": "Patungo sa",
 		"search_for_a_place": "Maghanap ng lugar",
-		"trip_itineraries": "Mga itineraryo ng biyahe"
+		"trip_itineraries": "Mga itineraryo ng biyahe",
+		"show_steps": "Ipakita ang mga hakbang",
+		"hide_steps": "Itago ang mga hakbang"
 	},
 	"tabs": {
 		"stops-and-stations": "Mga hintuan at estasyon",

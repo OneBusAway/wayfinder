@@ -16,7 +16,9 @@
 		"from": "De",
 		"to": "Para",
 		"search_for_a_place": "Buscar um local",
-		"trip_itineraries": "Itinerários de Viagem"
+		"trip_itineraries": "Itinerários de Viagem",
+		"show_steps": "Mostrar passos",
+		"hide_steps": "Ocultar passos"
 	},
 	"tabs": {
 		"stops-and-stations": "Paradas e Estações",
