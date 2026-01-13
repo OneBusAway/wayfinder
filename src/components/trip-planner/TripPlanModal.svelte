@@ -54,6 +54,10 @@
 			currPolylines = [];
 		}
 
+		if (!itineraries?.length || !itineraries[activeTab]?.legs) {
+			return;
+		}
+
 		itineraries[activeTab].legs.forEach((leg) => {
 			const shape = leg.legGeometry.points;
 			const polyline = mapProvider.createPolyline(shape, polylineStyle, true);
@@ -62,7 +66,9 @@
 	}
 
 	onMount(() => {
-		drawRoute();
+		if (itineraries?.length > 0) {
+			drawRoute();
+		}
 	});
 	onDestroy(() => {
 		mapProvider.removePinMarker(fromMarker);
