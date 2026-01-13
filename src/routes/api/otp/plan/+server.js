@@ -1,4 +1,5 @@
 import { error, json } from '@sveltejs/kit';
+import { PUBLIC_OTP_SERVER_URL } from '$env/static/public';
 
 export async function GET({ url }) {
 	const fromPlace = url.searchParams.get('fromPlace');
@@ -8,15 +9,49 @@ export async function GET({ url }) {
 		throw error(400, 'Missing required parameters: fromPlace and toPlace');
 	}
 
+	if (!PUBLIC_OTP_SERVER_URL) {
+		throw error(503, 'Trip planning is not configured for this region');
+	}
+
+	// Get optional parameters with defaults
+	const now = new Date();
+	// Format time as h:mm AM/PM (e.g., "9:10 PM")
+	const defaultTime = now.toLocaleTimeString('en-US', {
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: true
+	});
+	// Format date as MM-DD-YYYY (e.g., "01-12-2026")
+	const defaultDate = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${now.getFullYear()}`;
+	const time = url.searchParams.get('time') || defaultTime;
+	const date = url.searchParams.get('date') || defaultDate;
+	const mode = url.searchParams.get('mode') || 'TRANSIT,WALK';
+	const arriveBy = url.searchParams.get('arriveBy') || 'false';
+	const maxWalkDistance = url.searchParams.get('maxWalkDistance') || '4828'; // ~3 miles in meters
+	const wheelchair = url.searchParams.get('wheelchair') || 'false';
+	const showIntermediateStops = url.searchParams.get('showIntermediateStops') || 'true';
+
+	const params = new URLSearchParams({
+		fromPlace,
+		toPlace,
+		time,
+		date,
+		mode,
+		arriveBy,
+		maxWalkDistance,
+		wheelchair,
+		showIntermediateStops
+	});
+
+	const otpUrl = `${PUBLIC_OTP_SERVER_URL}/routers/default/plan?${params}`;
+	console.log('OTP Request URL:', otpUrl);
+
 	try {
-		const response = await fetch(
-			`https://otp.prod.sound.obaweb.org/otp/routers/default/plan?fromPlace=${encodeURIComponent(fromPlace)}&toPlace=${encodeURIComponent(toPlace)}`,
-			{
-				headers: {
-					Accept: 'application/json'
-				}
+		const response = await fetch(otpUrl, {
+			headers: {
+				Accept: 'application/json'
 			}
-		);
+		});
 
 		if (!response.ok) {
 			throw error(response.status, `OpenTripPlanner API returned status ${response.status}`);

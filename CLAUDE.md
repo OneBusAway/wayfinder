@@ -9,153 +9,112 @@ Wayfinder is the next-generation OneBusAway web application built with SvelteKit
 ## Development Commands
 
 ```bash
-# Install dependencies
-npm install
+npm install              # Install dependencies
+cp .env.example .env     # Copy environment configuration (edit with your values)
+npm run dev              # Start development server
+npm run build            # Build for production
+npm run preview          # Preview production build
 
-# Copy environment configuration
-cp .env.example .env
+# Testing
+npm run test             # Run tests once
+npm run test:watch       # Run tests in watch mode
+npm run test:coverage    # Run tests with coverage report
+npm run test:ui          # Run tests with Vitest UI
+npm run test:components  # Run only component tests (src/components)
 
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-
-# Run tests
-npm run test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Lint code
-npm run lint
-
-# Format code
-npm run format
-
-# Pre-push checks (format, lint, test)
-npm run prepush
+# Code quality
+npm run lint             # Check formatting and linting
+npm run format           # Format code with Prettier
+npm run prepush          # Full check: format, lint, and test
 ```
+
+## Path Aliases
+
+Configured in `svelte.config.js` for cleaner imports:
+
+- `$components` → `./src/components`
+- `$lib` → `./src/lib`
+- `$stores` → `./src/stores`
+- `$config` → `./src/config`
+- `$images` → `./src/assets/images`
+- `$src` → `./src`
 
 ## Architecture
 
-### Svelte 5 Usage
+### Svelte 5 Runes
 
-This project uses Svelte 5 with the new runes API (`$state`, `$derived`, `$effect`, `$props`) and snippets system. Components use the modern Svelte 5 syntax throughout.
+This project uses Svelte 5 with runes (`$state`, `$derived`, `$effect`, `$props`) and snippets. All components use modern Svelte 5 syntax.
 
 ### Key Directories
 
-- `src/components/` - All Svelte components organized by feature
-- `src/lib/` - Reusable utilities and services
-- `src/stores/` - Svelte stores for global state management
+- `src/components/` - Svelte components organized by feature
+- `src/lib/` - Utilities and services
+- `src/stores/` - Svelte stores for global state (mapStore, modalOpen, userLocationStore, surveyStore)
 - `src/routes/` - SvelteKit routes (pages and API endpoints)
+- `src/routes/api/` - Server-side API proxies to OBA and OTP servers
 - `src/config/` - Configuration files
-- `src/locales/` - Internationalization files
+- `src/locales/` - i18n JSON files (en is fallback, others lazy-loaded)
 
-### Component Organization
+### Page Routes
 
-- `components/navigation/` - Header, modals, menus
-- `components/map/` - Map-related components (MapView, markers, popups)
-- `components/stops/` - Stop information and scheduling
-- `components/routes/` - Route information and modals
-- `components/search/` - Search functionality
-- `components/trip-planner/` - Trip planning interface
-- `components/surveys/` - User survey system
-- `components/service-alerts/` - Alert notifications
+- `/` - Main map view with search and modals
+- `/stops/[stopID]` - Standalone stop page
+- `/stops/[stopID]/schedule` - Stop schedule page
+
+### API Layer
+
+Server-side API routes in `src/routes/api/` proxy requests to external services:
+
+- `api/oba/*` - OneBusAway REST API (stops, routes, arrivals, trips, alerts)
+- `api/otp/plan` - OpenTripPlanner for trip planning
+- `api/regions` - Region configuration
+
+The OBA SDK is configured in `src/lib/obaSdk.js` with `handleOBAResponse()` for standardized error handling.
+
+### Map Provider Abstraction
+
+Both map providers (`src/lib/Provider/`) implement the same interface:
+
+- `GoogleMapProvider.svelte.js` - Google Maps implementation
+- `OpenStreetMapProvider.svelte.js` - Leaflet/OSM implementation
+
+Key methods: `initMap()`, `addMarker()`, `addVehicleMarker()`, `createPolyline()`, `panTo()`, `flyTo()`, `getBoundingBox()`
+
+Configured via `PUBLIC_OBA_MAP_PROVIDER` env var ("osm" or "google").
 
 ### State Management
 
-- Uses Svelte 5 runes (`$state`, `$derived`) for local component state
-- Svelte stores for global state (map loading, modal state, user location, surveys)
-- Modal state managed through a centralized modal system
+- Component state: Svelte 5 runes (`$state`, `$derived`)
+- Global state: Svelte stores in `src/stores/`
+- Modal state: Centralized via `modalOpen` store
 
-### API Integration
+### Internationalization
 
-- OneBusAway SDK integration via `src/lib/obaSdk.js`
-- API routes in `src/routes/api/` proxy requests to OBA servers
-- OpenTripPlanner integration for trip planning
-- Google Maps/Places API integration for geocoding
-
-### Map Providers
-
-- Supports both OpenStreetMap (via Leaflet) and Google Maps
-- Map provider abstraction in `src/lib/Provider/`
-- Configurable via `PUBLIC_OBA_MAP_PROVIDER` environment variable
-
-### Key Features
-
-- Real-time arrivals and departures
-- Interactive maps with stop and vehicle markers
-- Route visualization with polylines
-- Trip planning with multiple itineraries
-- Multi-language support (i18n)
-- Responsive design with mobile menu
-- Analytics integration (Plausible)
-- User surveys and feedback collection
-- Service alerts and notifications
-
-## Environment Configuration
-
-Required environment variables (see `.env.example`):
-
-- `PRIVATE_OBA_API_KEY` - OneBusAway API key
-- `PUBLIC_OBA_SERVER_URL` - OBA server URL
-- `PUBLIC_OBA_REGION_*` - Region configuration
-- `PUBLIC_OBA_MAP_PROVIDER` - Map provider ("osm" or "google")
+Configured in `src/lib/i18n.js`. English loaded synchronously as fallback; 24 other locales lazy-loaded. RTL support via `isRTL()` helper.
 
 ## Testing
 
-- Tests use Vitest with jsdom environment
-- Test files located in `src/tests/`
-- Coverage reporting available via `npm run test:coverage`
-- Tests cover utilities, formatters, and SDK integration
+- Framework: Vitest with jsdom environment
+- Test files: `src/tests/` and `src/lib/__tests__/`
+- Setup file: `vitest-setup.js` (mocks for env vars, i18n, SvelteKit stores, browser APIs)
+- Coverage threshold: 70% for branches, functions, lines, statements
+
+When writing tests, the setup file already mocks `$env/static/public`, `$env/static/private`, `svelte-i18n`, `$app/stores`, and common browser APIs (ResizeObserver, IntersectionObserver, geolocation, localStorage, matchMedia).
 
 ## Styling
 
-- Uses Tailwind CSS for styling
-- Flowbite components for UI elements
-- FontAwesome icons via Svelte FontAwesome
-- CSS custom properties for theming
-- Dark mode support
+- Tailwind CSS with Flowbite components
+- FontAwesome icons via `@fortawesome/svelte-fontawesome`
+- Brand colors configurable via `COLOR_*` env vars (processed at build time)
+- Dark mode support via theme system
 
-## Build Configuration
+## Environment Variables
 
-- Uses SvelteKit with Node.js adapter
-- Vite for bundling and development
-- Path aliases configured for imports (`$components`, `$lib`, etc.)
-- PostCSS for CSS processing
-- Prettier and ESLint for code formatting and linting
+See `.env.example` for full list. Key variables:
 
-## Key Libraries
-
-- `svelte` (v5) - UI framework with runes
-- `@sveltejs/kit` - Full-stack framework
-- `onebusaway-sdk` - OneBusAway API client
-- `leaflet` - Map rendering (OpenStreetMap)
-- `@googlemaps/js-api-loader` - Google Maps integration
-- `svelte-i18n` - Internationalization
-- `flowbite-svelte` - UI components
-- `tailwindcss` - CSS framework
-
-## Working with Components
-
-When creating new components:
-
-- Use Svelte 5 runes syntax (`$state`, `$props`, `$derived`)
-- Follow the existing component structure and naming conventions
-- Use TypeScript JSDoc comments for prop types
-- Implement proper cleanup in `$effect` when needed
-- Use snippets for reusable markup patterns
-- Follow the established CSS classes and Tailwind patterns
-
-## Common Patterns
-
-- Modal management through centralized state
-- Event handling with custom events for cross-component communication
-- Map provider abstraction for supporting multiple mapping services
-- API error handling with standardized error responses
-- Internationalization using `svelte-i18n` with JSON locale files
-- Analytics tracking for user interactions
+- `PRIVATE_OBA_API_KEY` - OneBusAway API key
+- `PUBLIC_OBA_SERVER_URL` - OBA server URL
+- `PUBLIC_OBA_REGION_CENTER_LAT/LNG` - Region center coordinates
+- `PUBLIC_OBA_MAP_PROVIDER` - "osm" or "google"
+- `PUBLIC_OTP_SERVER_URL` - OpenTripPlanner server (optional, for trip planning)
+- `PRIVATE_OBA_GEOCODER_PROVIDER` - Geocoding provider (currently "google" only)
