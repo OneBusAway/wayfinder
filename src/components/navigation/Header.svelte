@@ -10,6 +10,23 @@
 
 	const showRegionName = __SHOW_REGION_NAME_IN_NAV_BAR__;
 
+	let isDarkMode = $state(false);
+
+	$effect(() => {
+		isDarkMode = document.documentElement.classList.contains('dark');
+
+		const handleThemeChange = (e) => {
+			isDarkMode = e.detail.darkMode;
+		};
+		window.addEventListener('themeChange', handleThemeChange);
+
+		return () => window.removeEventListener('themeChange', handleThemeChange);
+	});
+
+	let logoUrl = $derived(
+		isDarkMode && __OBA_LOGO_URL_DARK__ ? __OBA_LOGO_URL_DARK__ : PUBLIC_OBA_LOGO_URL
+	);
+
 	let isMobileMenuOpen = $state(false);
 	let shouldShowMobile = $state(false);
 	let navContainer;
@@ -105,7 +122,7 @@
 	<div class="logo-container flex items-center gap-4 px-2 py-2">
 		<div class="flex items-center justify-center gap-x-2">
 			<a href="/" class="block">
-				<img src={PUBLIC_OBA_LOGO_URL} alt={PUBLIC_OBA_REGION_NAME} class="h-10 rounded-sm" />
+				<img src={logoUrl} alt={PUBLIC_OBA_REGION_NAME} class="h-10 rounded-sm" />
 			</a>
 			{#if showRegionName}
 				<a href="/" class="block text-xl font-extrabold text-brand-foreground">

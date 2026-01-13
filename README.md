@@ -27,6 +27,7 @@ See `.env.example` for an example of the required keys and values.
 
 - `PUBLIC_OBA_REGION_NAME` - string: (required) displayed in the header.
 - `PUBLIC_OBA_LOGO_URL` - string: (required) The URL of your transit agency's logo.
+- `OBA_LOGO_URL_DARK` - string: (optional) The URL of your transit agency's logo for dark mode. Falls back to `PUBLIC_OBA_LOGO_URL` if not specified.
 - `SHOW_REGION_NAME_IN_NAV_BAR` - boolean: (optional) Set to "false" to hide the region name text in the navigation bar. Defaults to true.
 - `FAVICON_URL` - string: (optional) URL to a custom favicon. Falls back to the default favicon if not specified.
 - `PUBLIC_NAV_BAR_LINKS` - JSON string: (required) A dictionary of the links displayed across the navigation bar.
