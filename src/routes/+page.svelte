@@ -263,7 +263,7 @@
 	<p>Loading...</p>
 {:else}
 	<div class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 z-40">
-		<div class="mx-4 mt-4 flex h-full flex-col md:w-96">
+		<div class="mx-2 mt-2 flex h-full flex-col md:mx-4 md:mt-4 md:w-96">
 			<SearchPane
 				{mapProvider}
 				cssClasses="pointer-events-auto"
@@ -278,7 +278,7 @@
 				{/snippet}
 			</SearchPane>
 
-			<div class="mt-4 flex-1">
+			<div class="mt-2 flex-1 md:mt-4">
 				{#if currentModal === Modal.STOP}
 					<StopModal {closePane} {tripSelected} {handleUpdateRouteMap} {stop} />
 				{:else if currentModal === Modal.ROUTE}

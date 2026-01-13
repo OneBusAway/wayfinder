@@ -193,7 +193,7 @@
 	class="relative z-[9999] flex items-center justify-between border-b border-gray-500 bg-brand/80 text-brand-foreground backdrop-blur-md dark:bg-surface-dark dark:text-surface-foreground-dark md:flex-row md:px-8"
 	bind:this={navContainer}
 >
-	<div class="logo-container flex items-center gap-4 px-2 py-2">
+	<div class="logo-container flex items-center gap-2 px-1 py-1 md:gap-4 md:px-2 md:py-2">
 		<div class="flex items-center justify-center gap-x-2">
 			<a href="/" class="block">
 				<img
@@ -214,7 +214,7 @@
 
 	<div class="flex-1"></div>
 
-	<div class="flex items-center gap-x-4 px-2 py-2">
+	<div class="flex items-center gap-x-2 px-1 py-1 md:gap-x-4 md:px-2 md:py-2">
 		{#each visibleLinks as { key, value }}
 			<div class="flex-shrink-0 rounded-md border bg-surface/80 dark:bg-surface-dark">
 				<a

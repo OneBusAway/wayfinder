@@ -16,7 +16,8 @@
 	}
 
 	.modal-pane {
-		@apply rounded-lg border-gray-500 bg-surface/90 px-4 shadow-lg dark:bg-surface-dark dark:text-surface-foreground-dark dark:shadow-lg dark:shadow-gray-200/10;
+		@apply rounded-lg border-gray-500 bg-surface/90 px-3 shadow-lg dark:bg-surface-dark dark:text-surface-foreground-dark dark:shadow-lg dark:shadow-gray-200/10;
+		@apply md:px-4;
 	}
 
 	.tab-container {

@@ -90,13 +90,7 @@ describe('ModalPane', () => {
 		});
 
 		const modalPane = container.querySelector('.modal-pane');
-		expect(modalPane).toHaveClass(
-			'modal-pane',
-			'pointer-events-auto',
-			'h-full',
-			'rounded-b-none',
-			'px-4'
-		);
+		expect(modalPane).toHaveClass('modal-pane', 'pointer-events-auto', 'h-full', 'rounded-b-none');
 	});
 
 	test('applies correct classes to close button', () => {
