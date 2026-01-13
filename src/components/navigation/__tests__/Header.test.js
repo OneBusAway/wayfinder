@@ -17,9 +17,9 @@ vi.mock('$lib/ThemeSwitch/ThemeSwitcher.svelte', () => ({
 	default: () => '<div data-testid="theme-switcher">Theme Switcher</div>'
 }));
 
-// Mock MobileMenu component
-vi.mock('../MobileMenu.svelte', () => ({
-	default: () => '<div data-testid="mobile-menu">Mobile Menu</div>'
+// Mock OverflowMenu component
+vi.mock('../OverflowMenu.svelte', () => ({
+	default: () => '<div data-testid="overflow-menu">Overflow Menu</div>'
 }));
 
 describe('Header', () => {
@@ -66,17 +66,6 @@ describe('Header', () => {
 		// Should have main header content
 		const headerContent = screen.getByText('Test Region');
 		expect(headerContent).toBeInTheDocument();
-
-		// Should have clickable elements
-		const button = screen.getByRole('button');
-		expect(button).toBeInTheDocument();
-	});
-
-	test('displays mobile menu toggle button', () => {
-		render(Header);
-
-		const toggleButton = screen.getByRole('button');
-		expect(toggleButton).toHaveAttribute('aria-label', 'Toggle navigation menu');
 	});
 
 	test('renders without navigation links when PUBLIC_NAV_BAR_LINKS is empty', () => {
