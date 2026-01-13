@@ -10,7 +10,8 @@ export default defineConfig({
 	define: {
 		__SHOW_REGION_NAME_IN_NAV_BAR__: JSON.stringify(
 			process.env.SHOW_REGION_NAME_IN_NAV_BAR !== 'false'
-		)
+		),
+		__OBA_LOGO_URL_DARK__: JSON.stringify(process.env.OBA_LOGO_URL_DARK || '')
 	},
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}'],

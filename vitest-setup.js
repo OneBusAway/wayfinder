@@ -128,3 +128,6 @@ global.localStorage = {
 };
 
 // keybinding action is no longer mocked - let it run normally for testing
+
+// Mock build-time defined globals
+globalThis.__OBA_LOGO_URL_DARK__ = '';

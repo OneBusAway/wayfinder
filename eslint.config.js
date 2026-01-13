@@ -17,7 +17,8 @@ export default [
 				L: 'readonly',
 				google: 'readonly',
 				$state: 'readonly',
-				__SHOW_REGION_NAME_IN_NAV_BAR__: 'readonly'
+				__SHOW_REGION_NAME_IN_NAV_BAR__: 'readonly',
+				__OBA_LOGO_URL_DARK__: 'readonly'
 			}
 		}
 	},
