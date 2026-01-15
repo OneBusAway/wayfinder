@@ -12,6 +12,7 @@
 		formatDepartureDisplay,
 		DEFAULT_WALK_DISTANCE_METERS
 	} from '$stores/tripOptionsStore';
+	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
 
 	let { handleTripPlan, mapProvider } = $props();
 
@@ -116,29 +117,19 @@
 	}
 
 	async function fetchTripPlan(from, to) {
+		// Validate coordinates before making API request
+		const fromValidation = validateCoordinates(from);
+		const toValidation = validateCoordinates(to);
+
+		if (!fromValidation.valid || !toValidation.valid) {
+			console.error('Invalid coordinates:', fromValidation.error || toValidation.error);
+			return null;
+		}
+
 		try {
-			const params = new URLSearchParams({
-				fromPlace: `${from.lat},${from.lng}`,
-				toPlace: `${to.lat},${to.lng}`,
-				wheelchair: String($tripOptions.wheelchair),
-				maxWalkDistance: String($tripOptions.maxWalkDistance)
-			});
-
-			// Add time/date if not "Leave Now"
-			if ($tripOptions.departureType !== 'now') {
-				params.set('arriveBy', String($tripOptions.departureType === 'arriveBy'));
-				if ($tripOptions.departureTime) {
-					params.set('time', $tripOptions.departureTime);
-				}
-				if ($tripOptions.departureDate) {
-					params.set('date', $tripOptions.departureDate);
-				}
-			}
-
-			// Add transfer penalty for "Fewest Transfers"
-			if ($tripOptions.optimize === 'fewestTransfers') {
-				params.set('transferPenalty', '600');
-			}
+			// Use OTP module to build request params
+			const request = createRequestFromTripOptions(from, to, $tripOptions);
+			const params = buildOTPParams(request);
 
 			const response = await fetch(`/api/otp/plan?${params}`);
 

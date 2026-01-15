@@ -1,10 +1,13 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { parseTimeInput } from '$lib/otp';
 
 // Modal visibility store
 export const showTripOptionsModal = writable(false);
 
-// Default walk distance constant (1 mile in meters)
+// Default walk distance for UI (1 mile in meters)
+// Note: This is intentionally different from OTP_DEFAULTS.maxWalkDistance (3 miles)
+// which serves as the API fallback. The UI default is more conservative.
 export const DEFAULT_WALK_DISTANCE_METERS = 1609;
 
 // Default values
@@ -37,10 +40,13 @@ function createTripOptionsStore() {
 		const storedOptimize = localStorage.getItem('tripOptions_optimize');
 		const storedMaxWalk = localStorage.getItem('tripOptions_maxWalkDistance');
 
+		const parsedMaxWalk = storedMaxWalk ? parseInt(storedMaxWalk, 10) : NaN;
 		persisted = {
 			wheelchair: storedWheelchair === 'true',
 			optimize: storedOptimize || 'fastest',
-			maxWalkDistance: storedMaxWalk ? parseInt(storedMaxWalk, 10) : DEFAULT_WALK_DISTANCE_METERS
+			// Handle corrupted localStorage values (NaN, negative, etc.)
+			maxWalkDistance:
+				!isNaN(parsedMaxWalk) && parsedMaxWalk > 0 ? parsedMaxWalk : DEFAULT_WALK_DISTANCE_METERS
 		};
 	}
 
@@ -115,11 +121,9 @@ export function formatDepartureDisplay(opts, translator = null) {
 				: 'Depart';
 
 	if (timeStr) {
-		// Format time for display (e.g., "2:30 PM")
-		const [hours, minutes] = timeStr.split(':').map(Number);
-		const period = hours >= 12 ? 'PM' : 'AM';
-		const displayHours = hours % 12 || 12;
-		return `${prefix} ${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
+		// Use OTP module's parseTimeInput to format time (avoids duplicate logic)
+		const formattedTime = parseTimeInput(timeStr);
+		return formattedTime ? `${prefix} ${formattedTime}` : prefix;
 	}
 
 	return prefix;

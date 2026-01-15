@@ -14,9 +14,13 @@
 	let maxWalkDistance = $state($tripOptions.maxWalkDistance);
 
 	// Get today's date in YYYY-MM-DD format for date input
+	// Uses local date components to avoid UTC timezone issues
 	function getTodayDate() {
 		const today = new Date();
-		return today.toISOString().split('T')[0];
+		const year = today.getFullYear();
+		const month = String(today.getMonth() + 1).padStart(2, '0');
+		const day = String(today.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day}`;
 	}
 
 	// Get current time in HH:MM format for time input
