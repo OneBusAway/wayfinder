@@ -5,7 +5,9 @@ import { truncateShortName } from '$lib/manifestUtils.js';
 // Mock the $env/dynamic/public module
 vi.mock('$env/dynamic/public', () => ({
 	env: {
-		PUBLIC_OBA_REGION_NAME: 'Test Region'
+		PUBLIC_OBA_REGION_NAME: 'Test Region',
+		MANIFEST_ICON_192_URL: '/custom-192.png',
+		MANIFEST_ICON_512_URL: '/custom-512.png'
 	}
 }));
 
@@ -120,5 +122,15 @@ describe('GET /api/manifest', () => {
 		expect(manifest).toHaveProperty('theme_color');
 		expect(manifest).toHaveProperty('background_color');
 		expect(manifest).toHaveProperty('icons');
+
 	});
+	it('should use custom manifest icons when env vars are set', async () => {
+		const mockUrl = new URL('http://localhost/api/manifest');
+		const response = await GET({ url: mockUrl });
+		const manifest = await response.json();
+
+		expect(manifest.icons[0].src).toBe('/custom-192.png');
+		expect(manifest.icons[1].src).toBe('/custom-512.png');
+});
+
 });

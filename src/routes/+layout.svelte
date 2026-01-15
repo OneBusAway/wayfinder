@@ -11,7 +11,8 @@
 	import { initSystemTheme } from '$lib/systemTheme.js';
 	import { env } from '$env/dynamic/public';
 
-	const faviconUrl = env.FAVICON_URL || '/favicon-32x32.png';
+	const faviconUrl = env.PUBLIC_FAVICON_URL || '/favicon.png';
+	const appleTouchIconUrl = env.PUBLIC_APPLE_TOUCH_ICON_URL || '/apple-touch-icon.png';
 
 	/**
 	 * @typedef {Object} Props
@@ -40,6 +41,7 @@
 
 <svelte:head>
 	<link rel="icon" type="image/png" sizes="32x32" href={faviconUrl} />
+	<link rel="apple-touch-icon" sizes="180x180" href={appleTouchIconUrl} />
 </svelte:head>
 
 <div class="flex h-dvh w-full flex-col">
