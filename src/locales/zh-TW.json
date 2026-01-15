@@ -16,7 +16,9 @@
 		"from": "從",
 		"to": "到",
 		"search_for_a_place": "搜尋地點",
-		"trip_itineraries": "行程方案"
+		"trip_itineraries": "行程方案",
+		"show_steps": "顯示步驟",
+		"hide_steps": "隱藏步驟"
 	},
 	"tabs": {
 		"stops-and-stations": "站牌與車站",

@@ -16,7 +16,9 @@
 		"from": "ਤੋਂ",
 		"to": "ਤੱਕ",
 		"search_for_a_place": "ਕੋਈ ਥਾਂ ਖੋਜੋ",
-		"trip_itineraries": "ਯਾਤਰਾ ਸੂਚੀਆਂ"
+		"trip_itineraries": "ਯਾਤਰਾ ਸੂਚੀਆਂ",
+		"show_steps": "ਕਦਮ ਦਿਖਾਓ",
+		"hide_steps": "ਕਦਮ ਲੁਕਾਓ"
 	},
 	"tabs": {
 		"stops-and-stations": "ਸਟਾਪ ਅਤੇ ਸਟੇਸ਼ਨ",

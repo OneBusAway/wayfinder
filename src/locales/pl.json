@@ -16,7 +16,9 @@
 		"from": "Od",
 		"to": "Do",
 		"search_for_a_place": "Szukaj miejsca",
-		"trip_itineraries": "Plany podróży"
+		"trip_itineraries": "Plany podróży",
+		"show_steps": "Pokaż kroki",
+		"hide_steps": "Ukryj kroki"
 	},
 	"tabs": {
 		"stops-and-stations": "Przystanki i stacje",

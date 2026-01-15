@@ -16,7 +16,9 @@
 		"from": "से",
 		"to": "तक",
 		"search_for_a_place": "स्थान खोजें",
-		"trip_itineraries": "यात्रा विकल्प"
+		"trip_itineraries": "यात्रा विकल्प",
+		"show_steps": "चरण दिखाएँ",
+		"hide_steps": "चरण छिपाएँ"
 	},
 	"tabs": {
 		"stops-and-stations": "स्टॉप और स्टेशन",

@@ -197,8 +197,15 @@
 	});
 </script>
 
-<div class={`modal-pane flex flex-col justify-between md:w-96 ${cssClasses}`}>
-	<Tabs tabStyle="underline" contentClass="pt-2 pb-4 bg-gray-50 rounded-lg dark:bg-surface-dark">
+<div
+	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-sm md:w-96 ${cssClasses}`}
+>
+	<Tabs
+		tabStyle="none"
+		activeClasses="bg-none border-b-2 border-brand-accent py-3 px-4"
+		inactiveClasses="py-3 px-4"
+		contentClass="pt-2 pb-4 rounded-lg dark:bg-surface-dark"
+	>
 		<TabItem open title={$t('tabs.stops-and-stations')} on:click={handleTabSwitch}>
 			<SearchField value={query} {handleSearchResults} />
 

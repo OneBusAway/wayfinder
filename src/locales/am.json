@@ -16,7 +16,9 @@
 		"from": "ከ",
 		"to": "ወደ",
 		"search_for_a_place": "ቦታ ይፈልጉ",
-		"trip_itineraries": "የጉዞ አይነቶች"
+		"trip_itineraries": "የጉዞ አይነቶች",
+		"show_steps": "ደረጃዎችን አሳይ",
+		"hide_steps": "ደረጃዎችን ደብቅ"
 	},
 	"tabs": {
 		"stops-and-stations": "ማቆሚያዎችና ጣቢያዎች",

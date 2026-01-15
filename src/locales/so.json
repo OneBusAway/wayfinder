@@ -16,7 +16,9 @@
 		"from": "Laga soo bilaabo",
 		"to": "Ku socda",
 		"search_for_a_place": "Raadi meel",
-		"trip_itineraries": "Jadwalka safarada"
+		"trip_itineraries": "Jadwalka safarada",
+		"show_steps": "Muuji tillaabooyinka",
+		"hide_steps": "Qari tillaabooyinka"
 	},
 	"tabs": {
 		"stops-and-stations": "Joogsiyada iyo saldhigyada",

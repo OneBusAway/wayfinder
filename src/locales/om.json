@@ -16,7 +16,9 @@
 		"from": "Irraa",
 		"to": "Gara",
 		"search_for_a_place": "Bakka barbaadi",
-		"trip_itineraries": "Karoorsawwan Imala"
+		"trip_itineraries": "Karoorsawwan Imala",
+		"show_steps": "Tarkaanfii Agarsiisi",
+		"hide_steps": "Tarkaanfii Dhoksi"
 	},
 	"tabs": {
 		"stops-and-stations": "Dhaabbii fi Buufataalee",

@@ -1,5 +1,12 @@
 import { error, json } from '@sveltejs/kit';
 import { PUBLIC_OTP_SERVER_URL } from '$env/static/public';
+import {
+	parseTimeInput,
+	parseDateInput,
+	formatTimeForOTP,
+	formatDateForOTP,
+	OTP_DEFAULTS
+} from '$lib/otp';
 
 export async function GET({ url }) {
 	const fromPlace = url.searchParams.get('fromPlace');
@@ -13,23 +20,29 @@ export async function GET({ url }) {
 		throw error(503, 'Trip planning is not configured for this region');
 	}
 
-	// Get optional parameters with defaults
+	// Get current time for defaults
 	const now = new Date();
-	// Format time as h:mm AM/PM (e.g., "9:10 PM")
-	const defaultTime = now.toLocaleTimeString('en-US', {
-		hour: 'numeric',
-		minute: '2-digit',
-		hour12: true
-	});
-	// Format date as MM-DD-YYYY (e.g., "01-12-2026")
-	const defaultDate = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${now.getFullYear()}`;
-	const time = url.searchParams.get('time') || defaultTime;
-	const date = url.searchParams.get('date') || defaultDate;
-	const mode = url.searchParams.get('mode') || 'TRANSIT,WALK';
-	const arriveBy = url.searchParams.get('arriveBy') || 'false';
-	const maxWalkDistance = url.searchParams.get('maxWalkDistance') || '4828'; // ~3 miles in meters
-	const wheelchair = url.searchParams.get('wheelchair') || 'false';
-	const showIntermediateStops = url.searchParams.get('showIntermediateStops') || 'true';
+	const defaultTime = formatTimeForOTP(now);
+	const defaultDate = formatDateForOTP(now);
+
+	// Parse time input (converts HH:mm to h:mm AM/PM) or use default
+	const timeInput = url.searchParams.get('time');
+	const time = (timeInput ? parseTimeInput(timeInput) : null) || defaultTime;
+
+	// Parse date input (converts YYYY-MM-DD to MM-DD-YYYY) or use default
+	const dateInput = url.searchParams.get('date');
+	const date = (dateInput ? parseDateInput(dateInput) : null) || defaultDate;
+
+	// Get remaining parameters with defaults
+	const mode = url.searchParams.get('mode') || OTP_DEFAULTS.mode;
+	const arriveBy = url.searchParams.get('arriveBy') || String(OTP_DEFAULTS.arriveBy);
+	const maxWalkDistance =
+		url.searchParams.get('maxWalkDistance') || String(OTP_DEFAULTS.maxWalkDistance);
+	const wheelchair = url.searchParams.get('wheelchair') || String(OTP_DEFAULTS.wheelchair);
+	const showIntermediateStops =
+		url.searchParams.get('showIntermediateStops') || String(OTP_DEFAULTS.showIntermediateStops);
+	const transferPenalty =
+		url.searchParams.get('transferPenalty') || String(OTP_DEFAULTS.transferPenalty);
 
 	const params = new URLSearchParams({
 		fromPlace,
@@ -40,11 +53,11 @@ export async function GET({ url }) {
 		arriveBy,
 		maxWalkDistance,
 		wheelchair,
-		showIntermediateStops
+		showIntermediateStops,
+		transferPenalty
 	});
 
 	const otpUrl = `${PUBLIC_OTP_SERVER_URL}/routers/default/plan?${params}`;
-	console.log('OTP Request URL:', otpUrl);
 
 	try {
 		const response = await fetch(otpUrl, {
@@ -58,7 +71,8 @@ export async function GET({ url }) {
 		}
 
 		const data = await response.json();
-		return json(data);
+		// Include the OTP URL for debugging
+		return json({ ...data, _otpUrl: otpUrl });
 	} catch (err) {
 		if (err.status) throw err;
 

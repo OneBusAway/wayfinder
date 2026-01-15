@@ -16,7 +16,9 @@
 		"from": "출발지",
 		"to": "도착지",
 		"search_for_a_place": "장소 검색",
-		"trip_itineraries": "여행 여정"
+		"trip_itineraries": "여행 여정",
+		"show_steps": "단계 보기",
+		"hide_steps": "단계 숨기기"
 	},
 	"tabs": {
 		"stops-and-stations": "정류장 및 역",

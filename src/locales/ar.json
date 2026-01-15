@@ -16,7 +16,9 @@
 		"from": "من",
 		"to": "إلى",
 		"search_for_a_place": "ابحث عن المكان",
-		"trip_itineraries": "مسارات الرحلة"
+		"trip_itineraries": "مسارات الرحلة",
+		"show_steps": "عرض الخطوات",
+		"hide_steps": "إخفاء الخطوات"
 	},
 	"tabs": {
 		"stops-and-stations": "المحطات والمواقف",

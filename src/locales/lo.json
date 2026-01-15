@@ -16,7 +16,9 @@
 		"from": "ຈາກ",
 		"to": "ໄປ",
 		"search_for_a_place": "ຄົ້ນຫາສະຖານທີ່",
-		"trip_itineraries": "ລາຍການເດີນທາງ"
+		"trip_itineraries": "ລາຍການເດີນທາງ",
+		"show_steps": "ສະແດງຂັ້ນຕອນ",
+		"hide_steps": "ເຊື່ອງຂັ້ນຕອນ"
 	},
 	"tabs": {
 		"stops-and-stations": "ປ້າຍ ແລະ ສະຖານີ",
