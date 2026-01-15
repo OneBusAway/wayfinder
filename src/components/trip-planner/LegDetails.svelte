@@ -13,7 +13,6 @@
 		faClock,
 		faArrowRight,
 		faArrowAltCircleRight,
-		faTram
 	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { t } from 'svelte-i18n';
@@ -58,7 +57,7 @@
 				};
 			case 'TRAM':
 				return {
-					icon: faTram,
+					icon: faTrainSubway,
 					iconColor: 'text-orange-600',
 					bgColor: 'bg-orange-100 dark:bg-orange-900/50'
 				};

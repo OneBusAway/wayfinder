@@ -7,7 +7,6 @@
 		faTrain,
 		faFerry,
 		faTrainSubway,
-		faTram
 	} from '@fortawesome/free-solid-svg-icons';
 
 	let { index, activeTab, setActiveTab, itinerary } = $props();
@@ -41,7 +40,7 @@
 			case 'LIGHT_RAIL':
 				return faTrainSubway;
 			case 'TRAM':
-				return faTram;
+				return faTrainSubway;
 			default:
 				return null;
 		}
