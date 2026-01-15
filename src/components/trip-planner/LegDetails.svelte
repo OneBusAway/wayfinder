@@ -13,6 +13,7 @@
 		faClock,
 		faArrowRight,
 		faArrowAltCircleRight,
+		faArrowLeft,
 	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { t } from 'svelte-i18n';
@@ -94,9 +95,8 @@
 
 	<!-- Content -->
 	<div class="ml-4 flex-1 pt-1">
-		<!-- Header: Location name + route badge -->
+		<!-- Header: Headsign + route badge -->
 		<div class="flex flex-wrap items-center gap-2">
-			<span class="font-semibold text-gray-900 dark:text-white">{leg.from.name}</span>
 			{#if !isWalking && leg.routeShortName}
 				<span
 					class="inline-flex items-center rounded-full bg-brand-accent px-2.5 py-0.5 text-xs font-bold text-white shadow-sm"
@@ -104,6 +104,7 @@
 					{leg.routeShortName}
 				</span>
 			{/if}
+			<span class="font-semibold text-gray-900 dark:text-white">{leg.headsign}</span>
 		</div>
 
 		<!-- Times -->
@@ -122,6 +123,11 @@
 
 		<!-- Details -->
 		<div class="mt-3 space-y-1.5 text-sm text-gray-600 dark:text-gray-300">
+			<div class="flex items-center">
+				<FontAwesomeIcon icon={faArrowLeft} class="mr-2 h-3 w-3 text-brand" />
+				<span>{leg.from.name}</span>
+			</div>
+
 			<div class="flex items-center">
 				<FontAwesomeIcon icon={faArrowRight} class="mr-2 h-3 w-3 text-brand" />
 				<span>{leg.to.name}</span>
