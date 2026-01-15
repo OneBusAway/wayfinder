@@ -1,10 +1,18 @@
 <script>
 	import { debounce } from '$lib/utils';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import TripPlanSearchField from './TripPlanSearchField.svelte';
-	import { error } from '@sveltejs/kit';
+	import OptionsPill from './OptionsPill.svelte';
 	import { browser } from '$app/environment';
 	import { t } from 'svelte-i18n';
+	import {
+		tripOptions,
+		showTripOptionsModal,
+		formatWalkDistance,
+		formatDepartureDisplay,
+		DEFAULT_WALK_DISTANCE_METERS
+	} from '$stores/tripOptionsStore';
+
 	let { handleTripPlan, mapProvider } = $props();
 
 	let fromPlace = $state('');
@@ -24,7 +32,7 @@
 		const response = await fetch(`/api/oba/place-suggestions?query=${encodeURIComponent(query)}`);
 
 		if (!response.ok) {
-			throw error('Error fetching location results', 500);
+			throw new Error('Error fetching location results');
 		}
 		const data = await response.json();
 
@@ -53,7 +61,7 @@
 		);
 
 		if (!response.ok) {
-			throw error("Couldn't geocode location", 500);
+			throw new Error("Couldn't geocode location");
 		}
 
 		const geocodeLocationData = await response.json();
@@ -109,9 +117,30 @@
 
 	async function fetchTripPlan(from, to) {
 		try {
-			const response = await fetch(
-				`/api/otp/plan?fromPlace=${from.lat},${from.lng}&toPlace=${to.lat},${to.lng}`
-			);
+			const params = new URLSearchParams({
+				fromPlace: `${from.lat},${from.lng}`,
+				toPlace: `${to.lat},${to.lng}`,
+				wheelchair: String($tripOptions.wheelchair),
+				maxWalkDistance: String($tripOptions.maxWalkDistance)
+			});
+
+			// Add time/date if not "Leave Now"
+			if ($tripOptions.departureType !== 'now') {
+				params.set('arriveBy', String($tripOptions.departureType === 'arriveBy'));
+				if ($tripOptions.departureTime) {
+					params.set('time', $tripOptions.departureTime);
+				}
+				if ($tripOptions.departureDate) {
+					params.set('date', $tripOptions.departureDate);
+				}
+			}
+
+			// Add transfer penalty for "Fewest Transfers"
+			if ($tripOptions.optimize === 'fewestTransfers') {
+				params.set('transferPenalty', '600');
+			}
+
+			const response = await fetch(`/api/otp/plan?${params}`);
 
 			if (!response.ok) {
 				throw new Error(`Error planning trip: ${response.statusText}`);
@@ -156,12 +185,21 @@
 		}
 	}
 
+	let tabSwitchedHandler;
+
 	onMount(() => {
 		if (browser) {
-			window.addEventListener('tabSwitched', () => {
+			tabSwitchedHandler = () => {
 				clearInput(true);
 				clearInput(false);
-			});
+			};
+			window.addEventListener('tabSwitched', tabSwitchedHandler);
+		}
+	});
+
+	onDestroy(() => {
+		if (browser && tabSwitchedHandler) {
+			window.removeEventListener('tabSwitched', tabSwitchedHandler);
 		}
 	});
 </script>
@@ -187,25 +225,54 @@
 		onSelect={(location) => selectLocation(location, false)}
 	/>
 
-	<button
-		onclick={planTrip}
-		class="mt-4 flex w-full items-center justify-center rounded-md bg-brand py-2 text-brand-foreground shadow-md transition-colors hover:bg-brand-accent disabled:cursor-not-allowed disabled:bg-gray-300 dark:bg-green-800 dark:hover:bg-green-900 disabled:dark:bg-gray-700/50 disabled:dark:text-gray-400"
-		disabled={!selectedFrom || !selectedTo}
-	>
-		{#if loading}
-			<svg
-				class="mr-2 h-5 w-5 animate-spin text-brand-foreground disabled:dark:text-gray-400"
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-			>
-				<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-				></circle>
-				<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-			</svg>
-			{$t('trip-planner.planning')}...
-		{:else}
-			{$t('trip-planner.plan_your_trip')}
-		{/if}
-	</button>
+	<!-- Options Pills (only show non-default options) -->
+	{#if $tripOptions.departureType !== 'now' || $tripOptions.wheelchair || $tripOptions.optimize === 'fewestTransfers' || $tripOptions.maxWalkDistance !== DEFAULT_WALK_DISTANCE_METERS}
+		<div class="flex flex-wrap gap-1.5">
+			{#if $tripOptions.departureType !== 'now'}
+				<OptionsPill icon="🕐" label={formatDepartureDisplay($tripOptions, $t)} />
+			{/if}
+			{#if $tripOptions.wheelchair}
+				<OptionsPill icon="♿" label={$t('trip-planner.wheelchair')} />
+			{/if}
+			{#if $tripOptions.optimize === 'fewestTransfers'}
+				<OptionsPill icon="🔄" label={$t('trip-planner.fewest_transfers')} />
+			{/if}
+			{#if $tripOptions.maxWalkDistance !== DEFAULT_WALK_DISTANCE_METERS}
+				<OptionsPill icon="🚶" label={formatWalkDistance($tripOptions.maxWalkDistance)} />
+			{/if}
+		</div>
+	{/if}
+
+	<!-- Button Row -->
+	<div class="flex items-center gap-2">
+		<button
+			type="button"
+			onclick={() => showTripOptionsModal.set(true)}
+			class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+		>
+			{$t('trip-planner.options')}
+		</button>
+		<div class="flex-1"></div>
+		<button
+			onclick={planTrip}
+			class="flex items-center justify-center rounded-md bg-brand px-4 py-2 text-brand-foreground shadow-md transition-colors hover:bg-brand-accent disabled:cursor-not-allowed disabled:bg-gray-300 dark:bg-green-800 dark:hover:bg-green-900 disabled:dark:bg-gray-700/50 disabled:dark:text-gray-400"
+			disabled={!selectedFrom || !selectedTo}
+		>
+			{#if loading}
+				<svg
+					class="mr-2 h-5 w-5 animate-spin text-brand-foreground disabled:dark:text-gray-400"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+					></circle>
+					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+				</svg>
+				{$t('trip-planner.planning')}...
+			{:else}
+				{$t('trip-planner.plan_your_trip')}
+			{/if}
+		</button>
+	</div>
 </div>

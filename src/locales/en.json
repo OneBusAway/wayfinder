@@ -1,5 +1,7 @@
 {
 	"trip-planner": {
+		"arrive": "Arrive",
+		"depart": "Depart",
 		"plan_your_trip": "Plan Your Trip",
 		"itinerary": "Itinerary",
 		"duration": "Duration",
@@ -18,7 +20,23 @@
 		"search_for_a_place": "Search for a place",
 		"trip_itineraries": "Trip Itineraries",
 		"show_steps": "Show Steps",
-		"hide_steps": "Hide Steps"
+		"hide_steps": "Hide Steps",
+		"options": "Options",
+		"trip_options": "Trip Options",
+		"cancel": "Cancel",
+		"done": "Done",
+		"departure_time": "Departure Time",
+		"leave_now": "Leave Now",
+		"depart_at": "Depart At",
+		"arrive_by": "Arrive By",
+		"wheelchair_accessible": "Wheelchair accessible",
+		"wheelchair_desc": "Find routes suitable for mobility devices and wheelchairs",
+		"wheelchair": "Wheelchair",
+		"route_optimization": "Route Optimization",
+		"fastest_trip": "Fastest Trip",
+		"fewest_transfers": "Fewest Transfers",
+		"walking_distance": "Walking Distance",
+		"max_walking_distance": "Maximum walking distance"
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",

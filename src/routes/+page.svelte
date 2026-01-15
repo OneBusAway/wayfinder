@@ -25,6 +25,8 @@
 	import { analyticsDistanceToStop } from '$lib/Analytics/plausibleUtils';
 	import SurveyLauncher from '$components/surveys/SurveyLauncher.svelte';
 	import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
+	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
+	import { showTripOptionsModal } from '$stores/tripOptionsStore';
 
 	// Parse initial coordinates from URL query parameters
 	const initialCoords = parseInitialCoordinates(
@@ -293,7 +295,7 @@
 						{toMarker}
 						loading={loadingItineraries}
 						{closePane}
-					/>}
+					/>
 				{/if}
 			</div>
 		</div>
@@ -301,6 +303,13 @@
 
 	{#if $showSurveyModal}
 		<SurveyModal />
+	{/if}
+
+	{#if $showTripOptionsModal}
+		<TripOptionsModal
+			onClose={() => showTripOptionsModal.set(false)}
+			onDone={() => showTripOptionsModal.set(false)}
+		/>
 	{/if}
 
 	<MapContainer
