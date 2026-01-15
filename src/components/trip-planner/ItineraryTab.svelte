@@ -6,7 +6,7 @@
 		faBus,
 		faTrain,
 		faFerry,
-		faTrainSubway,
+		faTrainSubway
 	} from '@fortawesome/free-solid-svg-icons';
 
 	let { index, activeTab, setActiveTab, itinerary } = $props();

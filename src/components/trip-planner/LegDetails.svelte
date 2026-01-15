@@ -13,7 +13,7 @@
 		faClock,
 		faArrowRight,
 		faArrowAltCircleRight,
-		faArrowLeft,
+		faArrowLeft
 	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { t } from 'svelte-i18n';
