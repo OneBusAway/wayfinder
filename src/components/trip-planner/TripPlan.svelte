@@ -127,17 +127,24 @@
 		}
 
 		try {
-			// Use OTP module to build request params
 			const request = createRequestFromTripOptions(from, to, $tripOptions);
 			const params = buildOTPParams(request);
 
-			const response = await fetch(`/api/otp/plan?${params}`);
+			const url = `/api/otp/plan?${params}`;
+			const response = await fetch(url);
 
 			if (!response.ok) {
 				throw new Error(`Error planning trip: ${response.statusText}`);
 			}
 
-			return await response.json();
+			const data = await response.json();
+
+			// Log the actual OTP server URL for debugging
+			// if (data._otpUrl) {
+			// 	console.log('OTP Server Request:', data._otpUrl);
+			// }
+
+			return data;
 		} catch (error) {
 			console.error(error.message);
 			return null;

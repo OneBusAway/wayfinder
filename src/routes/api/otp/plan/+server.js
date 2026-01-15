@@ -71,7 +71,8 @@ export async function GET({ url }) {
 		}
 
 		const data = await response.json();
-		return json(data);
+		// Include the OTP URL for debugging
+		return json({ ...data, _otpUrl: otpUrl });
 	} catch (err) {
 		if (err.status) throw err;
 
