@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "maila",
+		"miles": "maila"
+	},
 	"trip-planner": {
 		"plan_your_trip": "Fuafua Lau Malaga",
 		"itinerary": "Lisi o le Malaga",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "Saili se nofoaga",
 		"trip_itineraries": "Lisi o Malaga",
 		"show_steps": "Faʻaali laasaga",
-		"hide_steps": "Natia laasaga"
+		"hide_steps": "Natia laasaga",
+		"distance_unit": "Iunite o le Mamao",
+		"unit_auto": "Otometi su'esu'e",
+		"unit_metric": "Metiriki (km, m)",
+		"unit_imperial": "Emepaea (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "Nofoaga Taofi ma Fale Taʻavale",

@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "ມ",
+		"kilometers": "ກມ",
+		"feet": "ຟຸດ",
+		"mile": "ໄມລ໌",
+		"miles": "ໄມລ໌"
+	},
 	"trip-planner": {
 		"plan_your_trip": "ວາງແຜນການເດີນທາງ",
 		"itinerary": "ລາຍການເດີນທາງ",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "ຄົ້ນຫາສະຖານທີ່",
 		"trip_itineraries": "ລາຍການເດີນທາງ",
 		"show_steps": "ສະແດງຂັ້ນຕອນ",
-		"hide_steps": "ເຊື່ອງຂັ້ນຕອນ"
+		"hide_steps": "ເຊື່ອງຂັ້ນຕອນ",
+		"distance_unit": "ຫົວໜ່ວຍໄລຍະທາງ",
+		"unit_auto": "ກວດຫາອັດຕະໂນມັດ",
+		"unit_metric": "ລະບົບເມຕຣິກ (ກມ, ມ)",
+		"unit_imperial": "ລະບົບອິມພີຣຽລ (ໄມລ໌, ຟຸດ)"
 	},
 	"tabs": {
 		"stops-and-stations": "ປ້າຍ ແລະ ສະຖານີ",

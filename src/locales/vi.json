@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "dặm",
+		"miles": "dặm"
+	},
 	"trip-planner": {
 		"plan_your_trip": "Lập kế hoạch hành trình",
 		"itinerary": "Lịch trình",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "Tìm kiếm địa điểm",
 		"trip_itineraries": "Lịch trình chuyến đi",
 		"show_steps": "Hiện các bước",
-		"hide_steps": "Ẩn các bước"
+		"hide_steps": "Ẩn các bước",
+		"distance_unit": "Đơn vị khoảng cách",
+		"unit_auto": "Tự động phát hiện",
+		"unit_metric": "Hệ mét (km, m)",
+		"unit_imperial": "Hệ Anh (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "Trạm dừng và nhà ga",

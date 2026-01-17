@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "maayilii",
+		"miles": "maayiliiwwan"
+	},
 	"trip-planner": {
 		"plan_your_trip": "Imala Kee Karoorfadhu",
 		"itinerary": "Karoorsa Imala",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "Bakka barbaadi",
 		"trip_itineraries": "Karoorsawwan Imala",
 		"show_steps": "Tarkaanfii Agarsiisi",
-		"hide_steps": "Tarkaanfii Dhoksi"
+		"hide_steps": "Tarkaanfii Dhoksi",
+		"distance_unit": "Safartuu Fageenya",
+		"unit_auto": "Ofumaan adda baasi",
+		"unit_metric": "Meetirikii (km, m)",
+		"unit_imperial": "Impeeriyaalii (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "Dhaabbii fi Buufataalee",

@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "ሜ",
+		"kilometers": "ኪሜ",
+		"feet": "ጫማ",
+		"mile": "ማይል",
+		"miles": "ማይሎች"
+	},
 	"trip-planner": {
 		"plan_your_trip": "ጉዞዎን ያቅዱ",
 		"itinerary": "ጉዞ አይነት",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "ቦታ ይፈልጉ",
 		"trip_itineraries": "የጉዞ አይነቶች",
 		"show_steps": "ደረጃዎችን አሳይ",
-		"hide_steps": "ደረጃዎችን ደብቅ"
+		"hide_steps": "ደረጃዎችን ደብቅ",
+		"distance_unit": "የርቀት መለኪያ",
+		"unit_auto": "በራስ-ሰር ይለዩ",
+		"unit_metric": "ሜትሪክ (ኪሜ፣ ሜ)",
+		"unit_imperial": "ኢምፔሪያል (ማይል፣ ጫማ)"
 	},
 	"tabs": {
 		"stops-and-stations": "ማቆሚያዎችና ጣቢያዎች",

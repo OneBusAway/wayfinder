@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "ሜ",
+		"kilometers": "ኪሜ",
+		"feet": "ጫማ",
+		"mile": "ማይል",
+		"miles": "ማይላት"
+	},
 	"trip-planner": {
 		"plan_your_trip": "መገሻኻ ውጠን",
 		"itinerary": "መስመር መገሻ",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "ቦታ ድለ",
 		"trip_itineraries": "መስመራት መገሻ",
 		"show_steps": "ስጉምትታት ኣርኢ",
-		"hide_steps": "ስጉምትታት ሕባእ"
+		"hide_steps": "ስጉምትታት ሕባእ",
+		"distance_unit": "ኣሃዱ ርሕቀት",
+		"unit_auto": "ባዕሉ ይለሊ",
+		"unit_metric": "ሜትሪክ (ኪሜ፣ ሜ)",
+		"unit_imperial": "ኢምፐርያል (ማይል፣ ጫማ)"
 	},
 	"tabs": {
 		"stops-and-stations": "መዕረፊታትን መደበራትን",

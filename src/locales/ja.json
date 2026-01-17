@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "マイル",
+		"miles": "マイル"
+	},
 	"trip-planner": {
 		"plan_your_trip": "旅程を計画する",
 		"itinerary": "旅程",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "場所を検索",
 		"trip_itineraries": "旅程一覧",
 		"show_steps": "手順を表示",
-		"hide_steps": "手順を非表示"
+		"hide_steps": "手順を非表示",
+		"distance_unit": "距離の単位",
+		"unit_auto": "自動検出",
+		"unit_metric": "メートル法 (km, m)",
+		"unit_imperial": "ヤード・ポンド法 (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "停留所と駅",

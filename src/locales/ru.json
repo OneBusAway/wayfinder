@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "м",
+		"kilometers": "км",
+		"feet": "ft",
+		"mile": "миля",
+		"miles": "миль"
+	},
 	"trip-planner": {
 		"plan_your_trip": "Планирование поездки",
 		"itinerary": "Маршрут",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "Поиск места",
 		"trip_itineraries": "Варианты маршрута",
 		"show_steps": "Показать шаги",
-		"hide_steps": "Скрыть шаги"
+		"hide_steps": "Скрыть шаги",
+		"distance_unit": "Единица измерения расстояния",
+		"unit_auto": "Определить автоматически",
+		"unit_metric": "Метрическая (км, м)",
+		"unit_imperial": "Имперская (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "Остановки и станции",

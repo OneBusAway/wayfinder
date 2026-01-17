@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "ម៉ាយល៍",
+		"miles": "ម៉ាយល៍"
+	},
 	"trip-planner": {
 		"plan_your_trip": "រៀបចំការធ្វើដំណើររបស់អ្នក",
 		"itinerary": "កាលវិភាគធ្វើដំណើរ",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "ស្វែងរកទីកន្លែង",
 		"trip_itineraries": "កាលវិភាគធ្វើដំណើរ",
 		"show_steps": "បង្ហាញជំហាន",
-		"hide_steps": "លាក់ជំហាន"
+		"hide_steps": "លាក់ជំហាន",
+		"distance_unit": "ឯកតារង្វាស់ចម្ងាយ",
+		"unit_auto": "រកឃើញដោយស្វ័យប្រវត្តិ",
+		"unit_metric": "ម៉ែត្រ (km, m)",
+		"unit_imperial": "អ៊ីមភេរៀល (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "ចំណតនិងស្ថានីយ៍",

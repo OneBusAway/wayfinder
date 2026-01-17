@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "英里",
+		"miles": "英里"
+	},
 	"trip-planner": {
 		"plan_your_trip": "规划您的行程",
 		"itinerary": "行程方案",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "搜索地点",
 		"trip_itineraries": "行程方案",
 		"show_steps": "显示步骤",
-		"hide_steps": "隐藏步骤"
+		"hide_steps": "隐藏步骤",
+		"distance_unit": "距离单位",
+		"unit_auto": "自动检测",
+		"unit_metric": "公制 (km, m)",
+		"unit_imperial": "英制 (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "站点",
