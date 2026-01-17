@@ -23,7 +23,8 @@ vi.mock('$env/static/public', () => ({
 	PUBLIC_OBA_MAP_PROVIDER: 'osm',
 	PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}',
 	PUBLIC_ANALYTICS_DOMAIN: '',
-	PUBLIC_ANALYTICS_ENABLED: 'false'
+	PUBLIC_ANALYTICS_ENABLED: 'false',
+	PUBLIC_DISTANCE_UNIT: '' // Empty = auto-detect from browser
 }));
 
 // Mock svelte-i18n
@@ -76,9 +77,10 @@ vi.mock('$app/stores', () => ({
 	}
 }));
 
-// Mock geolocation
+// Mock geolocation and navigator.language
 global.navigator = {
 	...global.navigator,
+	language: 'en-US', // Default to en-US for tests (imperial units)
 	geolocation: {
 		getCurrentPosition: vi.fn(),
 		watchPosition: vi.fn(),

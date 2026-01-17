@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "mile",
+		"miles": "miles"
+	},
 	"trip-planner": {
 		"arrive": "Arrive",
 		"depart": "Depart",
@@ -36,7 +43,11 @@
 		"fastest_trip": "Fastest Trip",
 		"fewest_transfers": "Fewest Transfers",
 		"walking_distance": "Walking Distance",
-		"max_walking_distance": "Maximum walking distance"
+		"max_walking_distance": "Maximum walking distance",
+		"distance_unit": "Distance Unit",
+		"unit_auto": "Auto-detect",
+		"unit_metric": "Metric (km, m)",
+		"unit_imperial": "Imperial (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",

@@ -10,6 +10,7 @@
 		showTripOptionsModal,
 		formatWalkDistance,
 		formatDepartureDisplay,
+		effectiveDistanceUnit,
 		DEFAULT_WALK_DISTANCE_METERS
 	} from '$stores/tripOptionsStore';
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
@@ -236,13 +237,16 @@
 				<OptionsPill icon="🔄" label={$t('trip-planner.fewest_transfers')} />
 			{/if}
 			{#if $tripOptions.maxWalkDistance !== DEFAULT_WALK_DISTANCE_METERS}
-				<OptionsPill icon="🚶" label={formatWalkDistance($tripOptions.maxWalkDistance)} />
+				<OptionsPill
+					icon="🚶"
+					label={formatWalkDistance($tripOptions.maxWalkDistance, $effectiveDistanceUnit)}
+				/>
 			{/if}
 		</div>
 	{/if}
 
 	<!-- Button Row -->
-	<div class="flex items-center gap-2">
+	<div class="mt-4 flex items-center gap-2">
 		<button
 			type="button"
 			onclick={() => showTripOptionsModal.set(true)}
