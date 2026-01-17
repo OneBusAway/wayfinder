@@ -90,6 +90,7 @@ Use these in Tailwind classes: `bg-primary-500`, `text-primary-700`, `border-pri
 ### Trip Planner
 
 - `PUBLIC_OTP_SERVER_URL` - string: (optional) Your OpenTripPlanner 1.x-compatible trip planner server URL.
+- `PUBLIC_DISTANCE_UNIT` - string: (optional) Default distance unit for the trip planner. Use "metric" for kilometers/meters or "imperial" for miles/feet. If not set, auto-detects from the user's browser locale (US browsers get imperial, others get metric). Users can override this in Trip Options.
 
 ## URL Parameters
 

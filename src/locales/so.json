@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "meyl",
+		"miles": "meyl"
+	},
 	"trip-planner": {
 		"plan_your_trip": "Qorshee safarkaaga",
 		"itinerary": "Jadwalka safarka",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "Raadi meel",
 		"trip_itineraries": "Jadwalka safarada",
 		"show_steps": "Muuji tillaabooyinka",
-		"hide_steps": "Qari tillaabooyinka"
+		"hide_steps": "Qari tillaabooyinka",
+		"distance_unit": "Halbeegga Masaafada",
+		"unit_auto": "Si toos ah u ogaado",
+		"unit_metric": "Mitrik (km, m)",
+		"unit_imperial": "Imbiriyaal (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "Joogsiyada iyo saldhigyada",

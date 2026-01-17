@@ -1,7 +1,14 @@
 <script>
 	import { fly } from 'svelte/transition';
 	import { t } from 'svelte-i18n';
-	import { tripOptions, walkDistanceOptions } from '$stores/tripOptionsStore';
+	import {
+		tripOptions,
+		effectiveDistanceUnit,
+		getWalkDistanceOptions,
+		snapToClosestOption,
+		UNIT_METRIC,
+		UNIT_IMPERIAL
+	} from '$stores/tripOptionsStore';
 
 	let { onClose, onDone } = $props();
 
@@ -12,6 +19,28 @@
 	let wheelchair = $state($tripOptions.wheelchair);
 	let optimize = $state($tripOptions.optimize);
 	let maxWalkDistance = $state($tripOptions.maxWalkDistance);
+	let distanceUnit = $state($tripOptions.distanceUnit); // null = auto, 'metric', or 'imperial'
+
+	// Get the effective unit for display (resolves null to actual unit)
+	let displayUnit = $derived(distanceUnit ?? $effectiveDistanceUnit);
+
+	// Walk distance options based on current unit
+	let walkDistanceOptions = $derived(getWalkDistanceOptions(displayUnit));
+
+	// When unit changes, snap the walk distance to the closest option in the new system
+	function handleUnitChange(newUnit) {
+		const previousUnit = distanceUnit;
+		distanceUnit = newUnit;
+
+		// Resolve the actual unit to use (in case newUnit is null/auto)
+		const resolvedNewUnit = newUnit ?? $effectiveDistanceUnit;
+		const resolvedPreviousUnit = previousUnit ?? $effectiveDistanceUnit;
+
+		// Only snap if the resolved unit actually changes
+		if (resolvedNewUnit !== resolvedPreviousUnit) {
+			maxWalkDistance = snapToClosestOption(maxWalkDistance, resolvedNewUnit);
+		}
+	}
 
 	// Get today's date in YYYY-MM-DD format for date input
 	// Uses local date components to avoid UTC timezone issues
@@ -43,6 +72,7 @@
 		tripOptions.setPersisted('wheelchair', wheelchair);
 		tripOptions.setPersisted('optimize', optimize);
 		tripOptions.setPersisted('maxWalkDistance', maxWalkDistance);
+		tripOptions.setPersisted('distanceUnit', distanceUnit);
 
 		onDone();
 	}
@@ -274,7 +304,7 @@
 			</div>
 
 			<!-- Walking Distance Section -->
-			<div class="mb-2">
+			<div class="mb-6">
 				<h3
 					class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
 				>
@@ -297,6 +327,77 @@
 							{/each}
 						</select>
 					</div>
+				</div>
+			</div>
+
+			<!-- Distance Unit Section -->
+			<div class="mb-2">
+				<h3
+					class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+				>
+					{$t('trip-planner.distance_unit')}
+				</h3>
+				<div class="overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+					<!-- Auto-detect -->
+					<button
+						type="button"
+						class="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-200 dark:hover:bg-gray-700"
+						onclick={() => handleUnitChange(null)}
+					>
+						<div class="flex items-center gap-3">
+							<span class="text-lg">🌐</span>
+							<div>
+								<div class="font-medium text-gray-900 dark:text-white">
+									{$t('trip-planner.unit_auto')}
+								</div>
+							</div>
+						</div>
+						{#if distanceUnit === null}
+							<span class="text-blue-600 dark:text-blue-400">✓</span>
+						{/if}
+					</button>
+
+					<div class="mx-4 border-t border-gray-200 dark:border-gray-700"></div>
+
+					<!-- Metric -->
+					<button
+						type="button"
+						class="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-200 dark:hover:bg-gray-700"
+						onclick={() => handleUnitChange(UNIT_METRIC)}
+					>
+						<div class="flex items-center gap-3">
+							<span class="text-lg">📏</span>
+							<div>
+								<div class="font-medium text-gray-900 dark:text-white">
+									{$t('trip-planner.unit_metric')}
+								</div>
+							</div>
+						</div>
+						{#if distanceUnit === UNIT_METRIC}
+							<span class="text-blue-600 dark:text-blue-400">✓</span>
+						{/if}
+					</button>
+
+					<div class="mx-4 border-t border-gray-200 dark:border-gray-700"></div>
+
+					<!-- Imperial -->
+					<button
+						type="button"
+						class="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-200 dark:hover:bg-gray-700"
+						onclick={() => handleUnitChange(UNIT_IMPERIAL)}
+					>
+						<div class="flex items-center gap-3">
+							<span class="text-lg">📐</span>
+							<div>
+								<div class="font-medium text-gray-900 dark:text-white">
+									{$t('trip-planner.unit_imperial')}
+								</div>
+							</div>
+						</div>
+						{#if distanceUnit === UNIT_IMPERIAL}
+							<span class="text-blue-600 dark:text-blue-400">✓</span>
+						{/if}
+					</button>
 				</div>
 			</div>
 		</div>

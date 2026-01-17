@@ -10,6 +10,7 @@
 		showTripOptionsModal,
 		formatWalkDistance,
 		formatDepartureDisplay,
+		effectiveDistanceUnit,
 		DEFAULT_WALK_DISTANCE_METERS
 	} from '$stores/tripOptionsStore';
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
@@ -202,30 +203,69 @@
 	});
 </script>
 
-<div class="space-y-4">
-	<TripPlanSearchField
-		label="{$t('trip-planner.from')}:"
-		place={fromPlace}
-		results={fromResults}
-		isLoading={isLoadingFrom}
-		onInput={(query) => handleSearchInput(query, true)}
-		onClear={() => clearInput(true)}
-		onSelect={(location) => selectLocation(location, true)}
-	/>
+<div>
+	<!-- From/To fields: Mobile grid layout (labels left, fields right) | sm+: stacked vertical -->
+	<div class="grid grid-cols-[auto_1fr] items-start gap-x-2 gap-y-4 sm:block sm:space-y-4">
+		<!-- From: mobile label (left column) -->
+		<label
+			for="from-location-input"
+			class="pt-2 text-xs font-medium text-gray-700 dark:text-white sm:hidden"
+		>
+			{$t('trip-planner.from')}:
+		</label>
+		<!-- From: field wrapper (right column on mobile, full width on sm+) -->
+		<div>
+			<label
+				for="from-location-input"
+				class="hidden text-sm font-medium text-gray-700 dark:text-white sm:block"
+			>
+				{$t('trip-planner.from')}:
+			</label>
+			<div class="sm:mt-1">
+				<TripPlanSearchField
+					inputId="from-location-input"
+					place={fromPlace}
+					results={fromResults}
+					isLoading={isLoadingFrom}
+					onInput={(query) => handleSearchInput(query, true)}
+					onClear={() => clearInput(true)}
+					onSelect={(location) => selectLocation(location, true)}
+				/>
+			</div>
+		</div>
 
-	<TripPlanSearchField
-		label="{$t('trip-planner.to')}:"
-		place={toPlace}
-		results={toResults}
-		isLoading={isLoadingTo}
-		onInput={(query) => handleSearchInput(query, false)}
-		onClear={() => clearInput(false)}
-		onSelect={(location) => selectLocation(location, false)}
-	/>
+		<!-- To: mobile label (left column) -->
+		<label
+			for="to-location-input"
+			class="pt-2 text-xs font-medium text-gray-700 dark:text-white sm:hidden"
+		>
+			{$t('trip-planner.to')}:
+		</label>
+		<!-- To: field wrapper (right column on mobile, full width on sm+) -->
+		<div>
+			<label
+				for="to-location-input"
+				class="hidden text-sm font-medium text-gray-700 dark:text-white sm:block"
+			>
+				{$t('trip-planner.to')}:
+			</label>
+			<div class="sm:mt-1">
+				<TripPlanSearchField
+					inputId="to-location-input"
+					place={toPlace}
+					results={toResults}
+					isLoading={isLoadingTo}
+					onInput={(query) => handleSearchInput(query, false)}
+					onClear={() => clearInput(false)}
+					onSelect={(location) => selectLocation(location, false)}
+				/>
+			</div>
+		</div>
+	</div>
 
 	<!-- Options Pills (only show non-default options) -->
 	{#if $tripOptions.departureType !== 'now' || $tripOptions.wheelchair || $tripOptions.optimize === 'fewestTransfers' || $tripOptions.maxWalkDistance !== DEFAULT_WALK_DISTANCE_METERS}
-		<div class="flex flex-wrap gap-1.5">
+		<div class="mt-4 flex flex-wrap gap-1.5">
 			{#if $tripOptions.departureType !== 'now'}
 				<OptionsPill icon="🕐" label={formatDepartureDisplay($tripOptions, $t)} />
 			{/if}
@@ -236,13 +276,16 @@
 				<OptionsPill icon="🔄" label={$t('trip-planner.fewest_transfers')} />
 			{/if}
 			{#if $tripOptions.maxWalkDistance !== DEFAULT_WALK_DISTANCE_METERS}
-				<OptionsPill icon="🚶" label={formatWalkDistance($tripOptions.maxWalkDistance)} />
+				<OptionsPill
+					icon="🚶"
+					label={formatWalkDistance($tripOptions.maxWalkDistance, $effectiveDistanceUnit)}
+				/>
 			{/if}
 		</div>
 	{/if}
 
 	<!-- Button Row -->
-	<div class="flex items-center gap-2">
+	<div class="mt-4 flex items-center gap-2">
 		<button
 			type="button"
 			onclick={() => showTripOptionsModal.set(true)}

@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "م",
+		"kilometers": "كم",
+		"feet": "ft",
+		"mile": "ميل",
+		"miles": "أميال"
+	},
 	"trip-planner": {
 		"plan_your_trip": "خطط رحلتك",
 		"itinerary": "مسار الرحلة",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "ابحث عن المكان",
 		"trip_itineraries": "مسارات الرحلة",
 		"show_steps": "عرض الخطوات",
-		"hide_steps": "إخفاء الخطوات"
+		"hide_steps": "إخفاء الخطوات",
+		"distance_unit": "وحدة المسافة",
+		"unit_auto": "اكتشاف تلقائي",
+		"unit_metric": "متري (كم، م)",
+		"unit_imperial": "إمبراطوري (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "المحطات والمواقف",

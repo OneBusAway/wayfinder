@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "milya",
+		"miles": "milya"
+	},
 	"trip-planner": {
 		"plan_your_trip": "Planuhin ang iyong biyahe",
 		"itinerary": "Itineraryo",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "Maghanap ng lugar",
 		"trip_itineraries": "Mga itineraryo ng biyahe",
 		"show_steps": "Ipakita ang mga hakbang",
-		"hide_steps": "Itago ang mga hakbang"
+		"hide_steps": "Itago ang mga hakbang",
+		"distance_unit": "Yunit ng Distansya",
+		"unit_auto": "Awtomatikong tukuyin",
+		"unit_metric": "Metriko (km, m)",
+		"unit_imperial": "Imperyalismo (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "Mga hintuan at estasyon",

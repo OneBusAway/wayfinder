@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "milha",
+		"miles": "milhas"
+	},
 	"trip-planner": {
 		"plan_your_trip": "Planeje Sua Viagem",
 		"itinerary": "Itinerário",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "Buscar um local",
 		"trip_itineraries": "Itinerários de Viagem",
 		"show_steps": "Mostrar passos",
-		"hide_steps": "Ocultar passos"
+		"hide_steps": "Ocultar passos",
+		"distance_unit": "Unidade de distância",
+		"unit_auto": "Detectar automaticamente",
+		"unit_metric": "Métrico (km, m)",
+		"unit_imperial": "Imperial (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "Paradas e Estações",

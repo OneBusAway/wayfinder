@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "m",
+		"kilometers": "km",
+		"feet": "ft",
+		"mile": "ਮੀਲ",
+		"miles": "ਮੀਲ"
+	},
 	"trip-planner": {
 		"plan_your_trip": "ਆਪਣੀ ਯਾਤਰਾ ਦੀ ਯੋਜਨਾ ਬਣਾਓ",
 		"itinerary": "ਯਾਤਰਾ ਸੂਚੀ",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "ਕੋਈ ਥਾਂ ਖੋਜੋ",
 		"trip_itineraries": "ਯਾਤਰਾ ਸੂਚੀਆਂ",
 		"show_steps": "ਕਦਮ ਦਿਖਾਓ",
-		"hide_steps": "ਕਦਮ ਲੁਕਾਓ"
+		"hide_steps": "ਕਦਮ ਲੁਕਾਓ",
+		"distance_unit": "ਦੂਰੀ ਦੀ ਇਕਾਈ",
+		"unit_auto": "ਆਟੋ-ਖੋਜ",
+		"unit_metric": "ਮੀਟ੍ਰਿਕ (km, m)",
+		"unit_imperial": "ਇੰਪੀਰੀਅਲ (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "ਸਟਾਪ ਅਤੇ ਸਟੇਸ਼ਨ",

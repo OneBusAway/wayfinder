@@ -17,6 +17,8 @@
 	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { t } from 'svelte-i18n';
+	import { formatDistance } from '$lib/distanceUtils';
+	import { effectiveDistanceUnit } from '$stores/tripOptionsStore';
 
 	let { leg, index, expandedSteps, toggleSteps, isLast = false } = $props();
 
@@ -136,8 +138,7 @@
 				<FontAwesomeIcon icon={faRulerCombined} class="mr-2 h-3 w-3 text-gray-400" />
 				<span
 					>{$t('trip-planner.distance')}
-					{Math.round(leg.distance)}
-					{$t('trip-planner.meters')}</span
+					{formatDistance(leg.distance, $effectiveDistanceUnit, $t)}</span
 				>
 			</div>
 			<div class="flex items-center">
@@ -174,8 +175,7 @@
 							<div class="mt-1 flex flex-wrap gap-x-4 text-gray-500 dark:text-gray-400">
 								<span class="flex items-center gap-1">
 									<FontAwesomeIcon icon={faRulerCombined} class="h-3 w-3" />
-									{Math.round(step.distance)}
-									{$t('trip-planner.meters')}
+									{formatDistance(step.distance, $effectiveDistanceUnit, $t)}
 								</span>
 								<span class="flex items-center gap-1">
 									<FontAwesomeIcon icon={faArrowAltCircleRight} class="h-3 w-3" />

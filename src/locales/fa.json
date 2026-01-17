@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "م",
+		"kilometers": "کم",
+		"feet": "ft",
+		"mile": "مایل",
+		"miles": "مایل"
+	},
 	"trip-planner": {
 		"plan_your_trip": "برنامه‌ریزی سفر",
 		"itinerary": "مسیر سفر",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "جستجوی مکان",
 		"trip_itineraries": "مسیرهای سفر",
 		"show_steps": "نمایش مراحل",
-		"hide_steps": "پنهان کردن مراحل"
+		"hide_steps": "پنهان کردن مراحل",
+		"distance_unit": "واحد مسافت",
+		"unit_auto": "تشخیص خودکار",
+		"unit_metric": "متریک (کم، م)",
+		"unit_imperial": "امپراطوری (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "ایستگاه‌ها",

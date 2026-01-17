@@ -1,4 +1,11 @@
 {
+	"units": {
+		"meters": "м",
+		"kilometers": "км",
+		"feet": "ft",
+		"mile": "миля",
+		"miles": "миль"
+	},
 	"trip-planner": {
 		"plan_your_trip": "Спланувати поїздку",
 		"itinerary": "Маршрут",
@@ -18,7 +25,11 @@
 		"search_for_a_place": "Пошук місця",
 		"trip_itineraries": "Варіанти маршруту",
 		"show_steps": "Показати кроки",
-		"hide_steps": "Сховати кроки"
+		"hide_steps": "Сховати кроки",
+		"distance_unit": "Одиниця вимірювання відстані",
+		"unit_auto": "Визначити автоматично",
+		"unit_metric": "Метрична (км, м)",
+		"unit_imperial": "Імперська (mi, ft)"
 	},
 	"tabs": {
 		"stops-and-stations": "Зупинки та станції",
