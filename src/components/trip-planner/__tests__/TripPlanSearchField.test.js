@@ -40,7 +40,7 @@ describe('TripPlanSearchField', () => {
 		user = userEvent.setup();
 
 		defaultProps = {
-			label: 'From:',
+			inputId: 'from-location-input',
 			place: '',
 			results: [],
 			isLoading: false,
@@ -54,8 +54,9 @@ describe('TripPlanSearchField', () => {
 		it('renders with default props', () => {
 			render(TripPlanSearchField, { props: defaultProps });
 
-			expect(screen.getByLabelText('From:')).toBeInTheDocument();
-			expect(screen.getByPlaceholderText('Search for a place...')).toBeInTheDocument();
+			const input = screen.getByPlaceholderText('Search for a place...');
+			expect(input).toBeInTheDocument();
+			expect(input).toHaveAttribute('id', 'from-location-input');
 		});
 
 		it('renders with initial place value', () => {
@@ -188,15 +189,13 @@ describe('TripPlanSearchField', () => {
 	});
 
 	describe('Accessibility', () => {
-		it('has proper ARIA attributes', () => {
+		it('has proper input attributes for external labeling', () => {
 			render(TripPlanSearchField, { props: defaultProps });
 
-			const input = screen.getByLabelText('From:');
-			expect(input).toHaveAttribute('id', 'location-input');
+			const input = screen.getByPlaceholderText('Search for a place...');
+			expect(input).toHaveAttribute('id', 'from-location-input');
 			expect(input).toHaveAttribute('type', 'text');
-
-			const label = screen.getByText('From:');
-			expect(label).toHaveAttribute('for', 'location-input');
+			// Label is now in the parent component (TripPlan.svelte) and connects via the inputId
 		});
 
 		it('clear button has proper accessibility label', () => {
