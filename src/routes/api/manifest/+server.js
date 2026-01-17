@@ -8,16 +8,19 @@ export async function GET({ url }) {
 	const name = url.searchParams.get('name') || env.PUBLIC_OBA_REGION_NAME || 'OneBusAway';
 	const shortName = truncateShortName(name);
 
+	const icon192 = env.MANIFEST_ICON_192_URL || '/android-chrome-192x192.png';
+	const icon512 = env.MANIFEST_ICON_512_URL || '/android-chrome-512x512.png';
+
 	const manifest = {
-		name: name,
+		name,
 		short_name: shortName,
 		start_url: startUrl,
 		display: 'standalone',
 		theme_color: '#ffffff',
 		background_color: '#ffffff',
 		icons: [
-			{ src: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
-			{ src: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
+			{ src: icon192, sizes: '192x192', type: 'image/png' },
+			{ src: icon512, sizes: '512x512', type: 'image/png' }
 		]
 	};
 
