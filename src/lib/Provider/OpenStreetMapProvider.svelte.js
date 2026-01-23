@@ -10,6 +10,7 @@ import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
+import { env } from '$env/dynamic/public';
 
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
@@ -26,6 +27,9 @@ export default class OpenStreetMapProvider {
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.showStopsRoutesAtZoom = 16;
 		this.routeLabelsVisible = false;
+		this.customStyleUrl = env.PUBLIC_MAP_STYLE_URL || null;
+		this.styleType = env.PUBLIC_MAP_STYLE_TYPE || 'standard';
+		this.cachedEsriStyle = null; // Cache transformed ESRI style
 	}
 
 	async initMap(element, options) {
@@ -47,21 +51,60 @@ export default class OpenStreetMapProvider {
 
 		this.L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-		// TODO: Make this configurable through env file
-
-		/*
-		 * for more styles https://github.com/teamapps-org/maplibre-gl-styles
-		 */
-		this.maplibreLayer = this.L.maplibreGL({
-			style: `https://tiles.openfreemap.org/styles/${this.maplibreLayer}`,
-			interactive: true,
-			dragRotate: false
-		}).addTo(this.map);
+		// Initialize the map style layer
+		await this.initializeMapStyle();
 
 		// Update route labels (on stops) visibility on zoom changes
 		this.map.on('zoomend', () => {
 			this.updateMarkersRouteLabelVisibility();
 		});
+	}
+
+	/**
+	 * Initializes the map style layer based on configuration.
+	 * Supports custom style URLs including ESRI Vector Tile Server styles.
+	 */
+	async initializeMapStyle() {
+		const style = await this.getStyleConfig();
+
+		this.maplibreLayer = this.L.maplibreGL({
+			style,
+			interactive: true,
+			dragRotate: false
+		}).addTo(this.map);
+	}
+
+	/**
+	 * Gets the appropriate style configuration based on environment settings.
+	 * For ESRI styles, fetches via server-side API route to bypass CORS.
+	 * @returns {Promise<string|Object>} Style URL or style object for MapLibre GL
+	 */
+	async getStyleConfig() {
+		// If no custom style URL, use default OpenFreeMap
+		if (!this.customStyleUrl) {
+			return `https://tiles.openfreemap.org/styles/positron`;
+		}
+
+		// For ESRI styles, fetch via server-side proxy to bypass CORS
+		if (this.styleType === 'esri') {
+			if (!this.cachedEsriStyle) {
+				try {
+					const apiUrl = `/api/map-style?url=${encodeURIComponent(this.customStyleUrl)}&type=esri`;
+					const response = await fetch(apiUrl);
+					if (!response.ok) {
+						throw new Error(`API returned ${response.status}: ${response.statusText}`);
+					}
+					this.cachedEsriStyle = await response.json();
+				} catch (error) {
+					console.error('Failed to load ESRI style, falling back to default:', error);
+					return `https://tiles.openfreemap.org/styles/positron`;
+				}
+			}
+			return this.cachedEsriStyle;
+		}
+
+		// For standard MapLibre styles, use the URL directly
+		return this.customStyleUrl;
 	}
 
 	eventListeners(mapInstance, debouncedLoadMarkers) {
@@ -430,8 +473,14 @@ export default class OpenStreetMapProvider {
 		return this.markersMap.get(stopId);
 	}
 
-	setTheme(theme) {
+	async setTheme(theme) {
 		if (!browser || !this.map) return;
+
+		// Custom styles (including ESRI) don't support theme switching
+		// They have a single style, so we skip the update
+		if (this.customStyleUrl) {
+			return;
+		}
 
 		let styleUrl;
 		if (theme === 'dark') {

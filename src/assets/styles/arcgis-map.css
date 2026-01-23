@@ -1,0 +1,68 @@
+/* ArcGIS Map Provider Custom Styles */
+
+/* Ensure overlay markers are properly positioned above the map */
+.arcgis-stop-marker-overlay,
+.arcgis-pin-marker-overlay {
+	z-index: 100;
+	pointer-events: auto;
+}
+
+/* Style ArcGIS zoom controls to match the app theme */
+.esri-ui-corner .esri-component {
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.esri-zoom .esri-widget--button {
+	background-color: #fff;
+	color: #333;
+}
+
+.esri-zoom .esri-widget--button:hover {
+	background-color: #f3f3f3;
+}
+
+/* Dark mode support for zoom controls */
+.dark .esri-zoom .esri-widget--button {
+	background-color: #374151;
+	color: #fff;
+}
+
+.dark .esri-zoom .esri-widget--button:hover {
+	background-color: #4b5563;
+}
+
+/* Popup styling */
+.esri-popup__main-container {
+	max-width: 300px;
+}
+
+.esri-popup__content {
+	margin: 0;
+	padding: 0;
+}
+
+/* Hide default popup header to use custom content */
+.esri-popup__header {
+	display: none;
+}
+
+/* Attribution styling */
+.esri-attribution {
+	font-size: 10px;
+	background-color: rgba(255, 255, 255, 0.8);
+}
+
+.dark .esri-attribution {
+	background-color: rgba(55, 65, 81, 0.8);
+	color: #d1d5db;
+}
+
+/* Ensure the map view container allows overlays to be clickable */
+.esri-view-surface {
+	z-index: 0;
+}
+
+/* Fix for overlay positioning container */
+.esri-view-root {
+	position: relative;
+}
