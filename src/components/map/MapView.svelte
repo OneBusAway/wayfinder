@@ -161,7 +161,7 @@
 				}
 
 				const center = mapInstance.getCenter();
-				const zoomLevel = mapInstance.map.getZoom();
+				const zoomLevel = mapInstance.getZoom();
 				await loadStopsAndAddMarkers(center.lat, center.lng, false, zoomLevel);
 			}, 300);
 

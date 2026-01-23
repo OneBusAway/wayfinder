@@ -595,6 +595,10 @@ export default class OpenStreetMapProvider {
 		this.map.setZoom(zoom);
 	}
 
+	getZoom() {
+		return this.map.getZoom();
+	}
+
 	getBoundingBox() {
 		const bounds = this.map.getBounds();
 		const ne = bounds.getNorthEast();

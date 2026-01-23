@@ -852,6 +852,10 @@ export default class ArcGISMapProvider {
 		this.view.zoom = zoom;
 	}
 
+	getZoom() {
+		return this.view.zoom;
+	}
+
 	getBoundingBox() {
 		if (!browser || !this.view || !this.view.extent) {
 			return { north: 0, east: 0, south: 0, west: 0 };
