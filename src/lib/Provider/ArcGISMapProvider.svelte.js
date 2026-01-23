@@ -27,11 +27,14 @@ export default class ArcGISMapProvider {
 		this.vehicleMarkers = [];
 		this.markersMap = new Map();
 		this.overlayElements = new Map(); // Track DOM elements for custom overlays
+		this.overlayContainer = null; // Container for DOM-based markers
 		this.polylines = [];
 		this.showStopsRoutesAtZoom = 16;
 		this.routeLabelsVisible = false;
 		this.currentTheme = 'light';
 		this.extentWatcher = null;
+		this.animationFrameId = null;
+		this.isAnimating = false;
 	}
 
 	async initMap(element, options) {
@@ -42,15 +45,18 @@ export default class ArcGISMapProvider {
 			{ default: Map },
 			{ default: MapView },
 			{ default: GraphicsLayer },
+			{ default: Point },
 			reactiveUtilsModule
 		] = await Promise.all([
 			import('@arcgis/core/Map.js'),
 			import('@arcgis/core/views/MapView.js'),
 			import('@arcgis/core/layers/GraphicsLayer.js'),
+			import('@arcgis/core/geometry/Point.js'),
 			import('@arcgis/core/core/reactiveUtils.js')
 		]);
 
 		this.reactiveUtils = reactiveUtilsModule;
+		this.Point = Point;
 
 		// Create graphics layers for different marker types
 		this.stopsLayer = new GraphicsLayer({ id: 'stops' });
@@ -86,22 +92,76 @@ export default class ArcGISMapProvider {
 		// Wait for view to be ready
 		await this.view.when();
 
-		// Set up extent watcher for updating marker positions and visibility
+		// Create overlay container for DOM-based markers
+		this.overlayContainer = document.createElement('div');
+		this.overlayContainer.className = 'arcgis-overlay-container';
+		this.overlayContainer.style.cssText = `
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+			overflow: hidden;
+			z-index: 50;
+		`;
+		this.view.container.appendChild(this.overlayContainer);
+
+		// Set up zoom watcher for route label visibility
 		this.extentWatcher = this.reactiveUtils.watch(
 			() => this.view.zoom,
 			() => {
 				this.updateMarkersRouteLabelVisibility();
-				this.updateOverlayPositions();
 			}
 		);
 
-		// Also watch for extent changes to update overlay positions
+		// Watch for animation state to trigger continuous position updates
 		this.reactiveUtils.watch(
-			() => this.view.extent,
-			() => {
-				this.updateOverlayPositions();
+			() => this.view.animation,
+			(animation) => {
+				if (animation) {
+					this.startAnimationLoop();
+				} else {
+					this.stopAnimationLoop();
+					this.updateOverlayPositions();
+				}
 			}
 		);
+
+		// Watch for interacting state (user dragging/zooming)
+		this.reactiveUtils.watch(
+			() => this.view.interacting,
+			(interacting) => {
+				if (interacting) {
+					this.startAnimationLoop();
+				} else {
+					this.stopAnimationLoop();
+					this.updateOverlayPositions();
+				}
+			}
+		);
+
+		// Initial position update when view is ready
+		this.updateOverlayPositions();
+	}
+
+	startAnimationLoop() {
+		if (this.isAnimating) return;
+		this.isAnimating = true;
+		const animate = () => {
+			if (!this.isAnimating) return;
+			this.updateOverlayPositions();
+			this.animationFrameId = requestAnimationFrame(animate);
+		};
+		animate();
+	}
+
+	stopAnimationLoop() {
+		this.isAnimating = false;
+		if (this.animationFrameId) {
+			cancelAnimationFrame(this.animationFrameId);
+			this.animationFrameId = null;
+		}
 	}
 
 	eventListeners(mapInstance, debouncedLoadMarkers) {
@@ -119,7 +179,7 @@ export default class ArcGISMapProvider {
 	}
 
 	addMarker(options) {
-		if (!browser || !this.view) return null;
+		if (!browser || !this.view || !this.overlayContainer) return null;
 
 		// Check if marker already exists for this stop
 		if (this.markersMap.has(options.stop.id)) {
@@ -145,8 +205,11 @@ export default class ArcGISMapProvider {
 		// Create DOM container for the Svelte component
 		const container = document.createElement('div');
 		container.className = 'arcgis-stop-marker-overlay';
-		container.style.position = 'absolute';
-		container.style.pointerEvents = 'auto';
+		container.style.cssText = `
+			position: absolute;
+			pointer-events: auto;
+			transform: translate(-50%, -50%);
+		`;
 
 		const props = $state({
 			stop: options.stop,
@@ -161,19 +224,8 @@ export default class ArcGISMapProvider {
 			props
 		});
 
-		// Append to view container
-		this.view.container.appendChild(container);
-
-		// Calculate initial screen position
-		const screenPoint = this.view.toScreen({
-			longitude: options.position.lng,
-			latitude: options.position.lat
-		});
-
-		if (screenPoint) {
-			container.style.left = `${screenPoint.x - 20}px`; // Center the 40px marker
-			container.style.top = `${screenPoint.y - 20}px`;
-		}
+		// Append to overlay container (not view.container directly)
+		this.overlayContainer.appendChild(container);
 
 		// Create marker object to track
 		const marker = {
@@ -188,28 +240,59 @@ export default class ArcGISMapProvider {
 		this.overlayElements.set(options.stop.id, marker);
 		this.markersMap.set(options.stop.id, marker);
 
+		// Calculate initial screen position
+		this.updateSingleMarkerPosition(marker);
+
 		return marker;
 	}
 
-	updateOverlayPositions() {
-		if (!browser || !this.view) return;
+	updateSingleMarkerPosition(marker) {
+		if (!this.view || !marker.container || !marker.position || !this.Point) return;
 
-		for (const marker of this.overlayElements.values()) {
-			if (!marker.container || !marker.position) continue;
-
-			const screenPoint = this.view.toScreen({
+		try {
+			// Create a Point with WGS84 spatial reference - ArcGIS will project it automatically
+			const point = new this.Point({
 				longitude: marker.position.lng,
 				latitude: marker.position.lat
 			});
 
-			if (screenPoint) {
-				if (marker.type === 'stop') {
-					marker.container.style.left = `${screenPoint.x - 20}px`;
-					marker.container.style.top = `${screenPoint.y - 20}px`;
-				} else if (marker.type === 'pin') {
-					marker.container.style.left = `${screenPoint.x - 16}px`; // 32px / 2
-					marker.container.style.top = `${screenPoint.y - 50}px`; // 50px height, anchor at bottom
+			const screenPoint = this.view.toScreen(point);
+
+			if (screenPoint && !isNaN(screenPoint.x) && !isNaN(screenPoint.y)) {
+				marker.container.style.left = `${screenPoint.x}px`;
+				marker.container.style.top = `${screenPoint.y}px`;
+				marker.container.style.display = 'block';
+			} else {
+				marker.container.style.display = 'none';
+			}
+		} catch (err) {
+			console.error('Error in updateSingleMarkerPosition:', err);
+		}
+	}
+
+	updateOverlayPositions() {
+		if (!browser || !this.view || !this.Point) return;
+
+		for (const marker of this.overlayElements.values()) {
+			if (!marker.container || !marker.position) continue;
+
+			try {
+				const point = new this.Point({
+					longitude: marker.position.lng,
+					latitude: marker.position.lat
+				});
+
+				const screenPoint = this.view.toScreen(point);
+
+				if (screenPoint && !isNaN(screenPoint.x) && !isNaN(screenPoint.y)) {
+					marker.container.style.left = `${screenPoint.x}px`;
+					marker.container.style.top = `${screenPoint.y}px`;
+					marker.container.style.display = 'block';
+				} else {
+					marker.container.style.display = 'none';
 				}
+			} catch {
+				marker.container.style.display = 'none';
 			}
 		}
 	}
@@ -232,12 +315,15 @@ export default class ArcGISMapProvider {
 	}
 
 	addPinMarker(position, text) {
-		if (!browser || !this.view) return null;
+		if (!browser || !this.view || !this.overlayContainer) return null;
 
 		const container = document.createElement('div');
 		container.className = 'arcgis-pin-marker-overlay';
-		container.style.position = 'absolute';
-		container.style.pointerEvents = 'auto';
+		container.style.cssText = `
+			position: absolute;
+			pointer-events: auto;
+			transform: translate(-50%, -100%);
+		`;
 
 		mount(TripPlanPinMarker, {
 			target: container,
@@ -246,17 +332,7 @@ export default class ArcGISMapProvider {
 			}
 		});
 
-		this.view.container.appendChild(container);
-
-		const screenPoint = this.view.toScreen({
-			longitude: position.lng,
-			latitude: position.lat
-		});
-
-		if (screenPoint) {
-			container.style.left = `${screenPoint.x - 16}px`;
-			container.style.top = `${screenPoint.y - 50}px`;
-		}
+		this.overlayContainer.appendChild(container);
 
 		const marker = {
 			id: `pin-${Date.now()}`,
@@ -267,14 +343,17 @@ export default class ArcGISMapProvider {
 
 		this.overlayElements.set(marker.id, marker);
 
+		// Set initial position
+		this.updateSingleMarkerPosition(marker);
+
 		return marker;
 	}
 
 	removePinMarker(marker) {
 		if (!marker) return;
 
-		if (marker.container && marker.container.parentNode) {
-			marker.container.parentNode.removeChild(marker.container);
+		if (marker.container) {
+			marker.container.remove();
 		}
 
 		if (marker.id) {
@@ -628,8 +707,8 @@ export default class ArcGISMapProvider {
 		if (!browser || !marker) return;
 
 		// Remove from DOM if it's an overlay marker
-		if (marker.container && marker.container.parentNode) {
-			marker.container.parentNode.removeChild(marker.container);
+		if (marker.container) {
+			marker.container.remove();
 		}
 
 		// Remove from tracking maps
@@ -644,13 +723,13 @@ export default class ArcGISMapProvider {
 
 		// Clear overlay-based markers
 		for (const marker of this.markersMap.values()) {
-			if (marker.container && marker.container.parentNode) {
-				marker.container.parentNode.removeChild(marker.container);
+			if (marker.container) {
+				marker.container.remove();
 			}
 		}
 		this.markersMap.clear();
 
-		// Clear from overlay elements tracking
+		// Clear stop markers from overlay elements tracking
 		for (const [id, marker] of this.overlayElements.entries()) {
 			if (marker.type === 'stop') {
 				this.overlayElements.delete(id);

@@ -1,10 +1,22 @@
 /* ArcGIS Map Provider Custom Styles */
 
+/* Overlay container for DOM-based markers */
+.arcgis-overlay-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	overflow: hidden;
+	z-index: 50;
+}
+
 /* Ensure overlay markers are properly positioned above the map */
 .arcgis-stop-marker-overlay,
 .arcgis-pin-marker-overlay {
-	z-index: 100;
 	pointer-events: auto;
+	will-change: transform, left, top;
 }
 
 /* Style ArcGIS zoom controls to match the app theme */
@@ -65,4 +77,10 @@
 /* Fix for overlay positioning container */
 .esri-view-root {
 	position: relative;
+}
+
+/* Ensure the overlay container is positioned correctly within ArcGIS view */
+.esri-view .arcgis-overlay-container {
+	position: absolute !important;
+	inset: 0;
 }
