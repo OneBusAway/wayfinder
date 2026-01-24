@@ -21,7 +21,7 @@
 
 <div
 	bind:this={menuRef}
-	class="absolute right-0 top-full z-[9999] mt-1 min-w-[150px] rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+	class="absolute end-0 top-full z-[9999] mt-1 min-w-[150px] rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 >
 	<div class="flex flex-col py-1">
 		{#each links as { key, value }}

@@ -15,6 +15,36 @@
  *   Vietnamese (vi), Chinese Simplified (zh-CN), Chinese Traditional (zh-TW)
  */
 import { init, addMessages, register, getLocaleFromNavigator } from 'svelte-i18n';
+import { browser } from '$app/environment';
+
+// Language metadata - single source of truth
+export const languages = [
+	{ code: 'am', nativeName: 'አማርኛ', englishName: 'Amharic' },
+	{ code: 'ar', nativeName: 'العربية', englishName: 'Arabic' },
+	{ code: 'en', nativeName: 'English', englishName: 'English' },
+	{ code: 'es', nativeName: 'Español', englishName: 'Spanish' },
+	{ code: 'fa', nativeName: 'فارسی', englishName: 'Persian' },
+	{ code: 'fr', nativeName: 'Français', englishName: 'French' },
+	{ code: 'hi', nativeName: 'हिन्दी', englishName: 'Hindi' },
+	{ code: 'ht', nativeName: 'Kreyòl ayisyen', englishName: 'Haitian Creole' },
+	{ code: 'ja', nativeName: '日本語', englishName: 'Japanese' },
+	{ code: 'km', nativeName: 'ភាសាខ្មែរ', englishName: 'Khmer' },
+	{ code: 'ko', nativeName: '한국어', englishName: 'Korean' },
+	{ code: 'lo', nativeName: 'ລາວ', englishName: 'Lao' },
+	{ code: 'om', nativeName: 'Oromoo', englishName: 'Oromo' },
+	{ code: 'pa', nativeName: 'ਪੰਜਾਬੀ', englishName: 'Punjabi' },
+	{ code: 'pl', nativeName: 'Polski', englishName: 'Polish' },
+	{ code: 'pt', nativeName: 'Português', englishName: 'Portuguese' },
+	{ code: 'ru', nativeName: 'Русский', englishName: 'Russian' },
+	{ code: 'sm', nativeName: 'Gagana Samoa', englishName: 'Samoan' },
+	{ code: 'so', nativeName: 'Soomaali', englishName: 'Somali' },
+	{ code: 'ti', nativeName: 'ትግርኛ', englishName: 'Tigrinya' },
+	{ code: 'tl', nativeName: 'Tagalog', englishName: 'Tagalog' },
+	{ code: 'uk', nativeName: 'Українська', englishName: 'Ukrainian' },
+	{ code: 'vi', nativeName: 'Tiếng Việt', englishName: 'Vietnamese' },
+	{ code: 'zh-CN', nativeName: '简体中文', englishName: 'Chinese (Simplified)' },
+	{ code: 'zh-TW', nativeName: '繁體中文', englishName: 'Chinese (Traditional)' }
+];
 
 // English loaded synchronously as the fallback locale
 import english from '../locales/en.json';
@@ -46,9 +76,23 @@ register('vi', () => import('../locales/vi.json').then((m) => m.default));
 register('zh-CN', () => import('../locales/zh-CN.json').then((m) => m.default));
 register('zh-TW', () => import('../locales/zh-TW.json').then((m) => m.default));
 
+// Get initial locale from localStorage if available, otherwise use browser preference
+function getInitialLocale() {
+	// Check localStorage first (user preference)
+	if (browser) {
+		const savedLocale = localStorage.getItem('locale');
+		if (savedLocale && languages.find((l) => l.code === savedLocale)) {
+			return savedLocale;
+		}
+	}
+
+	// Fallback to browser language (getLocaleFromNavigator handles fallback via fallbackLocale)
+	return getLocaleFromNavigator();
+}
+
 init({
 	fallbackLocale: 'en',
-	initialLocale: getLocaleFromNavigator()
+	initialLocale: getInitialLocale()
 });
 
 /**
