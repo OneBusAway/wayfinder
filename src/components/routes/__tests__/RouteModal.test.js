@@ -382,7 +382,7 @@ describe('RouteModal', () => {
 				'Connects the Mesa residential community and UC San Diego Health La Jolla medical facilities; to the main campus and UC San Diego Extension locations via a counter-clockwise loop. Service to east campus stops P502, P510 and P785 has been suspended due to a detour.'
 		};
 
-		const { container } = render(RouteModal, {
+		render(RouteModal, {
 			props: {
 				selectedRoute: routeWithLongDescription,
 				stops: mockStops,
