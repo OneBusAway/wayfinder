@@ -165,10 +165,10 @@ describe('RouteModal', () => {
 		});
 
 		const routeHeader = screen.getByText(`Route: ${mockRoute.shortName}`);
-		expect(routeHeader).toHaveClass('mb-6', 'text-center', 'text-2xl', 'font-bold', 'text-white');
+		expect(routeHeader).toHaveClass('mb-4', 'text-center', 'text-2xl', 'font-bold', 'text-white');
 
 		const routeDescription = screen.getByText(mockRoute.description);
-		expect(routeDescription).toHaveClass('mb-6', 'text-center', 'text-xl', 'text-white');
+		expect(routeDescription).toHaveClass('text-center', 'text-xl', 'text-white');
 	});
 
 	test('has proper modal structure and classes', () => {
@@ -185,7 +185,7 @@ describe('RouteModal', () => {
 		const modalContent = container.querySelector('.space-y-4');
 		expect(modalContent).toBeInTheDocument();
 
-		const headerContainer = container.querySelector('.h-36.rounded-lg.bg-brand-accent');
+		const headerContainer = container.querySelector('.min-h-36.rounded-lg.bg-brand-accent');
 		expect(headerContainer).toBeInTheDocument();
 
 		const stopsContainer = container.querySelector('.space-y-2.rounded-lg');
@@ -372,6 +372,63 @@ describe('RouteModal', () => {
 		const longNameElements = screen.getAllByText(/VeryLongRouteNameThatMightCauseLayoutIssues/);
 		expect(longNameElements.length).toBeGreaterThan(0);
 		expect(screen.getByText(/extremely long route description/)).toBeInTheDocument();
+	});
+
+	test('shows "Show more" button for long descriptions and toggles correctly', async () => {
+		const user = userEvent.setup();
+		const routeWithLongDescription = {
+			...mockRoute,
+			description:
+				'Connects the Mesa residential community and UC San Diego Health La Jolla medical facilities; to the main campus and UC San Diego Extension locations via a counter-clockwise loop. Service to east campus stops P502, P510 and P785 has been suspended due to a detour.'
+		};
+
+		const { container } = render(RouteModal, {
+			props: {
+				selectedRoute: routeWithLongDescription,
+				stops: mockStops,
+				mapProvider: mockMapProvider,
+				closePane: mockClosePane
+			}
+		});
+
+		// Should show "Show more" button for long descriptions
+		const showMoreButton = screen.getByRole('button', { name: /show more/i });
+		expect(showMoreButton).toBeInTheDocument();
+
+		// Description should be truncated initially
+		const description = screen.getByText(routeWithLongDescription.description);
+		expect(description).toHaveClass('line-clamp-3');
+
+		// Click "Show more" to expand
+		await user.click(showMoreButton);
+		expect(screen.getByRole('button', { name: /show less/i })).toBeInTheDocument();
+		expect(description).not.toHaveClass('line-clamp-3');
+
+		// Click "Show less" to collapse
+		const showLessButton = screen.getByRole('button', { name: /show less/i });
+		await user.click(showLessButton);
+		expect(screen.getByRole('button', { name: /show more/i })).toBeInTheDocument();
+		expect(description).toHaveClass('line-clamp-3');
+	});
+
+	test('does not show "Show more" button for short descriptions', () => {
+		const routeWithShortDescription = {
+			...mockRoute,
+			description: 'Short route description'
+		};
+
+		render(RouteModal, {
+			props: {
+				selectedRoute: routeWithShortDescription,
+				stops: mockStops,
+				mapProvider: mockMapProvider,
+				closePane: mockClosePane
+			}
+		});
+
+		// Should not show "Show more" button for short descriptions
+		expect(screen.queryByRole('button', { name: /show more/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /show less/i })).not.toBeInTheDocument();
 	});
 
 	test('displays title function returns empty string for missing route', () => {
