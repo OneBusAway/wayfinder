@@ -6,7 +6,6 @@
 	let { selectedRoute, stops, mapProvider, closePane } = $props();
 
 	let showFullDescription = $state(false);
-	let descriptionRef = $state(null);
 
 	// Check if description is long enough to need truncation (roughly 3 lines)
 	const isDescriptionLong = $derived(
@@ -48,7 +47,6 @@
 					</h1>
 					<div class="relative">
 						<h2
-							bind:this={descriptionRef}
 							class="text-center text-xl text-white transition-all duration-200 {showFullDescription
 								? ''
 								: 'line-clamp-3 max-h-24 overflow-hidden'}"
@@ -61,7 +59,7 @@
 								onclick={toggleDescription}
 								class="mt-2 w-full rounded text-center text-sm font-semibold text-white underline hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-accent"
 							>
-								{showFullDescription ? 'Show less' : 'Show more'}
+								{showFullDescription ? $t('show_less') : $t('show_more')}
 							</button>
 						{/if}
 					</div>

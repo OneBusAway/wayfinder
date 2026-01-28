@@ -12,6 +12,8 @@ vi.mock('svelte-i18n', () => ({
 		subscribe: vi.fn((fn) => {
 			fn((key, options) => {
 				const translations = {
+					show_more: 'Show more',
+					show_less: 'Show less',
 					route_modal_title: options?.values?.name
 						? `Route ${options.values.name}`
 						: 'route_modal_title'
@@ -273,6 +275,8 @@ describe('RouteModal', () => {
 		expect(screen.getByText(`Route: ${routeWithoutDescription.shortName}`)).toBeInTheDocument();
 		// Description should not be rendered
 		expect(screen.queryByText(mockRoute.description)).not.toBeInTheDocument();
+		// "Show more" button should not be rendered when description is null
+		expect(screen.queryByRole('button', { name: /show more/i })).not.toBeInTheDocument();
 	});
 
 	test('provides proper ARIA labels for accessibility', () => {
@@ -429,6 +433,37 @@ describe('RouteModal', () => {
 		// Should not show "Show more" button for short descriptions
 		expect(screen.queryByRole('button', { name: /show more/i })).not.toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: /show less/i })).not.toBeInTheDocument();
+	});
+
+	test('resets expanded state when route changes', async () => {
+		const user = userEvent.setup();
+		const longDescription = 'A'.repeat(150);
+		const route1 = { ...mockRoute, id: 'route1', description: longDescription };
+		const route2 = { ...mockRoute, id: 'route2', description: longDescription };
+
+		const { rerender } = render(RouteModal, {
+			props: {
+				selectedRoute: route1,
+				stops: mockStops,
+				mapProvider: mockMapProvider,
+				closePane: mockClosePane
+			}
+		});
+
+		// Expand the description
+		await user.click(screen.getByRole('button', { name: /show more/i }));
+		expect(screen.getByRole('button', { name: /show less/i })).toBeInTheDocument();
+
+		// Change to different route
+		await rerender({
+			selectedRoute: route2,
+			stops: mockStops,
+			mapProvider: mockMapProvider,
+			closePane: mockClosePane
+		});
+
+		// Should be collapsed again
+		expect(screen.getByRole('button', { name: /show more/i })).toBeInTheDocument();
 	});
 
 	test('displays title function returns empty string for missing route', () => {
