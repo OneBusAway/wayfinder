@@ -77,12 +77,16 @@ register('zh-CN', () => import('../locales/zh-CN.json').then((m) => m.default));
 register('zh-TW', () => import('../locales/zh-TW.json').then((m) => m.default));
 
 // Get initial locale from localStorage if available, otherwise use browser preference
-function getInitialLocale() {
+export function getInitialLocale() {
 	// Check localStorage first (user preference)
 	if (browser) {
-		const savedLocale = localStorage.getItem('locale');
-		if (savedLocale && languages.find((l) => l.code === savedLocale)) {
-			return savedLocale;
+		try {
+			const savedLocale = localStorage.getItem('locale');
+			if (savedLocale && languages.find((l) => l.code === savedLocale)) {
+				return savedLocale;
+			}
+		} catch (e) {
+			console.warn('Unable to read locale from localStorage:', e.message);
 		}
 	}
 

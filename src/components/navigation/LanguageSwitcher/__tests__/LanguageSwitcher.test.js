@@ -9,7 +9,9 @@ vi.mock('$lib/i18n', () => ({
 		{ code: 'en', nativeName: 'English', englishName: 'English' },
 		{ code: 'es', nativeName: 'Español', englishName: 'Spanish' },
 		{ code: 'ar', nativeName: 'العربية', englishName: 'Arabic' },
-		{ code: 'pl', nativeName: 'Polski', englishName: 'Polish' }
+		{ code: 'pl', nativeName: 'Polski', englishName: 'Polish' },
+		{ code: 'zh-CN', nativeName: '简体中文', englishName: 'Chinese (Simplified)' },
+		{ code: 'zh-TW', nativeName: '繁體中文', englishName: 'Chinese (Traditional)' }
 	]
 }));
 
@@ -485,6 +487,73 @@ describe('LanguageSwitcher', () => {
 			await waitFor(() => {
 				expect(screen.getByText('Español')).toBeInTheDocument();
 			});
+		});
+	});
+
+	describe('Locale Variant Handling', () => {
+		test('handles locale variants like en-US by extracting base code', () => {
+			currentLocale = 'en-US';
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			// Should show "English" (base code 'en')
+			expect(button.textContent).toContain('English');
+		});
+
+		test('handles locale variants like es-ES by extracting base code', () => {
+			currentLocale = 'es-ES';
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			// Should show "Español" (base code 'es')
+			expect(button.textContent).toContain('Español');
+		});
+
+		test('handles exact locale match for zh-CN', () => {
+			currentLocale = 'zh-CN';
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			// Should show Chinese Simplified name
+			expect(button.textContent).toContain('简体中文');
+		});
+
+		test('handles exact locale match for zh-TW', () => {
+			currentLocale = 'zh-TW';
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			// Should show Chinese Traditional name
+			expect(button.textContent).toContain('繁體中文');
+		});
+
+		test('falls back to EN for unknown locale variants', () => {
+			currentLocale = 'xx-XX';
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			// Should fallback to 'EN'
+			expect(button.textContent).toContain('EN');
+		});
+
+		test('handles empty locale code by normalizing to fallback', () => {
+			currentLocale = '';
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			// Component normalizes empty string to 'en' (fallback locale), so shows "English"
+			// This is expected behavior: English is the fallback locale, so empty/null should default to it
+			expect(button.textContent).toContain('English');
+		});
+
+		test('handles null locale code by normalizing to fallback', () => {
+			currentLocale = null;
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			// Component normalizes null to 'en' (fallback locale), so shows "English"
+			// This is expected behavior: English is the fallback locale, so empty/null should default to it
+			expect(button.textContent).toContain('English');
 		});
 	});
 });

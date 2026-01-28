@@ -79,7 +79,11 @@
 	function handleLanguageSelect(langCode) {
 		if (browser) {
 			locale.set(langCode);
-			localStorage.setItem('locale', langCode);
+			try {
+				localStorage.setItem('locale', langCode);
+			} catch (e) {
+				console.warn('Unable to save language preference to localStorage:', e.message);
+			}
 		}
 		isOpen = false;
 	}
@@ -112,6 +116,7 @@
 			onclick={() => (isOpen = !isOpen)}
 			aria-label="Select language"
 			aria-expanded={isOpen}
+			aria-haspopup="listbox"
 			class="flex h-8 items-center justify-center gap-1 rounded-md border bg-surface/80 px-2 font-semibold text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
 		>
 			<svg
