@@ -144,5 +144,9 @@
 		"page": "Strona",
 		"show": "Pokaż",
 		"hide": "Ukryj"
+	},
+	"language_switcher": {
+		"select_language": "Wybierz język: {language}",
+		"available_languages": "Dostępne języki"
 	}
 }

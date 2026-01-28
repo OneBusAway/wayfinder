@@ -148,5 +148,9 @@
 	"view_stop_information": "Информация об остановке",
 	"stop_details": {
 		"view_details": "Подробнее"
+	},
+	"language_switcher": {
+		"select_language": "Выберите язык: {language}",
+		"available_languages": "Доступные языки"
 	}
 }

@@ -1,6 +1,6 @@
 <script>
 	import { languages } from '$lib/i18n';
-	import { locale } from 'svelte-i18n';
+	import { locale, t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { env } from '$env/dynamic/public';
 
@@ -114,7 +114,7 @@
 		<button
 			type="button"
 			onclick={() => (isOpen = !isOpen)}
-			aria-label="Select language"
+			aria-label={$t('language_switcher.select_language', { values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) } })}
 			aria-expanded={isOpen}
 			aria-haspopup="listbox"
 			class="flex h-8 items-center justify-center gap-1 rounded-md border bg-surface/80 px-2 font-semibold text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
@@ -140,10 +140,12 @@
 			<div
 				class="absolute end-0 top-full z-[9999] mt-1 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 			>
-				<div class="flex flex-col py-1">
+				<div role="listbox" aria-label={$t('language_switcher.available_languages')} class="flex flex-col py-1">
 					{#each languages as lang}
 						<button
 							type="button"
+							role="option"
+							aria-selected={lang.code === currentLocale}
 							onclick={() => handleLanguageSelect(lang.code)}
 							class="block w-full whitespace-nowrap px-4 py-2 text-left text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
 							currentLocale

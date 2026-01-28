@@ -148,5 +148,9 @@
 	"view_stop_information": "ເບິ່ງຂໍ້ມູນປ້າຍ",
 	"stop_details": {
 		"view_details": "ເບິ່ງລາຍລະອຽດ"
+	},
+	"language_switcher": {
+		"select_language": "ເລືອກພາສາ: {language}",
+		"available_languages": "ພາສາທີ່ມີ"
 	}
 }

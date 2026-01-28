@@ -148,5 +148,9 @@
 	"view_stop_information": "Ver Informações da Parada",
 	"stop_details": {
 		"view_details": "Ver Detalhes"
+	},
+	"language_switcher": {
+		"select_language": "Selecionar idioma: {language}",
+		"available_languages": "Idiomas disponíveis"
 	}
 }

@@ -148,5 +148,9 @@
 	"view_stop_information": "Odeeffannoo Dhaabbii Ilaali",
 	"stop_details": {
 		"view_details": "Bal'inaan Ilaali"
+	},
+	"language_switcher": {
+		"select_language": "Afaan filadhu: {language}",
+		"available_languages": "Afaanota jiran"
 	}
 }

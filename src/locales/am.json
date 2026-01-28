@@ -148,5 +148,9 @@
 	"view_stop_information": "የማቆሚያ መረጃ ይመልከቱ",
 	"stop_details": {
 		"view_details": "ዝርዝሮችን ይመልከቱ"
+	},
+	"language_switcher": {
+		"select_language": "ቋንቋ ይምረጡ: {language}",
+		"available_languages": "የሚገኙ ቋንቋዎች"
 	}
 }

@@ -148,5 +148,9 @@
 	"view_stop_information": "ሓበሬታ መዕረፊ ርአ",
 	"stop_details": {
 		"view_details": "ዝርዝር ርአ"
+	},
+	"language_switcher": {
+		"select_language": "ቋንቋ ምረጽ: {language}",
+		"available_languages": "ዝርከቡ ቋንቋታት"
 	}
 }

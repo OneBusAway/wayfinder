@@ -148,5 +148,9 @@
 	"view_stop_information": "查看站点信息",
 	"stop_details": {
 		"view_details": "查看详情"
+	},
+	"language_switcher": {
+		"select_language": "选择语言: {language}",
+		"available_languages": "可用语言"
 	}
 }
