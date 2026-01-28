@@ -148,5 +148,9 @@
 	"view_stop_information": "ਸਟਾਪ ਜਾਣਕਾਰੀ ਦੇਖੋ",
 	"stop_details": {
 		"view_details": "ਵੇਰਵੇ ਦੇਖੋ"
+	},
+	"language_switcher": {
+		"select_language": "ਭਾਸ਼ਾ ਚੁਣੋ: {language}",
+		"available_languages": "ਉਪਲਬਧ ਭਾਸ਼ਾਵਾਂ"
 	}
 }

@@ -149,5 +149,9 @@
 	"view_stop_information": "Tingnan ang impormasyon ng hintuan",
 	"stop_details": {
 		"view_details": "Tingnan ang detalye"
+	},
+	"language_switcher": {
+		"select_language": "Piliin ang wika: {language}",
+		"available_languages": "Mga available na wika"
 	}
 }

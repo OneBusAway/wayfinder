@@ -148,5 +148,9 @@
 	"view_stop_information": "स्टॉप जानकारी देखें",
 	"stop_details": {
 		"view_details": "विवरण देखें"
+	},
+	"language_switcher": {
+		"select_language": "भाषा चुनें: {language}",
+		"available_languages": "उपलब्ध भाषाएं"
 	}
 }

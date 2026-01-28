@@ -148,5 +148,9 @@
 	"view_stop_information": "عرض معلومات المحطة",
 	"stop_details": {
 		"view_details": "عرض التفاصيل"
+	},
+	"language_switcher": {
+		"select_language": "اختر اللغة: {language}",
+		"available_languages": "اللغات المتاحة"
 	}
 }

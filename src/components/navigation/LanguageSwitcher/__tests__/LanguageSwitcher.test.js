@@ -32,8 +32,26 @@ vi.mock('svelte-i18n', () => {
 			localeSubscribers.forEach((fn) => fn(newLocale));
 		})
 	};
+	// Mock t function that returns the key with interpolated values
+	const mockT = vi.fn((key, options) => {
+		if (key === 'language_switcher.select_language') {
+			return `Select language: ${options?.values?.language || ''}`;
+		}
+		if (key === 'language_switcher.available_languages') {
+			return 'Available languages';
+		}
+		return key;
+	});
+	// Create a mock svelte store for t
+	const mockTStore = {
+		subscribe: vi.fn((fn) => {
+			fn(mockT);
+			return { unsubscribe: () => {} };
+		})
+	};
 	return {
-		locale: mockLocale
+		locale: mockLocale,
+		t: mockTStore
 	};
 });
 
@@ -445,6 +463,33 @@ describe('LanguageSwitcher', () => {
 			expect(localStorage.setItem).toHaveBeenCalledWith('locale', 'es');
 		});
 
+		test('handles localStorage.setItem failure gracefully', async () => {
+			const originalSetItem = localStorage.setItem;
+			localStorage.setItem = vi.fn(() => {
+				throw new Error('QuotaExceededError');
+			});
+			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+			const user = userEvent.setup();
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			await user.click(button);
+
+			const spanishOption = screen.getByText('Español (Spanish)');
+			await user.click(spanishOption);
+
+			// Should still update locale even if localStorage fails
+			expect(mockLocale.set).toHaveBeenCalledWith('es');
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Unable to save language preference to localStorage:',
+				'QuotaExceededError'
+			);
+
+			localStorage.setItem = originalSetItem;
+			consoleWarnSpy.mockRestore();
+		});
+
 		test('closes dropdown after language selection', async () => {
 			const user = userEvent.setup();
 			render(LanguageSwitcher);
@@ -471,6 +516,43 @@ describe('LanguageSwitcher', () => {
 
 			await user.click(button);
 			expect(button).toHaveAttribute('aria-expanded', 'true');
+		});
+
+		test('button aria-label includes current language', () => {
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language: english/i });
+			expect(button).toBeInTheDocument();
+		});
+
+		test('dropdown has role="listbox"', async () => {
+			const user = userEvent.setup();
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			await user.click(button);
+
+			const listbox = screen.getByRole('listbox', { name: /available languages/i });
+			expect(listbox).toBeInTheDocument();
+		});
+
+		test('language options have role="option" and aria-selected', async () => {
+			const user = userEvent.setup();
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button', { name: /select language/i });
+			await user.click(button);
+
+			const options = screen.getAllByRole('option');
+			expect(options.length).toBeGreaterThan(0);
+
+			// Current language (English) should be selected
+			const englishOption = options.find((opt) => opt.textContent === 'English');
+			expect(englishOption).toHaveAttribute('aria-selected', 'true');
+
+			// Spanish should not be selected
+			const spanishOption = options.find((opt) => opt.textContent?.includes('Español'));
+			expect(spanishOption).toHaveAttribute('aria-selected', 'false');
 		});
 	});
 

@@ -148,5 +148,9 @@
 	"view_stop_information": "Переглянути інформацію про зупинку",
 	"stop_details": {
 		"view_details": "Детальніше"
+	},
+	"language_switcher": {
+		"select_language": "Оберіть мову: {language}",
+		"available_languages": "Доступні мови"
 	}
 }

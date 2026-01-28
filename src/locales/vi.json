@@ -148,5 +148,9 @@
 	"view_stop_information": "Xem thông tin trạm dừng",
 	"stop_details": {
 		"view_details": "Xem chi tiết"
+	},
+	"language_switcher": {
+		"select_language": "Chọn ngôn ngữ: {language}",
+		"available_languages": "Ngôn ngữ có sẵn"
 	}
 }

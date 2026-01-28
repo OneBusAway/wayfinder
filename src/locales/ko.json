@@ -148,5 +148,9 @@
 	"view_stop_information": "정류장 정보 보기",
 	"stop_details": {
 		"view_details": "상세 정보 보기"
+	},
+	"language_switcher": {
+		"select_language": "언어 선택: {language}",
+		"available_languages": "사용 가능한 언어"
 	}
 }

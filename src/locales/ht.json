@@ -148,5 +148,9 @@
 	"view_stop_information": "Gade Enfòmasyon Arè",
 	"stop_details": {
 		"view_details": "Gade Detay"
+	},
+	"language_switcher": {
+		"select_language": "Chwazi lang: {language}",
+		"available_languages": "Lang ki disponib"
 	}
 }

@@ -166,5 +166,9 @@
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
 		"view_details": "View Details"
+	},
+	"language_switcher": {
+		"select_language": "Select language: {language}",
+		"available_languages": "Available languages"
 	}
 }

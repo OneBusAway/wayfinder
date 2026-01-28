@@ -148,5 +148,9 @@
 	"view_stop_information": "Vaʻai Faʻamatalaga o le Nofoaga Taofi",
 	"stop_details": {
 		"view_details": "Vaʻai Faʻamatalaga"
+	},
+	"language_switcher": {
+		"select_language": "Filifili gagana: {language}",
+		"available_languages": "Gagana avanoa"
 	}
 }
