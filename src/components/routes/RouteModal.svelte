@@ -57,6 +57,7 @@
 							<button
 								type="button"
 								onclick={toggleDescription}
+								aria-expanded={showFullDescription}
 								class="mt-2 w-full rounded text-center text-sm font-semibold text-white underline hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-accent"
 							>
 								{showFullDescription ? $t('show_less') : $t('show_more')}

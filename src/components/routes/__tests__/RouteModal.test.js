@@ -398,6 +398,7 @@ describe('RouteModal', () => {
 		// Should show "Show more" button for long descriptions
 		const showMoreButton = screen.getByRole('button', { name: /show more/i });
 		expect(showMoreButton).toBeInTheDocument();
+		expect(showMoreButton).toHaveAttribute('aria-expanded', 'false');
 
 		// Description should be truncated initially
 		const description = screen.getByText(routeWithLongDescription.description);
@@ -405,13 +406,17 @@ describe('RouteModal', () => {
 
 		// Click "Show more" to expand
 		await user.click(showMoreButton);
-		expect(screen.getByRole('button', { name: /show less/i })).toBeInTheDocument();
+		const showLessButtonAfterExpand = screen.getByRole('button', { name: /show less/i });
+		expect(showLessButtonAfterExpand).toBeInTheDocument();
+		expect(showLessButtonAfterExpand).toHaveAttribute('aria-expanded', 'true');
 		expect(description).not.toHaveClass('line-clamp-3');
 
 		// Click "Show less" to collapse
 		const showLessButton = screen.getByRole('button', { name: /show less/i });
 		await user.click(showLessButton);
-		expect(screen.getByRole('button', { name: /show more/i })).toBeInTheDocument();
+		const showMoreButtonAfterCollapse = screen.getByRole('button', { name: /show more/i });
+		expect(showMoreButtonAfterCollapse).toBeInTheDocument();
+		expect(showMoreButtonAfterCollapse).toHaveAttribute('aria-expanded', 'false');
 		expect(description).toHaveClass('line-clamp-3');
 	});
 
