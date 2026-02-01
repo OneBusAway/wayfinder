@@ -29,11 +29,10 @@ See `.env.example` for an example of the required keys and values.
 - `PUBLIC_OBA_LOGO_URL` - string: (required) The URL of your transit agency's logo.
 - `OBA_LOGO_URL_DARK` - string: (optional) The URL of your transit agency's logo for dark mode. Falls back to `PUBLIC_OBA_LOGO_URL` if not specified.
 - `SHOW_REGION_NAME_IN_NAV_BAR` - boolean: (optional) Set to "false" to hide the region name text in the navigation bar. Defaults to true.
-- `MANIFEST_ICON_192_URL` - string: (optional) URL to the 192×192 Androidn manifest icon (used for Add to Home Screen).  
-  Defaults to `/android-chrome-192x192.png` if not specified.
-- `MANIFEST_ICON_512_URL` - string: (optional) URL to the 512×512 Android manifest icon (used for Add to Home Screen).Defaults to `/android-chrome-512x512.png` if not specified.
-- `PUBLIC_APPLE_TOUCH_ICON_URL` - string: (optional) URL to the Apple touch icon used on iOS home screens.Defaults to `/apple-touch-icon.png` if not specified.
-- `PUBLIC_FAVICON_URL` - string: (optional) URL to the browser tab favicon.Defaults to `/favicon.png` if not specified.
+- `PRIVATE_MANIFEST_ICON_192_URL` - string: (optional) URL to the 192×192 Android manifest icon (used for Add to Home Screen). Defaults to `/android-chrome-192x192.png` if not specified.
+- `PRIVATE_MANIFEST_ICON_512_URL` - string: (optional) URL to the 512×512 Android manifest icon (used for Add to Home Screen). Defaults to `/android-chrome-512x512.png` if not specified.
+- `PUBLIC_APPLE_TOUCH_ICON_URL` - string: (optional) URL to the Apple touch icon used on iOS home screens. Defaults to `/apple-touch-icon.png` if not specified.
+- `PUBLIC_FAVICON_URL` - string: (optional) URL to the browser tab favicon. Defaults to `/favicon.png` if not specified.
 - `PUBLIC_NAV_BAR_LINKS` - JSON string: (required) A dictionary of the links displayed across the navigation bar.
 
 ### Colors
