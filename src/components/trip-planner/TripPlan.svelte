@@ -28,7 +28,8 @@
 	let fromMarker;
 	let toMarker;
 	let loading = $state(false);
-	let lockSelectLocation = false;
+	let fromRequestId = 0;
+	let toRequestId = 0;
 
 	async function fetchAutocompleteResults(query) {
 		const response = await fetch(`/api/oba/place-suggestions?query=${encodeURIComponent(query)}`);
@@ -81,25 +82,42 @@
 	}
 
 	async function selectLocation(suggestion, isFrom) {
-		if (lockSelectLocation) return;
-		lockSelectLocation = true;
+		const currentRequestId = isFrom ? ++fromRequestId : ++toRequestId;
+
+		if (isFrom) {
+			fromResults = [];
+		} else {
+			toResults = [];
+		}
+
 		try {
 			const response = await geocodeLocation(suggestion.name);
+
+			const isStale = isFrom
+				? currentRequestId !== fromRequestId
+				: currentRequestId !== toRequestId;
+
+			if (isStale) {
+				return;
+			}
+
 			if (isFrom) {
+				if (fromMarker) {
+					mapProvider.removePinMarker(fromMarker);
+				}
 				selectedFrom = response.location.geometry.location;
 				fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
 				fromPlace = suggestion.name;
-				fromResults = [];
 			} else {
+				if (toMarker) {
+					mapProvider.removePinMarker(toMarker);
+				}
 				selectedTo = response.location.geometry.location;
 				toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
 				toPlace = suggestion.name;
-				toResults = [];
 			}
 		} catch (error) {
 			console.error('Error selecting location:', error);
-		} finally {
-			lockSelectLocation = false;
 		}
 	}
 
@@ -118,7 +136,6 @@
 	}
 
 	async function fetchTripPlan(from, to) {
-		// Validate coordinates before making API request
 		const fromValidation = validateCoordinates(from);
 		const toValidation = validateCoordinates(to);
 
@@ -139,11 +156,6 @@
 			}
 
 			const data = await response.json();
-
-			// Log the actual OTP server URL for debugging
-			// if (data._otpUrl) {
-			// 	console.log('OTP Server Request:', data._otpUrl);
-			// }
 
 			return data;
 		} catch (error) {
