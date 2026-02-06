@@ -1,13 +1,64 @@
-import { PUBLIC_ANALYTICS_DOMAIN, PUBLIC_ANALYTICS_ENABLED } from '$env/static/public';
+import { env as dynamicEnv } from '$env/dynamic/public';
 
-class PlausibleAnalytics {
-	constructor() {
+export class PlausibleAnalytics {
+	constructor(env) {
+		this.env = env || dynamicEnv;
 		this.defaultProperties = {};
-		this.enabled = PUBLIC_ANALYTICS_ENABLED === 'true' && PUBLIC_ANALYTICS_DOMAIN !== '';
+	}
+
+	isEnabled() {
+		return (
+			this.env.PUBLIC_ANALYTICS_ENABLED === 'true' &&
+			!!this.env.PUBLIC_ANALYTICS_DOMAIN &&
+			!!this.env.PUBLIC_ANALYTICS_API_HOST
+		);
+	}
+
+	getEventUrl() {
+		return `${this.env.PUBLIC_ANALYTICS_API_HOST}/api/event`;
+	}
+
+	getDomain() {
+		return this.env.PUBLIC_ANALYTICS_DOMAIN;
+	}
+
+	async forwardEvent({ name, url, referrer, props }) {
+		if (!this.isEnabled()) {
+			return { status: 'analytics disabled' };
+		}
+
+		if (!name || !url) {
+			throw new Error('forwardEvent requires name and url');
+		}
+
+		const res = await fetch(this.getEventUrl(), {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				domain: this.getDomain(),
+				name,
+				url,
+				referrer,
+				props
+			})
+		});
+
+		if (!res.ok) {
+			const err = new Error(`Error sending event: ${res.statusText}`);
+			err.upstreamStatus = res.status;
+			throw err;
+		}
+
+		const text = await res.text();
+		try {
+			return JSON.parse(text);
+		} catch {
+			return { status: text };
+		}
 	}
 
 	async postEvent(pageURL, eventName, props = {}) {
-		if (!this.enabled) {
+		if (!this.isEnabled()) {
 			console.debug('Analytics disabled: skipping event');
 			return;
 		}

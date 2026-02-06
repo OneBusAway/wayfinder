@@ -99,7 +99,7 @@ Configured in `src/lib/i18n.js`. English loaded synchronously as fallback; 24 ot
 - Setup file: `vitest-setup.js` (mocks for env vars, i18n, SvelteKit stores, browser APIs)
 - Coverage threshold: 70% for branches, functions, lines, statements
 
-When writing tests, the setup file already mocks `$env/static/public`, `$env/static/private`, `svelte-i18n`, `$app/stores`, and common browser APIs (ResizeObserver, IntersectionObserver, geolocation, localStorage, matchMedia).
+When writing tests, the setup file already mocks `$env/static/public`, `$env/static/private`, `$env/dynamic/public`, `svelte-i18n`, `$app/stores`, and common browser APIs (ResizeObserver, IntersectionObserver, geolocation, localStorage, matchMedia). Tests that need to mutate dynamic env values should declare their own `vi.mock('$env/dynamic/public', ...)` with a getter pattern (see `LanguageSwitcher.test.js` or `PlausibleAnalytics.test.js` for examples).
 
 ## Styling
 
