@@ -1,7 +1,7 @@
 <script>
 	import SearchField from '$components/search/SearchField.svelte';
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { faMapPin, faSignsPost } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
@@ -163,7 +163,7 @@
 		location = null;
 		query = null;
 
-		clearVehicleMarkersMap();
+		clearVehicleMarkersMap(mapProvider);
 		mapProvider.clearVehicleMarkers();
 		clearInterval(currentIntervalId);
 	}
@@ -186,14 +186,28 @@
 		}
 	});
 
+	let unsubscribeMapLoaded;
+
+	function handleRouteSelectedFromModal(event) {
+		handleRouteClick(event.detail.route);
+	}
+
 	onMount(() => {
-		isMapLoaded.subscribe((value) => {
+		unsubscribeMapLoaded = isMapLoaded.subscribe((value) => {
 			mapLoaded = value;
 		});
 
-		window.addEventListener('routeSelectedFromModal', (event) => {
-			handleRouteClick(event.detail.route);
-		});
+		window.addEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+	});
+
+	onDestroy(() => {
+		if (unsubscribeMapLoaded) {
+			unsubscribeMapLoaded();
+		}
+		window.removeEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+		if (currentIntervalId) {
+			clearInterval(currentIntervalId);
+		}
 	});
 </script>
 
