@@ -15,6 +15,16 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 	disconnect: vi.fn()
 }));
 
+// Mock dynamic environment variables (fallback for tests that don't provide their own mock).
+// Test files that need to mutate env values should declare their own vi.mock with a getter pattern.
+vi.mock('$env/dynamic/public', () => ({
+	env: {
+		PUBLIC_ANALYTICS_DOMAIN: '',
+		PUBLIC_ANALYTICS_ENABLED: 'false',
+		PUBLIC_ANALYTICS_API_HOST: ''
+	}
+}));
+
 // Mock environment variables
 vi.mock('$env/static/public', () => ({
 	PUBLIC_OBA_REGION_NAME: 'Test Region',
@@ -22,8 +32,6 @@ vi.mock('$env/static/public', () => ({
 	PUBLIC_OBA_SERVER_URL: 'https://api.test.com',
 	PUBLIC_OBA_MAP_PROVIDER: 'osm',
 	PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}',
-	PUBLIC_ANALYTICS_DOMAIN: '',
-	PUBLIC_ANALYTICS_ENABLED: 'false',
 	PUBLIC_DISTANCE_UNIT: '' // Empty = auto-detect from browser
 }));
 

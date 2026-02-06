@@ -114,7 +114,9 @@
 		<button
 			type="button"
 			onclick={() => (isOpen = !isOpen)}
-			aria-label={$t('language_switcher.select_language', { values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) } })}
+			aria-label={$t('language_switcher.select_language', {
+				values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) }
+			})}
 			aria-expanded={isOpen}
 			aria-haspopup="listbox"
 			class="flex h-8 items-center justify-center gap-1 rounded-md border bg-surface/80 px-2 font-semibold text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
@@ -140,7 +142,11 @@
 			<div
 				class="absolute end-0 top-full z-[9999] mt-1 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 			>
-				<div role="listbox" aria-label={$t('language_switcher.available_languages')} class="flex flex-col py-1">
+				<div
+					role="listbox"
+					aria-label={$t('language_switcher.available_languages')}
+					class="flex flex-col py-1"
+				>
 					{#each languages as lang}
 						<button
 							type="button"
