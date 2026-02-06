@@ -145,5 +145,9 @@
 		"page": "Página",
 		"show": "Mostrar",
 		"hide": "Ocultar"
+	},
+	"language_switcher": {
+		"select_language": "Seleccionar idioma: {language}",
+		"available_languages": "Idiomas disponibles"
 	}
 }

@@ -148,5 +148,9 @@
 	"view_stop_information": "Eeg macluumaadka joogsiga",
 	"stop_details": {
 		"view_details": "Eeg faahfaahinta"
+	},
+	"language_switcher": {
+		"select_language": "Dooro luuqadda: {language}",
+		"available_languages": "Luuqadaha la heli karo"
 	}
 }

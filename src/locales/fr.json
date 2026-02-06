@@ -148,5 +148,9 @@
 	"view_stop_information": "Voir les informations de l'arrêt",
 	"stop_details": {
 		"view_details": "Voir les détails"
+	},
+	"language_switcher": {
+		"select_language": "Sélectionner la langue : {language}",
+		"available_languages": "Langues disponibles"
 	}
 }

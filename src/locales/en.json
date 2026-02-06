@@ -102,6 +102,8 @@
 		"close": "Close"
 	},
 	"arrivals_and_departures": "Arrivals and departures",
+	"show_more": "Show more",
+	"show_less": "Show less",
 	"no_arrivals_or_departures_in_next_30_minutes": "No arrivals or departures in the next 30 minutes",
 	"stop": "Stop",
 	"routes": "Routes",
@@ -166,5 +168,9 @@
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
 		"view_details": "View Details"
+	},
+	"language_switcher": {
+		"select_language": "Select language: {language}",
+		"available_languages": "Available languages"
 	}
 }

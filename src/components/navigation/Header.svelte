@@ -7,6 +7,7 @@
 
 	import { onMount } from 'svelte';
 	import OverflowMenu from './OverflowMenu.svelte';
+	import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher.svelte';
 
 	const showRegionName = __SHOW_REGION_NAME_IN_NAV_BAR__;
 
@@ -43,6 +44,8 @@
 	let overflowLinks = $state([]);
 	let logoHeight = $state(DEFAULT_LOGO_HEIGHT);
 	let baseLogoWidth = 0; // Logo width at default height
+	let languageSwitcherWidth = $state(0);
+	let languageSwitcherElement;
 
 	if (PUBLIC_NAV_BAR_LINKS) {
 		headerLinks = JSON.parse(PUBLIC_NAV_BAR_LINKS);
@@ -91,7 +94,10 @@
 				: (baseLogoWidth * logoHeight) / DEFAULT_LOGO_HEIGHT;
 		const logoContainerWidth =
 			currentLogoWidth + regionNameWidth + logoContainerGap + logoContainerPadding;
-		let availableWidth = navWidth - logoContainerWidth - EXTRA_PADDING;
+		// Account for language switcher width
+		const languageSwitcherGap = languageSwitcherWidth > 0 ? GAP_WIDTH : 0;
+		let availableWidth =
+			navWidth - logoContainerWidth - EXTRA_PADDING - languageSwitcherWidth - languageSwitcherGap;
 
 		const newVisibleLinks = [];
 		const newOverflowLinks = [];
@@ -166,25 +172,48 @@
 		if (logoElement) {
 			if (logoElement.complete) {
 				baseLogoWidth = logoElement.offsetWidth;
-				checkOverflow();
 			} else {
 				logoElement.onload = () => {
 					baseLogoWidth = logoElement.offsetWidth;
 					checkOverflow();
 				};
 			}
-		} else {
-			checkOverflow();
 		}
 
+		// Measure language switcher width
+		if (languageSwitcherElement) {
+			languageSwitcherWidth = languageSwitcherElement.offsetWidth || 0;
+		}
+
+		// Initial overflow check (after all measurements)
+		checkOverflow();
+
 		const headerResizeObserver = new ResizeObserver(() => {
+			// Re-measure language switcher on resize
+			if (languageSwitcherElement) {
+				languageSwitcherWidth = languageSwitcherElement.offsetWidth || 0;
+			}
 			checkOverflow();
 		});
 
 		headerResizeObserver.observe(navContainer);
 
+		// Also observe language switcher element directly to catch width changes
+		// (e.g., when locale changes and button text changes)
+		const languageSwitcherResizeObserver = new ResizeObserver(() => {
+			if (languageSwitcherElement) {
+				languageSwitcherWidth = languageSwitcherElement.offsetWidth || 0;
+				checkOverflow();
+			}
+		});
+
+		if (languageSwitcherElement) {
+			languageSwitcherResizeObserver.observe(languageSwitcherElement);
+		}
+
 		return () => {
 			headerResizeObserver.disconnect();
+			languageSwitcherResizeObserver.disconnect();
 		};
 	});
 </script>
@@ -249,5 +278,9 @@
 				{/if}
 			</div>
 		{/if}
+
+		<div class="language-switcher-container flex-shrink-0" bind:this={languageSwitcherElement}>
+			<LanguageSwitcher />
+		</div>
 	</div>
 </div>

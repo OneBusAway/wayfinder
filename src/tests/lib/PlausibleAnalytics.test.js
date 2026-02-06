@@ -1,21 +1,167 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 
-vi.mock('$env/static/public', () => ({
+const mockEnv = vi.hoisted(() => ({
 	PUBLIC_ANALYTICS_DOMAIN: 'api.example.com',
 	PUBLIC_ANALYTICS_ENABLED: 'true',
 	PUBLIC_ANALYTICS_API_HOST: 'https://api.example.com'
 }));
 
-import analytics from '$lib/Analytics/PlausibleAnalytics.js';
+vi.mock('$env/dynamic/public', () => ({
+	get env() {
+		return mockEnv;
+	}
+}));
+
+import analytics, { PlausibleAnalytics } from '$lib/Analytics/PlausibleAnalytics.js';
 
 describe('PlausibleAnalytics', () => {
+	beforeEach(() => {
+		mockEnv.PUBLIC_ANALYTICS_DOMAIN = 'api.example.com';
+		mockEnv.PUBLIC_ANALYTICS_ENABLED = 'true';
+		mockEnv.PUBLIC_ANALYTICS_API_HOST = 'https://api.example.com';
+		analytics.defaultProperties = {};
+	});
+
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
+	describe('constructor', () => {
+		it('falls back to dynamic env when no env is provided', () => {
+			const instance = new PlausibleAnalytics();
+			expect(instance.isEnabled()).toBe(true);
+		});
+
+		it('uses custom env when provided', () => {
+			const customEnv = {
+				PUBLIC_ANALYTICS_ENABLED: 'true',
+				PUBLIC_ANALYTICS_DOMAIN: 'custom.example.com',
+				PUBLIC_ANALYTICS_API_HOST: 'https://custom.example.com'
+			};
+			const instance = new PlausibleAnalytics(customEnv);
+			expect(instance.isEnabled()).toBe(true);
+			expect(instance.getDomain()).toBe('custom.example.com');
+			expect(instance.getEventUrl()).toBe('https://custom.example.com/api/event');
+		});
+
+		it('reports disabled when custom env has analytics off', () => {
+			const customEnv = {
+				PUBLIC_ANALYTICS_ENABLED: 'false',
+				PUBLIC_ANALYTICS_DOMAIN: 'custom.example.com',
+				PUBLIC_ANALYTICS_API_HOST: 'https://custom.example.com'
+			};
+			const instance = new PlausibleAnalytics(customEnv);
+			expect(instance.isEnabled()).toBe(false);
+		});
+	});
+
+	describe('getEventUrl', () => {
+		it('builds the upstream event URL from API host', () => {
+			expect(analytics.getEventUrl()).toBe('https://api.example.com/api/event');
+		});
+
+		it('reflects changes to the env API host', () => {
+			mockEnv.PUBLIC_ANALYTICS_API_HOST = 'https://other.example.com';
+			expect(analytics.getEventUrl()).toBe('https://other.example.com/api/event');
+		});
+	});
+
+	describe('getDomain', () => {
+		it('returns the analytics domain from env', () => {
+			expect(analytics.getDomain()).toBe('api.example.com');
+		});
+
+		it('reflects changes to the env domain', () => {
+			mockEnv.PUBLIC_ANALYTICS_DOMAIN = 'other.example.com';
+			expect(analytics.getDomain()).toBe('other.example.com');
+		});
+	});
+
+	describe('forwardEvent', () => {
+		it('returns analytics disabled when not enabled', async () => {
+			mockEnv.PUBLIC_ANALYTICS_ENABLED = 'false';
+
+			const result = await analytics.forwardEvent({
+				name: 'pageview',
+				url: '/test'
+			});
+			expect(result).toEqual({ status: 'analytics disabled' });
+		});
+
+		it('sends event to upstream API and returns parsed response', async () => {
+			const upstreamResponse = { status: 'ok' };
+			global.fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				text: async () => JSON.stringify(upstreamResponse)
+			});
+
+			const result = await analytics.forwardEvent({
+				name: 'pageview',
+				url: '/test',
+				referrer: 'https://example.com',
+				props: { id: '1' }
+			});
+
+			expect(result).toEqual(upstreamResponse);
+			expect(global.fetch).toHaveBeenCalledWith(
+				'https://api.example.com/api/event',
+				expect.objectContaining({
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: expect.stringContaining('"domain":"api.example.com"')
+				})
+			);
+		});
+
+		it('returns plain text response as status when not valid JSON', async () => {
+			global.fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				text: async () => 'ok'
+			});
+
+			const result = await analytics.forwardEvent({ name: 'pageview', url: '/test' });
+			expect(result).toEqual({ status: 'ok' });
+		});
+
+		it('throws with upstream status when API responds with error', async () => {
+			global.fetch = vi.fn().mockResolvedValue({
+				ok: false,
+				status: 502,
+				statusText: 'Bad Gateway'
+			});
+
+			try {
+				await analytics.forwardEvent({ name: 'pageview', url: '/test' });
+				expect.unreachable('should have thrown');
+			} catch (error) {
+				expect(error.message).toBe('Error sending event: Bad Gateway');
+				expect(error.upstreamStatus).toBe(502);
+			}
+		});
+
+		it('throws when name is missing', async () => {
+			await expect(analytics.forwardEvent({ url: '/test' })).rejects.toThrow(
+				'forwardEvent requires name and url'
+			);
+		});
+
+		it('throws when url is missing', async () => {
+			await expect(analytics.forwardEvent({ name: 'pageview' })).rejects.toThrow(
+				'forwardEvent requires name and url'
+			);
+		});
+
+		it('throws when fetch fails', async () => {
+			global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
+
+			await expect(analytics.forwardEvent({ name: 'pageview', url: '/test' })).rejects.toThrow(
+				'Network failure'
+			);
+		});
+	});
+
 	it('sends an event via fetch and returns JSON result (reportPageView)', async () => {
 		const mockResponse = { status: 'ok' };
-		analytics.enabled = true;
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: true,
 			text: async () => JSON.stringify(mockResponse),
@@ -34,7 +180,47 @@ describe('PlausibleAnalytics', () => {
 	});
 
 	it('skips sending an event when analytics is disabled', async () => {
-		analytics.enabled = false;
+		mockEnv.PUBLIC_ANALYTICS_ENABLED = 'false';
+		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
+
+		const result = await analytics.reportPageView('/test');
+		expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
+		expect(result).toBeUndefined();
+		consoleSpy.mockRestore();
+	});
+
+	it('skips sending when analytics is enabled but domain is empty', async () => {
+		mockEnv.PUBLIC_ANALYTICS_DOMAIN = '';
+		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
+
+		const result = await analytics.reportPageView('/test');
+		expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
+		expect(result).toBeUndefined();
+		consoleSpy.mockRestore();
+	});
+
+	it('skips sending when analytics is enabled but API host is empty', async () => {
+		mockEnv.PUBLIC_ANALYTICS_API_HOST = '';
+		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
+
+		const result = await analytics.reportPageView('/test');
+		expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
+		expect(result).toBeUndefined();
+		consoleSpy.mockRestore();
+	});
+
+	it('skips sending when domain is undefined', async () => {
+		delete mockEnv.PUBLIC_ANALYTICS_DOMAIN;
+		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
+
+		const result = await analytics.reportPageView('/test');
+		expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
+		expect(result).toBeUndefined();
+		consoleSpy.mockRestore();
+	});
+
+	it('skips sending when API host is undefined', async () => {
+		delete mockEnv.PUBLIC_ANALYTICS_API_HOST;
 		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
 
 		const result = await analytics.reportPageView('/test');
@@ -45,7 +231,6 @@ describe('PlausibleAnalytics', () => {
 
 	it('throws an error if fetch response is not ok (reportPageView)', async () => {
 		const errorText = 'failure';
-		analytics.enabled = true;
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: false,
 			statusText: 'Server Error',

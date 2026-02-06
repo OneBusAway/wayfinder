@@ -22,6 +22,24 @@ vi.mock('../OverflowMenu.svelte', () => ({
 	default: () => '<div data-testid="overflow-menu">Overflow Menu</div>'
 }));
 
+// Mock i18n module (needed by LanguageSwitcher)
+vi.mock('$lib/i18n', () => ({
+	languages: [
+		{ code: 'en', nativeName: 'English', englishName: 'English' },
+		{ code: 'es', nativeName: 'Español', englishName: 'Spanish' }
+	]
+}));
+
+// Mock LanguageSwitcher component
+vi.mock('../LanguageSwitcher/LanguageSwitcher.svelte', () => ({
+	default: () => '<div data-testid="language-switcher">Language Switcher</div>'
+}));
+
+// Mock environment variable for LanguageSwitcher
+vi.mock('$env/dynamic/public', () => ({
+	env: { PUBLIC_LANGUAGE_SWITCHER_ENABLED: 'true' }
+}));
+
 describe('Header', () => {
 	beforeEach(() => {
 		// Mock ResizeObserver

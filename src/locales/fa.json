@@ -148,5 +148,9 @@
 	"view_stop_information": "مشاهده اطلاعات ایستگاه",
 	"stop_details": {
 		"view_details": "مشاهده جزئیات"
+	},
+	"language_switcher": {
+		"select_language": "انتخاب زبان: {language}",
+		"available_languages": "زبان‌های موجود"
 	}
 }

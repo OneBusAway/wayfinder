@@ -12,6 +12,8 @@ vi.mock('svelte-i18n', () => ({
 		subscribe: vi.fn((fn) => {
 			fn((key, options) => {
 				const translations = {
+					show_more: 'Show more',
+					show_less: 'Show less',
 					route_modal_title: options?.values?.name
 						? `Route ${options.values.name}`
 						: 'route_modal_title'
@@ -165,10 +167,10 @@ describe('RouteModal', () => {
 		});
 
 		const routeHeader = screen.getByText(`Route: ${mockRoute.shortName}`);
-		expect(routeHeader).toHaveClass('mb-6', 'text-center', 'text-2xl', 'font-bold', 'text-white');
+		expect(routeHeader).toHaveClass('mb-4', 'text-center', 'text-2xl', 'font-bold', 'text-white');
 
 		const routeDescription = screen.getByText(mockRoute.description);
-		expect(routeDescription).toHaveClass('mb-6', 'text-center', 'text-xl', 'text-white');
+		expect(routeDescription).toHaveClass('text-center', 'text-xl', 'text-white');
 	});
 
 	test('has proper modal structure and classes', () => {
@@ -185,7 +187,7 @@ describe('RouteModal', () => {
 		const modalContent = container.querySelector('.space-y-4');
 		expect(modalContent).toBeInTheDocument();
 
-		const headerContainer = container.querySelector('.h-36.rounded-lg.bg-brand-accent');
+		const headerContainer = container.querySelector('.min-h-36.rounded-lg.bg-brand-accent');
 		expect(headerContainer).toBeInTheDocument();
 
 		const stopsContainer = container.querySelector('.space-y-2.rounded-lg');
@@ -273,6 +275,8 @@ describe('RouteModal', () => {
 		expect(screen.getByText(`Route: ${routeWithoutDescription.shortName}`)).toBeInTheDocument();
 		// Description should not be rendered
 		expect(screen.queryByText(mockRoute.description)).not.toBeInTheDocument();
+		// "Show more" button should not be rendered when description is null
+		expect(screen.queryByRole('button', { name: /show more/i })).not.toBeInTheDocument();
 	});
 
 	test('provides proper ARIA labels for accessibility', () => {
@@ -372,6 +376,99 @@ describe('RouteModal', () => {
 		const longNameElements = screen.getAllByText(/VeryLongRouteNameThatMightCauseLayoutIssues/);
 		expect(longNameElements.length).toBeGreaterThan(0);
 		expect(screen.getByText(/extremely long route description/)).toBeInTheDocument();
+	});
+
+	test('shows "Show more" button for long descriptions and toggles correctly', async () => {
+		const user = userEvent.setup();
+		const routeWithLongDescription = {
+			...mockRoute,
+			description:
+				'Connects the Mesa residential community and UC San Diego Health La Jolla medical facilities; to the main campus and UC San Diego Extension locations via a counter-clockwise loop. Service to east campus stops P502, P510 and P785 has been suspended due to a detour.'
+		};
+
+		render(RouteModal, {
+			props: {
+				selectedRoute: routeWithLongDescription,
+				stops: mockStops,
+				mapProvider: mockMapProvider,
+				closePane: mockClosePane
+			}
+		});
+
+		// Should show "Show more" button for long descriptions
+		const showMoreButton = screen.getByRole('button', { name: /show more/i });
+		expect(showMoreButton).toBeInTheDocument();
+		expect(showMoreButton).toHaveAttribute('aria-expanded', 'false');
+
+		// Description should be truncated initially
+		const description = screen.getByText(routeWithLongDescription.description);
+		expect(description).toHaveClass('line-clamp-3');
+
+		// Click "Show more" to expand
+		await user.click(showMoreButton);
+		const showLessButtonAfterExpand = screen.getByRole('button', { name: /show less/i });
+		expect(showLessButtonAfterExpand).toBeInTheDocument();
+		expect(showLessButtonAfterExpand).toHaveAttribute('aria-expanded', 'true');
+		expect(description).not.toHaveClass('line-clamp-3');
+
+		// Click "Show less" to collapse
+		const showLessButton = screen.getByRole('button', { name: /show less/i });
+		await user.click(showLessButton);
+		const showMoreButtonAfterCollapse = screen.getByRole('button', { name: /show more/i });
+		expect(showMoreButtonAfterCollapse).toBeInTheDocument();
+		expect(showMoreButtonAfterCollapse).toHaveAttribute('aria-expanded', 'false');
+		expect(description).toHaveClass('line-clamp-3');
+	});
+
+	test('does not show "Show more" button for short descriptions', () => {
+		const routeWithShortDescription = {
+			...mockRoute,
+			description: 'Short route description'
+		};
+
+		render(RouteModal, {
+			props: {
+				selectedRoute: routeWithShortDescription,
+				stops: mockStops,
+				mapProvider: mockMapProvider,
+				closePane: mockClosePane
+			}
+		});
+
+		// Should not show "Show more" button for short descriptions
+		expect(screen.queryByRole('button', { name: /show more/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /show less/i })).not.toBeInTheDocument();
+	});
+
+	test('resets expanded state when route changes', async () => {
+		const user = userEvent.setup();
+		const longDescription = 'A'.repeat(150);
+		const route1 = { ...mockRoute, id: 'route1', description: longDescription };
+		const route2 = { ...mockRoute, id: 'route2', description: longDescription };
+
+		const { rerender } = render(RouteModal, {
+			props: {
+				selectedRoute: route1,
+				stops: mockStops,
+				mapProvider: mockMapProvider,
+				closePane: mockClosePane
+			}
+		});
+
+		// Expand the description
+		await user.click(screen.getByRole('button', { name: /show more/i }));
+		expect(screen.getByRole('button', { name: /show less/i })).toBeInTheDocument();
+
+		// Change to different route
+		await rerender({
+			selectedRoute: route2,
+			stops: mockStops,
+			mapProvider: mockMapProvider,
+			closePane: mockClosePane
+		});
+
+		// Should be collapsed again
+		expect(screen.getByRole('button', { name: /show more/i })).toBeInTheDocument();
 	});
 
 	test('displays title function returns empty string for missing route', () => {

@@ -148,5 +148,9 @@
 	"view_stop_information": "មើលព័ត៌មានចំណត",
 	"stop_details": {
 		"view_details": "មើលព័ត៌មានលម្អិត"
+	},
+	"language_switcher": {
+		"select_language": "ជ្រើសរើសភាសា: {language}",
+		"available_languages": "ភាសាដែលមាន"
 	}
 }

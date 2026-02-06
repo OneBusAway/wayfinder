@@ -23,6 +23,12 @@ See `.env.example` for an example of the required keys and values.
 - `PUBLIC_ANALYTICS_ENABLED` - boolean: (optional).
 - `PUBLIC_ANALYTICS_API_HOST` - string: (optional).
 
+### Internationalization
+
+- `PUBLIC_LANGUAGE_SWITCHER_ENABLED` - string: (optional) Set to `"false"` to hide the language switcher in the navigation bar. Defaults to `"true"`.
+- `PUBLIC_LANGUAGE_SWITCHER_BUTTON_FORMAT` - string: (optional) Format for displaying language in the top menu button. Options: `"native"` (default), `"english"`, `"native-english"`, `"english-native"`, `"code"`.
+- `PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT` - string: (optional) Format for displaying languages in the dropdown menu. Options: `"native-english"` (default), `"native"`, `"english"`, `"english-native"`, `"code"`.
+
 ### Text and Images
 
 - `PUBLIC_OBA_REGION_NAME` - string: (required) displayed in the header.
