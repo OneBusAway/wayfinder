@@ -558,8 +558,14 @@ export default class ArcGISMapProvider {
 
 		// Add click handler for popup - use latest vehicleData at click time
 		container.addEventListener('click', () => {
+			// Unmount previous vehicle popup component if any
+			if (this._vehiclePopupComponent) {
+				unmount(this._vehiclePopupComponent);
+				this._vehiclePopupComponent = null;
+			}
+
 			const popupContainer = document.createElement('div');
-			mount(VehiclePopupContent, {
+			this._vehiclePopupComponent = mount(VehiclePopupContent, {
 				target: popupContainer,
 				props: marker.vehicleData
 			});
@@ -568,6 +574,15 @@ export default class ArcGISMapProvider {
 				title: `Vehicle ${marker.vehicleData.vehicleId}`,
 				content: popupContainer,
 				location: marker.point
+			});
+
+			// Unmount component when popup closes
+			const handle = this.view.popup.watch('visible', (visible) => {
+				if (!visible && this._vehiclePopupComponent) {
+					unmount(this._vehiclePopupComponent);
+					this._vehiclePopupComponent = null;
+					handle.remove();
+				}
 			});
 		});
 
@@ -730,8 +745,25 @@ export default class ArcGISMapProvider {
 			spatialReference: { wkid: 4326 }
 		});
 
+		// Convert color to ArcGIS format with opacity support
+		const baseColor = options.color || COLORS.POLYLINE;
+		let symbolColor = baseColor;
+		if (typeof options.opacity === 'number') {
+			if (typeof baseColor === 'string') {
+				const hex = baseColor.replace('#', '');
+				const r = parseInt(hex.slice(0, 2), 16);
+				const g = parseInt(hex.slice(2, 4), 16);
+				const b = parseInt(hex.slice(4, 6), 16);
+				if (!isNaN(r) && !isNaN(g) && !isNaN(b)) {
+					symbolColor = [r, g, b, options.opacity];
+				}
+			} else if (Array.isArray(baseColor)) {
+				symbolColor = [...baseColor.slice(0, 3), options.opacity];
+			}
+		}
+
 		const symbol = new this.SimpleLineSymbol({
-			color: options.color || COLORS.POLYLINE,
+			color: symbolColor,
 			width: options.weight || 4,
 			style: 'solid'
 		});
@@ -744,8 +776,10 @@ export default class ArcGISMapProvider {
 		this.polylineGraphicsLayer.add(graphic);
 		this.polylines.push(graphic);
 
-		// Note: Arrow decorators would require additional implementation
-		// ArcGIS doesn't have built-in arrow decorators like Leaflet
+		// Note: Arrow decorators (options.withArrow) are not supported in the ArcGIS provider.
+		// ArcGIS SDK requires CIMSymbol with repeated markers for directional arrows,
+		// which is significantly more complex than Leaflet's polylineDecorator.
+		// This is a known visual difference compared to Google/OSM providers.
 
 		return graphic;
 	}
