@@ -73,14 +73,15 @@ The OBA SDK is configured in `src/lib/obaSdk.js` with `handleOBAResponse()` for 
 
 ### Map Provider Abstraction
 
-Both map providers (`src/lib/Provider/`) implement the same interface:
+All map providers (`src/lib/Provider/`) implement the same interface:
 
 - `GoogleMapProvider.svelte.js` - Google Maps implementation
 - `OpenStreetMapProvider.svelte.js` - Leaflet/OSM implementation
+- `ArcGISMapProvider.svelte.js` - ArcGIS Maps SDK implementation
 
 Key methods: `initMap()`, `addMarker()`, `addVehicleMarker()`, `createPolyline()`, `panTo()`, `flyTo()`, `getBoundingBox()`
 
-Configured via `PUBLIC_OBA_MAP_PROVIDER` env var ("osm" or "google").
+Configured via `PUBLIC_OBA_MAP_PROVIDER` env var ("osm", "google", or "arcgis").
 
 ### State Management
 
@@ -115,6 +116,8 @@ See `.env.example` for full list. Key variables:
 - `PRIVATE_OBA_API_KEY` - OneBusAway API key
 - `PUBLIC_OBA_SERVER_URL` - OBA server URL
 - `PUBLIC_OBA_REGION_CENTER_LAT/LNG` - Region center coordinates
-- `PUBLIC_OBA_MAP_PROVIDER` - "osm" or "google"
+- `PUBLIC_OBA_MAP_PROVIDER` - "osm", "google", or "arcgis"
+- `PUBLIC_ARCGIS_API_KEY` - ArcGIS API key (required for "arcgis" provider)
+- `PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL` - Optional custom ArcGIS basemap URL
 - `PUBLIC_OTP_SERVER_URL` - OpenTripPlanner server (optional, for trip planning)
 - `PRIVATE_OBA_GEOCODER_PROVIDER` - Geocoding provider (currently "google" only)
