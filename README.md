@@ -87,7 +87,7 @@ Use these in Tailwind classes: `bg-primary-500`, `text-primary-700`, `border-pri
 
 - `PUBLIC_OBA_GOOGLE_MAPS_API_KEY` - string: (optional) Your Google API key.
 - `PUBLIC_OBA_MAP_PROVIDER` - string: Use "osm" for OpenStreetMap, "google" for Google Maps, or "arcgis" for ArcGIS.
-- `PUBLIC_ARCGIS_API_KEY` - string: (optional) Your ArcGIS API key. Required when using "arcgis" map provider.
+- `PUBLIC_ARCGIS_API_KEY` - string: (optional) Your ArcGIS API key. Recommended for ArcGIS hosted basemaps and required for secured ArcGIS services when using the "arcgis" map provider.
 - `PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL` - string: (optional) URL to a custom ArcGIS vector tile basemap.
 
 ### Geocoding

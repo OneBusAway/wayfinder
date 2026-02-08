@@ -21,7 +21,9 @@ vi.mock('$env/dynamic/public', () => ({
 	env: {
 		PUBLIC_ANALYTICS_DOMAIN: '',
 		PUBLIC_ANALYTICS_ENABLED: 'false',
-		PUBLIC_ANALYTICS_API_HOST: ''
+		PUBLIC_ANALYTICS_API_HOST: '',
+		PUBLIC_ARCGIS_API_KEY: '',
+		PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL: ''
 	}
 }));
 
@@ -32,9 +34,7 @@ vi.mock('$env/static/public', () => ({
 	PUBLIC_OBA_SERVER_URL: 'https://api.test.com',
 	PUBLIC_OBA_MAP_PROVIDER: 'osm',
 	PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}',
-	PUBLIC_DISTANCE_UNIT: '', // Empty = auto-detect from browser
-	PUBLIC_ARCGIS_API_KEY: '',
-	PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL: ''
+	PUBLIC_DISTANCE_UNIT: '' // Empty = auto-detect from browser
 }));
 
 // Mock svelte-i18n

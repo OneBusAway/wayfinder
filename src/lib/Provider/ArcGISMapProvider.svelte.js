@@ -905,5 +905,15 @@ export default class ArcGISMapProvider {
 		if (this.view && this.view.popup) {
 			this.view.popup.close();
 		}
+
+		// Unmount any active popup Svelte components to prevent leaks
+		if (this.popupContentComponent) {
+			unmount(this.popupContentComponent);
+			this.popupContentComponent = null;
+		}
+		if (this._vehiclePopupComponent) {
+			unmount(this._vehiclePopupComponent);
+			this._vehiclePopupComponent = null;
+		}
 	}
 }
