@@ -24,7 +24,9 @@ vi.mock('$env/static/public', () => ({
 	PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}',
 	PUBLIC_ANALYTICS_DOMAIN: '',
 	PUBLIC_ANALYTICS_ENABLED: 'false',
-	PUBLIC_DISTANCE_UNIT: '' // Empty = auto-detect from browser
+	PUBLIC_DISTANCE_UNIT: '', // Empty = auto-detect from browser
+	PUBLIC_ARCGIS_API_KEY: '',
+	PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL: ''
 }));
 
 // Mock svelte-i18n
