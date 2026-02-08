@@ -74,6 +74,9 @@ export default class ArcGISMapProvider {
 			import('@arcgis/core/config')
 		]);
 
+		// Import ArcGIS CSS for UI widgets/popups styling
+		await import('@arcgis/core/assets/esri/themes/light/main.css');
+
 		// Store references for later use
 		this.Graphic = Graphic;
 		this.Point = Point;
@@ -215,10 +218,7 @@ export default class ArcGISMapProvider {
 		return marker;
 	}
 
-	_positionHTMLMarker(marker) {
-		if (!this.view || !marker.element) return;
-
-		// Get the overlay container or create one
+	_ensureOverlayContainer() {
 		let overlayContainer = this.view.container.querySelector('.arcgis-marker-overlay');
 		if (!overlayContainer) {
 			overlayContainer = document.createElement('div');
@@ -231,7 +231,13 @@ export default class ArcGISMapProvider {
 			this.view.watch('extent', () => this._updateAllMarkerPositions());
 			this.view.watch('zoom', () => this._updateAllMarkerPositions());
 		}
+		return overlayContainer;
+	}
 
+	_positionHTMLMarker(marker) {
+		if (!this.view || !marker.element) return;
+
+		const overlayContainer = this._ensureOverlayContainer();
 		overlayContainer.appendChild(marker.element);
 		this._updateMarkerPosition(marker);
 	}
@@ -264,6 +270,10 @@ export default class ArcGISMapProvider {
 			if (marker.htmlMarker) {
 				this._updateMarkerPosition(marker.htmlMarker);
 			}
+		}
+		// Update pin markers
+		for (const marker of this.pinMarkers || []) {
+			this._updateMarkerPosition(marker);
 		}
 	}
 
@@ -487,24 +497,12 @@ export default class ArcGISMapProvider {
 			type: 'pin'
 		};
 
-		// Get overlay container
-		let overlayContainer = this.view.container.querySelector('.arcgis-marker-overlay');
-		if (!overlayContainer) {
-			overlayContainer = document.createElement('div');
-			overlayContainer.className = 'arcgis-marker-overlay';
-			overlayContainer.style.cssText =
-				'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden;';
-			this.view.container.appendChild(overlayContainer);
-		}
+		// Use shared overlay container and positioning logic
+		this._positionHTMLMarker(marker);
 
-		overlayContainer.appendChild(container);
-
-		const screenPoint = this.view.toScreen(point);
-		if (screenPoint) {
-			container.style.left = `${screenPoint.x - 16}px`;
-			container.style.top = `${screenPoint.y - 50}px`;
-			container.style.zIndex = '1000';
-		}
+		// Track pin markers for position updates during pan/zoom
+		if (!this.pinMarkers) this.pinMarkers = [];
+		this.pinMarkers.push(marker);
 
 		return marker;
 	}
@@ -514,6 +512,11 @@ export default class ArcGISMapProvider {
 
 		if (marker.element && marker.element.parentNode) {
 			marker.element.parentNode.removeChild(marker.element);
+		}
+
+		// Remove from pin markers tracking array
+		if (this.pinMarkers) {
+			this.pinMarkers = this.pinMarkers.filter((m) => m !== marker);
 		}
 	}
 
@@ -568,24 +571,8 @@ export default class ArcGISMapProvider {
 			});
 		});
 
-		// Add to overlay
-		let overlayContainer = this.view.container.querySelector('.arcgis-marker-overlay');
-		if (!overlayContainer) {
-			overlayContainer = document.createElement('div');
-			overlayContainer.className = 'arcgis-marker-overlay';
-			overlayContainer.style.cssText =
-				'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden;';
-			this.view.container.appendChild(overlayContainer);
-		}
-
-		overlayContainer.appendChild(container);
-
-		const screenPoint = this.view.toScreen(point);
-		if (screenPoint) {
-			container.style.left = `${screenPoint.x - 22}px`;
-			container.style.top = `${screenPoint.y - 22}px`;
-			container.style.zIndex = '1001';
-		}
+		// Use shared overlay container and positioning logic
+		this._positionHTMLMarker(marker);
 
 		marker.htmlMarker = marker;
 		this.vehicleMarkers.push(marker);
@@ -659,7 +646,14 @@ export default class ArcGISMapProvider {
 		};
 
 		const arcgisEvent = eventMap[event] || event;
-		this.view.watch(arcgisEvent, callback);
+		
+		// Use `watch` only for view properties, and `on` for interaction events
+		const watchableProperties = new Set(['zoom', 'center', 'extent', 'rotation', 'scale', 'stationary', 'updating']);
+		if (watchableProperties.has(arcgisEvent)) {
+			this.view.watch(arcgisEvent, callback);
+		} else {
+			this.view.on(arcgisEvent, callback);
+		}
 	}
 
 	addUserLocationMarker(latLng) {
