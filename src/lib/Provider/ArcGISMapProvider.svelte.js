@@ -31,6 +31,7 @@ export default class ArcGISMapProvider {
 		this.routeLabelsVisible = false;
 		this.globalPopup = null;
 		this.popupContentComponent = null;
+		this._stopClickHandlerRegistered = false;
 
 		// ArcGIS modules - loaded dynamically
 		this.Graphic = null;
@@ -111,6 +112,12 @@ export default class ArcGISMapProvider {
 			basemap: basemap,
 			layers: [this.polylineGraphicsLayer, this.graphicsLayer]
 		});
+
+		// Add getZoom() method to map for compatibility with other providers
+		// (ArcGIS Map doesn't have getZoom, it's on the view)
+		this.map.getZoom = () => {
+			return this.view ? this.view.zoom : 14;
+		};
 
 		this.view = new MapView({
 			container: element,
@@ -350,15 +357,35 @@ export default class ArcGISMapProvider {
 		const markerObj = { graphic, stop, stopTime };
 		this.stopMarkers.push(markerObj);
 
-		// Add click handler via view
-		this.view.on('click', (event) => {
-			this.view.hitTest(event).then((response) => {
-				const hit = response.results.find((r) => r.graphic === graphic);
-				if (hit) {
-					this.openStopMarker(stop, stopTime);
-				}
+		// Store stopId in graphic attributes for click handling
+		graphic.attributes = {
+			stopId: stop.id,
+			stopTime: stopTime
+		};
+
+		// Register a single shared click handler for all stop route markers
+		if (!this._stopClickHandlerRegistered) {
+			this._stopClickHandlerRegistered = true;
+			this.view.on('click', (event) => {
+				this.view.hitTest(event).then((response) => {
+					if (!response || !response.results) return;
+					const hit = response.results.find((r) => {
+						const g = r.graphic;
+						return (
+							g &&
+							g.layer === this.graphicsLayer &&
+							g.attributes &&
+							typeof g.attributes.stopId !== 'undefined'
+						);
+					});
+					if (!hit || !hit.graphic || !hit.graphic.attributes) return;
+					const { stopId, stopTime: hitStopTime } = hit.graphic.attributes;
+					const hitStop = this.stopsMap.get(stopId);
+					if (!hitStop) return;
+					this.openStopMarker(hitStop, hitStopTime || null);
+				});
 			});
-		});
+		}
 	}
 
 	openStopMarker(stop, stopTime = null) {
@@ -526,18 +553,18 @@ export default class ArcGISMapProvider {
 			type: 'vehicle'
 		};
 
-		// Add click handler for popup
+		// Add click handler for popup - use latest vehicleData at click time
 		container.addEventListener('click', () => {
 			const popupContainer = document.createElement('div');
 			mount(VehiclePopupContent, {
 				target: popupContainer,
-				props: vehicleData
+				props: marker.vehicleData
 			});
 
 			this.view.popup.open({
-				title: `Vehicle ${vehicle.vehicleId}`,
+				title: `Vehicle ${marker.vehicleData.vehicleId}`,
 				content: popupContainer,
-				location: point
+				location: marker.point
 			});
 		});
 
@@ -677,21 +704,21 @@ export default class ArcGISMapProvider {
 	setTheme(theme) {
 		if (!this.view || !this.map) return;
 
-		// Switch basemap based on theme
+		// If a custom basemap is in use, do not override it on theme changes.
+		if (this.customBasemapUrl) {
+			// Future enhancement: support a separate dark variant of the custom basemap.
+			return;
+		}
+
+		// Switch basemap based on theme for default basemaps
 		if (theme === 'dark') {
 			this.map.basemap = 'dark-gray-vector';
 		} else {
-			if (this.customBasemapUrl) {
-				// Reload custom basemap - would need to recreate
-				// For now, use default light basemap
-				this.map.basemap = 'streets-navigation-vector';
-			} else {
-				this.map.basemap = 'streets-navigation-vector';
-			}
+			this.map.basemap = 'streets-navigation-vector';
 		}
 	}
 
-	async createPolyline(encodedShape, options = { withArrow: true }) {
+	createPolyline(encodedShape, options = { withArrow: true }) {
 		if (!this.view || !this.polylineGraphicsLayer) return null;
 
 		// Decode the polyline
@@ -824,6 +851,20 @@ export default class ArcGISMapProvider {
 		}
 
 		const extent = this.view.extent;
+		
+		// Convert from Web Mercator to WGS84 if needed
+		if (extent.spatialReference.wkid === 102100 || extent.spatialReference.wkid === 3857) {
+			// Web Mercator - convert to geographic coordinates
+			const R = 6378137; // Earth's radius in meters
+			const west = (extent.xmin * 180) / (Math.PI * R);
+			const east = (extent.xmax * 180) / (Math.PI * R);
+			const south = (Math.atan(Math.exp(extent.ymin / R)) * 360) / Math.PI - 90;
+			const north = (Math.atan(Math.exp(extent.ymax / R)) * 360) / Math.PI - 90;
+			
+			return { north, south, east, west };
+		}
+		
+		// Already in WGS84 (wkid 4326)
 		return {
 			north: extent.ymax,
 			south: extent.ymin,

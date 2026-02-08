@@ -64,5 +64,8 @@
 		"onebusaway-sdk": "^1.6.0",
 		"polyline-encoded": "^0.0.9",
 		"svelte-i18n": "^4.0.1"
+	},
+	"engines": {
+		"node": ">=20.0.0"
 	}
 }
