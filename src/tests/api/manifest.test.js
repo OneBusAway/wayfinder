@@ -83,6 +83,26 @@ describe('GET /api/manifest', () => {
 		expect(manifest.name).toBe('Custom Stop');
 	});
 
+	it('should truncate long names for short_name', async () => {
+		const mockUrl = new URL(
+			'http://localhost/api/manifest?name=Downtown%20Transit%20Center%20Station'
+		);
+		const response = await GET({ url: mockUrl });
+		const manifest = await response.json();
+
+		expect(manifest.name).toBe('Downtown Transit Center Station');
+		expect(manifest.short_name).toBe('Downtown');
+		expect(manifest.short_name.length).toBeLessThanOrEqual(12);
+	});
+
+	it('should handle special characters in name parameter', async () => {
+		const mockUrl = new URL('http://localhost/api/manifest?name=Stop%20%26%20Go');
+		const response = await GET({ url: mockUrl });
+		const manifest = await response.json();
+
+		expect(manifest.name).toBe('Stop & Go');
+	});
+
 	it('should fall back to default manifest icons when PRIVATE env vars are not set', async () => {
 		const mockUrl = new URL('http://localhost/api/manifest');
 		const response = await GET({ url: mockUrl });
