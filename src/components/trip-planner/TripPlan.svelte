@@ -5,6 +5,8 @@
 	import OptionsPill from './OptionsPill.svelte';
 	import { browser } from '$app/environment';
 	import { t } from 'svelte-i18n';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faRightLeft } from '@fortawesome/free-solid-svg-icons';
 	import {
 		tripOptions,
 		showTripOptionsModal,
@@ -135,6 +137,42 @@
 		}
 	}
 
+	function swapLocations() {
+		// Swap text values
+		const tempPlace = fromPlace;
+		fromPlace = toPlace;
+		toPlace = tempPlace;
+
+		// Swap coordinates
+		const tempSelected = selectedFrom;
+		selectedFrom = selectedTo;
+		selectedTo = tempSelected;
+
+		// Swap markers
+		if (fromMarker || toMarker) {
+			// Remove existing markers
+			if (fromMarker) {
+				mapProvider.removePinMarker(fromMarker);
+			}
+			if (toMarker) {
+				mapProvider.removePinMarker(toMarker);
+			}
+
+			// Swap marker references
+			const tempMarker = fromMarker;
+			fromMarker = toMarker;
+			toMarker = tempMarker;
+
+			// Re-add markers with updated labels
+			if (selectedFrom) {
+				fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
+			}
+			if (selectedTo) {
+				toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
+			}
+		}
+	}
+
 	async function fetchTripPlan(from, to) {
 		const fromValidation = validateCoordinates(from);
 		const toValidation = validateCoordinates(to);
@@ -217,61 +255,75 @@
 
 <div>
 	<!-- From/To fields: Mobile grid layout (labels left, fields right) | sm+: stacked vertical -->
-	<div class="grid grid-cols-[auto_1fr] items-start gap-x-2 gap-y-4 sm:block sm:space-y-4">
-		<!-- From: mobile label (left column) -->
-		<label
-			for="from-location-input"
-			class="pt-2 text-xs font-medium text-gray-700 dark:text-white sm:hidden"
-		>
-			{$t('trip-planner.from')}:
-		</label>
-		<!-- From: field wrapper (right column on mobile, full width on sm+) -->
-		<div>
+	<div class="flex flex-row items-center justify-between gap-x-2 sm:space-y-4">
+		<div class="flex w-full flex-col gap-y-4">
+			<!-- From: mobile label (left column) -->
 			<label
 				for="from-location-input"
-				class="hidden text-sm font-medium text-gray-700 dark:text-white sm:block"
+				class="pt-2 text-xs font-medium text-gray-700 dark:text-white sm:hidden"
 			>
 				{$t('trip-planner.from')}:
 			</label>
-			<div class="sm:mt-1">
-				<TripPlanSearchField
-					inputId="from-location-input"
-					place={fromPlace}
-					results={fromResults}
-					isLoading={isLoadingFrom}
-					onInput={(query) => handleSearchInput(query, true)}
-					onClear={() => clearInput(true)}
-					onSelect={(location) => selectLocation(location, true)}
-				/>
+			<!-- From: field wrapper (right column on mobile, full width on sm+) -->
+			<div>
+				<label
+					for="from-location-input"
+					class="hidden text-sm font-medium text-gray-700 dark:text-white sm:block"
+				>
+					{$t('trip-planner.from')}:
+				</label>
+				<div class="sm:mt-1">
+					<TripPlanSearchField
+						inputId="from-location-input"
+						place={fromPlace}
+						results={fromResults}
+						isLoading={isLoadingFrom}
+						onInput={(query) => handleSearchInput(query, true)}
+						onClear={() => clearInput(true)}
+						onSelect={(location) => selectLocation(location, true)}
+					/>
+				</div>
 			</div>
-		</div>
 
-		<!-- To: mobile label (left column) -->
-		<label
-			for="to-location-input"
-			class="pt-2 text-xs font-medium text-gray-700 dark:text-white sm:hidden"
-		>
-			{$t('trip-planner.to')}:
-		</label>
-		<!-- To: field wrapper (right column on mobile, full width on sm+) -->
-		<div>
+			<!-- To: mobile label (left column) -->
 			<label
 				for="to-location-input"
-				class="hidden text-sm font-medium text-gray-700 dark:text-white sm:block"
+				class="pt-2 text-xs font-medium text-gray-700 dark:text-white sm:hidden"
 			>
 				{$t('trip-planner.to')}:
 			</label>
-			<div class="sm:mt-1">
-				<TripPlanSearchField
-					inputId="to-location-input"
-					place={toPlace}
-					results={toResults}
-					isLoading={isLoadingTo}
-					onInput={(query) => handleSearchInput(query, false)}
-					onClear={() => clearInput(false)}
-					onSelect={(location) => selectLocation(location, false)}
-				/>
+			<!-- To: field wrapper (right column on mobile, full width on sm+) -->
+			<div>
+				<label
+					for="to-location-input"
+					class="hidden text-sm font-medium text-gray-700 dark:text-white sm:block"
+				>
+					{$t('trip-planner.to')}:
+				</label>
+				<div class="sm:mt-1">
+					<TripPlanSearchField
+						inputId="to-location-input"
+						place={toPlace}
+						results={toResults}
+						isLoading={isLoadingTo}
+						onInput={(query) => handleSearchInput(query, false)}
+						onClear={() => clearInput(false)}
+						onSelect={(location) => selectLocation(location, false)}
+					/>
+				</div>
 			</div>
+		</div>
+		<!-- Swap Button: centered between From and To -->
+		<div class="flex justify-center">
+			<button
+				type="button"
+				onclick={swapLocations}
+				disabled={!fromPlace && !toPlace}
+				aria-label={$t('trip-planner.swap_locations')}
+				class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-all hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-600"
+			>
+				<FontAwesomeIcon icon={faRightLeft} class="h-4 w-4 rotate-90" />
+			</button>
 		</div>
 	</div>
 
