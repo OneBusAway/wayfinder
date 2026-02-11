@@ -255,6 +255,7 @@
 		}
 		if (currentIntervalId) {
 			clearInterval(currentIntervalId);
+			currentIntervalId = null;
 		}
 	});
 </script>

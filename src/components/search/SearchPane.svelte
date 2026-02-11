@@ -13,6 +13,7 @@
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
 	import { removeAgencyPrefix } from '$lib/utils';
+	import { browser } from '$app/environment';
 
 	let {
 		handleRouteSelected,
@@ -100,7 +101,7 @@
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
 		mapProvider.clearVehicleMarkers();
-		clearVehicleMarkersMap(mapProvider);
+		clearVehicleMarkersMap();
 		clearResults();
 		try {
 			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
@@ -126,6 +127,11 @@
 			}
 
 			await showStopsOnRoute(orderedStops);
+			// Clear any existing interval first to prevent memory leaks
+			if (currentIntervalId) {
+				clearInterval(currentIntervalId);
+				currentIntervalId = null;
+			}
 			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
 
 			const routeData = {
@@ -163,9 +169,10 @@
 		location = null;
 		query = null;
 
-		clearVehicleMarkersMap(mapProvider);
+		clearVehicleMarkersMap();
 		mapProvider.clearVehicleMarkers();
 		clearInterval(currentIntervalId);
+		currentIntervalId = null;
 	}
 
 	function handlePlanTripTabClick() {
@@ -204,9 +211,12 @@
 		if (unsubscribeMapLoaded) {
 			unsubscribeMapLoaded();
 		}
-		window.removeEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+		if (browser) {
+			window.removeEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+		}
 		if (currentIntervalId) {
 			clearInterval(currentIntervalId);
+			currentIntervalId = null;
 		}
 	});
 </script>

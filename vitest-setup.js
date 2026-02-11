@@ -32,7 +32,7 @@ vi.mock('svelte-i18n', () => ({
 	t: {
 		subscribe: vi.fn((fn) => {
 			fn((key) => key); // Return a function that returns the key
-			return { unsubscribe: () => {} };
+			return () => {}; // Return unsubscribe function directly
 		})
 	},
 	_: vi.fn((key) => key),
@@ -42,7 +42,7 @@ vi.mock('svelte-i18n', () => ({
 	locale: {
 		subscribe: vi.fn((fn) => {
 			fn('en');
-			return { unsubscribe: () => {} };
+			return () => {}; // Return unsubscribe function directly
 		})
 	}
 }));
@@ -60,19 +60,19 @@ vi.mock('$app/stores', () => ({
 				route: { id: '/stops/[stopID]' },
 				data: {}
 			});
-			return { unsubscribe: vi.fn() };
+			return vi.fn(); // Return unsubscribe function directly
 		})
 	},
 	navigating: {
 		subscribe: vi.fn((fn) => {
 			fn(null);
-			return { unsubscribe: vi.fn() };
+			return vi.fn(); // Return unsubscribe function directly
 		})
 	},
 	updated: {
 		subscribe: vi.fn((fn) => {
 			fn(false);
-			return { unsubscribe: vi.fn() };
+			return vi.fn(); // Return unsubscribe function directly
 		})
 	}
 }));
