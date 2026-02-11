@@ -5,6 +5,7 @@
 	import ItineraryTab from './ItineraryTab.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 
 	/**
 	 * @typedef {Object} Props
@@ -27,6 +28,7 @@
 
 	let expandedSteps = $state({});
 	let activeTab = $state(0);
+	let itineraryTabsContainer = $state(null);
 
 	function toggleSteps(index) {
 		expandedSteps[index] = !expandedSteps[index];
@@ -65,9 +67,33 @@
 		});
 	}
 
+	/**
+	 * Handle wheel event to enable vertical scroll for horizontal scrolling
+	 * Only on large screens (md breakpoint: 768px and above)
+	 * @param {WheelEvent} e
+	 */
+	function handleWheel(e) {
+		if (!browser || !itineraryTabsContainer) return;
+
+		// Only apply on large screens (md breakpoint and above)
+		const isLargeScreen = window.innerWidth >= 768;
+		if (!isLargeScreen) return;
+
+		// Prevent default vertical scroll
+		e.preventDefault();
+
+		// Scroll horizontally based on vertical wheel delta
+		itineraryTabsContainer.scrollLeft += e.deltaY;
+	}
+
 	onMount(() => {
 		if (itineraries?.length > 0) {
 			drawRoute();
+		}
+
+		// Add wheel event listener for large screens
+		if (browser && itineraryTabsContainer) {
+			itineraryTabsContainer.addEventListener('wheel', handleWheel, { passive: false });
 		}
 	});
 	onDestroy(() => {
@@ -79,6 +105,11 @@
 				mapProvider.removePolyline(await polyline);
 			});
 		}
+
+		// Remove wheel event listener
+		if (browser && itineraryTabsContainer) {
+			itineraryTabsContainer.removeEventListener('wheel', handleWheel);
+		}
 	});
 </script>
 
@@ -88,7 +119,7 @@
 	{/if}
 
 	{#if itineraries.length > 0}
-		<div class="itinerary-tabs">
+		<div class="itinerary-tabs" bind:this={itineraryTabsContainer}>
 			{#each itineraries as itinerary, index}
 				<ItineraryTab {index} {activeTab} {setActiveTab} {itinerary} />
 			{/each}
