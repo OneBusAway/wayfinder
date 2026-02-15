@@ -46,7 +46,9 @@ export function swapTripLocations({
 	const newFromMarker = newSelectedFrom
 		? mapProvider.addPinMarker(newSelectedFrom, t('trip-planner.from'))
 		: null;
-	const newToMarker = newSelectedTo ? mapProvider.addPinMarker(newSelectedTo, t('trip-planner.to')) : null;
+	const newToMarker = newSelectedTo
+		? mapProvider.addPinMarker(newSelectedTo, t('trip-planner.to'))
+		: null;
 
 	return {
 		fromPlace: newFromPlace,
