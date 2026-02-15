@@ -121,6 +121,7 @@
 			mapProvider.cleanupInfoWindow();
 			mapProvider.clearVehicleMarkers();
 			clearInterval(currentIntervalId);
+			currentIntervalId = null;
 		}
 		mapProvider.unHighlightMarker(currentHighlightedStopId);
 		stop = null;
