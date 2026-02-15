@@ -32,7 +32,7 @@ vi.mock('svelte-i18n', () => ({
 	t: {
 		subscribe: vi.fn((fn) => {
 			fn((key) => key); // Return a function that returns the key
-			return () => {}; 
+			return () => {};
 		})
 	},
 	_: vi.fn((key) => key),
@@ -60,13 +60,13 @@ vi.mock('$app/stores', () => ({
 				route: { id: '/stops/[stopID]' },
 				data: {}
 			});
-			return vi.fn(); 
+			return vi.fn();
 		})
 	},
 	navigating: {
 		subscribe: vi.fn((fn) => {
 			fn(null);
-			return vi.fn(); 
+			return vi.fn();
 		})
 	},
 	updated: {
