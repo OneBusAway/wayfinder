@@ -1,214 +1,249 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { swapValues, swapTripLocations } from '$lib/tripPlanUtils';
 
 /**
- * Unit tests for the swap button functionality in TripPlan.svelte
- *
- * These tests verify the swapLocations() function logic without rendering the full component.
- * The swap function should:
- * 1. Swap text values (fromPlace ↔ toPlace)
- * 2. Swap coordinates (selectedFrom ↔ selectedTo)
- * 3. Swap map markers with proper cleanup and re-labeling
+ * Unit tests for trip planner swap utility functions
+ * These tests verify the swap logic extracted from TripPlan.svelte
  */
 
-describe('TripPlan - Swap Button Logic', () => {
-	let mockMapProvider;
-	let mockT;
+describe('tripPlanUtils', () => {
+	describe('swapValues', () => {
+		it('should swap two string values', () => {
+			const result = swapValues('Capitol Hill', 'University District');
 
-	beforeEach(() => {
-		// Mock map provider
-		mockMapProvider = {
-			addPinMarker: vi.fn((coords, label) => ({ id: `marker-${label}`, coords, label })),
-			removePinMarker: vi.fn()
-		};
+			expect(result.first).toBe('University District');
+			expect(result.second).toBe('Capitol Hill');
+		});
 
-		// Mock translation function
-		mockT = vi.fn((key) => {
-			const translations = {
-				'trip-planner.from': 'From',
-				'trip-planner.to': 'To'
+		it('should swap two object values', () => {
+			const obj1 = { lat: 47.6205, lng: -122.3212 };
+			const obj2 = { lat: 47.6587, lng: -122.3138 };
+
+			const result = swapValues(obj1, obj2);
+
+			expect(result.first).toEqual(obj2);
+			expect(result.second).toEqual(obj1);
+		});
+
+		it('should handle null values', () => {
+			const result = swapValues('Capitol Hill', null);
+
+			expect(result.first).toBeNull();
+			expect(result.second).toBe('Capitol Hill');
+		});
+
+		it('should handle empty strings', () => {
+			const result = swapValues('Capitol Hill', '');
+
+			expect(result.first).toBe('');
+			expect(result.second).toBe('Capitol Hill');
+		});
+	});
+
+	describe('swapTripLocations', () => {
+		let mockMapProvider;
+		let mockT;
+
+		beforeEach(() => {
+			// Mock map provider
+			mockMapProvider = {
+				addPinMarker: vi.fn((coords, label) => ({ id: `marker-${label}`, coords, label })),
+				removePinMarker: vi.fn()
 			};
-			return translations[key] || key;
-		});
-	});
 
-	describe('Text Value Swapping', () => {
+			// Mock translation function
+			mockT = vi.fn((key) => {
+				const translations = {
+					'trip-planner.from': 'From',
+					'trip-planner.to': 'To'
+				};
+				return translations[key] || key;
+			});
+		});
+
 		it('should swap text values when both are populated', () => {
-			let fromPlace = 'Capitol Hill';
-			let toPlace = 'University District';
+			const result = swapTripLocations({
+				fromPlace: 'Capitol Hill',
+				toPlace: 'University District',
+				selectedFrom: null,
+				selectedTo: null,
+				fromMarker: null,
+				toMarker: null,
+				mapProvider: mockMapProvider,
+				t: mockT
+			});
 
-			// Simulate swap
-			const tempPlace = fromPlace;
-			fromPlace = toPlace;
-			toPlace = tempPlace;
-
-			expect(fromPlace).toBe('University District');
-			expect(toPlace).toBe('Capitol Hill');
+			expect(result.fromPlace).toBe('University District');
+			expect(result.toPlace).toBe('Capitol Hill');
 		});
 
-		it('should swap when only fromPlace has value', () => {
-			let fromPlace = 'Capitol Hill';
-			let toPlace = '';
-
-			const tempPlace = fromPlace;
-			fromPlace = toPlace;
-			toPlace = tempPlace;
-
-			expect(fromPlace).toBe('');
-			expect(toPlace).toBe('Capitol Hill');
-		});
-
-		it('should swap when only toPlace has value', () => {
-			let fromPlace = '';
-			let toPlace = 'University District';
-
-			const tempPlace = fromPlace;
-			fromPlace = toPlace;
-			toPlace = tempPlace;
-
-			expect(fromPlace).toBe('University District');
-			expect(toPlace).toBe('');
-		});
-	});
-
-	describe('Coordinate Swapping', () => {
 		it('should swap coordinates when both are set', () => {
-			let selectedFrom = { lat: 47.6205, lng: -122.3212 };
-			let selectedTo = { lat: 47.6587, lng: -122.3138 };
-
-			const tempSelected = selectedFrom;
-			selectedFrom = selectedTo;
-			selectedTo = tempSelected;
-
-			expect(selectedFrom).toEqual({ lat: 47.6587, lng: -122.3138 });
-			expect(selectedTo).toEqual({ lat: 47.6205, lng: -122.3212 });
-		});
-
-		it('should handle null coordinates', () => {
-			let selectedFrom = { lat: 47.6205, lng: -122.3212 };
-			let selectedTo = null;
-
-			const tempSelected = selectedFrom;
-			selectedFrom = selectedTo;
-			selectedTo = tempSelected;
-
-			expect(selectedFrom).toBeNull();
-			expect(selectedTo).toEqual({ lat: 47.6205, lng: -122.3212 });
-		});
-	});
-
-	describe('Map Marker Swapping', () => {
-		it('should remove and re-add markers when both exist', () => {
 			const fromCoords = { lat: 47.6205, lng: -122.3212 };
 			const toCoords = { lat: 47.6587, lng: -122.3138 };
 
-			let fromMarker = mockMapProvider.addPinMarker(fromCoords, mockT('trip-planner.from'));
-			let toMarker = mockMapProvider.addPinMarker(toCoords, mockT('trip-planner.to'));
+			const result = swapTripLocations({
+				fromPlace: 'Capitol Hill',
+				toPlace: 'University District',
+				selectedFrom: fromCoords,
+				selectedTo: toCoords,
+				fromMarker: null,
+				toMarker: null,
+				mapProvider: mockMapProvider,
+				t: mockT
+			});
 
-			// Simulate swap logic
-			if (fromMarker || toMarker) {
-				if (fromMarker) {
-					mockMapProvider.removePinMarker(fromMarker);
-				}
-				if (toMarker) {
-					mockMapProvider.removePinMarker(toMarker);
-				}
+			expect(result.selectedFrom).toEqual(toCoords);
+			expect(result.selectedTo).toEqual(fromCoords);
+		});
 
-				// Swap marker references
-				const tempMarker = fromMarker;
-				fromMarker = toMarker;
-				toMarker = tempMarker;
+		it('should remove existing markers and create new ones with swapped positions', () => {
+			const fromCoords = { lat: 47.6205, lng: -122.3212 };
+			const toCoords = { lat: 47.6587, lng: -122.3138 };
+			const fromMarker = { id: 'marker-from' };
+			const toMarker = { id: 'marker-to' };
 
-				// Swap coordinates
-				let selectedFrom = toCoords;
-				let selectedTo = fromCoords;
+			const result = swapTripLocations({
+				fromPlace: 'Capitol Hill',
+				toPlace: 'University District',
+				selectedFrom: fromCoords,
+				selectedTo: toCoords,
+				fromMarker,
+				toMarker,
+				mapProvider: mockMapProvider,
+				t: mockT
+			});
 
-				// Re-add markers with updated labels
-				if (selectedFrom) {
-					fromMarker = mockMapProvider.addPinMarker(selectedFrom, mockT('trip-planner.from'));
-				}
-				if (selectedTo) {
-					toMarker = mockMapProvider.addPinMarker(selectedTo, mockT('trip-planner.to'));
-				}
-			}
-
-			// Verify markers were removed (2 calls)
+			// Verify old markers were removed
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledWith(fromMarker);
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledWith(toMarker);
 			expect(mockMapProvider.removePinMarker).toHaveBeenCalledTimes(2);
 
-			// Verify markers were re-added (2 initial + 2 after swap = 4 total)
-			expect(mockMapProvider.addPinMarker).toHaveBeenCalledTimes(4);
+			// Verify new markers were created with swapped coordinates
+			expect(mockMapProvider.addPinMarker).toHaveBeenCalledWith(toCoords, 'From');
+			expect(mockMapProvider.addPinMarker).toHaveBeenCalledWith(fromCoords, 'To');
+			expect(mockMapProvider.addPinMarker).toHaveBeenCalledTimes(2);
 
-			// Verify the new markers have correct labels
-			const lastFromCall = mockMapProvider.addPinMarker.mock.calls[2];
-			const lastToCall = mockMapProvider.addPinMarker.mock.calls[3];
-
-			expect(lastFromCall[1]).toBe('From');
-			expect(lastToCall[1]).toBe('To');
+			// Verify returned markers are the new ones
+			expect(result.fromMarker).toEqual({ id: 'marker-From', coords: toCoords, label: 'From' });
+			expect(result.toMarker).toEqual({ id: 'marker-To', coords: fromCoords, label: 'To' });
 		});
 
 		it('should handle swap when only fromMarker exists', () => {
 			const fromCoords = { lat: 47.6205, lng: -122.3212 };
+			const fromMarker = { id: 'marker-from' };
 
-			let fromMarker = mockMapProvider.addPinMarker(fromCoords, mockT('trip-planner.from'));
-			let toMarker = null;
+			const result = swapTripLocations({
+				fromPlace: 'Capitol Hill',
+				toPlace: '',
+				selectedFrom: fromCoords,
+				selectedTo: null,
+				fromMarker,
+				toMarker: null,
+				mapProvider: mockMapProvider,
+				t: mockT
+			});
 
-			// Simulate swap
-			if (fromMarker || toMarker) {
-				if (fromMarker) {
-					mockMapProvider.removePinMarker(fromMarker);
-				}
-
-				const tempMarker = fromMarker;
-				fromMarker = toMarker;
-				toMarker = tempMarker;
-
-				let selectedFrom = null;
-				let selectedTo = fromCoords;
-
-				if (selectedTo) {
-					toMarker = mockMapProvider.addPinMarker(selectedTo, mockT('trip-planner.to'));
-				}
-			}
-
+			// Verify old marker was removed
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledWith(fromMarker);
 			expect(mockMapProvider.removePinMarker).toHaveBeenCalledTimes(1);
-			expect(mockMapProvider.addPinMarker).toHaveBeenCalledTimes(2); // 1 initial + 1 after swap
-		});
-	});
 
-	describe('Button Disabled State Logic', () => {
-		it('should be disabled when both fields are empty', () => {
-			const fromPlace = '';
-			const toPlace = '';
+			// Verify only toMarker was created (with swapped fromCoords)
+			expect(mockMapProvider.addPinMarker).toHaveBeenCalledWith(fromCoords, 'To');
+			expect(mockMapProvider.addPinMarker).toHaveBeenCalledTimes(1);
 
-			const isDisabled = !fromPlace && !toPlace;
-
-			expect(isDisabled).toBe(true);
+			// Verify fromMarker is null and toMarker exists
+			expect(result.fromMarker).toBeNull();
+			expect(result.toMarker).toEqual({ id: 'marker-To', coords: fromCoords, label: 'To' });
 		});
 
-		it('should be enabled when fromPlace has value', () => {
-			const fromPlace = 'Capitol Hill';
-			const toPlace = '';
+		it('should handle swap when only toMarker exists', () => {
+			const toCoords = { lat: 47.6587, lng: -122.3138 };
+			const toMarker = { id: 'marker-to' };
 
-			const isDisabled = !fromPlace && !toPlace;
+			const result = swapTripLocations({
+				fromPlace: '',
+				toPlace: 'University District',
+				selectedFrom: null,
+				selectedTo: toCoords,
+				fromMarker: null,
+				toMarker,
+				mapProvider: mockMapProvider,
+				t: mockT
+			});
 
-			expect(isDisabled).toBe(false);
+			// Verify old marker was removed
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledWith(toMarker);
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledTimes(1);
+
+			// Verify only fromMarker was created (with swapped toCoords)
+			expect(mockMapProvider.addPinMarker).toHaveBeenCalledWith(toCoords, 'From');
+			expect(mockMapProvider.addPinMarker).toHaveBeenCalledTimes(1);
+
+			// Verify toMarker is null and fromMarker exists
+			expect(result.fromMarker).toEqual({ id: 'marker-From', coords: toCoords, label: 'From' });
+			expect(result.toMarker).toBeNull();
 		});
 
-		it('should be enabled when toPlace has value', () => {
-			const fromPlace = '';
-			const toPlace = 'University District';
+		it('should handle swap when no markers exist', () => {
+			const result = swapTripLocations({
+				fromPlace: 'Capitol Hill',
+				toPlace: 'University District',
+				selectedFrom: null,
+				selectedTo: null,
+				fromMarker: null,
+				toMarker: null,
+				mapProvider: mockMapProvider,
+				t: mockT
+			});
 
-			const isDisabled = !fromPlace && !toPlace;
+			// Verify no markers were removed or created
+			expect(mockMapProvider.removePinMarker).not.toHaveBeenCalled();
+			expect(mockMapProvider.addPinMarker).not.toHaveBeenCalled();
 
-			expect(isDisabled).toBe(false);
+			// Verify both markers are null
+			expect(result.fromMarker).toBeNull();
+			expect(result.toMarker).toBeNull();
 		});
 
-		it('should be enabled when both fields have values', () => {
-			const fromPlace = 'Capitol Hill';
-			const toPlace = 'University District';
+		it('should handle null-safe marker removal', () => {
+			// Test that removePinMarker is only called for non-null markers
+			const fromMarker = { id: 'marker-from' };
 
-			const isDisabled = !fromPlace && !toPlace;
+			swapTripLocations({
+				fromPlace: 'Capitol Hill',
+				toPlace: '',
+				selectedFrom: null,
+				selectedTo: null,
+				fromMarker,
+				toMarker: null,
+				mapProvider: mockMapProvider,
+				t: mockT
+			});
 
-			expect(isDisabled).toBe(false);
+			// Should only call removePinMarker once (for fromMarker)
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledTimes(1);
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledWith(fromMarker);
+		});
+
+		it('should return all swapped values in correct structure', () => {
+			const result = swapTripLocations({
+				fromPlace: 'A',
+				toPlace: 'B',
+				selectedFrom: { lat: 1, lng: 2 },
+				selectedTo: { lat: 3, lng: 4 },
+				fromMarker: null,
+				toMarker: null,
+				mapProvider: mockMapProvider,
+				t: mockT
+			});
+
+			// Verify return structure
+			expect(result).toHaveProperty('fromPlace');
+			expect(result).toHaveProperty('toPlace');
+			expect(result).toHaveProperty('selectedFrom');
+			expect(result).toHaveProperty('selectedTo');
+			expect(result).toHaveProperty('fromMarker');
+			expect(result).toHaveProperty('toMarker');
 		});
 	});
 });

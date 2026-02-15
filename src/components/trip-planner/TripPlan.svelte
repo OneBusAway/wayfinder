@@ -16,6 +16,7 @@
 		DEFAULT_WALK_DISTANCE_METERS
 	} from '$stores/tripOptionsStore';
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
+	import { swapTripLocations } from '$lib/tripPlanUtils';
 
 	let { handleTripPlan, mapProvider } = $props();
 
@@ -138,25 +139,23 @@
 	}
 
 	function swapLocations() {
-		// Swap text values
-		const tempPlace = fromPlace;
-		fromPlace = toPlace;
-		toPlace = tempPlace;
+		const result = swapTripLocations({
+			fromPlace,
+			toPlace,
+			selectedFrom,
+			selectedTo,
+			fromMarker,
+			toMarker,
+			mapProvider,
+			t: $t
+		});
 
-		// Swap coordinates
-		const tempSelected = selectedFrom;
-		selectedFrom = selectedTo;
-		selectedTo = tempSelected;
-
-		// Remove existing markers (both providers are null-safe)
-		if (fromMarker) mapProvider.removePinMarker(fromMarker);
-		if (toMarker) mapProvider.removePinMarker(toMarker);
-
-		// Re-add with swapped positions (selectedFrom/selectedTo already swapped above)
-		fromMarker = selectedFrom
-			? mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'))
-			: null;
-		toMarker = selectedTo ? mapProvider.addPinMarker(selectedTo, $t('trip-planner.to')) : null;
+		fromPlace = result.fromPlace;
+		toPlace = result.toPlace;
+		selectedFrom = result.selectedFrom;
+		selectedTo = result.selectedTo;
+		fromMarker = result.fromMarker;
+		toMarker = result.toMarker;
 	}
 
 	async function fetchTripPlan(from, to) {
