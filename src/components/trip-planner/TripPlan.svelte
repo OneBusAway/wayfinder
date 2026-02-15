@@ -148,29 +148,15 @@
 		selectedFrom = selectedTo;
 		selectedTo = tempSelected;
 
-		// Swap markers
-		if (fromMarker || toMarker) {
-			// Remove existing markers
-			if (fromMarker) {
-				mapProvider.removePinMarker(fromMarker);
-			}
-			if (toMarker) {
-				mapProvider.removePinMarker(toMarker);
-			}
+		// Remove existing markers (both providers are null-safe)
+		if (fromMarker) mapProvider.removePinMarker(fromMarker);
+		if (toMarker) mapProvider.removePinMarker(toMarker);
 
-			// Swap marker references
-			const tempMarker = fromMarker;
-			fromMarker = toMarker;
-			toMarker = tempMarker;
-
-			// Re-add markers with updated labels
-			if (selectedFrom) {
-				fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
-			}
-			if (selectedTo) {
-				toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
-			}
-		}
+		// Re-add with swapped positions (selectedFrom/selectedTo already swapped above)
+		fromMarker = selectedFrom
+			? mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'))
+			: null;
+		toMarker = selectedTo ? mapProvider.addPinMarker(selectedTo, $t('trip-planner.to')) : null;
 	}
 
 	async function fetchTripPlan(from, to) {
@@ -254,8 +240,8 @@
 </script>
 
 <div>
-	<!-- From/To fields: Mobile grid layout (labels left, fields right) | sm+: stacked vertical -->
-	<div class="flex flex-row items-center justify-between gap-x-2 sm:space-y-4">
+	<!-- From/To fields: Mobile flexbox (labels above fields) | sm+: stacked vertical -->
+	<div class="flex flex-row items-center justify-between gap-x-2">
 		<div class="flex w-full flex-col gap-y-4">
 			<!-- From: mobile label (left column) -->
 			<label

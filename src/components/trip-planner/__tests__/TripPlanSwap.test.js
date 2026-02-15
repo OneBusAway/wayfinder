@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 /**
  * Unit tests for the swap button functionality in TripPlan.svelte
- * 
+ *
  * These tests verify the swapLocations() function logic without rendering the full component.
  * The swap function should:
  * 1. Swap text values (fromPlace ↔ toPlace)
