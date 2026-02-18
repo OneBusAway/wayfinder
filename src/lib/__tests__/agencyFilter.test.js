@@ -15,8 +15,7 @@ import {
 	routeBelongsToAgency,
 	filterRoutes,
 	filterStops,
-	filterArrivals,
-	filterScheduleRoutes,
+	filterByRouteId,
 	alertBelongsToAgency
 } from '$lib/agencyFilter.js';
 
@@ -54,6 +53,13 @@ describe('agencyFilter', () => {
 			const result = getAgencyFilter();
 			expect(result).toEqual(new Set(['19', '29']));
 		});
+
+		it('returns null for comma-only or whitespace-only values', () => {
+			mockEnv.PRIVATE_OBA_AGENCY_FILTER = ',,,';
+			expect(getAgencyFilter()).toBeNull();
+			mockEnv.PRIVATE_OBA_AGENCY_FILTER = ' , , ';
+			expect(getAgencyFilter()).toBeNull();
+		});
 	});
 
 	describe('routeBelongsToAgency', () => {
@@ -75,6 +81,15 @@ describe('agencyFilter', () => {
 
 		it('null agencyIds returns false', () => {
 			expect(routeBelongsToAgency('19_100', null)).toBe(false);
+		});
+
+		it('empty string routeId returns false', () => {
+			expect(routeBelongsToAgency('', new Set(['19']))).toBe(false);
+		});
+
+		it('routeId without underscore matches against the whole string', () => {
+			expect(routeBelongsToAgency('19100', new Set(['19100']))).toBe(true);
+			expect(routeBelongsToAgency('19100', new Set(['19']))).toBe(false);
 		});
 	});
 
@@ -147,59 +162,48 @@ describe('agencyFilter', () => {
 		it('handles null stops array', () => {
 			expect(filterStops(null, new Set(['19']))).toEqual([]);
 		});
+
+		it('keeps stops matching any of multiple agencies', () => {
+			const result = filterStops(stops, new Set(['19', '29']));
+			expect(result).toHaveLength(3);
+			expect(result.map((s) => s.id)).toEqual(['s1', 's2', 's3']);
+		});
 	});
 
-	describe('filterArrivals', () => {
+	describe('filterByRouteId', () => {
 		const arrivals = [
 			{ routeId: '19_100', tripId: 't1' },
 			{ routeId: '29_200', tripId: 't2' },
 			{ routeId: '19_300', tripId: 't3' }
 		];
 
-		it('filters by arrival.routeId prefix', () => {
-			const result = filterArrivals(arrivals, new Set(['19']));
+		it('filters by routeId prefix', () => {
+			const result = filterByRouteId(arrivals, new Set(['19']));
 			expect(result).toHaveLength(2);
 			expect(result.every((a) => a.routeId.startsWith('19_'))).toBe(true);
 		});
 
-		it('returns all arrivals when agencyIds is null (passthrough)', () => {
-			const result = filterArrivals(arrivals, null);
+		it('returns all items when agencyIds is null (passthrough)', () => {
+			const result = filterByRouteId(arrivals, null);
 			expect(result).toEqual(arrivals);
 		});
 
 		it('handles empty arrays', () => {
-			expect(filterArrivals([], new Set(['19']))).toEqual([]);
+			expect(filterByRouteId([], new Set(['19']))).toEqual([]);
 		});
 
 		it('handles null array', () => {
-			expect(filterArrivals(null, new Set(['19']))).toEqual([]);
-		});
-	});
-
-	describe('filterScheduleRoutes', () => {
-		const schedules = [
-			{ routeId: '19_100', schedule: {} },
-			{ routeId: '29_200', schedule: {} },
-			{ routeId: '19_300', schedule: {} }
-		];
-
-		it('filters by schedule.routeId prefix', () => {
-			const result = filterScheduleRoutes(schedules, new Set(['19']));
-			expect(result).toHaveLength(2);
-			expect(result.every((s) => s.routeId.startsWith('19_'))).toBe(true);
+			expect(filterByRouteId(null, new Set(['19']))).toEqual([]);
 		});
 
-		it('returns all schedules when agencyIds is null (passthrough)', () => {
-			const result = filterScheduleRoutes(schedules, null);
-			expect(result).toEqual(schedules);
-		});
-
-		it('handles empty arrays', () => {
-			expect(filterScheduleRoutes([], new Set(['19']))).toEqual([]);
-		});
-
-		it('handles null array', () => {
-			expect(filterScheduleRoutes(null, new Set(['19']))).toEqual([]);
+		it('works for schedule objects with routeId', () => {
+			const schedules = [
+				{ routeId: '19_100', schedule: {} },
+				{ routeId: '29_200', schedule: {} }
+			];
+			const result = filterByRouteId(schedules, new Set(['19']));
+			expect(result).toHaveLength(1);
+			expect(result[0].routeId).toBe('19_100');
 		});
 	});
 
@@ -237,6 +241,11 @@ describe('agencyFilter', () => {
 		it('returns false when informedEntity is empty', () => {
 			const alert = { informedEntity: [] };
 			expect(alertBelongsToAgency(alert, new Set(['19']))).toBe(false);
+		});
+
+		it('matches by routeId when agencyId does not match', () => {
+			const alert = { informedEntity: [{ agencyId: '99', routeId: '19_100' }] };
+			expect(alertBelongsToAgency(alert, new Set(['19']))).toBe(true);
 		});
 	});
 });

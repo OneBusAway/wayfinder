@@ -506,6 +506,24 @@ describe('serverCache', () => {
 			]);
 		});
 
+		it('should log error when filter matches zero agencies', async () => {
+			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+			mockEnv.PRIVATE_OBA_AGENCY_FILTER = 'nonexistent';
+
+			const { preloadRoutesData } = await import('$lib/serverCache.js');
+			await preloadRoutesData();
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				expect.stringContaining('PRIVATE_OBA_AGENCY_FILTER'),
+				expect.objectContaining({
+					configured: expect.any(Array),
+					available: expect.any(Array)
+				})
+			);
+
+			consoleErrorSpy.mockRestore();
+		});
+
 		it('should fetch all agencies when filter is empty (default behavior)', async () => {
 			mockEnv.PRIVATE_OBA_AGENCY_FILTER = '';
 

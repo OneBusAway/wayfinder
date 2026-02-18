@@ -17,7 +17,8 @@ export function getAgencyFilter() {
 
 /**
  * Checks if a route ID belongs to one of the target agencies.
- * OBA route IDs follow the convention: agencyId_routeNumber
+ * OBA route IDs follow the convention: agencyId_routeNumber.
+ * If the route ID contains no underscore, the entire ID is treated as the agency prefix.
  * @param {string | null} routeId
  * @param {Set<string> | null} agencyIds
  * @returns {boolean}
@@ -30,7 +31,7 @@ export function routeBelongsToAgency(routeId, agencyIds) {
 
 /**
  * Filters routes by agencyId field.
- * @param {Array | null} routes
+ * @param {Array<{agencyId: string}> | null} routes
  * @param {Set<string> | null} agencyIds
  * @returns {Array}
  */
@@ -42,7 +43,7 @@ export function filterRoutes(routes, agencyIds) {
 
 /**
  * Filters stops to only those serving routes from target agencies.
- * @param {Array | null} stops
+ * @param {Array<{routeIds?: string[]}> | null} stops
  * @param {Set<string> | null} agencyIds
  * @returns {Array}
  */
@@ -57,32 +58,22 @@ export function filterStops(stops, agencyIds) {
 }
 
 /**
- * Filters arrivals by routeId prefix.
- * @param {Array | null} arrivals
+ * Filters items (arrivals or schedule routes) by routeId prefix.
+ * @param {Array<{routeId: string}> | null} items
  * @param {Set<string> | null} agencyIds
  * @returns {Array}
  */
-export function filterArrivals(arrivals, agencyIds) {
-	if (!arrivals) return [];
-	if (!agencyIds) return arrivals;
-	return arrivals.filter((arrival) => routeBelongsToAgency(arrival.routeId, agencyIds));
-}
-
-/**
- * Filters stop route schedules by routeId prefix.
- * @param {Array | null} schedules
- * @param {Set<string> | null} agencyIds
- * @returns {Array}
- */
-export function filterScheduleRoutes(schedules, agencyIds) {
-	if (!schedules) return [];
-	if (!agencyIds) return schedules;
-	return schedules.filter((schedule) => routeBelongsToAgency(schedule.routeId, agencyIds));
+export function filterByRouteId(items, agencyIds) {
+	if (!items) return [];
+	if (!agencyIds) return items;
+	return items.filter((item) => routeBelongsToAgency(item.routeId, agencyIds));
 }
 
 /**
  * Checks if a GTFS-RT alert belongs to one of the target agencies.
  * Matches on informedEntity agencyId or routeId prefix.
+ * Returns true (passthrough) when agencyIds is null, meaning all alerts
+ * are shown when no filter is configured.
  * @param {{ informedEntity?: Array<{ agencyId?: string, routeId?: string }> }} alert
  * @param {Set<string> | null} agencyIds
  * @returns {boolean}

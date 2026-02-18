@@ -68,8 +68,8 @@
 	}
 
 	/**
-	 * Handle wheel event to enable vertical scroll for horizontal scrolling
-	 * Only on large screens (md breakpoint: 768px and above)
+	 * Converts vertical wheel input into horizontal scrolling for the itinerary tabs.
+	 * Only active on screens at or above the md breakpoint (768px).
 	 * @param {WheelEvent} e
 	 */
 	function handleWheel(e) {
@@ -91,7 +91,6 @@
 			drawRoute();
 		}
 
-		// Add wheel event listener for large screens
 		if (browser && itineraryTabsContainer) {
 			itineraryTabsContainer.addEventListener('wheel', handleWheel, { passive: false });
 		}
@@ -106,7 +105,6 @@
 			});
 		}
 
-		// Remove wheel event listener
 		if (browser && itineraryTabsContainer) {
 			itineraryTabsContainer.removeEventListener('wheel', handleWheel);
 		}

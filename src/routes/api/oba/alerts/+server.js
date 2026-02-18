@@ -19,6 +19,7 @@ export async function GET() {
 
 		const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(new Uint8Array(buffer));
 
+		const agencyFilter = getAgencyFilter();
 		let validAlert = null;
 		for (const entity of feed.entity) {
 			// If we're in test mode, show the alert to test the UI
@@ -26,7 +27,11 @@ export async function GET() {
 				validAlert = entity.alert;
 				break;
 			}
-			if (entity.alert && isValidAlert(entity.alert) && alertBelongsToAgency(entity.alert, getAgencyFilter())) {
+			if (
+				entity.alert &&
+				isValidAlert(entity.alert) &&
+				alertBelongsToAgency(entity.alert, agencyFilter)
+			) {
 				validAlert = entity.alert;
 				break;
 			}
@@ -43,8 +48,12 @@ export async function GET() {
 			});
 		}
 	} catch (error) {
+		console.error('Alerts endpoint failure:', error);
 		return new Response(
-			JSON.stringify({ error: 'Failed to fetch or parse alerts', message: error }),
+			JSON.stringify({
+				error: 'Failed to fetch or parse alerts',
+				message: error instanceof Error ? error.message : String(error)
+			}),
 			{
 				headers: { 'Content-Type': 'application/json' },
 				status: 500

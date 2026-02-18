@@ -242,14 +242,14 @@
 	<!-- From/To fields: Mobile flexbox (labels above fields) | sm+: stacked vertical -->
 	<div class="flex flex-row items-center justify-between gap-x-2">
 		<div class="flex w-full flex-col gap-y-4">
-			<!-- From: mobile label (left column) -->
+			<!-- From: mobile-only label -->
 			<label
 				for="from-location-input"
 				class="pt-2 text-xs font-medium text-gray-700 dark:text-white sm:hidden"
 			>
 				{$t('trip-planner.from')}:
 			</label>
-			<!-- From: field wrapper (right column on mobile, full width on sm+) -->
+			<!-- From: field wrapper -->
 			<div>
 				<label
 					for="from-location-input"
@@ -270,14 +270,14 @@
 				</div>
 			</div>
 
-			<!-- To: mobile label (left column) -->
+			<!-- To: mobile-only label -->
 			<label
 				for="to-location-input"
 				class="pt-2 text-xs font-medium text-gray-700 dark:text-white sm:hidden"
 			>
 				{$t('trip-planner.to')}:
 			</label>
-			<!-- To: field wrapper (right column on mobile, full width on sm+) -->
+			<!-- To: field wrapper -->
 			<div>
 				<label
 					for="to-location-input"

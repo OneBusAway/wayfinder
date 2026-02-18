@@ -53,25 +53,39 @@ async function locationSearch(query, bounds) {
 export async function GET({ url }) {
 	const searchInput = url.searchParams.get('query')?.trim();
 
-	const bounds = getBoundsCache();
+	try {
+		const bounds = getBoundsCache();
 
-	const [routeResponse, stopResponse, locationResponse] = await Promise.all([
-		routeSearch(searchInput),
-		stopSearch(searchInput),
-		locationSearch(searchInput, bounds)
-	]);
+		const [routeResponse, stopResponse, locationResponse] = await Promise.all([
+			routeSearch(searchInput),
+			stopSearch(searchInput),
+			locationSearch(searchInput, bounds)
+		]);
 
-	const agencyFilter = getAgencyFilter();
-	const routes = filterRoutes(routeResponse?.data?.list, agencyFilter);
-	const stops = filterStops(stopResponse?.data?.list, agencyFilter);
+		const agencyFilter = getAgencyFilter();
+		const routes = filterRoutes(routeResponse?.data?.list, agencyFilter);
+		const stops = filterStops(stopResponse?.data?.list, agencyFilter);
 
-	return new Response(
-		JSON.stringify({
-			routes,
-			stops,
-			location: locationResponse,
-			query: searchInput
-		}),
-		{ headers: { 'Content-Type': 'application/json' } }
-	);
+		return new Response(
+			JSON.stringify({
+				routes,
+				stops,
+				location: locationResponse,
+				query: searchInput
+			}),
+			{ headers: { 'Content-Type': 'application/json' } }
+		);
+	} catch (error) {
+		console.error('Search endpoint failure:', error);
+		return new Response(
+			JSON.stringify({
+				error: 'Search failed',
+				message: error instanceof Error ? error.message : String(error)
+			}),
+			{
+				headers: { 'Content-Type': 'application/json' },
+				status: 500
+			}
+		);
+	}
 }

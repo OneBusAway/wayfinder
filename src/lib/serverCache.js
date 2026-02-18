@@ -67,6 +67,16 @@ async function fetchRoutesData() {
 			? allAgencies.filter((a) => agencyFilter.has(a.agencyId))
 			: allAgencies;
 
+		if (agencyFilter && agencies.length === 0) {
+			console.error(
+				'PRIVATE_OBA_AGENCY_FILTER is configured but matches no available agencies. All data will be empty.',
+				{
+					configured: [...agencyFilter],
+					available: allAgencies.map((a) => a.agencyId)
+				}
+			);
+		}
+
 		agenciesCache = agencies;
 		boundsCache = calculateBoundsFromAgencies(agencies);
 

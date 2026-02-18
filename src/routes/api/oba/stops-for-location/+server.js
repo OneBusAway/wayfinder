@@ -19,9 +19,8 @@ export async function GET({ url }) {
 
 	const response = await oba.stopsForLocation.list(queryParams);
 
-	const agencyFilter = getAgencyFilter();
-	if (agencyFilter && response.data?.list) {
-		response.data.list = filterStops(response.data.list, agencyFilter);
+	if (response.data?.list) {
+		response.data.list = filterStops(response.data.list, getAgencyFilter());
 	}
 
 	return handleOBAResponse(response, 'stops-for-location');
