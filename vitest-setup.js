@@ -50,7 +50,7 @@ vi.mock('svelte-i18n', () => ({
 	locale: {
 		subscribe: vi.fn((fn) => {
 			fn('en');
-			return () => {}; 
+			return () => {};
 		})
 	}
 }));
@@ -80,7 +80,7 @@ vi.mock('$app/stores', () => ({
 	updated: {
 		subscribe: vi.fn((fn) => {
 			fn(false);
-			return vi.fn(); 
+			return vi.fn();
 		})
 	}
 }));
