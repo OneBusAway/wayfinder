@@ -7,7 +7,7 @@
 	import ViewAllRoutesModal from '$components/routes/ViewAllRoutesModal.svelte';
 	import { isLoading } from 'svelte-i18n';
 	import AlertsModal from '$components/navigation/AlertsModal.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import StopModal from '$components/stops/StopModal.svelte';
 	import TripPlanModal from '$components/trip-planner/TripPlanModal.svelte';
 	import { browser } from '$app/environment';
@@ -121,6 +121,7 @@
 			mapProvider.cleanupInfoWindow();
 			mapProvider.clearVehicleMarkers();
 			clearInterval(currentIntervalId);
+			currentIntervalId = null;
 		}
 		mapProvider.unHighlightMarker(currentHighlightedStopId);
 		stop = null;
@@ -222,6 +223,14 @@
 		currentModal = Modal.TRIP_PLANNER;
 	}
 
+	function handleTabSwitched() {
+		currentModal = null;
+	}
+
+	function handlePlanTripTabClicked() {
+		closePane();
+	}
+
 	onMount(() => {
 		loadAlerts();
 
@@ -230,18 +239,24 @@
 		loadSurveys(null, userId);
 
 		if (browser) {
-			window.addEventListener('tabSwitched', () => {
-				currentModal = null;
-			});
-
-			window.addEventListener('planTripTabClicked', () => {
-				closePane();
-			});
+			window.addEventListener('tabSwitched', handleTabSwitched);
+			window.addEventListener('planTripTabClicked', handlePlanTripTabClicked);
 
 			// Clean URL params after coordinates have been captured
 			if (initialCoords) {
 				cleanUrlParams();
 			}
+		}
+	});
+
+	onDestroy(() => {
+		if (browser) {
+			window.removeEventListener('tabSwitched', handleTabSwitched);
+			window.removeEventListener('planTripTabClicked', handlePlanTripTabClicked);
+		}
+		if (currentIntervalId) {
+			clearInterval(currentIntervalId);
+			currentIntervalId = null;
 		}
 	});
 </script>

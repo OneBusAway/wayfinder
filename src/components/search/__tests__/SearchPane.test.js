@@ -56,7 +56,7 @@ vi.mock('svelte-i18n', () => {
 		t: {
 			subscribe: vi.fn((fn) => {
 				fn((key) => translations[key] || key);
-				return { unsubscribe: () => {} };
+				return () => {}; // Return unsubscribe function directly
 			})
 		}
 	};

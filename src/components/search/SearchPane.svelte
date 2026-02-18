@@ -1,7 +1,7 @@
 <script>
 	import SearchField from '$components/search/SearchField.svelte';
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { faMapPin, faSignsPost } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
@@ -13,6 +13,7 @@
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
 	import { removeAgencyPrefix } from '$lib/utils';
+	import { browser } from '$app/environment';
 
 	let {
 		handleRouteSelected,
@@ -100,7 +101,7 @@
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
 		mapProvider.clearVehicleMarkers();
-		clearVehicleMarkersMap(mapProvider);
+		clearVehicleMarkersMap();
 		clearResults();
 		try {
 			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
@@ -126,6 +127,11 @@
 			}
 
 			await showStopsOnRoute(orderedStops);
+			// Clear any existing interval first to prevent memory leaks
+			if (currentIntervalId) {
+				clearInterval(currentIntervalId);
+				currentIntervalId = null;
+			}
 			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
 
 			const routeData = {
@@ -166,6 +172,7 @@
 		clearVehicleMarkersMap();
 		mapProvider.clearVehicleMarkers();
 		clearInterval(currentIntervalId);
+		currentIntervalId = null;
 	}
 
 	function handlePlanTripTabClick() {
@@ -186,14 +193,31 @@
 		}
 	});
 
+	let unsubscribeMapLoaded;
+
+	function handleRouteSelectedFromModal(event) {
+		handleRouteClick(event.detail.route);
+	}
+
 	onMount(() => {
-		isMapLoaded.subscribe((value) => {
+		unsubscribeMapLoaded = isMapLoaded.subscribe((value) => {
 			mapLoaded = value;
 		});
 
-		window.addEventListener('routeSelectedFromModal', (event) => {
-			handleRouteClick(event.detail.route);
-		});
+		window.addEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+	});
+
+	onDestroy(() => {
+		if (unsubscribeMapLoaded) {
+			unsubscribeMapLoaded();
+		}
+		if (browser) {
+			window.removeEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+		}
+		if (currentIntervalId) {
+			clearInterval(currentIntervalId);
+			currentIntervalId = null;
+		}
 	});
 </script>
 
