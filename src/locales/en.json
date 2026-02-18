@@ -47,7 +47,8 @@
 		"distance_unit": "Distance Unit",
 		"unit_auto": "Auto-detect",
 		"unit_metric": "Metric (km, m)",
-		"unit_imperial": "Imperial (mi, ft)"
+		"unit_imperial": "Imperial (mi, ft)",
+		"swap_locations": "Swap From and To locations"
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",
