@@ -3,6 +3,11 @@ import { env } from '$env/dynamic/private';
 import { buildURL } from '$lib/urls.js';
 
 export async function POST({ request, params }) {
+	if (!env.PRIVATE_OBACO_API_BASE_URL) {
+		console.warn('[update-survey] PRIVATE_OBACO_API_BASE_URL not configured');
+		return json({ error: 'Survey service not configured' }, { status: 503 });
+	}
+
 	try {
 		const { id } = params;
 		const body = await request.text();
