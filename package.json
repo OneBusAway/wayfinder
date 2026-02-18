@@ -15,7 +15,8 @@
 		"lint:prettier": "prettier --check .",
 		"lint:eslint": "eslint .",
 		"format": "prettier --write .",
-		"prepush": "prettier --write . && prettier --check . && eslint . && vitest run"
+		"prepush": "prettier --write . && prettier --check . && eslint . && vitest run",
+		"validate-env": "node scripts/validate-env.js"
 	},
 	"devDependencies": {
 		"@fortawesome/fontawesome-svg-core": "^6.5.2",
