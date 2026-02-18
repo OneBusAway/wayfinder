@@ -85,6 +85,7 @@ Use these in Tailwind classes: `bg-primary-500`, `text-primary-700`, `border-pri
 - `PRIVATE_OBACO_API_BASE_URL` - string: (optional) Your OneBusAway.co server base URL, including the path prefix `/api/v1.
 - `PRIVATE_REGION_ID` - string: (required if OBACO_API_BASE_URL provided).
 - `PRIVATE_OBACO_SHOW_TEST_ALERTS` - boolean: (optional) Show test alerts on the website. Don't set this value in production.
+- `PRIVATE_OBA_AGENCY_FILTER` - string: (optional) Comma-separated agency IDs to restrict this instance to a subset of agencies. Leave empty to show all agencies (default). Affects search results, stop listings, arrivals, schedules, and alerts.
 
 ### Maps
 

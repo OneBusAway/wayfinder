@@ -1,5 +1,6 @@
 import oba from '$lib/obaSdk.js';
 import { calculateBoundsFromAgencies } from '$lib/mathUtils.js';
+import { getAgencyFilter } from '$lib/agencyFilter.js';
 
 /**
  * @typedef {Object} Agency
@@ -60,7 +61,21 @@ const CACHE_TTL = 3600000;
 async function fetchRoutesData() {
 	try {
 		const agenciesResponse = await oba.agenciesWithCoverage.list();
-		const agencies = agenciesResponse.data.list;
+		const allAgencies = agenciesResponse.data.list;
+		const agencyFilter = getAgencyFilter();
+		const agencies = agencyFilter
+			? allAgencies.filter((a) => agencyFilter.has(a.agencyId))
+			: allAgencies;
+
+		if (agencyFilter && agencies.length === 0) {
+			console.error(
+				'PRIVATE_OBA_AGENCY_FILTER is configured but matches no available agencies. All data will be empty.',
+				{
+					configured: [...agencyFilter],
+					available: allAgencies.map((a) => a.agencyId)
+				}
+			);
+		}
 
 		agenciesCache = agencies;
 		boundsCache = calculateBoundsFromAgencies(agencies);

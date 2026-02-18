@@ -1,45 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { swapValues, swapTripLocations } from '$lib/tripPlanUtils';
-
-/**
- * Unit tests for trip planner swap utility functions
- * These tests verify the swap logic extracted from TripPlan.svelte
- */
+import { swapTripLocations } from '$lib/tripPlanUtils';
 
 describe('tripPlanUtils', () => {
-	describe('swapValues', () => {
-		it('should swap two string values', () => {
-			const result = swapValues('Capitol Hill', 'University District');
-
-			expect(result.first).toBe('University District');
-			expect(result.second).toBe('Capitol Hill');
-		});
-
-		it('should swap two object values', () => {
-			const obj1 = { lat: 47.6205, lng: -122.3212 };
-			const obj2 = { lat: 47.6587, lng: -122.3138 };
-
-			const result = swapValues(obj1, obj2);
-
-			expect(result.first).toEqual(obj2);
-			expect(result.second).toEqual(obj1);
-		});
-
-		it('should handle null values', () => {
-			const result = swapValues('Capitol Hill', null);
-
-			expect(result.first).toBeNull();
-			expect(result.second).toBe('Capitol Hill');
-		});
-
-		it('should handle empty strings', () => {
-			const result = swapValues('Capitol Hill', '');
-
-			expect(result.first).toBe('');
-			expect(result.second).toBe('Capitol Hill');
-		});
-	});
-
 	describe('swapTripLocations', () => {
 		let mockMapProvider;
 		let mockT;

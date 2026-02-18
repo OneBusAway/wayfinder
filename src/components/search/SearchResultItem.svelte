@@ -17,7 +17,7 @@
 <button
 	type="button"
 	onclick={bubble('click')}
-	class="flex w-full items-center gap-x-4 rounded-md px-2 py-1 text-left hover:bg-gray-200"
+	class="flex w-full items-center gap-x-4 rounded-md px-2 py-1 text-left hover:bg-gray-200 hover:dark:bg-gray-700"
 >
 	<div class="flex items-center gap-x-4">
 		<div
@@ -27,8 +27,8 @@
 		</div>
 
 		<div>
-			<h3 class="text-lg font-semibold text-gray-700">{title}</h3>
-			<p class="text-gray-700">{subtitle}</p>
+			<h3 class="text-lg font-semibold text-gray-700 dark:text-white">{title}</h3>
+			<p class="text-gray-700 dark:text-white">{subtitle}</p>
 		</div>
 	</div>
 </button>

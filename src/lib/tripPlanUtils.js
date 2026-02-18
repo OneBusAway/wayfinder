@@ -1,15 +1,4 @@
 /**
- * Swaps two values using a temporary variable
- * @template T
- * @param {T} a - First value
- * @param {T} b - Second value
- * @returns {{first: T, second: T}} Object with swapped values
- */
-export function swapValues(a, b) {
-	return { first: b, second: a };
-}
-
-/**
  * Swaps trip planner locations (text, coordinates, and map markers)
  * @param {Object} params - Swap parameters
  * @param {string} params.fromPlace - Origin location text
@@ -20,7 +9,7 @@ export function swapValues(a, b) {
  * @param {Object|null} params.toMarker - Destination map marker
  * @param {Object} params.mapProvider - Map provider instance
  * @param {Function} params.t - Translation function
- * @returns {Object} Swapped values
+ * @returns {{fromPlace: string, toPlace: string, selectedFrom: Object|null, selectedTo: Object|null, fromMarker: Object|null, toMarker: Object|null}}
  */
 export function swapTripLocations({
 	fromPlace,
@@ -32,13 +21,12 @@ export function swapTripLocations({
 	mapProvider,
 	t
 }) {
-	// Swap text values
-	const { first: newFromPlace, second: newToPlace } = swapValues(fromPlace, toPlace);
+	const newFromPlace = toPlace;
+	const newToPlace = fromPlace;
+	const newSelectedFrom = selectedTo;
+	const newSelectedTo = selectedFrom;
 
-	// Swap coordinates
-	const { first: newSelectedFrom, second: newSelectedTo } = swapValues(selectedFrom, selectedTo);
-
-	// Remove existing markers (both providers are null-safe)
+	// Remove existing markers if they exist
 	if (fromMarker) mapProvider.removePinMarker(fromMarker);
 	if (toMarker) mapProvider.removePinMarker(toMarker);
 
