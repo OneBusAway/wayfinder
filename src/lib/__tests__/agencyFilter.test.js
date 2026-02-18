@@ -12,12 +12,12 @@ vi.mock('$env/dynamic/private', () => ({
 
 import {
 	getAgencyFilter,
-	isAgencyFilterEnabled,
 	routeBelongsToAgency,
 	filterRoutes,
 	filterStops,
 	filterArrivals,
-	filterScheduleRoutes
+	filterScheduleRoutes,
+	alertBelongsToAgency
 } from '$lib/agencyFilter.js';
 
 describe('agencyFilter', () => {
@@ -53,18 +53,6 @@ describe('agencyFilter', () => {
 			mockEnv.PRIVATE_OBA_AGENCY_FILTER = ' 19 , 29 ';
 			const result = getAgencyFilter();
 			expect(result).toEqual(new Set(['19', '29']));
-		});
-	});
-
-	describe('isAgencyFilterEnabled', () => {
-		it('returns false when env var is empty', () => {
-			mockEnv.PRIVATE_OBA_AGENCY_FILTER = '';
-			expect(isAgencyFilterEnabled()).toBe(false);
-		});
-
-		it('returns true when env var is set', () => {
-			mockEnv.PRIVATE_OBA_AGENCY_FILTER = '19';
-			expect(isAgencyFilterEnabled()).toBe(true);
 		});
 	});
 
@@ -212,6 +200,43 @@ describe('agencyFilter', () => {
 
 		it('handles null array', () => {
 			expect(filterScheduleRoutes(null, new Set(['19']))).toEqual([]);
+		});
+	});
+
+	describe('alertBelongsToAgency', () => {
+		it('returns true when agencyIds is null (passthrough)', () => {
+			const alert = { informedEntity: [{ agencyId: '99' }] };
+			expect(alertBelongsToAgency(alert, null)).toBe(true);
+		});
+
+		it('matches by informedEntity agencyId', () => {
+			const alert = { informedEntity: [{ agencyId: '19' }] };
+			expect(alertBelongsToAgency(alert, new Set(['19']))).toBe(true);
+		});
+
+		it('matches by informedEntity routeId prefix', () => {
+			const alert = { informedEntity: [{ routeId: '19_100' }] };
+			expect(alertBelongsToAgency(alert, new Set(['19']))).toBe(true);
+		});
+
+		it('returns false when no entity matches', () => {
+			const alert = { informedEntity: [{ agencyId: '99' }, { routeId: '99_100' }] };
+			expect(alertBelongsToAgency(alert, new Set(['19']))).toBe(false);
+		});
+
+		it('returns true if any entity matches', () => {
+			const alert = { informedEntity: [{ agencyId: '99' }, { agencyId: '19' }] };
+			expect(alertBelongsToAgency(alert, new Set(['19']))).toBe(true);
+		});
+
+		it('returns false when informedEntity is missing', () => {
+			const alert = {};
+			expect(alertBelongsToAgency(alert, new Set(['19']))).toBe(false);
+		});
+
+		it('returns false when informedEntity is empty', () => {
+			const alert = { informedEntity: [] };
+			expect(alertBelongsToAgency(alert, new Set(['19']))).toBe(false);
 		});
 	});
 });

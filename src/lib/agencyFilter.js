@@ -16,14 +16,6 @@ export function getAgencyFilter() {
 }
 
 /**
- * Returns true if agency filtering is enabled.
- * @returns {boolean}
- */
-export function isAgencyFilterEnabled() {
-	return getAgencyFilter() !== null;
-}
-
-/**
  * Checks if a route ID belongs to one of the target agencies.
  * OBA route IDs follow the convention: agencyId_routeNumber
  * @param {string | null} routeId
@@ -86,4 +78,22 @@ export function filterScheduleRoutes(schedules, agencyIds) {
 	if (!schedules) return [];
 	if (!agencyIds) return schedules;
 	return schedules.filter((schedule) => routeBelongsToAgency(schedule.routeId, agencyIds));
+}
+
+/**
+ * Checks if a GTFS-RT alert belongs to one of the target agencies.
+ * Matches on informedEntity agencyId or routeId prefix.
+ * @param {{ informedEntity?: Array<{ agencyId?: string, routeId?: string }> }} alert
+ * @param {Set<string> | null} agencyIds
+ * @returns {boolean}
+ */
+export function alertBelongsToAgency(alert, agencyIds) {
+	if (!agencyIds) return true;
+	return (
+		alert.informedEntity?.some((entity) => {
+			if (entity.agencyId && agencyIds.has(entity.agencyId)) return true;
+			if (entity.routeId && routeBelongsToAgency(entity.routeId, agencyIds)) return true;
+			return false;
+		}) ?? false
+	);
 }

@@ -7,7 +7,7 @@ export async function GET({ params }) {
 	const response = await oba.arrivalAndDeparture.list(stopID);
 
 	const agencyFilter = getAgencyFilter();
-	if (agencyFilter) {
+	if (agencyFilter && response.data?.entry?.arrivalsAndDepartures) {
 		response.data.entry.arrivalsAndDepartures = filterArrivals(
 			response.data.entry.arrivalsAndDepartures,
 			agencyFilter

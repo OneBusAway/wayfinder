@@ -62,12 +62,8 @@ export async function GET({ url }) {
 	]);
 
 	const agencyFilter = getAgencyFilter();
-	const routes = agencyFilter
-		? filterRoutes(routeResponse.data.list, agencyFilter)
-		: routeResponse.data.list;
-	const stops = agencyFilter
-		? filterStops(stopResponse.data.list, agencyFilter)
-		: stopResponse.data.list;
+	const routes = filterRoutes(routeResponse?.data?.list, agencyFilter);
+	const stops = filterStops(stopResponse?.data?.list, agencyFilter);
 
 	return new Response(
 		JSON.stringify({

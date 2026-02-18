@@ -1,5 +1,5 @@
 import oba, { handleOBAResponse } from '$lib/obaSdk';
-import { getAgencyFilter, routeBelongsToAgency } from '$lib/agencyFilter.js';
+import { getAgencyFilter, filterScheduleRoutes } from '$lib/agencyFilter.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url, params }) {
@@ -15,8 +15,9 @@ export async function GET({ url, params }) {
 
 	const agencyFilter = getAgencyFilter();
 	if (agencyFilter && response.data?.entry?.stopRouteSchedules) {
-		response.data.entry.stopRouteSchedules = response.data.entry.stopRouteSchedules.filter((s) =>
-			routeBelongsToAgency(s.routeId, agencyFilter)
+		response.data.entry.stopRouteSchedules = filterScheduleRoutes(
+			response.data.entry.stopRouteSchedules,
+			agencyFilter
 		);
 	}
 
