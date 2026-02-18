@@ -2,6 +2,7 @@ import { OnebusawaySDK } from 'onebusaway-sdk';
 
 import { bingGeocode, googleGeocode } from '$lib/geocoder';
 import { getBoundsCache } from '$lib/serverCache.js';
+import { getAgencyFilter, filterRoutes, filterStops } from '$lib/agencyFilter.js';
 
 import {
 	PUBLIC_OBA_SERVER_URL as baseUrl,
@@ -60,10 +61,18 @@ export async function GET({ url }) {
 		locationSearch(searchInput, bounds)
 	]);
 
+	const agencyFilter = getAgencyFilter();
+	const routes = agencyFilter
+		? filterRoutes(routeResponse.data.list, agencyFilter)
+		: routeResponse.data.list;
+	const stops = agencyFilter
+		? filterStops(stopResponse.data.list, agencyFilter)
+		: stopResponse.data.list;
+
 	return new Response(
 		JSON.stringify({
-			routes: routeResponse.data.list,
-			stops: stopResponse.data.list,
+			routes,
+			stops,
 			location: locationResponse,
 			query: searchInput
 		}),

@@ -1,6 +1,7 @@
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import { env } from '$env/dynamic/private';
 import { buildURL } from '$lib/urls.js';
+import { getAgencyFilter, routeBelongsToAgency } from '$lib/agencyFilter.js';
 
 const REGION_PATH = `regions/${env.PRIVATE_REGION_ID}/`;
 
@@ -25,7 +26,7 @@ export async function GET() {
 				validAlert = entity.alert;
 				break;
 			}
-			if (entity.alert && isValidAlert(entity.alert)) {
+			if (entity.alert && isValidAlert(entity.alert) && isAlertForAgency(entity.alert)) {
 				validAlert = entity.alert;
 				break;
 			}
@@ -82,4 +83,14 @@ function isStartDateWithin24Hours(alert) {
 
 function isAgencyWideAlert(alert) {
 	return alert.informedEntity && alert.informedEntity.length > 0;
+}
+
+function isAlertForAgency(alert) {
+	const agencyFilter = getAgencyFilter();
+	if (!agencyFilter) return true;
+	return alert.informedEntity?.some((entity) => {
+		if (entity.agencyId && agencyFilter.has(entity.agencyId)) return true;
+		if (entity.routeId && routeBelongsToAgency(entity.routeId, agencyFilter)) return true;
+		return false;
+	});
 }

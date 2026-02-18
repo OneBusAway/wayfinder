@@ -5,6 +5,16 @@ const mockAgenciesWithCoverageList = vi.fn();
 const mockRoutesForAgencyList = vi.fn();
 const mockCalculateBoundsFromAgencies = vi.fn();
 
+const mockEnv = vi.hoisted(() => ({
+	PRIVATE_OBA_AGENCY_FILTER: ''
+}));
+
+vi.mock('$env/dynamic/private', () => ({
+	get env() {
+		return mockEnv;
+	}
+}));
+
 vi.mock('$lib/obaSdk.js', () => ({
 	default: {
 		agenciesWithCoverage: {
@@ -78,6 +88,9 @@ describe('serverCache', () => {
 	];
 
 	beforeEach(async () => {
+		// Reset agency filter to default (disabled)
+		mockEnv.PRIVATE_OBA_AGENCY_FILTER = '';
+
 		// Reset all mocks before each test
 		vi.clearAllMocks();
 
@@ -445,6 +458,66 @@ describe('serverCache', () => {
 
 			const routes = getRoutesCache();
 			expect(routes).toEqual([]);
+		});
+	});
+
+	describe('agency filtering', () => {
+		it('should only fetch routes for filtered agency when PRIVATE_OBA_AGENCY_FILTER is set', async () => {
+			mockEnv.PRIVATE_OBA_AGENCY_FILTER = 'agency1';
+
+			const { preloadRoutesData } = await import('$lib/serverCache.js');
+			await preloadRoutesData();
+
+			expect(mockRoutesForAgencyList).toHaveBeenCalledTimes(1);
+			expect(mockRoutesForAgencyList).toHaveBeenCalledWith('agency1');
+			expect(mockRoutesForAgencyList).not.toHaveBeenCalledWith('agency2');
+		});
+
+		it('should only cache filtered agency routes', async () => {
+			mockEnv.PRIVATE_OBA_AGENCY_FILTER = 'agency1';
+
+			const { preloadRoutesData, getRoutesCache } = await import('$lib/serverCache.js');
+			await preloadRoutesData();
+
+			const routes = getRoutesCache();
+			expect(routes).toHaveLength(2);
+			expect(routes.every((r) => r.agencyId === 'agency1')).toBe(true);
+		});
+
+		it('should only cache filtered agencies', async () => {
+			mockEnv.PRIVATE_OBA_AGENCY_FILTER = 'agency1';
+
+			const { preloadRoutesData, getAgenciesCache } = await import('$lib/serverCache.js');
+			await preloadRoutesData();
+
+			const agencies = getAgenciesCache();
+			expect(agencies).toHaveLength(1);
+			expect(agencies[0].agencyId).toBe('agency1');
+		});
+
+		it('should compute bounds from only filtered agencies', async () => {
+			mockEnv.PRIVATE_OBA_AGENCY_FILTER = 'agency1';
+
+			const { preloadRoutesData } = await import('$lib/serverCache.js');
+			await preloadRoutesData();
+
+			expect(mockCalculateBoundsFromAgencies).toHaveBeenCalledWith([
+				expect.objectContaining({ agencyId: 'agency1' })
+			]);
+		});
+
+		it('should fetch all agencies when filter is empty (default behavior)', async () => {
+			mockEnv.PRIVATE_OBA_AGENCY_FILTER = '';
+
+			const { preloadRoutesData, getRoutesCache } = await import('$lib/serverCache.js');
+			await preloadRoutesData();
+
+			expect(mockRoutesForAgencyList).toHaveBeenCalledTimes(2);
+			expect(mockRoutesForAgencyList).toHaveBeenCalledWith('agency1');
+			expect(mockRoutesForAgencyList).toHaveBeenCalledWith('agency2');
+
+			const routes = getRoutesCache();
+			expect(routes).toHaveLength(3);
 		});
 	});
 });

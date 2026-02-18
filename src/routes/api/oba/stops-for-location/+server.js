@@ -1,4 +1,5 @@
 import oba, { handleOBAResponse } from '$lib/obaSdk';
+import { getAgencyFilter, filterStops } from '$lib/agencyFilter.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url }) {
@@ -17,6 +18,11 @@ export async function GET({ url }) {
 	};
 
 	const response = await oba.stopsForLocation.list(queryParams);
+
+	const agencyFilter = getAgencyFilter();
+	if (agencyFilter) {
+		response.data.list = filterStops(response.data.list, agencyFilter);
+	}
 
 	return handleOBAResponse(response, 'stops-for-location');
 }
