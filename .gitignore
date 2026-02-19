@@ -22,3 +22,4 @@ vite.config.ts.timestamp-*
 
 coverage/
 .claude/settings.local.json
+env-files

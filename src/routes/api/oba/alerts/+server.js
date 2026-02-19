@@ -6,6 +6,11 @@ import { getAgencyFilter, alertBelongsToAgency } from '$lib/agencyFilter.js';
 const REGION_PATH = `regions/${env.PRIVATE_REGION_ID}/`;
 
 export async function GET() {
+	if (!env.PRIVATE_OBACO_API_BASE_URL) {
+		console.warn('[alerts] PRIVATE_OBACO_API_BASE_URL not configured, skipping alerts');
+		return new Response(null, { status: 204, headers: { 'Content-Type': 'application/json' } });
+	}
+
 	try {
 		const alertsURL = buildURL(
 			env.PRIVATE_OBACO_API_BASE_URL,
