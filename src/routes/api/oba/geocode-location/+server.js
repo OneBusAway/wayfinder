@@ -36,13 +36,6 @@ export async function GET({ url }) {
 
 	try {
 		const locationResponse = await locationSearch(searchInput, bounds);
-		if (!locationResponse) {
-			throw error(500, {
-				message: 'Failed to process geocoding request',
-				code: 'GEOCODING_ERROR',
-				details: 'No results returned from geocoder'
-			});
-		}
 
 		return new Response(JSON.stringify({ location: locationResponse }), {
 			headers: { 'Content-Type': 'application/json' }
