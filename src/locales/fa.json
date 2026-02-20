@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "انتخاب زبان: {language}",
 		"available_languages": "زبان‌های موجود"
+	},
+	"context-menu": {
+		"start_here": "شروع از اینجا",
+		"end_here": "پایان در اینجا"
 	}
 }

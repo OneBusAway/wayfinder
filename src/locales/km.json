@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "ជ្រើសរើសភាសា: {language}",
 		"available_languages": "ភាសាដែលមាន"
+	},
+	"context-menu": {
+		"start_here": "ចាប់ផ្ដើមនៅទីនេះ",
+		"end_here": "បញ្ចប់នៅទីនេះ"
 	}
 }

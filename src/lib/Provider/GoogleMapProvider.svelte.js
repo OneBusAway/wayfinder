@@ -4,6 +4,7 @@ import { faBus } from '@fortawesome/free-solid-svg-icons';
 import { RouteType, routePriorities, prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
+import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
@@ -23,6 +24,8 @@ export default class GoogleMapProvider {
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.showStopsRoutesAtZoom = 16;
 		this.routeLabelsVisible = false;
+		this.contextMenuInfoWindow = null;
+		this.contextMenuComponent = null;
 	}
 
 	async initMap(element, options) {
@@ -206,6 +209,8 @@ export default class GoogleMapProvider {
 	}
 
 	openStopMarker(stop, stopTime = null) {
+		this.closeContextMenu();
+
 		if (this.globalInfoWindow) {
 			this.globalInfoWindow.close();
 		}
@@ -541,6 +546,68 @@ export default class GoogleMapProvider {
 	}
 	setZoom(zoom) {
 		this.map.setZoom(zoom);
+	}
+
+	enableContextMenu() {
+		if (!this.map) return;
+		this.map.addListener('rightclick', (e) => {
+			this.showContextMenu(e.latLng);
+		});
+	}
+
+	showContextMenu(latLng) {
+		this.closeContextMenu();
+
+		const lat = latLng.lat();
+		const lng = latLng.lng();
+
+		const popupContainer = document.createElement('div');
+
+		const dispatchAndClose = (type) => {
+			window.dispatchEvent(
+				new CustomEvent('contextMenuTripPlan', {
+					detail: { type, lat, lng }
+				})
+			);
+			this.closeContextMenu();
+		};
+
+		this.contextMenuComponent = mount(ContextMenuPopup, {
+			target: popupContainer,
+			props: {
+				onStartHere: () => dispatchAndClose('from'),
+				onEndHere: () => dispatchAndClose('to')
+			}
+		});
+
+		if (this.globalInfoWindow) {
+			this.globalInfoWindow.close();
+		}
+
+		this.contextMenuInfoWindow = new google.maps.InfoWindow({
+			content: popupContainer,
+			position: { lat, lng }
+		});
+
+		this.contextMenuInfoWindow.addListener('closeclick', () => {
+			if (this.contextMenuComponent) {
+				unmount(this.contextMenuComponent);
+				this.contextMenuComponent = null;
+			}
+		});
+
+		this.contextMenuInfoWindow.open(this.map);
+	}
+
+	closeContextMenu() {
+		if (this.contextMenuInfoWindow) {
+			this.contextMenuInfoWindow.close();
+			if (this.contextMenuComponent) {
+				unmount(this.contextMenuComponent);
+				this.contextMenuComponent = null;
+			}
+			this.contextMenuInfoWindow = null;
+		}
 	}
 
 	getBoundingBox() {

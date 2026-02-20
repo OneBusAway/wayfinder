@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "ເລືອກພາສາ: {language}",
 		"available_languages": "ພາສາທີ່ມີ"
+	},
+	"context-menu": {
+		"start_here": "ເລີ່ມຈາກບ່ອນນີ້",
+		"end_here": "ສິ້ນສຸດທີ່ນີ້"
 	}
 }

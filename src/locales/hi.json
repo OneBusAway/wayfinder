@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "भाषा चुनें: {language}",
 		"available_languages": "उपलब्ध भाषाएं"
+	},
+	"context-menu": {
+		"start_here": "यहाँ से शुरू करें",
+		"end_here": "यहाँ समाप्त करें"
 	}
 }

@@ -1,7 +1,7 @@
 <script>
 	import SearchField from '$components/search/SearchField.svelte';
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { faMapPin, faSignsPost } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
@@ -33,6 +33,7 @@
 	let currentIntervalId = null;
 	let mapLoaded = $state(false);
 	let isSurveyAnswered = $state(false);
+	let activeTab = $state('stops');
 
 	function handleLocationClick(location) {
 		clearResults();
@@ -199,12 +200,20 @@
 		handleRouteClick(event.detail.route);
 	}
 
+	async function handleContextMenuTripPlan(e) {
+		activeTab = 'plan';
+		handlePlanTripTabClick();
+		await tick();
+		window.dispatchEvent(new CustomEvent('setTripPlanLocation', { detail: e.detail }));
+	}
+
 	onMount(() => {
 		unsubscribeMapLoaded = isMapLoaded.subscribe((value) => {
 			mapLoaded = value;
 		});
 
 		window.addEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+		window.addEventListener('contextMenuTripPlan', handleContextMenuTripPlan);
 	});
 
 	onDestroy(() => {
@@ -213,6 +222,7 @@
 		}
 		if (browser) {
 			window.removeEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+			window.removeEventListener('contextMenuTripPlan', handleContextMenuTripPlan);
 		}
 		if (currentIntervalId) {
 			clearInterval(currentIntervalId);
@@ -230,7 +240,14 @@
 		inactiveClasses="py-3 px-4"
 		contentClass="pt-2 pb-4 rounded-lg dark:bg-surface-dark"
 	>
-		<TabItem open title={$t('tabs.stops-and-stations')} on:click={handleTabSwitch}>
+		<TabItem
+			open={activeTab === 'stops'}
+			title={$t('tabs.stops-and-stations')}
+			on:click={() => {
+				handleTabSwitch();
+				activeTab = 'stops';
+			}}
+		>
 			<SearchField value={query} {handleSearchResults} />
 
 			{#if !isSurveyAnswered && $surveyStore}
@@ -295,7 +312,15 @@
 		</TabItem>
 
 		{#if env.PUBLIC_OTP_SERVER_URL}
-			<TabItem title={$t('tabs.plan_trip')} on:click={handlePlanTripTabClick} disabled={!mapLoaded}>
+			<TabItem
+				open={activeTab === 'plan'}
+				title={$t('tabs.plan_trip')}
+				on:click={() => {
+					handlePlanTripTabClick();
+					activeTab = 'plan';
+				}}
+				disabled={!mapLoaded}
+			>
 				<TripPlan {mapProvider} {handleTripPlan} />
 			</TabItem>
 		{/if}
