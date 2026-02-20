@@ -110,6 +110,8 @@ When writing tests, the setup file already mocks `$env/static/public`, `$env/sta
 
 ## Environment Variables
 
+`env-schema.json` defines every variable with its type, constraints, and whether it's required. Run `npm run validate-env` to check your `.env` file against the schema.
+
 See `.env.example` for full list. Key variables:
 
 - `PRIVATE_OBA_API_KEY` - OneBusAway API key

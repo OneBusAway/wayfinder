@@ -1,5 +1,3 @@
-import { calculateRadiusFromBounds } from './mathUtils.js';
-
 export async function googleGeocode({ apiKey, query, bounds = null }) {
 	let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`;
 
@@ -15,6 +13,18 @@ export async function googleGeocode({ apiKey, query, bounds = null }) {
 
 	const result = data.results[0];
 
+	if (bounds) {
+		const loc = result.geometry.location;
+		if (
+			loc.lat < bounds.south ||
+			loc.lat > bounds.north ||
+			loc.lng < bounds.west ||
+			loc.lng > bounds.east
+		) {
+			return null;
+		}
+	}
+
 	return createGeocodingResult({
 		geometry: result.geometry,
 		formatted_address: result.formatted_address,
@@ -26,25 +36,16 @@ export async function googlePlacesAutocomplete({ apiKey, input, bounds = null })
 	const requestBody = { input };
 
 	if (bounds) {
-		const centerLat = (bounds.north + bounds.south) / 2;
-		const centerLng = (bounds.east + bounds.west) / 2;
-
-		let radius = calculateRadiusFromBounds(bounds);
-
-		// Google Places API has a maximum radius of 50,000 meters
-		const MAX_RADIUS = 50000;
-		if (radius > MAX_RADIUS) {
-			console.log(`Calculated radius ${radius}m exceeds maximum, capping at ${MAX_RADIUS}m`);
-			radius = MAX_RADIUS;
-		}
-
-		requestBody.locationBias = {
-			circle: {
-				center: {
-					latitude: centerLat,
-					longitude: centerLng
+		requestBody.locationRestriction = {
+			rectangle: {
+				low: {
+					latitude: bounds.south,
+					longitude: bounds.west
 				},
-				radius: radius
+				high: {
+					latitude: bounds.north,
+					longitude: bounds.east
+				}
 			}
 		};
 	}
@@ -105,6 +106,13 @@ export async function bingGeocode({ apiKey, query, bounds = null }) {
 
 	const result = data.resourceSets[0].resources[0];
 	const coordinates = result.point.coordinates;
+
+	if (bounds) {
+		const [lat, lng] = coordinates;
+		if (lat < bounds.south || lat > bounds.north || lng < bounds.west || lng > bounds.east) {
+			return null;
+		}
+	}
 
 	return createGeocodingResult({
 		geometry: {

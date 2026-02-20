@@ -5,6 +5,7 @@
 	import ItineraryTab from './ItineraryTab.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
+	import { browser } from '$app/environment';
 
 	/**
 	 * @typedef {Object} Props
@@ -19,6 +20,7 @@
 	let {
 		mapProvider,
 		itineraries = [],
+		error = null,
 		loading = false,
 		fromMarker = null,
 		toMarker = null,
@@ -27,6 +29,7 @@
 
 	let expandedSteps = $state({});
 	let activeTab = $state(0);
+	let itineraryTabsContainer = $state(null);
 
 	function toggleSteps(index) {
 		expandedSteps[index] = !expandedSteps[index];
@@ -65,9 +68,32 @@
 		});
 	}
 
+	/**
+	 * Converts vertical wheel input into horizontal scrolling for the itinerary tabs.
+	 * Only active on screens at or above the md breakpoint (768px).
+	 * @param {WheelEvent} e
+	 */
+	function handleWheel(e) {
+		if (!browser || !itineraryTabsContainer) return;
+
+		// Only apply on large screens (md breakpoint and above)
+		const isLargeScreen = window.innerWidth >= 768;
+		if (!isLargeScreen) return;
+
+		// Prevent default vertical scroll
+		e.preventDefault();
+
+		// Scroll horizontally based on vertical wheel delta
+		itineraryTabsContainer.scrollLeft += e.deltaY;
+	}
+
 	onMount(() => {
 		if (itineraries?.length > 0) {
 			drawRoute();
+		}
+
+		if (browser && itineraryTabsContainer) {
+			itineraryTabsContainer.addEventListener('wheel', handleWheel, { passive: false });
 		}
 	});
 	onDestroy(() => {
@@ -79,6 +105,10 @@
 				mapProvider.removePolyline(await polyline);
 			});
 		}
+
+		if (browser && itineraryTabsContainer) {
+			itineraryTabsContainer.removeEventListener('wheel', handleWheel);
+		}
 	});
 </script>
 
@@ -88,7 +118,7 @@
 	{/if}
 
 	{#if itineraries.length > 0}
-		<div class="itinerary-tabs">
+		<div class="itinerary-tabs" bind:this={itineraryTabsContainer}>
 			{#each itineraries as itinerary, index}
 				<ItineraryTab {index} {activeTab} {setActiveTab} {itinerary} />
 			{/each}
@@ -104,8 +134,20 @@
 			{/if}
 		</div>
 	{:else if !loading}
-		<div class="flex h-full items-center justify-center py-12 text-gray-400 dark:text-gray-500">
-			{$t('trip-planner.no_itineraries_found')}
+		<div class="flex h-full flex-col items-center justify-center gap-3 py-12">
+			<p class="text-gray-400 dark:text-gray-500">
+				{$t('trip-planner.no_itineraries_found')}
+			</p>
+			{#if error}
+				<div
+					class="mx-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20"
+				>
+					<p class="text-sm text-red-700 dark:text-red-400">{error.msg}</p>
+					<p class="mt-1 text-xs text-red-500/70 dark:text-red-500/50">
+						{$t('trip-planner.error_code')}: {error.id}
+					</p>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </ModalPane>

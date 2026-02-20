@@ -6,6 +6,7 @@ import './../../assets/styles/leaflet-map.css';
 import PolylineUtil from 'polyline-encoded';
 import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
+import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
@@ -26,6 +27,8 @@ export default class OpenStreetMapProvider {
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.showStopsRoutesAtZoom = 16;
 		this.routeLabelsVisible = false;
+		this.contextMenuPopup = null;
+		this.contextMenuComponent = null;
 	}
 
 	async initMap(element, options) {
@@ -544,6 +547,55 @@ export default class OpenStreetMapProvider {
 	setZoom(zoom) {
 		if (!browser || !this.map) return;
 		this.map.setZoom(zoom);
+	}
+
+	enableContextMenu() {
+		if (!this.map) return;
+		this.map.on('contextmenu', (e) => {
+			this.showContextMenu(e.latlng);
+		});
+	}
+
+	showContextMenu(latlng) {
+		this.closeContextMenu();
+
+		const popupContainer = document.createElement('div');
+
+		const dispatchAndClose = (type) => {
+			window.dispatchEvent(
+				new CustomEvent('contextMenuTripPlan', {
+					detail: { type, lat: latlng.lat, lng: latlng.lng }
+				})
+			);
+			this.closeContextMenu();
+		};
+
+		this.contextMenuComponent = mount(ContextMenuPopup, {
+			target: popupContainer,
+			props: {
+				onStartHere: () => dispatchAndClose('from'),
+				onEndHere: () => dispatchAndClose('to')
+			}
+		});
+
+		this.contextMenuPopup = L.popup({ closeButton: false, className: 'context-menu-popup' })
+			.setLatLng([latlng.lat, latlng.lng])
+			.setContent(popupContainer)
+			.openOn(this.map);
+
+		this.contextMenuPopup.on('remove', () => {
+			if (this.contextMenuComponent) {
+				unmount(this.contextMenuComponent);
+				this.contextMenuComponent = null;
+			}
+		});
+	}
+
+	closeContextMenu() {
+		if (this.contextMenuPopup) {
+			this.map.closePopup(this.contextMenuPopup);
+			this.contextMenuPopup = null;
+		}
 	}
 
 	getBoundingBox() {

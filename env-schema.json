@@ -1,0 +1,202 @@
+{
+	"PRIVATE_OBA_API_KEY": {
+		"required": true,
+		"type": "string",
+		"description": "OneBusAway API key for server-side requests"
+	},
+	"PRIVATE_OBA_GEOCODER_API_KEY": {
+		"required": false,
+		"type": "string",
+		"allowEmpty": true,
+		"description": "API key for the geocoding provider"
+	},
+	"PRIVATE_OBA_GEOCODER_PROVIDER": {
+		"required": false,
+		"type": "enum",
+		"enum": ["google"],
+		"description": "Geocoding provider (currently only 'google' is supported)"
+	},
+	"PRIVATE_OBACO_API_BASE_URL": {
+		"required": false,
+		"type": "url",
+		"description": "Base URL for the OneBusAway.co API"
+	},
+	"PRIVATE_REGION_ID": {
+		"required": false,
+		"type": "string",
+		"allowEmpty": true,
+		"description": "Region ID for OneBusAway.co API"
+	},
+	"PRIVATE_OBACO_SHOW_TEST_ALERTS": {
+		"required": false,
+		"type": "boolean",
+		"description": "Whether to show test alerts from OneBusAway.co"
+	},
+	"PRIVATE_OBA_AGENCY_FILTER": {
+		"required": false,
+		"type": "string",
+		"allowEmpty": true,
+		"description": "Comma-separated agency IDs to restrict this instance to. Leave empty to show all agencies."
+	},
+	"PUBLIC_NAV_BAR_LINKS": {
+		"required": false,
+		"type": "json",
+		"description": "JSON object mapping navigation link labels to URLs"
+	},
+	"PUBLIC_OBA_GOOGLE_MAPS_API_KEY": {
+		"required": false,
+		"type": "string",
+		"allowEmpty": true,
+		"description": "Google Maps API key (required when map provider is 'google')"
+	},
+	"PUBLIC_OBA_LOGO_URL": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "URL to the organization logo displayed in the nav bar"
+	},
+	"OBA_LOGO_URL_DARK": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "URL to the dark-mode variant of the organization logo"
+	},
+	"PUBLIC_FAVICON_URL": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "URL to the site favicon"
+	},
+	"PRIVATE_MANIFEST_ICON_192_URL": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "URL to the 192x192 icon for the web app manifest"
+	},
+	"PRIVATE_MANIFEST_ICON_512_URL": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "URL to the 512x512 icon for the web app manifest"
+	},
+	"PUBLIC_APPLE_TOUCH_ICON_URL": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "URL to the Apple touch icon for iOS home screen"
+	},
+	"PUBLIC_OBA_MAP_PROVIDER": {
+		"required": true,
+		"type": "enum",
+		"enum": ["osm", "google"],
+		"description": "Map provider: 'osm' for OpenStreetMap/Leaflet, 'google' for Google Maps"
+	},
+	"PUBLIC_OBA_REGION_CENTER_LAT": {
+		"required": true,
+		"type": "number",
+		"min": -90,
+		"max": 90,
+		"description": "Latitude of the region center for initial map view"
+	},
+	"PUBLIC_OBA_REGION_CENTER_LNG": {
+		"required": true,
+		"type": "number",
+		"min": -180,
+		"max": 180,
+		"description": "Longitude of the region center for initial map view"
+	},
+	"PUBLIC_OBA_REGION_NAME": {
+		"required": true,
+		"type": "string",
+		"description": "Human-readable name of the transit region"
+	},
+	"SHOW_REGION_NAME_IN_NAV_BAR": {
+		"required": false,
+		"type": "boolean",
+		"description": "Whether to display the region name in the navigation bar"
+	},
+	"PUBLIC_OBA_SERVER_URL": {
+		"required": true,
+		"type": "url",
+		"description": "Base URL of the OneBusAway REST API server"
+	},
+	"PUBLIC_OTP_SERVER_URL": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "Base URL of the OpenTripPlanner server for trip planning"
+	},
+	"PUBLIC_DISTANCE_UNIT": {
+		"required": true,
+		"type": "enum",
+		"enum": ["metric", "imperial"],
+		"allowEmpty": true,
+		"description": "Distance unit preference; auto-detects from browser if empty"
+	},
+	"PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK": {
+		"required": false,
+		"type": "number",
+		"min": 0,
+		"max": 6,
+		"description": "First day of the week for calendar (0=MON, 1=TUE, ..., 6=SUN)"
+	},
+	"COLOR_BRAND_PRIMARY": {
+		"required": true,
+		"type": "color",
+		"description": "Nav bar background and primary button color (hex)"
+	},
+	"COLOR_BRAND_PRIMARY_FOREGROUND": {
+		"required": true,
+		"type": "color",
+		"description": "Text color on brand-primary surfaces (hex)"
+	},
+	"COLOR_BRAND_ACCENT": {
+		"required": true,
+		"type": "color",
+		"description": "Links, selected states, and focus ring color (hex)"
+	},
+	"COLOR_SURFACE": {
+		"required": true,
+		"type": "color",
+		"description": "Panel background color (hex)"
+	},
+	"COLOR_SURFACE_FOREGROUND": {
+		"required": true,
+		"type": "color",
+		"description": "Panel text color (hex)"
+	},
+	"PUBLIC_ANALYTICS_DOMAIN": {
+		"required": false,
+		"type": "string",
+		"allowEmpty": true,
+		"description": "Domain for analytics tracking"
+	},
+	"PUBLIC_ANALYTICS_ENABLED": {
+		"required": false,
+		"type": "boolean",
+		"description": "Whether analytics tracking is enabled"
+	},
+	"PUBLIC_ANALYTICS_API_HOST": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "API host URL for analytics events"
+	},
+	"PUBLIC_LANGUAGE_SWITCHER_ENABLED": {
+		"required": false,
+		"type": "boolean",
+		"description": "Whether to show the language switcher in the navigation bar"
+	},
+	"PUBLIC_LANGUAGE_SWITCHER_BUTTON_FORMAT": {
+		"required": false,
+		"type": "enum",
+		"enum": ["native", "english", "native-english", "english-native", "code"],
+		"description": "Display format for the language switcher button"
+	},
+	"PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT": {
+		"required": false,
+		"type": "enum",
+		"enum": ["native", "english", "native-english", "english-native", "code"],
+		"description": "Display format for the language switcher dropdown menu"
+	}
+}

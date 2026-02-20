@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "Chwazi lang: {language}",
 		"available_languages": "Lang ki disponib"
+	},
+	"context-menu": {
+		"start_here": "Kòmanse isit",
+		"end_here": "Fini isit"
 	}
 }

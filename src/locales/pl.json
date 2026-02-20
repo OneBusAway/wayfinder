@@ -148,5 +148,9 @@
 	"language_switcher": {
 		"select_language": "Wybierz język: {language}",
 		"available_languages": "Dostępne języki"
+	},
+	"context-menu": {
+		"start_here": "Rozpocznij tutaj",
+		"end_here": "Zakończ tutaj"
 	}
 }

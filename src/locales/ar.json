@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "اختر اللغة: {language}",
 		"available_languages": "اللغات المتاحة"
+	},
+	"context-menu": {
+		"start_here": "ابدأ من هنا",
+		"end_here": "انتهِ هنا"
 	}
 }

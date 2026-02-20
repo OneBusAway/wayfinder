@@ -1,39 +1,70 @@
 import { error, json } from '@sveltejs/kit';
 import { PUBLIC_OTP_SERVER_URL } from '$env/static/public';
 import {
-	parseTimeInput,
-	parseDateInput,
+	buildGraphQLQueryBody,
 	formatTimeForOTP,
 	formatDateForOTP,
+	mapGraphQLResponse,
+	getOtpApiType,
 	OTP_DEFAULTS
 } from '$lib/otp';
 
-export async function GET({ url }) {
+/**
+ * Fetch trip plan from OTP 1.x REST API.
+ *
+ * @throws {HttpError} SvelteKit HttpError on non-2xx responses
+ */
+async function fetchREST(params) {
+	const searchParams = new URLSearchParams(params);
+	const otpUrl = `${PUBLIC_OTP_SERVER_URL}/routers/default/plan?${searchParams}`;
+
+	const response = await fetch(otpUrl, {
+		headers: { Accept: 'application/json' }
+	});
+
+	if (!response.ok) {
+		throw error(response.status, `OpenTripPlanner API returned status ${response.status}`);
+	}
+
+	const data = await response.json();
+	return json({ ...data, _otpUrl: otpUrl });
+}
+
+/**
+ * Fetch trip plan from OTP 2.x GraphQL API.
+ *
+ * @throws {HttpError} SvelteKit HttpError on non-2xx responses
+ */
+async function fetchGraphQL(params) {
+	const graphqlUrl = `${PUBLIC_OTP_SERVER_URL}/gtfs/v1`;
+
+	const response = await fetch(graphqlUrl, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+		body: JSON.stringify(buildGraphQLQueryBody(params))
+	});
+
+	if (!response.ok) {
+		throw error(response.status, `GraphQL API returned status ${response.status}`);
+	}
+
+	const data = await response.json();
+	const mapped = mapGraphQLResponse(data);
+	return json({ ...mapped, _otpUrl: graphqlUrl });
+}
+
+function buildParamsFromRequest(url) {
 	const fromPlace = url.searchParams.get('fromPlace');
 	const toPlace = url.searchParams.get('toPlace');
-
-	if (!fromPlace || !toPlace) {
-		throw error(400, 'Missing required parameters: fromPlace and toPlace');
-	}
-
-	if (!PUBLIC_OTP_SERVER_URL) {
-		throw error(503, 'Trip planning is not configured for this region');
-	}
-
-	// Get current time for defaults
 	const now = new Date();
 	const defaultTime = formatTimeForOTP(now);
 	const defaultDate = formatDateForOTP(now);
 
-	// Parse time input (converts HH:mm to h:mm AM/PM) or use default
-	const timeInput = url.searchParams.get('time');
-	const time = (timeInput ? parseTimeInput(timeInput) : null) || defaultTime;
+	// Client sends time as "h:mm AM/PM" and date as "MM-DD-YYYY".
+	// REST passes these through as-is; GraphQL converts via convertToISO8601().
+	const time = url.searchParams.get('time') || defaultTime;
+	const date = url.searchParams.get('date') || defaultDate;
 
-	// Parse date input (converts YYYY-MM-DD to MM-DD-YYYY) or use default
-	const dateInput = url.searchParams.get('date');
-	const date = (dateInput ? parseDateInput(dateInput) : null) || defaultDate;
-
-	// Get remaining parameters with defaults
 	const mode = url.searchParams.get('mode') || OTP_DEFAULTS.mode;
 	const arriveBy = url.searchParams.get('arriveBy') || String(OTP_DEFAULTS.arriveBy);
 	const maxWalkDistance =
@@ -44,7 +75,7 @@ export async function GET({ url }) {
 	const transferPenalty =
 		url.searchParams.get('transferPenalty') || String(OTP_DEFAULTS.transferPenalty);
 
-	const params = new URLSearchParams({
+	const params = {
 		fromPlace,
 		toPlace,
 		time,
@@ -55,24 +86,30 @@ export async function GET({ url }) {
 		wheelchair,
 		showIntermediateStops,
 		transferPenalty
-	});
+	};
 
-	const otpUrl = `${PUBLIC_OTP_SERVER_URL}/routers/default/plan?${params}`;
+	return params;
+}
+
+export async function GET({ url }) {
+	const params = buildParamsFromRequest(url);
+
+	if (!params.fromPlace || !params.toPlace) {
+		throw error(400, 'Missing required parameters: fromPlace and toPlace');
+	}
+
+	if (!PUBLIC_OTP_SERVER_URL) {
+		throw error(503, 'Trip planning is not configured for this region');
+	}
+
+	const apiType = getOtpApiType();
 
 	try {
-		const response = await fetch(otpUrl, {
-			headers: {
-				Accept: 'application/json'
-			}
-		});
-
-		if (!response.ok) {
-			throw error(response.status, `OpenTripPlanner API returned status ${response.status}`);
+		if (apiType === 'graphql') {
+			return await fetchGraphQL(params);
 		}
-
-		const data = await response.json();
-		// Include the OTP URL for debugging
-		return json({ ...data, _otpUrl: otpUrl });
+		// Default to REST when apiType is 'rest' or null (server unreachable at startup)
+		return await fetchREST(params);
 	} catch (err) {
 		if (err.status) throw err;
 

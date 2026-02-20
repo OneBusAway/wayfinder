@@ -47,7 +47,9 @@
 		"distance_unit": "Distance Unit",
 		"unit_auto": "Auto-detect",
 		"unit_metric": "Metric (km, m)",
-		"unit_imperial": "Imperial (mi, ft)"
+		"unit_imperial": "Imperial (mi, ft)",
+		"swap_locations": "Swap From and To locations",
+		"error_code": "Error code"
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",
@@ -172,5 +174,9 @@
 	"language_switcher": {
 		"select_language": "Select language: {language}",
 		"available_languages": "Available languages"
+	},
+	"context-menu": {
+		"start_here": "Start Here",
+		"end_here": "End Here"
 	}
 }

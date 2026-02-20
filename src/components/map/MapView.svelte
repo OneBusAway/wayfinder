@@ -5,6 +5,7 @@
 		PUBLIC_OBA_REGION_CENTER_LAT as initialLat,
 		PUBLIC_OBA_REGION_CENTER_LNG as initialLng
 	} from '$env/static/public';
+	import { env } from '$env/dynamic/public';
 
 	import { debounce } from '$lib/utils';
 	import LocationButton from '$lib/LocationButton/LocationButton.svelte';
@@ -166,6 +167,10 @@
 			}, 300);
 
 			mapProvider.eventListeners(mapInstance, debouncedLoadMarkers);
+
+			if (env.PUBLIC_OTP_SERVER_URL) {
+				mapProvider.enableContextMenu();
+			}
 
 			if (browser) {
 				window.addEventListener('themeChange', handleThemeChange);

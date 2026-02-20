@@ -153,6 +153,8 @@ export function formatDepartureDisplay(opts, translator = null) {
 	if (opts.departureType === 'now') return null;
 
 	const timeStr = opts.departureTime || '';
+	const dateStr = opts.departureDate || '';
+
 	// Use translator if provided, otherwise fall back to English
 	const prefix =
 		opts.departureType === 'arriveBy'
@@ -164,9 +166,27 @@ export function formatDepartureDisplay(opts, translator = null) {
 				: 'Depart';
 
 	if (timeStr) {
-		// Use OTP module's parseTimeInput to format time (avoids duplicate logic)
 		const formattedTime = parseTimeInput(timeStr);
-		return formattedTime ? `${prefix} ${formattedTime}` : prefix;
+		if (!formattedTime) return prefix;
+
+		let dateSuffix = '';
+		if (dateStr) {
+			const today = new Date();
+			const tomorrow = new Date();
+			tomorrow.setDate(today.getDate() + 1);
+
+			const toYMD = (d) => d.toISOString().split('T')[0];
+
+			if (dateStr === toYMD(today)) {
+				dateSuffix = ', Today';
+			} else if (dateStr === toYMD(tomorrow)) {
+				dateSuffix = ', Tomorrow';
+			} else {
+				dateSuffix = `, ${dateStr}`;
+			}
+		}
+
+		return `${prefix} ${formattedTime}${dateSuffix}`;
 	}
 
 	return prefix;
