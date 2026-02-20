@@ -461,6 +461,57 @@ describe('GET /api/otp/plan', () => {
 		expect(vars.dateTime.earliestDeparture).toBe('2026-02-19T17:08:00');
 	});
 
+	it('converts 12:00 AM (midnight) correctly to T00:00:00', async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		const url = new URL(
+			'http://localhost/api/otp/plan?fromPlace=47.6205,-122.3212&toPlace=47.6587,-122.3128&date=02-19-2026&time=12%3A00+AM'
+		);
+		await GET({ url });
+
+		const [, options] = mockFetch.mock.calls[0];
+		const body = JSON.parse(options.body);
+		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T00:00:00');
+	});
+
+	it('converts 12:00 PM (noon) correctly to T12:00:00', async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		const url = new URL(
+			'http://localhost/api/otp/plan?fromPlace=47.6205,-122.3212&toPlace=47.6587,-122.3128&date=02-19-2026&time=12%3A00+PM'
+		);
+		await GET({ url });
+
+		const [, options] = mockFetch.mock.calls[0];
+		const body = JSON.parse(options.body);
+		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T12:00:00');
+	});
+
+	it('converts 12:30 AM correctly to T00:30:00', async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		const url = new URL(
+			'http://localhost/api/otp/plan?fromPlace=47.6205,-122.3212&toPlace=47.6587,-122.3128&date=02-19-2026&time=12%3A30+AM'
+		);
+		await GET({ url });
+
+		const [, options] = mockFetch.mock.calls[0];
+		const body = JSON.parse(options.body);
+		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T00:30:00');
+	});
+
 	it('uses latestArrival when arriveBy=true', async () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: true,

@@ -23,6 +23,7 @@ describe('otpServerCache', () => {
 
 	it('detects OTP 2.x as graphql from JSON response with version.major = 2', async () => {
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
 			json: async () => ({ version: { major: 2, minor: 7, patch: 0 } })
 		});
@@ -36,6 +37,7 @@ describe('otpServerCache', () => {
 
 	it('detects OTP 1.x as rest from JSON response with version.major = 1', async () => {
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
 			json: async () => ({ version: { major: 1, minor: 5, patch: 0 } })
 		});
@@ -48,6 +50,7 @@ describe('otpServerCache', () => {
 
 	it('detects XML/non-JSON response as rest (OTP 1.x)', async () => {
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/xml' }),
 			json: async () => {
 				throw new Error('not json');
@@ -71,6 +74,21 @@ describe('otpServerCache', () => {
 		console.error.mockRestore();
 	});
 
+	it('leaves otpApiType as null on HTTP error response', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 502,
+			headers: new Headers({ 'content-type': 'text/html' })
+		});
+
+		const { preloadOtpVersion, getOtpApiType } = await import('$lib/otpServerCache.js');
+		await preloadOtpVersion();
+
+		expect(getOtpApiType()).toBeNull();
+		console.error.mockRestore();
+	});
+
 	it('skips detection when PUBLIC_OTP_SERVER_URL is empty', async () => {
 		mockOtpServerUrl = '';
 
@@ -83,6 +101,7 @@ describe('otpServerCache', () => {
 
 	it('does not refetch when cache is valid', async () => {
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
 			json: async () => ({ version: { major: 2 } })
 		});
@@ -100,6 +119,7 @@ describe('otpServerCache', () => {
 		vi.useFakeTimers();
 
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
 			json: async () => ({ version: { major: 2 } })
 		});
@@ -112,6 +132,7 @@ describe('otpServerCache', () => {
 		vi.advanceTimersByTime(3600001);
 
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/xml' })
 		});
 
@@ -124,6 +145,7 @@ describe('otpServerCache', () => {
 
 	it('concurrent calls share the same promise (no duplicate fetches)', async () => {
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
 			json: async () => ({ version: { major: 2 } })
 		});
@@ -137,6 +159,7 @@ describe('otpServerCache', () => {
 
 	it('force refresh bypasses cache', async () => {
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
 			json: async () => ({ version: { major: 2 } })
 		});
@@ -146,6 +169,7 @@ describe('otpServerCache', () => {
 		expect(getOtpApiType()).toBe('graphql');
 
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
 			json: async () => ({ version: { major: 1 } })
 		});
@@ -157,6 +181,7 @@ describe('otpServerCache', () => {
 
 	it('clearOtpCache resets all state', async () => {
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
 			json: async () => ({ version: { major: 2 } })
 		});
@@ -173,6 +198,7 @@ describe('otpServerCache', () => {
 
 	it('treats missing content-type header as non-JSON (rest)', async () => {
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers()
 		});
 
@@ -184,6 +210,7 @@ describe('otpServerCache', () => {
 
 	it('treats JSON response without version field as rest', async () => {
 		mockFetch.mockResolvedValueOnce({
+			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
 			json: async () => ({ serverInfo: { name: 'OTP' } })
 		});
@@ -192,5 +219,33 @@ describe('otpServerCache', () => {
 		await preloadOtpVersion();
 
 		expect(getOtpApiType()).toBe('rest');
+	});
+
+	it('retries detection after HTTP error on next call (no stale cache)', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		// First call: server returns 503
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 503,
+			headers: new Headers()
+		});
+
+		const { preloadOtpVersion, getOtpApiType } = await import('$lib/otpServerCache.js');
+		await preloadOtpVersion();
+		expect(getOtpApiType()).toBeNull();
+
+		// Second call: server is back, returns OTP 2.x
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			headers: new Headers({ 'content-type': 'application/json' }),
+			json: async () => ({ version: { major: 2 } })
+		});
+
+		await preloadOtpVersion();
+		expect(getOtpApiType()).toBe('graphql');
+		expect(mockFetch).toHaveBeenCalledTimes(2);
+
+		console.error.mockRestore();
 	});
 });

@@ -14,6 +14,11 @@ const CACHE_TTL = 3600000;
 
 async function detectOtpVersion() {
 	const response = await fetch(PUBLIC_OTP_SERVER_URL);
+
+	if (!response.ok) {
+		throw new Error(`OTP server returned HTTP ${response.status}`);
+	}
+
 	const contentType = response.headers.get('content-type') || '';
 
 	if (contentType.includes('application/json')) {
