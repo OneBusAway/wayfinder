@@ -35,6 +35,9 @@ export {
 	validateWalkDistance
 } from './validators.js';
 
+// GraphQL
+export { buildGraphQLQueryBody, mapGraphQLResponse } from './graphql.js';
+
 // Constants
 export {
 	OTP_DEFAULTS,
