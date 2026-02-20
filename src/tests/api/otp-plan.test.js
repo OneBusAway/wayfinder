@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// Mock getOtpApiType at the module level — controls which path +server.js takes
+let mockApiType = 'graphql';
+
+vi.mock('$lib/otpServerCache.js', () => ({
+	getOtpApiType: () => mockApiType,
+	preloadOtpVersion: vi.fn(),
+	clearOtpCache: vi.fn()
+}));
+
 // Realistic GraphQL response fixture: walk -> bus -> walk (3 legs)
 function makeGraphQLResponse(edges = undefined) {
 	if (edges === undefined) {
@@ -162,6 +171,7 @@ describe('GET /api/otp/plan', () => {
 		vi.resetModules();
 		mockFetch = vi.fn();
 		global.fetch = mockFetch;
+		mockApiType = 'graphql';
 
 		vi.doMock('$env/static/public', () => ({
 			PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com'
@@ -208,9 +218,9 @@ describe('GET /api/otp/plan', () => {
 		}
 	});
 
-	// -- GraphQL auto-detection tests --
+	// -- GraphQL path tests (apiType = 'graphql') --
 
-	it('tries GraphQL first; on 200, returns mapped itineraries', async () => {
+	it('uses GraphQL when apiType is graphql', async () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
 			status: 200,
@@ -220,25 +230,20 @@ describe('GET /api/otp/plan', () => {
 		const response = await GET({ url: makeURL() });
 		const data = await response.json();
 
-		// Should have called GraphQL endpoint
 		expect(mockFetch).toHaveBeenCalledTimes(1);
 		const [graphqlUrl, options] = mockFetch.mock.calls[0];
 		expect(graphqlUrl).toBe('https://otp.test.example.com/otp/gtfs/v1');
 		expect(options.method).toBe('POST');
 
-		// Should return mapped itineraries
 		expect(data.plan.itineraries).toHaveLength(1);
 		expect(data.plan.itineraries[0].legs).toHaveLength(3);
 	});
 
-	it('falls back to REST on GraphQL 404', async () => {
-		// GraphQL returns 404
-		mockFetch.mockResolvedValueOnce({
-			ok: false,
-			status: 404,
-			json: async () => ({})
-		});
-		// REST response
+	// -- REST path tests (apiType = 'rest') --
+
+	it('uses REST when apiType is rest', async () => {
+		mockApiType = 'rest';
+
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
 			status: 200,
@@ -248,39 +253,17 @@ describe('GET /api/otp/plan', () => {
 		const response = await GET({ url: makeURL() });
 		const data = await response.json();
 
-		expect(mockFetch).toHaveBeenCalledTimes(2);
-		// Second call should be REST
-		const [restUrl] = mockFetch.mock.calls[1];
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		const [restUrl] = mockFetch.mock.calls[0];
 		expect(restUrl).toContain('/routers/default/plan?');
 		expect(data.plan.itineraries).toHaveLength(1);
 	});
 
-	it('falls back to REST on GraphQL 405', async () => {
-		mockFetch.mockResolvedValueOnce({
-			ok: false,
-			status: 405,
-			json: async () => ({})
-		});
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeRESTResponse()
-		});
+	// -- Null apiType defaults to REST --
 
-		const response = await GET({ url: makeURL() });
-		const data = await response.json();
+	it('defaults to REST when apiType is null', async () => {
+		mockApiType = null;
 
-		expect(mockFetch).toHaveBeenCalledTimes(2);
-		expect(data.plan.itineraries).toHaveLength(1);
-	});
-
-	it('falls back to REST on transient error (500) without caching', async () => {
-		// First request: GraphQL 500 → fallback to REST
-		mockFetch.mockResolvedValueOnce({
-			ok: false,
-			status: 500,
-			json: async () => ({})
-		});
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
 			status: 200,
@@ -289,51 +272,11 @@ describe('GET /api/otp/plan', () => {
 
 		const response = await GET({ url: makeURL() });
 		const data = await response.json();
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		const [restUrl] = mockFetch.mock.calls[0];
+		expect(restUrl).toContain('/routers/default/plan?');
 		expect(data.plan.itineraries).toHaveLength(1);
-
-		// Second request: should try GraphQL again (not cached)
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeGraphQLResponse()
-		});
-
-		const response2 = await GET({ url: makeURL() });
-		const data2 = await response2.json();
-
-		// Third call should be GraphQL (retried, not cached as REST)
-		const [thirdUrl, thirdOptions] = mockFetch.mock.calls[2];
-		expect(thirdUrl).toBe('https://otp.test.example.com/otp/gtfs/v1');
-		expect(thirdOptions.method).toBe('POST');
-		expect(data2.plan.itineraries).toHaveLength(1);
-	});
-
-	it('falls back to REST on network error without caching', async () => {
-		// First request: GraphQL network error → fallback to REST
-		mockFetch.mockRejectedValueOnce(new Error('Network error'));
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeRESTResponse()
-		});
-
-		const response = await GET({ url: makeURL() });
-		const data = await response.json();
-		expect(data.plan.itineraries).toHaveLength(1);
-
-		// Second request: should try GraphQL again (not cached)
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeGraphQLResponse()
-		});
-
-		await GET({ url: makeURL() });
-
-		// Third call should be GraphQL (retried)
-		const [thirdUrl, thirdOptions] = mockFetch.mock.calls[2];
-		expect(thirdUrl).toBe('https://otp.test.example.com/otp/gtfs/v1');
-		expect(thirdOptions.method).toBe('POST');
 	});
 
 	// -- GraphQL response mapping tests --
@@ -607,77 +550,11 @@ describe('GET /api/otp/plan', () => {
 		expect(vars.destination.location.coordinate.longitude).toBe(-122.3128);
 	});
 
-	// -- Caching behavior tests --
-
-	it('after GraphQL succeeds, subsequent requests skip detection', async () => {
-		// First request: GraphQL succeeds
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeGraphQLResponse()
-		});
-
-		await GET({ url: makeURL() });
-		expect(mockFetch).toHaveBeenCalledTimes(1);
-
-		// Second request: should go directly to GraphQL (cached)
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeGraphQLResponse()
-		});
-
-		await GET({ url: makeURL() });
-		expect(mockFetch).toHaveBeenCalledTimes(2);
-
-		// Both calls should be GraphQL POSTs
-		for (const [callUrl, callOptions] of mockFetch.mock.calls) {
-			expect(callUrl).toBe('https://otp.test.example.com/otp/gtfs/v1');
-			expect(callOptions.method).toBe('POST');
-		}
-	});
-
-	it('after GraphQL 404, subsequent requests go directly to REST', async () => {
-		// First request: GraphQL 404 → REST fallback
-		mockFetch.mockResolvedValueOnce({
-			ok: false,
-			status: 404,
-			json: async () => ({})
-		});
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeRESTResponse()
-		});
-
-		await GET({ url: makeURL() });
-		expect(mockFetch).toHaveBeenCalledTimes(2);
-
-		// Second request: should go directly to REST (cached, no GraphQL attempt)
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeRESTResponse()
-		});
-
-		await GET({ url: makeURL() });
-		expect(mockFetch).toHaveBeenCalledTimes(3);
-
-		// Third call should be REST GET
-		const [thirdUrl, thirdOptions] = mockFetch.mock.calls[2];
-		expect(thirdUrl).toContain('/routers/default/plan?');
-		expect(thirdOptions.method).toBeUndefined(); // GET has no method set
-	});
-
 	// -- REST behavior (regression) tests --
 
 	it('includes _otpUrl in REST response', async () => {
-		// Force REST path by making GraphQL 404
-		mockFetch.mockResolvedValueOnce({
-			ok: false,
-			status: 404,
-			json: async () => ({})
-		});
+		mockApiType = 'rest';
+
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
 			status: 200,
@@ -704,58 +581,26 @@ describe('GET /api/otp/plan', () => {
 		expect(data._otpUrl).toContain('otp/gtfs/v1');
 	});
 
-	// -- Cache invalidation tests --
+	// -- Error handling tests --
 
-	it('resets cache and falls back to REST when cached GraphQL endpoint fails', async () => {
-		// First request: GraphQL succeeds → cached as 'graphql'
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeGraphQLResponse()
-		});
-		await GET({ url: makeURL() });
-
-		// Second request: GraphQL fails → should reset cache and fall back to REST
+	it('throws HTTP error when GraphQL returns non-2xx', async () => {
 		mockFetch.mockResolvedValueOnce({
 			ok: false,
 			status: 502,
 			json: async () => ({})
 		});
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeRESTResponse()
-		});
 
-		const response = await GET({ url: makeURL() });
-		const data = await response.json();
-		expect(data.plan.itineraries).toHaveLength(1);
-
-		// Third request: should retry GraphQL (cache was reset to null)
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeGraphQLResponse()
-		});
-
-		await GET({ url: makeURL() });
-
-		// Fourth fetch call should be GraphQL again (not REST)
-		const [fourthUrl, fourthOptions] = mockFetch.mock.calls[3];
-		expect(fourthUrl).toBe('https://otp.test.example.com/otp/gtfs/v1');
-		expect(fourthOptions.method).toBe('POST');
+		try {
+			await GET({ url: makeURL() });
+			expect.unreachable('should have thrown');
+		} catch (e) {
+			expect(e.status).toBe(502);
+		}
 	});
 
-	// -- Double-failure tests --
+	it('throws HTTP error when REST returns non-2xx', async () => {
+		mockApiType = 'rest';
 
-	it('returns error when both GraphQL and REST fail', async () => {
-		// GraphQL returns 500 (transient)
-		mockFetch.mockResolvedValueOnce({
-			ok: false,
-			status: 500,
-			json: async () => ({})
-		});
-		// REST also returns 502
 		mockFetch.mockResolvedValueOnce({
 			ok: false,
 			status: 502,
@@ -771,9 +616,6 @@ describe('GET /api/otp/plan', () => {
 	});
 
 	it('wraps raw network errors as 500', async () => {
-		// GraphQL: network error
-		mockFetch.mockRejectedValueOnce(new Error('DNS failure'));
-		// REST: also network error
 		mockFetch.mockRejectedValueOnce(new Error('Connection refused'));
 
 		try {
@@ -962,32 +804,7 @@ describe('GET /api/otp/plan', () => {
 
 	// -- Error propagation tests --
 
-	it('propagates HttpError through cached-GraphQL path instead of falling back', async () => {
-		// First request: GraphQL succeeds → cached as 'graphql'
-		mockFetch.mockResolvedValueOnce({
-			ok: true,
-			status: 200,
-			json: async () => makeGraphQLResponse()
-		});
-		await GET({ url: makeURL() });
-
-		// Second request: uses invalid time format → should throw 400, not fall back to REST
-		const url = new URL(
-			'http://localhost/api/otp/plan?fromPlace=47.6205,-122.3212&toPlace=47.6587,-122.3128&date=02-19-2026&time=invalid'
-		);
-		try {
-			await GET({ url });
-			expect.unreachable('should have thrown');
-		} catch (e) {
-			expect(e.status).toBe(400);
-			expect(e.body.message).toContain('Invalid date/time format');
-		}
-
-		// Should NOT have made a REST fallback call
-		expect(mockFetch).toHaveBeenCalledTimes(1);
-	});
-
-	it('propagates HttpError through auto-detect path instead of falling back', async () => {
+	it('propagates HttpError from GraphQL validation instead of swallowing it', async () => {
 		const url = new URL(
 			'http://localhost/api/otp/plan?fromPlace=47.6205,-122.3212&toPlace=47.6587,-122.3128&date=02-19-2026&time=invalid'
 		);

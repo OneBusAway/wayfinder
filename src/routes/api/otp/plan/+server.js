@@ -5,17 +5,9 @@ import {
 	formatTimeForOTP,
 	formatDateForOTP,
 	mapGraphQLResponse,
+	getOtpApiType,
 	OTP_DEFAULTS
 } from '$lib/otp';
-
-// Detected OTP API type: 'graphql' | 'rest' | null.
-// Persists for the server process lifetime to skip auto-detection.
-// - 'rest': cached permanently when GraphQL returns 404/405 during detection.
-// - 'graphql': cached on first successful GraphQL call, but reset to null
-//   if a subsequent GraphQL request fails (triggering re-detection next time).
-// - null: transient GraphQL errors during detection do not cache, so the
-//   next request retries detection.
-let apiType = null;
 
 /**
  * Fetch trip plan from OTP 1.x REST API.
@@ -41,9 +33,7 @@ async function fetchREST(params) {
 /**
  * Fetch trip plan from OTP 2.x GraphQL API.
  *
- * @throws {Error} Plain Error with .status set to the HTTP status code on
- *   non-2xx responses (plain Error used instead of SvelteKit's error() to
- *   enable status-code-based fallback logic in the caller).
+ * @throws {HttpError} SvelteKit HttpError on non-2xx responses
  */
 async function fetchGraphQL(params) {
 	const graphqlUrl = `${PUBLIC_OTP_SERVER_URL}/otp/gtfs/v1`;
@@ -55,9 +45,7 @@ async function fetchGraphQL(params) {
 	});
 
 	if (!response.ok) {
-		const err = new Error(`GraphQL API returned status ${response.status}`);
-		err.status = response.status;
-		throw err;
+		throw error(response.status, `GraphQL API returned status ${response.status}`);
 	}
 
 	const data = await response.json();
@@ -114,51 +102,14 @@ export async function GET({ url }) {
 		throw error(503, 'Trip planning is not configured for this region');
 	}
 
+	const apiType = getOtpApiType();
+
 	try {
-		// Cached as REST — go directly
-		if (apiType === 'rest') {
-			return await fetchREST(params);
-		}
-
-		// Cached as GraphQL — try it, but reset cache on endpoint failure.
-		// Re-throw SvelteKit HttpErrors (from our own validation in
-		// buildGraphQLVariables) so they don't silently degrade to REST.
-		// SvelteKit HttpErrors have a .body property; plain fetch errors don't.
 		if (apiType === 'graphql') {
-			try {
-				return await fetchGraphQL(params);
-			} catch (cachedErr) {
-				if (cachedErr.body) throw cachedErr;
-				console.error('Cached GraphQL endpoint failed, resetting detection:', cachedErr);
-				apiType = null;
-				return await fetchREST(params);
-			}
+			return await fetchGraphQL(params);
 		}
-
-		// Auto-detect: try GraphQL first.
-		// Re-throw SvelteKit HttpErrors (validation errors); only fall back
-		// to REST for network-level or endpoint-not-found failures.
-		try {
-			const result = await fetchGraphQL(params);
-			apiType = 'graphql';
-			return result;
-		} catch (graphqlErr) {
-			// Re-throw SvelteKit HttpErrors (from our validation, e.g. bad coordinates/time)
-			if (graphqlErr.body) throw graphqlErr;
-
-			if (graphqlErr.status === 404 || graphqlErr.status === 405) {
-				// Server doesn't support GraphQL — cache and use REST
-				apiType = 'rest';
-				return await fetchREST(params);
-			}
-
-			// Transient server/network error — fall back to REST without caching
-			console.warn(
-				'GraphQL detection failed with transient error, falling back to REST:',
-				graphqlErr
-			);
-			return await fetchREST(params);
-		}
+		// Default to REST when apiType is 'rest' or null (server unreachable at startup)
+		return await fetchREST(params);
 	} catch (err) {
 		if (err.status) throw err;
 

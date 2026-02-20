@@ -38,6 +38,9 @@ export {
 // GraphQL
 export { buildGraphQLQueryBody, mapGraphQLResponse } from './graphql.js';
 
+// Server cache
+export { getOtpApiType, preloadOtpVersion, clearOtpCache } from '../otpServerCache.js';
+
 // Constants
 export {
 	OTP_DEFAULTS,
