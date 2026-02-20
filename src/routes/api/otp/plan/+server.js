@@ -1,12 +1,6 @@
 import { error, json } from '@sveltejs/kit';
 import { PUBLIC_OTP_SERVER_URL } from '$env/static/public';
-import {
-	parseTimeInput,
-	parseDateInput,
-	formatTimeForOTP,
-	formatDateForOTP,
-	OTP_DEFAULTS
-} from '$lib/otp';
+import { formatTimeForOTP, formatDateForOTP, OTP_DEFAULTS } from '$lib/otp';
 
 export async function GET({ url }) {
 	const fromPlace = url.searchParams.get('fromPlace');
@@ -25,13 +19,10 @@ export async function GET({ url }) {
 	const defaultTime = formatTimeForOTP(now);
 	const defaultDate = formatDateForOTP(now);
 
-	// Parse time input (converts HH:mm to h:mm AM/PM) or use default
-	const timeInput = url.searchParams.get('time');
-	const time = (timeInput ? parseTimeInput(timeInput) : null) || defaultTime;
-
-	// Parse date input (converts YYYY-MM-DD to MM-DD-YYYY) or use default
-	const dateInput = url.searchParams.get('date');
-	const date = (dateInput ? parseDateInput(dateInput) : null) || defaultDate;
+	// Time and date arrive already formatted for OTP by the client
+	// (h:mm AM/PM and MM-DD-YYYY respectively), so just pass them through.
+	const time = url.searchParams.get('time') || defaultTime;
+	const date = url.searchParams.get('date') || defaultDate;
 
 	// Get remaining parameters with defaults
 	const mode = url.searchParams.get('mode') || OTP_DEFAULTS.mode;
