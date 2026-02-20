@@ -1,4 +1,5 @@
 import oba, { handleOBAResponse } from '$lib/obaSdk.js';
+import { getAgencyFilter, filterByRouteId } from '$lib/agencyFilter.js';
 
 export async function load({ params }) {
 	const stopID = params.stopID;
@@ -12,6 +13,13 @@ export async function load({ params }) {
 		arrivalsAndDeparturesResponse,
 		'arrivals-and-departures-for-stop'
 	).json();
+
+	if (arrivalsAndDeparturesResponseJSON.data?.entry?.arrivalsAndDepartures) {
+		arrivalsAndDeparturesResponseJSON.data.entry.arrivalsAndDepartures = filterByRouteId(
+			arrivalsAndDeparturesResponseJSON.data.entry.arrivalsAndDepartures,
+			getAgencyFilter()
+		);
+	}
 
 	return {
 		stopID: params.stopID,

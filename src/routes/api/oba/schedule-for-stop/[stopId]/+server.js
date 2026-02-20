@@ -1,4 +1,5 @@
 import oba, { handleOBAResponse } from '$lib/obaSdk';
+import { getAgencyFilter, filterByRouteId } from '$lib/agencyFilter.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url, params }) {
@@ -11,5 +12,13 @@ export async function GET({ url, params }) {
 	}
 
 	const response = await oba.scheduleForStop.retrieve(stopId, queryParams);
+
+	if (response.data?.entry?.stopRouteSchedules) {
+		response.data.entry.stopRouteSchedules = filterByRouteId(
+			response.data.entry.stopRouteSchedules,
+			getAgencyFilter()
+		);
+	}
+
 	return handleOBAResponse(response, 'stop-for-schedule');
 }

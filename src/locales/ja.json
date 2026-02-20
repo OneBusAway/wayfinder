@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "言語を選択: {language}",
 		"available_languages": "利用可能な言語"
+	},
+	"context-menu": {
+		"start_here": "ここから出発",
+		"end_here": "ここに到着"
 	}
 }

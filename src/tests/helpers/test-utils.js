@@ -37,10 +37,9 @@ export function createMockStore(initialValue) {
 		subscribe: vi.fn((fn) => {
 			subscribers.add(fn);
 			fn(value);
-			return {
-				unsubscribe: () => {
-					subscribers.delete(fn);
-				}
+			// Return the unsubscribe function directly, not wrapped in an object
+			return () => {
+				subscribers.delete(fn);
 			};
 		}),
 		set: vi.fn((newValue) => {

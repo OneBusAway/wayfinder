@@ -5,6 +5,11 @@ import { buildURL } from '$lib/urls.js';
 const REGION_PATH = `regions/${env.PRIVATE_REGION_ID}/`;
 
 export async function GET({ url }) {
+	if (!env.PRIVATE_OBACO_API_BASE_URL) {
+		console.warn('[surveys] PRIVATE_OBACO_API_BASE_URL not configured, skipping surveys');
+		return json({ surveys: [] });
+	}
+
 	const userId = url.searchParams.get('userId');
 
 	try {

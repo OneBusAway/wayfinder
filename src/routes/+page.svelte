@@ -7,7 +7,7 @@
 	import ViewAllRoutesModal from '$components/routes/ViewAllRoutesModal.svelte';
 	import { isLoading } from 'svelte-i18n';
 	import AlertsModal from '$components/navigation/AlertsModal.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import StopModal from '$components/stops/StopModal.svelte';
 	import TripPlanModal from '$components/trip-planner/TripPlanModal.svelte';
 	import { browser } from '$app/environment';
@@ -49,6 +49,7 @@
 	let polylines = [];
 
 	let tripItineraries = $state([]);
+	let tripPlanError = $state(null);
 	let loadingItineraries = false;
 	let fromMarker = $state(null);
 	let toMarker = $state(null);
@@ -121,6 +122,7 @@
 			mapProvider.cleanupInfoWindow();
 			mapProvider.clearVehicleMarkers();
 			clearInterval(currentIntervalId);
+			currentIntervalId = null;
 		}
 		mapProvider.unHighlightMarker(currentHighlightedStopId);
 		stop = null;
@@ -215,11 +217,17 @@
 		const tripData = tripPlanData.data;
 		fromMarker = tripPlanData.fromMarker;
 		toMarker = tripPlanData.toMarker;
-		tripItineraries = tripData.plan?.itineraries;
-		if (!tripItineraries) {
-			console.error('No itineraries found', 404);
-		}
+		tripItineraries = tripData.plan?.itineraries || [];
+		tripPlanError = tripData.error || null;
 		currentModal = Modal.TRIP_PLANNER;
+	}
+
+	function handleTabSwitched() {
+		currentModal = null;
+	}
+
+	function handlePlanTripTabClicked() {
+		closePane();
 	}
 
 	onMount(() => {
@@ -230,18 +238,24 @@
 		loadSurveys(null, userId);
 
 		if (browser) {
-			window.addEventListener('tabSwitched', () => {
-				currentModal = null;
-			});
-
-			window.addEventListener('planTripTabClicked', () => {
-				closePane();
-			});
+			window.addEventListener('tabSwitched', handleTabSwitched);
+			window.addEventListener('planTripTabClicked', handlePlanTripTabClicked);
 
 			// Clean URL params after coordinates have been captured
 			if (initialCoords) {
 				cleanUrlParams();
 			}
+		}
+	});
+
+	onDestroy(() => {
+		if (browser) {
+			window.removeEventListener('tabSwitched', handleTabSwitched);
+			window.removeEventListener('planTripTabClicked', handlePlanTripTabClicked);
+		}
+		if (currentIntervalId) {
+			clearInterval(currentIntervalId);
+			currentIntervalId = null;
 		}
 	});
 </script>
@@ -291,6 +305,7 @@
 					<TripPlanModal
 						{mapProvider}
 						itineraries={tripItineraries}
+						error={tripPlanError}
 						{fromMarker}
 						{toMarker}
 						loading={loadingItineraries}

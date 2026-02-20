@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "ቋንቋ ይምረጡ: {language}",
 		"available_languages": "የሚገኙ ቋንቋዎች"
+	},
+	"context-menu": {
+		"start_here": "ከዚህ ጀምር",
+		"end_here": "ዚህ ጨርስ"
 	}
 }

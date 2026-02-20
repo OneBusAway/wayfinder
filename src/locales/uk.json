@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "Оберіть мову: {language}",
 		"available_languages": "Доступні мови"
+	},
+	"context-menu": {
+		"start_here": "Почати звідси",
+		"end_here": "Закінчити тут"
 	}
 }

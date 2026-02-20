@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "언어 선택: {language}",
 		"available_languages": "사용 가능한 언어"
+	},
+	"context-menu": {
+		"start_here": "여기에서 출발",
+		"end_here": "여기에서 도착"
 	}
 }

@@ -1,7 +1,7 @@
 <script>
 	import SearchField from '$components/search/SearchField.svelte';
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { faMapPin, faSignsPost } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
@@ -13,6 +13,7 @@
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
 	import { removeAgencyPrefix } from '$lib/utils';
+	import { browser } from '$app/environment';
 
 	let {
 		handleRouteSelected,
@@ -32,6 +33,7 @@
 	let currentIntervalId = null;
 	let mapLoaded = $state(false);
 	let isSurveyAnswered = $state(false);
+	let activeTab = $state('stops');
 
 	function handleLocationClick(location) {
 		clearResults();
@@ -100,7 +102,7 @@
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
 		mapProvider.clearVehicleMarkers();
-		clearVehicleMarkersMap(mapProvider);
+		clearVehicleMarkersMap();
 		clearResults();
 		try {
 			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
@@ -126,6 +128,11 @@
 			}
 
 			await showStopsOnRoute(orderedStops);
+			// Clear any existing interval first to prevent memory leaks
+			if (currentIntervalId) {
+				clearInterval(currentIntervalId);
+				currentIntervalId = null;
+			}
 			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
 
 			const routeData = {
@@ -166,6 +173,7 @@
 		clearVehicleMarkersMap();
 		mapProvider.clearVehicleMarkers();
 		clearInterval(currentIntervalId);
+		currentIntervalId = null;
 	}
 
 	function handlePlanTripTabClick() {
@@ -186,14 +194,40 @@
 		}
 	});
 
+	let unsubscribeMapLoaded;
+
+	function handleRouteSelectedFromModal(event) {
+		handleRouteClick(event.detail.route);
+	}
+
+	async function handleContextMenuTripPlan(e) {
+		activeTab = 'plan';
+		handlePlanTripTabClick();
+		await tick();
+		window.dispatchEvent(new CustomEvent('setTripPlanLocation', { detail: e.detail }));
+	}
+
 	onMount(() => {
-		isMapLoaded.subscribe((value) => {
+		unsubscribeMapLoaded = isMapLoaded.subscribe((value) => {
 			mapLoaded = value;
 		});
 
-		window.addEventListener('routeSelectedFromModal', (event) => {
-			handleRouteClick(event.detail.route);
-		});
+		window.addEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+		window.addEventListener('contextMenuTripPlan', handleContextMenuTripPlan);
+	});
+
+	onDestroy(() => {
+		if (unsubscribeMapLoaded) {
+			unsubscribeMapLoaded();
+		}
+		if (browser) {
+			window.removeEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
+			window.removeEventListener('contextMenuTripPlan', handleContextMenuTripPlan);
+		}
+		if (currentIntervalId) {
+			clearInterval(currentIntervalId);
+			currentIntervalId = null;
+		}
 	});
 </script>
 
@@ -206,7 +240,14 @@
 		inactiveClasses="py-3 px-4"
 		contentClass="pt-2 pb-4 rounded-lg dark:bg-surface-dark"
 	>
-		<TabItem open title={$t('tabs.stops-and-stations')} on:click={handleTabSwitch}>
+		<TabItem
+			open={activeTab === 'stops'}
+			title={$t('tabs.stops-and-stations')}
+			on:click={() => {
+				handleTabSwitch();
+				activeTab = 'stops';
+			}}
+		>
 			<SearchField value={query} {handleSearchResults} />
 
 			{#if !isSurveyAnswered && $surveyStore}
@@ -271,7 +312,15 @@
 		</TabItem>
 
 		{#if env.PUBLIC_OTP_SERVER_URL}
-			<TabItem title={$t('tabs.plan_trip')} on:click={handlePlanTripTabClick} disabled={!mapLoaded}>
+			<TabItem
+				open={activeTab === 'plan'}
+				title={$t('tabs.plan_trip')}
+				on:click={() => {
+					handlePlanTripTabClick();
+					activeTab = 'plan';
+				}}
+				disabled={!mapLoaded}
+			>
 				<TripPlan {mapProvider} {handleTripPlan} />
 			</TabItem>
 		{/if}

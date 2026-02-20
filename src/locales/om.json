@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "Afaan filadhu: {language}",
 		"available_languages": "Afaanota jiran"
+	},
+	"context-menu": {
+		"start_here": "As'itti eegali",
+		"end_here": "As'itti xumuri"
 	}
 }
