@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "Filifili gagana: {language}",
 		"available_languages": "Gagana avanoa"
+	},
+	"context-menu": {
+		"start_here": "Amata mai iinei",
+		"end_here": "Fa'ai'u iinei"
 	}
 }

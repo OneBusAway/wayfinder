@@ -153,5 +153,9 @@
 	"language_switcher": {
 		"select_language": "Piliin ang wika: {language}",
 		"available_languages": "Mga available na wika"
+	},
+	"context-menu": {
+		"start_here": "Magsimula dito",
+		"end_here": "Magtapos dito"
 	}
 }

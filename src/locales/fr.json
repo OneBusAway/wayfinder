@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "Sélectionner la langue : {language}",
 		"available_languages": "Langues disponibles"
+	},
+	"context-menu": {
+		"start_here": "Partir d'ici",
+		"end_here": "Arriver ici"
 	}
 }

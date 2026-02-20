@@ -220,6 +220,31 @@
 	}
 
 	let tabSwitchedHandler;
+	let setTripPlanLocationHandler;
+
+	function handleSetTripPlanLocation(e) {
+		const { type, lat, lng } = e.detail;
+		const coords = { lat, lng };
+		const label = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+		if (type === 'from') {
+			if (fromMarker) {
+				mapProvider.removePinMarker(fromMarker);
+			}
+			selectedFrom = coords;
+			fromPlace = label;
+			fromResults = [];
+			fromMarker = mapProvider.addPinMarker(coords, $t('trip-planner.from'));
+		} else if (type === 'to') {
+			if (toMarker) {
+				mapProvider.removePinMarker(toMarker);
+			}
+			selectedTo = coords;
+			toPlace = label;
+			toResults = [];
+			toMarker = mapProvider.addPinMarker(coords, $t('trip-planner.to'));
+		}
+	}
 
 	onMount(() => {
 		if (browser) {
@@ -227,13 +252,20 @@
 				clearInput(true);
 				clearInput(false);
 			};
+			setTripPlanLocationHandler = handleSetTripPlanLocation;
 			window.addEventListener('tabSwitched', tabSwitchedHandler);
+			window.addEventListener('setTripPlanLocation', setTripPlanLocationHandler);
 		}
 	});
 
 	onDestroy(() => {
-		if (browser && tabSwitchedHandler) {
-			window.removeEventListener('tabSwitched', tabSwitchedHandler);
+		if (browser) {
+			if (tabSwitchedHandler) {
+				window.removeEventListener('tabSwitched', tabSwitchedHandler);
+			}
+			if (setTripPlanLocationHandler) {
+				window.removeEventListener('setTripPlanLocation', setTripPlanLocationHandler);
+			}
 		}
 	});
 </script>

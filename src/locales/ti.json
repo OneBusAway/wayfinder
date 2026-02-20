@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "ቋንቋ ምረጽ: {language}",
 		"available_languages": "ዝርከቡ ቋንቋታት"
+	},
+	"context-menu": {
+		"start_here": "ካብዚ ጀምር",
+		"end_here": "ኣብዚ ውድእ"
 	}
 }

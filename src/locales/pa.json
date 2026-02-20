@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "ਭਾਸ਼ਾ ਚੁਣੋ: {language}",
 		"available_languages": "ਉਪਲਬਧ ਭਾਸ਼ਾਵਾਂ"
+	},
+	"context-menu": {
+		"start_here": "ਇੱਥੋਂ ਸ਼ੁਰੂ ਕਰੋ",
+		"end_here": "ਇੱਥੇ ਖ਼ਤਮ ਕਰੋ"
 	}
 }

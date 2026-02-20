@@ -20,6 +20,7 @@
 	let {
 		mapProvider,
 		itineraries = [],
+		error = null,
 		loading = false,
 		fromMarker = null,
 		toMarker = null,
@@ -133,8 +134,20 @@
 			{/if}
 		</div>
 	{:else if !loading}
-		<div class="flex h-full items-center justify-center py-12 text-gray-400 dark:text-gray-500">
-			{$t('trip-planner.no_itineraries_found')}
+		<div class="flex h-full flex-col items-center justify-center gap-3 py-12">
+			<p class="text-gray-400 dark:text-gray-500">
+				{$t('trip-planner.no_itineraries_found')}
+			</p>
+			{#if error}
+				<div
+					class="mx-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-900/20"
+				>
+					<p class="text-sm text-red-700 dark:text-red-400">{error.msg}</p>
+					<p class="mt-1 text-xs text-red-500/70 dark:text-red-500/50">
+						{$t('trip-planner.error_code')}: {error.id}
+					</p>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </ModalPane>

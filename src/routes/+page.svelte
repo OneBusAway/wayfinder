@@ -49,6 +49,7 @@
 	let polylines = [];
 
 	let tripItineraries = $state([]);
+	let tripPlanError = $state(null);
 	let loadingItineraries = false;
 	let fromMarker = $state(null);
 	let toMarker = $state(null);
@@ -216,10 +217,8 @@
 		const tripData = tripPlanData.data;
 		fromMarker = tripPlanData.fromMarker;
 		toMarker = tripPlanData.toMarker;
-		tripItineraries = tripData.plan?.itineraries;
-		if (!tripItineraries) {
-			console.error('No itineraries found', 404);
-		}
+		tripItineraries = tripData.plan?.itineraries || [];
+		tripPlanError = tripData.error || null;
 		currentModal = Modal.TRIP_PLANNER;
 	}
 
@@ -306,6 +305,7 @@
 					<TripPlanModal
 						{mapProvider}
 						itineraries={tripItineraries}
+						error={tripPlanError}
 						{fromMarker}
 						{toMarker}
 						loading={loadingItineraries}

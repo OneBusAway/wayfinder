@@ -152,5 +152,9 @@
 	"language_switcher": {
 		"select_language": "选择语言: {language}",
 		"available_languages": "可用语言"
+	},
+	"context-menu": {
+		"start_here": "从这里出发",
+		"end_here": "到这里结束"
 	}
 }
