@@ -36,7 +36,7 @@ async function fetchREST(params) {
  * @throws {HttpError} SvelteKit HttpError on non-2xx responses
  */
 async function fetchGraphQL(params) {
-	const graphqlUrl = `${PUBLIC_OTP_SERVER_URL}/otp/gtfs/v1`;
+	const graphqlUrl = `${PUBLIC_OTP_SERVER_URL}/gtfs/v1`;
 
 	const response = await fetch(graphqlUrl, {
 		method: 'POST',

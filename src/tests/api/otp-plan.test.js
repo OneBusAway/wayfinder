@@ -163,6 +163,20 @@ function makeURL(extra = '') {
 	return new URL(`http://localhost/api/otp/plan?${BASE_PARAMS}${extra ? '&' + extra : ''}`);
 }
 
+/**
+ * Compute the expected timezone offset suffix for a local datetime.
+ * Matches the logic in convertToISO8601 so tests pass in any timezone.
+ */
+function tzSuffix(year, month, day, hours, minutes = 0) {
+	const d = new Date(year, month - 1, day, hours, minutes);
+	const offsetMinutes = -d.getTimezoneOffset();
+	const sign = offsetMinutes >= 0 ? '+' : '-';
+	const abs = Math.abs(offsetMinutes);
+	const h = String(Math.floor(abs / 60)).padStart(2, '0');
+	const m = String(abs % 60).padStart(2, '0');
+	return `${sign}${h}:${m}`;
+}
+
 describe('GET /api/otp/plan', () => {
 	let GET;
 	let mockFetch;
@@ -232,7 +246,7 @@ describe('GET /api/otp/plan', () => {
 
 		expect(mockFetch).toHaveBeenCalledTimes(1);
 		const [graphqlUrl, options] = mockFetch.mock.calls[0];
-		expect(graphqlUrl).toBe('https://otp.test.example.com/otp/gtfs/v1');
+		expect(graphqlUrl).toBe('https://otp.test.example.com/gtfs/v1');
 		expect(options.method).toBe('POST');
 
 		expect(data.plan.itineraries).toHaveLength(1);
@@ -457,8 +471,10 @@ describe('GET /api/otp/plan', () => {
 		const body = JSON.parse(options.body);
 		const vars = body.variables;
 
-		// date "02-19-2026" + time "5:08 PM" → "2026-02-19T17:08:00"
-		expect(vars.dateTime.earliestDeparture).toBe('2026-02-19T17:08:00');
+		// date "02-19-2026" + time "5:08 PM" → "2026-02-19T17:08:00±HH:MM"
+		expect(vars.dateTime.earliestDeparture).toBe(
+			`2026-02-19T17:08:00${tzSuffix(2026, 2, 19, 17, 8)}`
+		);
 	});
 
 	it('converts 12:00 AM (midnight) correctly to T00:00:00', async () => {
@@ -475,7 +491,9 @@ describe('GET /api/otp/plan', () => {
 
 		const [, options] = mockFetch.mock.calls[0];
 		const body = JSON.parse(options.body);
-		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T00:00:00');
+		expect(body.variables.dateTime.earliestDeparture).toBe(
+			`2026-02-19T00:00:00${tzSuffix(2026, 2, 19, 0, 0)}`
+		);
 	});
 
 	it('converts 12:00 PM (noon) correctly to T12:00:00', async () => {
@@ -492,7 +510,9 @@ describe('GET /api/otp/plan', () => {
 
 		const [, options] = mockFetch.mock.calls[0];
 		const body = JSON.parse(options.body);
-		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T12:00:00');
+		expect(body.variables.dateTime.earliestDeparture).toBe(
+			`2026-02-19T12:00:00${tzSuffix(2026, 2, 19, 12, 0)}`
+		);
 	});
 
 	it('converts 12:30 AM correctly to T00:30:00', async () => {
@@ -509,7 +529,9 @@ describe('GET /api/otp/plan', () => {
 
 		const [, options] = mockFetch.mock.calls[0];
 		const body = JSON.parse(options.body);
-		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T00:30:00');
+		expect(body.variables.dateTime.earliestDeparture).toBe(
+			`2026-02-19T00:30:00${tzSuffix(2026, 2, 19, 0, 30)}`
+		);
 	});
 
 	it('uses latestArrival when arriveBy=true', async () => {
@@ -525,7 +547,7 @@ describe('GET /api/otp/plan', () => {
 		const body = JSON.parse(options.body);
 		const vars = body.variables;
 
-		expect(vars.dateTime.latestArrival).toBe('2026-02-19T17:08:00');
+		expect(vars.dateTime.latestArrival).toBe(`2026-02-19T17:08:00${tzSuffix(2026, 2, 19, 17, 8)}`);
 		expect(vars.dateTime.earliestDeparture).toBeUndefined();
 	});
 
@@ -542,7 +564,9 @@ describe('GET /api/otp/plan', () => {
 		const body = JSON.parse(options.body);
 		const vars = body.variables;
 
-		expect(vars.dateTime.earliestDeparture).toBe('2026-02-19T17:08:00');
+		expect(vars.dateTime.earliestDeparture).toBe(
+			`2026-02-19T17:08:00${tzSuffix(2026, 2, 19, 17, 8)}`
+		);
 		expect(vars.dateTime.latestArrival).toBeUndefined();
 	});
 
@@ -629,7 +653,7 @@ describe('GET /api/otp/plan', () => {
 		const response = await GET({ url: makeURL() });
 		const data = await response.json();
 
-		expect(data._otpUrl).toContain('otp/gtfs/v1');
+		expect(data._otpUrl).toContain('gtfs/v1');
 	});
 
 	// -- Error handling tests --

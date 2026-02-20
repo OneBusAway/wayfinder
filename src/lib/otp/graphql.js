@@ -21,7 +21,7 @@ query planTrip(
         end
         legs {
           mode
-          duration { total }
+          duration
           distance
           headsign
           from {
@@ -46,14 +46,16 @@ query planTrip(
 }`;
 
 /**
- * Convert date ("MM-DD-YYYY") + time ("h:mm AM/PM") to ISO 8601 ("YYYY-MM-DDThh:mm:00").
- * These formats match OTP convention: dates via formatDateForOTP(), times via
- * formatTimeForOTP() (server-side defaults) or parseTimeInput() (client-side
- * user input). See $lib/otp/dateTimeFormatters.js for format details.
+ * Convert date ("MM-DD-YYYY") + time ("h:mm AM/PM") to OffsetDateTime
+ * ("YYYY-MM-DDThh:mm:ss±HH:MM") as required by OTP 2.x GraphQL API.
  *
- * @param {string} date - Date in "MM-DD-YYYY" format (must be pre-validated)
+ * The timezone offset is derived from the server process's locale for the
+ * target date, which handles DST transitions correctly. This works when the
+ * server runs in the same timezone as the transit agency's service area.
+ *
+ * @param {string} date - Date in "MM-DD-YYYY" format
  * @param {string} time - Time in "h:mm AM/PM" format
- * @returns {string|null} ISO 8601 string, or null if time format is invalid
+ * @returns {string|null} OffsetDateTime string, or null if time format is invalid
  */
 function convertToISO8601(date, time) {
 	const [month, day, year] = date.split('-');
@@ -68,7 +70,22 @@ function convertToISO8601(date, time) {
 	if (period === 'AM' && hours === 12) hours = 0;
 	else if (period === 'PM' && hours !== 12) hours += 12;
 
-	return `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${minutes}:00`;
+	// Compute the UTC offset for this specific date/time in the server's timezone.
+	// Using the target date (not "now") ensures DST is handled correctly.
+	const localDate = new Date(
+		parseInt(year),
+		parseInt(month) - 1,
+		parseInt(day),
+		hours,
+		parseInt(minutes)
+	);
+	const offsetMinutes = -localDate.getTimezoneOffset();
+	const sign = offsetMinutes >= 0 ? '+' : '-';
+	const absOffset = Math.abs(offsetMinutes);
+	const offsetH = String(Math.floor(absOffset / 60)).padStart(2, '0');
+	const offsetM = String(absOffset % 60).padStart(2, '0');
+
+	return `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${minutes}:00${sign}${offsetH}:${offsetM}`;
 }
 
 /**
