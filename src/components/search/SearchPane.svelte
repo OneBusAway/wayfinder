@@ -127,13 +127,13 @@
 				polylines.push(polyline);
 			}
 
-			await showStopsOnRoute(orderedStops);
+			await showStopsOnRoute(orderedStops, route.type);
 			// Clear any existing interval first to prevent memory leaks
 			if (currentIntervalId) {
 				clearInterval(currentIntervalId);
 				currentIntervalId = null;
 			}
-			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
+			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider, route.type);
 
 			const routeData = {
 				route,
