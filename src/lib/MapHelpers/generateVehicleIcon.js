@@ -1,4 +1,8 @@
 import { toDirection } from '$lib/mathUtils';
+import { generateRouteTypeSvgForDisplay, RouteType } from '$config/routeConfig';
+
+const iconWidth = 56;
+const iconHeight = 56;
 
 const DIRECTIONS = [
 	{ angle: 0, icon: 'north' },
@@ -18,39 +22,30 @@ function getDirectionFromOrientation(orientation) {
 	return nearestDirection.icon;
 }
 
-function createVehicleIconSvg(orientation, color = '#007BFF') {
+function createVehicleIconSvg(orientation, color = '#007BFF', routeType = RouteType.BUS) {
 	const direction = getDirectionFromOrientation(toDirection(orientation));
 	const angle = DIRECTIONS.find((d) => d.icon === direction).angle;
 
 	const arrowPath = `
-    <line x1="20" y1="20" x2="20" y2="5" stroke="${color}" stroke-width="2" transform="rotate(${angle}, 20, 20)" />
-    <polygon points="20,-5 25,5 15,5" fill="${color}" stroke="white" stroke-width="1" transform="rotate(${angle}, 20, 20)" />
+    <line x1="0" y1="0" x2="0" y2="-15" stroke-width="2" transform="rotate(${angle})"/>
+    <polygon points="0,-25 5,-15 -5, -15" stroke="white" stroke-width="1" transform="rotate(${angle})"/>
 `;
 
-	const busIcon = `
-        <!-- Main bus body -->
-        <rect x="14" y="14" width="12" height="12" rx="2" ry="2" fill="${color}"/>
-        <!-- Windows -->
-        <rect x="16" y="18" width="2" height="2" fill="white"/>
-        <rect x="22" y="18" width="2" height="2" fill="white"/>
-        <!-- Bumper -->
-        <rect x="17" y="22" width="6" height="1.5" fill="white"/>
-        <!-- Wheels -->
-        <circle cx="17" cy="26" r="1.5" fill="${color}"/>
-        <circle cx="23" cy="26" r="1.5" fill="${color}"/>
-    `;
+	const vehicleSvg = generateRouteTypeSvgForDisplay(routeType);
 
 	return `
-        <svg width="60" height="60" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
-            <!-- Directional arrow -->
-            ${arrowPath}
+        <svg width="${iconWidth}" height="${iconHeight}" viewBox="-28 -28 56 56" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="${color}" fill="${color}">
+                <!-- Directional arrow -->
+                ${arrowPath}
 
-            <!-- Circle background -->
-            <circle cx="20" cy="20" r="13" stroke="${color}" stroke-width="2" fill="white"/>
+                <!-- Circle background -->
+                <circle cx="0" cy="0" r="13" stroke-width="2" fill="white"/>
 
-            <!-- Bus icon inside the circle -->
-            ${busIcon}
+                <!-- vehicle icon inside the circle -->
+                ${vehicleSvg}
+            </g>
         </svg>`;
 }
 
-export { createVehicleIconSvg };
+export { createVehicleIconSvg, iconWidth, iconHeight };

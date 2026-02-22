@@ -6,7 +6,7 @@ import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
-import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
+import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/generateVehicleIcon';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
 
@@ -327,7 +327,7 @@ export default class GoogleMapProvider {
 		}
 	}
 
-	addVehicleMarker(vehicle, activeTrip) {
+	addVehicleMarker(vehicle, activeTrip, routeType) {
 		if (!this.map) return null;
 
 		let color;
@@ -335,11 +335,11 @@ export default class GoogleMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const busIcon = createVehicleIconSvg(vehicle?.orientation, color);
+		const busIcon = createVehicleIconSvg(vehicle?.orientation, color, routeType);
 		const icon = {
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(busIcon)}`,
-			scaledSize: new google.maps.Size(40, 40),
-			anchor: new google.maps.Point(20, 20)
+			scaledSize: new google.maps.Size(iconWidth, iconHeight),
+			anchor: new google.maps.Point(iconWidth / 2, iconHeight / 2)
 		};
 
 		const marker = new google.maps.Marker({
@@ -376,7 +376,7 @@ export default class GoogleMapProvider {
 		return marker;
 	}
 
-	updateVehicleMarker(marker, vehicleStatus, activeTrip) {
+	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType) {
 		if (!this.map || !marker) return;
 
 		marker.setPosition({ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon });
@@ -386,11 +386,11 @@ export default class GoogleMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const updatedIcon = createVehicleIconSvg(vehicleStatus.orientation, color);
+		const updatedIcon = createVehicleIconSvg(vehicleStatus.orientation, color, routeType);
 		marker.setIcon({
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIcon)}`,
-			scaledSize: new google.maps.Size(40, 40),
-			anchor: new google.maps.Point(20, 20)
+			scaledSize: new google.maps.Size(iconWidth, iconHeight),
+			anchor: new google.maps.Point(iconWidth / 2, iconHeight / 2)
 		});
 
 		const updatedData = {

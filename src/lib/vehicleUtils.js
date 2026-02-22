@@ -19,7 +19,7 @@ export async function fetchVehicles(routeId) {
 	return responseBody.data || {};
 }
 
-export async function updateVehicleMarkers(routeId, mapProvider) {
+export async function updateVehicleMarkers(routeId, mapProvider, routeType) {
 	const data = await fetchVehicles(routeId);
 
 	const activeTripIds = new Set();
@@ -42,9 +42,9 @@ export async function updateVehicleMarkers(routeId, mapProvider) {
 			if (vehicleMarkersMap.has(activeTripId)) {
 				const marker = vehicleMarkersMap.get(activeTripId);
 
-				mapProvider.updateVehicleMarker(marker, vehicleStatus, activeTrip);
+				mapProvider.updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType);
 			} else {
-				const marker = mapProvider.addVehicleMarker(vehicleStatus, activeTrip);
+				const marker = mapProvider.addVehicleMarker(vehicleStatus, activeTrip, routeType);
 				vehicleMarkersMap.set(activeTripId, marker);
 			}
 		}
@@ -62,10 +62,10 @@ export function removeInactiveMarkers(activeTripIds, mapProvider) {
 	}
 }
 
-export async function fetchAndUpdateVehicles(routeId, mapProvider) {
-	await updateVehicleMarkers(routeId, mapProvider);
+export async function fetchAndUpdateVehicles(routeId, mapProvider, routeType) {
+	await updateVehicleMarkers(routeId, mapProvider, routeType);
 
-	return setInterval(() => updateVehicleMarkers(routeId, mapProvider), 30000);
+	return setInterval(() => updateVehicleMarkers(routeId, mapProvider, routeType), 30000);
 }
 
 export function clearVehicleMarkersMap() {

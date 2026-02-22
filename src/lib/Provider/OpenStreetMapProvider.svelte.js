@@ -7,7 +7,7 @@ import PolylineUtil from 'polyline-encoded';
 import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
-import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
+import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/generateVehicleIcon';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
@@ -271,7 +271,7 @@ export default class OpenStreetMapProvider {
 		marker.remove();
 	}
 
-	addVehicleMarker(vehicle, activeTrip) {
+	addVehicleMarker(vehicle, activeTrip, routeType) {
 		if (!this.map || !this.L) return null;
 
 		let color;
@@ -279,11 +279,11 @@ export default class OpenStreetMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const busIconSvg = createVehicleIconSvg(vehicle?.orientation, color);
+		const vehicleIconSvg = createVehicleIconSvg(vehicle?.orientation, color, routeType);
 		const customIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(busIconSvg)}" style="width:45px;height:45px;" />`,
-			iconSize: [40, 40],
-			iconAnchor: [20, 20],
+			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" />`,
+			iconSize: [iconWidth, iconHeight],
+			iconAnchor: [iconWidth / 2, iconHeight / 2],
 			className: '',
 			zIndexOffset: 1000
 		});
@@ -326,7 +326,7 @@ export default class OpenStreetMapProvider {
 		return marker;
 	}
 
-	updateVehicleMarker(marker, vehicleStatus, activeTrip) {
+	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType) {
 		if (!this.map || !this.L || !marker) return;
 
 		let color;
@@ -334,11 +334,11 @@ export default class OpenStreetMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const updatedIconSvg = createVehicleIconSvg(vehicleStatus.orientation, color);
+		const updatedIconSvg = createVehicleIconSvg(vehicleStatus.orientation, color, routeType);
 		const updatedIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" style="width:45px;height:45px;" />`,
-			iconSize: [40, 40],
-			iconAnchor: [20, 20],
+			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
+			iconSize: [iconWidth, iconHeight],
+			iconAnchor: [iconWidth / 2, iconHeight / 2],
 			className: '',
 			zIndexOffset: 1000
 		});
