@@ -23,6 +23,8 @@ export class PlausibleAnalytics {
 	}
 
 	async forwardEvent({ name, url, referrer, props }) {
+		// Check if enabled first - when disabled, we skip parameter validation
+		// to avoid throwing errors during development/testing with analytics off
 		if (!this.isEnabled()) {
 			return { status: 'analytics disabled' };
 		}
