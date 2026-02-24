@@ -119,7 +119,9 @@ export default class OpenStreetMapProvider {
 		});
 
 		const marker = this.L.marker([options.position.lat, options.position.lng], {
-			icon: customIcon
+			icon: customIcon,
+			interactive: false,
+			keyboard: false
 		}).addTo(this.map);
 
 		marker.props = props;
