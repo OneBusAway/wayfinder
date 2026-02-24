@@ -236,6 +236,7 @@
 >
 	<Tabs
 		tabStyle="none"
+		role="tablist"
 		activeClasses="bg-none border-b-2 border-brand-accent py-3 px-4"
 		inactiveClasses="py-3 px-4"
 		contentClass="pt-2 pb-4 rounded-lg dark:bg-surface-dark"
