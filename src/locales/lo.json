@@ -153,6 +153,9 @@
 		"select_language": "ເລືອກພາສາ: {language}",
 		"available_languages": "ພາສາທີ່ມີ"
 	},
+	"map": {
+		"find_my_location": "ຊອກຫາທີ່ຕັ້ງຂອງຂ້ອຍ"
+	},
 	"context-menu": {
 		"start_here": "ເລີ່ມຈາກບ່ອນນີ້",
 		"end_here": "ສິ້ນສຸດທີ່ນີ້"

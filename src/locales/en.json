@@ -175,6 +175,9 @@
 		"select_language": "Select language: {language}",
 		"available_languages": "Available languages"
 	},
+	"map": {
+		"find_my_location": "Find My Location"
+	},
 	"context-menu": {
 		"start_here": "Start Here",
 		"end_here": "End Here"

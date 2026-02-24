@@ -153,6 +153,9 @@
 		"select_language": "Selecionar idioma: {language}",
 		"available_languages": "Idiomas disponíveis"
 	},
+	"map": {
+		"find_my_location": "Encontrar minha localização"
+	},
 	"context-menu": {
 		"start_here": "Começar aqui",
 		"end_here": "Terminar aqui"

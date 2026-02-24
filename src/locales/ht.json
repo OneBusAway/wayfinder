@@ -153,6 +153,9 @@
 		"select_language": "Chwazi lang: {language}",
 		"available_languages": "Lang ki disponib"
 	},
+	"map": {
+		"find_my_location": "Jwenn kote mwen ye"
+	},
 	"context-menu": {
 		"start_here": "Kòmanse isit",
 		"end_here": "Fini isit"

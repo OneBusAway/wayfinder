@@ -153,6 +153,9 @@
 		"select_language": "Оберіть мову: {language}",
 		"available_languages": "Доступні мови"
 	},
+	"map": {
+		"find_my_location": "Знайти моє місцезнаходження"
+	},
 	"context-menu": {
 		"start_here": "Почати звідси",
 		"end_here": "Закінчити тут"
