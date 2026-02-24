@@ -17,6 +17,8 @@
 	} from '$stores/tripOptionsStore';
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
 	import { swapTripLocations } from '$lib/tripPlanUtils';
+	import { recentTrips } from '$stores/recentTripsStore';
+	import RecentTripsList from './RecentTripsList.svelte';
 
 	let { handleTripPlan, mapProvider } = $props();
 
@@ -213,6 +215,15 @@
 					toMarker
 				};
 				handleTripPlan(tripPlanData);
+
+				// Save to recent trips
+				recentTrips.addTrip({
+					fromPlace,
+					toPlace,
+					selectedFrom,
+					selectedTo,
+					tripOptions: $tripOptions
+				});
 			}
 		} finally {
 			loading = false;
@@ -268,6 +279,16 @@
 			}
 		}
 	});
+
+	function handleRecentTripSelect(trip) {
+		fromPlace = trip.fromPlace;
+		toPlace = trip.toPlace;
+		selectedFrom = trip.fromCoords;
+		selectedTo = trip.toCoords;
+
+		// Auto-run the search
+		planTrip();
+	}
 </script>
 
 <div>
@@ -397,4 +418,6 @@
 			{/if}
 		</button>
 	</div>
+
+	<RecentTripsList onSelect={handleRecentTripSelect} />
 </div>
