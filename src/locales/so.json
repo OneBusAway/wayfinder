@@ -153,6 +153,9 @@
 		"select_language": "Dooro luuqadda: {language}",
 		"available_languages": "Luuqadaha la heli karo"
 	},
+	"map": {
+		"find_my_location": "Raadi Goobteeyda"
+	},
 	"context-menu": {
 		"start_here": "Halkan ka bilow",
 		"end_here": "Halkan ku dhamee"

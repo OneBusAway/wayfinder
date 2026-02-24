@@ -153,6 +153,9 @@
 		"select_language": "ቋንቋ ምረጽ: {language}",
 		"available_languages": "ዝርከቡ ቋንቋታት"
 	},
+	"map": {
+		"find_my_location": "ቦታይ ፈልጥ"
+	},
 	"context-menu": {
 		"start_here": "ካብዚ ጀምር",
 		"end_here": "ኣብዚ ውድእ"

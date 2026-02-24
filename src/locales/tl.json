@@ -154,6 +154,9 @@
 		"select_language": "Piliin ang wika: {language}",
 		"available_languages": "Mga available na wika"
 	},
+	"map": {
+		"find_my_location": "Hanapin ang Aking Lokasyon"
+	},
 	"context-menu": {
 		"start_here": "Magsimula dito",
 		"end_here": "Magtapos dito"

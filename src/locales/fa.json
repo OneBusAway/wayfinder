@@ -153,6 +153,9 @@
 		"select_language": "انتخاب زبان: {language}",
 		"available_languages": "زبان‌های موجود"
 	},
+	"map": {
+		"find_my_location": "موقعیت من را پیدا کن"
+	},
 	"context-menu": {
 		"start_here": "شروع از اینجا",
 		"end_here": "پایان در اینجا"

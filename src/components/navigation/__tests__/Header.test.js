@@ -118,7 +118,7 @@ describe('Header', () => {
 	test('header has proper CSS classes for styling', () => {
 		const { container } = render(Header);
 
-		const header = container.querySelector('div');
+		const header = container.querySelector('header');
 		expect(header).toHaveClass(
 			'flex',
 			'items-center',

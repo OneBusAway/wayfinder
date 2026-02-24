@@ -73,6 +73,7 @@
 		class="custom-marker dark:border-[#5a2c2c] {isHighlighted ? 'highlight' : ''}"
 		onclick={onClick}
 	>
+		<span class="sr-only">{stop.name}</span>
 		<span class="bus-icon dark:text-white">
 			<FontAwesomeIcon {icon} class=" text-black" />
 			{#if stop.direction}

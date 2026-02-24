@@ -153,6 +153,9 @@
 		"select_language": "Filifili gagana: {language}",
 		"available_languages": "Gagana avanoa"
 	},
+	"map": {
+		"find_my_location": "Su'e Lo'u Nofoaga"
+	},
 	"context-menu": {
 		"start_here": "Amata mai iinei",
 		"end_here": "Fa'ai'u iinei"

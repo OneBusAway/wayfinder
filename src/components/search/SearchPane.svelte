@@ -133,7 +133,7 @@
 				clearInterval(currentIntervalId);
 				currentIntervalId = null;
 			}
-			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider);
+			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider, route.type);
 
 			const routeData = {
 				route,

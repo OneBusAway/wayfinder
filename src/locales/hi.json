@@ -153,6 +153,9 @@
 		"select_language": "भाषा चुनें: {language}",
 		"available_languages": "उपलब्ध भाषाएं"
 	},
+	"map": {
+		"find_my_location": "मेरा स्थान खोजें"
+	},
 	"context-menu": {
 		"start_here": "यहाँ से शुरू करें",
 		"end_here": "यहाँ समाप्त करें"

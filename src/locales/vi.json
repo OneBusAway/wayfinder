@@ -153,6 +153,9 @@
 		"select_language": "Chọn ngôn ngữ: {language}",
 		"available_languages": "Ngôn ngữ có sẵn"
 	},
+	"map": {
+		"find_my_location": "Tìm vị trí của tôi"
+	},
 	"context-menu": {
 		"start_here": "Bắt đầu từ đây",
 		"end_here": "Kết thúc tại đây"
