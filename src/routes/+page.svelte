@@ -278,6 +278,7 @@
 {#if $isLoading}
 	<p>Loading...</p>
 {:else}
+	<h1 class="sr-only">{PUBLIC_OBA_REGION_NAME}</h1>
 	<div class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 z-40">
 		<div class="mx-2 mt-2 flex h-full flex-col md:mx-4 md:mt-4 md:w-96">
 			<SearchPane

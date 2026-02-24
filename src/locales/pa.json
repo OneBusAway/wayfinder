@@ -153,6 +153,9 @@
 		"select_language": "ਭਾਸ਼ਾ ਚੁਣੋ: {language}",
 		"available_languages": "ਉਪਲਬਧ ਭਾਸ਼ਾਵਾਂ"
 	},
+	"map": {
+		"find_my_location": "ਮੇਰੀ ਸਥਿਤੀ ਲੱਭੋ"
+	},
 	"context-menu": {
 		"start_here": "ਇੱਥੋਂ ਸ਼ੁਰੂ ਕਰੋ",
 		"end_here": "ਇੱਥੇ ਖ਼ਤਮ ਕਰੋ"

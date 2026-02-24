@@ -45,8 +45,14 @@
 </svelte:head>
 
 <div class="flex h-dvh w-full flex-col">
+	<a
+		href="#main-content"
+		class="sr-only z-[99999] focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:rounded-md focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black focus:shadow-lg focus:ring-2 focus:ring-blue-500"
+	>
+		Skip to main content
+	</a>
 	<Header />
-	<div class="relative flex-1 overflow-hidden dark:bg-black">
+	<main id="main-content" class="relative flex-1 overflow-hidden dark:bg-black">
 		{@render children?.()}
-	</div>
+	</main>
 </div>

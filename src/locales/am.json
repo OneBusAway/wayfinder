@@ -153,6 +153,9 @@
 		"select_language": "ቋንቋ ይምረጡ: {language}",
 		"available_languages": "የሚገኙ ቋንቋዎች"
 	},
+	"map": {
+		"find_my_location": "ቦታዬን ፈልግ"
+	},
 	"context-menu": {
 		"start_here": "ከዚህ ጀምር",
 		"end_here": "ዚህ ጨርስ"
