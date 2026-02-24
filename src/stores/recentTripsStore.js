@@ -11,7 +11,7 @@ const STORAGE_KEY = 'wayfinder_recent_trips';
 function createRecentTripsStore() {
 	// Initialize with empty array or load from storage
 	let initialTrips = [];
-	
+
 	if (browser) {
 		try {
 			const stored = localStorage.getItem(STORAGE_KEY);
@@ -27,7 +27,7 @@ function createRecentTripsStore() {
 
 	return {
 		subscribe,
-		
+
 		/**
 		 * Add a trip to recent searches.
 		 * Deduplicates based on from/to coordinates and handles max limit (LIFO).
@@ -43,7 +43,7 @@ function createRecentTripsStore() {
 					fromPlace: trip.fromPlace,
 					toPlace: trip.toPlace,
 					fromCoords: trip.selectedFrom, // Store raw coords object {lat, lng}
-					toCoords: trip.selectedTo,     // Store raw coords object {lat, lng}
+					toCoords: trip.selectedTo, // Store raw coords object {lat, lng}
 					// Store relevant options if needed
 					tripOptions: trip.tripOptions
 				};
@@ -51,26 +51,25 @@ function createRecentTripsStore() {
 				// Filter out duplicates (same from/to coordinates)
 				// We check if coords match roughly to avoid floating point issues
 				const isDuplicate = (t) => {
-					const isSameFrom = 
-						t.fromCoords.lat === newTrip.fromCoords.lat && 
+					const isSameFrom =
+						t.fromCoords.lat === newTrip.fromCoords.lat &&
 						t.fromCoords.lng === newTrip.fromCoords.lng;
-					const isSameTo = 
-						t.toCoords.lat === newTrip.toCoords.lat && 
-						t.toCoords.lng === newTrip.toCoords.lng;
+					const isSameTo =
+						t.toCoords.lat === newTrip.toCoords.lat && t.toCoords.lng === newTrip.toCoords.lng;
 					return isSameFrom && isSameTo;
 				};
 
 				// Remove any existing duplicate so we can add the new one at the top
-				const filtered = trips.filter(t => !isDuplicate(t));
-				
+				const filtered = trips.filter((t) => !isDuplicate(t));
+
 				// Add new trip to the beginning
 				const updated = [newTrip, ...filtered].slice(0, MAX_RECENT_TRIPS);
-				
+
 				// Persist
 				if (browser) {
 					localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 				}
-				
+
 				return updated;
 			});
 		},
@@ -81,7 +80,7 @@ function createRecentTripsStore() {
 		 */
 		removeTrip: (id) => {
 			update((trips) => {
-				const updated = trips.filter(t => t.id !== id);
+				const updated = trips.filter((t) => t.id !== id);
 				if (browser) {
 					localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 				}
