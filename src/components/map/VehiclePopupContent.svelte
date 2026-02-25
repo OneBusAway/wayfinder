@@ -1,5 +1,5 @@
 <script>
-	import { formatLastUpdated } from '$lib/formatters';
+	import { formatLastUpdated } from '$lib/dateTimeFormat';
 	import '$lib/i18n';
 	import { t } from 'svelte-i18n';
 

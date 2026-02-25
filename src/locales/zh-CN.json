@@ -7,6 +7,10 @@
 		"miles": "英里"
 	},
 	"trip-planner": {
+		"arrive": "到达",
+		"depart": "离开",
+		"today": "今天",
+		"tomorrow": "明天",
 		"plan_your_trip": "规划您的行程",
 		"itinerary": "行程方案",
 		"duration": "时长",

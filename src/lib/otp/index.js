@@ -19,13 +19,7 @@ export {
 } from './otpUrlBuilder.js';
 
 // Date/time formatting (timezone-safe)
-export {
-	parseTimeInput,
-	parseDateInput,
-	formatTimeForOTP,
-	formatDateForOTP,
-	combineDateTimeInputs
-} from './dateTimeFormatters.js';
+export { parseTimeInput, parseDateInput, formatDateForOTP } from '$lib/dateTimeFormat';
 
 // Validators
 export {

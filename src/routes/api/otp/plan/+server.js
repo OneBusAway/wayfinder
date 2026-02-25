@@ -1,13 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
-import {
-	buildGraphQLQueryBody,
-	formatTimeForOTP,
-	formatDateForOTP,
-	mapGraphQLResponse,
-	getOtpApiType,
-	OTP_DEFAULTS
-} from '$lib/otp';
+import { buildGraphQLQueryBody, mapGraphQLResponse, getOtpApiType, OTP_DEFAULTS } from '$lib/otp';
+import { formatTimeForOTP, formatDateForOTP } from '$lib/dateTimeFormat';
 
 /**
  * Fetch trip plan from OTP 1.x REST API.

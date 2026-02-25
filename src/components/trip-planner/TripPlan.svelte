@@ -11,10 +11,10 @@
 		tripOptions,
 		showTripOptionsModal,
 		formatWalkDistance,
-		formatDepartureDisplay,
 		effectiveDistanceUnit,
 		DEFAULT_WALK_DISTANCE_METERS
 	} from '$stores/tripOptionsStore';
+	import { formatDepartureDisplay } from '$lib/dateTimeFormat';
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
 	import { swapTripLocations } from '$lib/tripPlanUtils';
 

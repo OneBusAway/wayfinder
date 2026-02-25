@@ -7,6 +7,10 @@
 		"miles": "मील"
 	},
 	"trip-planner": {
+		"arrive": "आना",
+		"depart": "प्रस्थान",
+		"today": "आज",
+		"tomorrow": "कल",
 		"plan_your_trip": "अपनी यात्रा की योजना बनाएं",
 		"itinerary": "यात्रा कार्यक्रम",
 		"duration": "अवधि",

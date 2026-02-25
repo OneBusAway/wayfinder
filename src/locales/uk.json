@@ -7,6 +7,10 @@
 		"miles": "миль"
 	},
 	"trip-planner": {
+		"arrive": "Прибути",
+		"depart": "Від'їхати",
+		"today": "Сьогодні",
+		"tomorrow": "Завтра",
 		"plan_your_trip": "Спланувати поїздку",
 		"itinerary": "Маршрут",
 		"duration": "Тривалість",

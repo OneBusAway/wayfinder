@@ -7,6 +7,10 @@
 		"miles": "mile"
 	},
 	"trip-planner": {
+		"arrive": "Przyjechać",
+		"depart": "Odjeżdżać",
+		"today": "Dzisiaj",
+		"tomorrow": "Jutro",
 		"plan_your_trip": "Zaplanuj swoją podróż",
 		"itinerary": "Plan podróży",
 		"duration": "Czas trwania",

@@ -1,5 +1,6 @@
 <script>
 	import Header from '$components/navigation/Header.svelte';
+	import 'temporal-polyfill/global';
 	import '../app.css';
 	import { config } from '@fortawesome/fontawesome-svg-core';
 	import '@fortawesome/fontawesome-svg-core/styles.css';

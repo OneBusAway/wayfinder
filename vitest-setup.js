@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest';
+import 'temporal-polyfill/global';
 import { vi } from 'vitest';
 
 // Mock ResizeObserver

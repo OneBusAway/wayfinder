@@ -1,6 +1,6 @@
 <script>
 	import LegDetails from './LegDetails.svelte';
-	import { formatTime } from '$lib/formatters';
+	import { msToTimeString } from '$lib/dateTimeFormat';
 	import { t } from 'svelte-i18n';
 	let { itinerary, expandedSteps, toggleSteps } = $props();
 </script>
@@ -23,7 +23,7 @@
 			{$t('trip-planner.start_time')}
 		</p>
 		<p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">
-			{formatTime(itinerary.startTime)}
+			{msToTimeString(itinerary.startTime)}
 		</p>
 	</div>
 	<div class="flex-1 px-3 text-center first:pl-0 last:pr-0">
@@ -31,7 +31,7 @@
 			{$t('trip-planner.end_time')}
 		</p>
 		<p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">
-			{formatTime(itinerary.endTime)}
+			{msToTimeString(itinerary.endTime)}
 		</p>
 	</div>
 </div>

@@ -1,5 +1,6 @@
 <script>
 	import { t } from 'svelte-i18n';
+	import { msToLocalArrivalDepartureTimeString } from '$lib/dateTimeFormat';
 	let { arrivalDeparture, includeArrivalDepartureInStatusLabel = true } = $props();
 
 	const MS_IN_MINS = 60000;
@@ -13,12 +14,6 @@
 	let tripStatus = arrivalDeparture.tripStatus;
 	let frequency = arrivalDeparture.frequency;
 	let stopSequence = arrivalDeparture.stopSequence || 1; // Default to 1 if not provided
-
-	function formatTime(time) {
-		if (!time) return 'N/A';
-		const date = new Date(time);
-		return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-	}
 
 	function computeColor(scheduledMins, predictedMins, isPredicted) {
 		// If this is a scheduled (non-real-time) arrival, always show in blue
@@ -221,7 +216,7 @@
 		{routeShortName} - {tripHeadsign}
 	</p>
 	<p class="text-left font-semibold text-black dark:text-white">
-		<span class="text-md">{formatTime(arrivalInfo.displayTime)}</span> -
+		<span class="text-md">{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime)}</span> -
 		<span class={arrivalInfo.color}>
 			{arrivalInfo.statusText}
 		</span>

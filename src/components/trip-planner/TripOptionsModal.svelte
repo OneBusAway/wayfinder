@@ -9,6 +9,7 @@
 		UNIT_METRIC,
 		UNIT_IMPERIAL
 	} from '$stores/tripOptionsStore';
+	import { getTodayDateForInput, getCurrentTimeForInput } from '$lib/dateTimeInput';
 
 	let { onClose, onDone } = $props();
 
@@ -42,22 +43,6 @@
 		}
 	}
 
-	// Get today's date in YYYY-MM-DD format for date input
-	// Uses local date components to avoid UTC timezone issues
-	function getTodayDate() {
-		const today = new Date();
-		const year = today.getFullYear();
-		const month = String(today.getMonth() + 1).padStart(2, '0');
-		const day = String(today.getDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
-	}
-
-	// Get current time in HH:MM format for time input
-	function getCurrentTime() {
-		const now = new Date();
-		return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-	}
-
 	function handleCancel() {
 		onClose();
 	}
@@ -81,8 +66,8 @@
 		departureType = type;
 		// Set default time/date when switching from 'now'
 		if (type !== 'now' && !departureTime) {
-			departureTime = getCurrentTime();
-			departureDate = getTodayDate();
+			departureTime = getCurrentTimeForInput();
+			departureDate = getTodayDateForInput();
 		}
 	}
 </script>
@@ -212,7 +197,7 @@
 						<input
 							type="date"
 							bind:value={departureDate}
-							min={getTodayDate()}
+							min={getTodayDateForInput()}
 							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
 						/>
 					</div>
