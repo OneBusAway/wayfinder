@@ -37,7 +37,7 @@ query planTrip(
             lon
             arrival { scheduledTime estimated { time } }
           }
-          route { shortName longName }
+          route { shortName longName color textColor }
           legGeometry { points }
           steps { relativeDirection streetName distance absoluteDirection }
         }
@@ -225,6 +225,8 @@ export function mapGraphQLResponse(graphqlData) {
 			if (leg.route) {
 				mapped.routeShortName = leg.route.shortName;
 				mapped.routeLongName = leg.route.longName;
+				if (leg.route.color) mapped.routeColor = leg.route.color;
+				if (leg.route.textColor) mapped.routeTextColor = leg.route.textColor;
 			}
 
 			return mapped;
