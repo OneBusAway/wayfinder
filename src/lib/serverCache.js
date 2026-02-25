@@ -54,6 +54,32 @@ let initializationPromise = null;
 // Cache TTL: 1 hour
 const CACHE_TTL = 3600000;
 
+// Maximum wait for OBA during cold start before unblocking requests
+const FETCH_TIMEOUT = 15_000;
+
+// After a cold-start timeout, minimum gap before retrying
+const ERROR_RETRY_DELAY = 30_000;
+
+/** @type {number | null} */
+let lastErrorTime = null;
+
+/**
+ * Races a promise against a timeout. The timeout timer is always cleared
+ * regardless of which side wins, preventing timer leaks with fake timers.
+ * @template T
+ * @param {Promise<T>} promise
+ * @param {number} ms
+ * @param {string} label
+ * @returns {Promise<T>}
+ */
+function withTimeout(promise, ms, label) {
+	let timeoutId;
+	const timeoutPromise = new Promise((_, reject) => {
+		timeoutId = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+	});
+	return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+}
+
 /**
  * Fetches routes data from the OBA API
  * @returns {Promise<Route[] | null>}
@@ -107,31 +133,49 @@ async function fetchRoutesData() {
 }
 
 /**
- * Preloads routes data into cache with TTL support
+ * Preloads routes data into cache with TTL support.
+ *
+ * Stale-while-revalidate: when cached data exists but is past TTL, a background
+ * refresh is kicked off and the caller returns immediately so HTTP requests are
+ * not blocked. On a cold start (no data at all) the caller waits up to
+ * FETCH_TIMEOUT milliseconds before proceeding without data, preventing an
+ * indefinitely-hanging handle hook when the OBA server is slow or unavailable.
+ *
  * @param {boolean} [forceRefresh=false] - Force refresh even if cache is valid
  * @returns {Promise<void>}
  */
 export async function preloadRoutesData(forceRefresh = false) {
 	const now = Date.now();
-	const isStale = cacheTimestamp && now - cacheTimestamp > CACHE_TTL;
+	const isStale = cacheTimestamp !== null && now - cacheTimestamp > CACHE_TTL;
 
-	// If cache is valid and not stale, and we're not forcing refresh, return early
+	// Fast path: cache is warm
 	if (routesCache && !isStale && !forceRefresh) {
 		return;
 	}
 
-	// If already loading, wait for the existing promise
+	// Error cooldown: after a cold-start timeout don't immediately hammer OBA again.
+	// Only applies when there is no cached data to serve.
+	if (!routesCache && lastErrorTime !== null && now - lastErrorTime < ERROR_RETRY_DELAY) {
+		return;
+	}
+
+	// A refresh is already in flight
 	if (initializationPromise) {
+		// Stale-while-revalidate: serve existing data without blocking
+		if (routesCache && !forceRefresh) {
+			return;
+		}
+		// Cold start or forced refresh: wait for the in-flight fetch
 		await initializationPromise;
 		return;
 	}
 
-	// Start loading
+	// Start a new refresh
 	cacheState = 'loading';
 	const promise = fetchRoutesData()
 		.then((routes) => {
 			routesCache = routes;
-			cacheTimestamp = routes ? now : null;
+			cacheTimestamp = routes ? Date.now() : null;
 			cacheState = routes ? 'loaded' : 'error';
 			return routes;
 		})
@@ -145,7 +189,26 @@ export async function preloadRoutesData(forceRefresh = false) {
 		});
 
 	initializationPromise = promise;
-	await promise;
+
+	// Stale-while-revalidate: background refresh started, return immediately
+	if (routesCache && !forceRefresh) {
+		return;
+	}
+
+	// Cold start: wait for initial data, but cap the wait so the handle hook
+	// cannot block all requests indefinitely when OBA is slow or unreachable.
+	try {
+		await withTimeout(promise, FETCH_TIMEOUT, 'OBA routes fetch');
+	} catch (err) {
+		console.warn(
+			'[serverCache] Routes fetch timed out — requests will proceed without cached data'
+		);
+		lastErrorTime = Date.now();
+		// Unblock future requests: stop them from waiting on the hung in-flight fetch.
+		// The original fetch continues in the background; if OBA recovers it will
+		// populate the cache and the next request after the cooldown will serve data.
+		initializationPromise = null;
+	}
 }
 
 /**
@@ -199,4 +262,5 @@ export function clearCache() {
 	cacheTimestamp = null;
 	cacheState = 'uninitialized';
 	initializationPromise = null;
+	lastErrorTime = null;
 }

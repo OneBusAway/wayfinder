@@ -12,22 +12,31 @@ let initPromise = null;
 // Cache TTL: 1 hour
 const CACHE_TTL = 3600000;
 
+// Maximum time to wait for the OTP server to respond before giving up
+const DETECT_TIMEOUT = 10_000;
+
 async function detectOtpVersion() {
-	const response = await fetch(PUBLIC_OTP_SERVER_URL);
+	const ac = new AbortController();
+	const timer = setTimeout(() => ac.abort(), DETECT_TIMEOUT);
+	try {
+		const response = await fetch(PUBLIC_OTP_SERVER_URL, { signal: ac.signal });
 
-	if (!response.ok) {
-		throw new Error(`OTP server returned HTTP ${response.status}`);
+		if (!response.ok) {
+			throw new Error(`OTP server returned HTTP ${response.status}`);
+		}
+
+		const contentType = response.headers.get('content-type') || '';
+
+		if (contentType.includes('application/json')) {
+			const data = await response.json();
+			return data.version?.major >= 2 ? 'graphql' : 'rest';
+		}
+
+		// OTP 1.x returns XML — treat as REST
+		return 'rest';
+	} finally {
+		clearTimeout(timer);
 	}
-
-	const contentType = response.headers.get('content-type') || '';
-
-	if (contentType.includes('application/json')) {
-		const data = await response.json();
-		return data.version?.major >= 2 ? 'graphql' : 'rest';
-	}
-
-	// OTP 1.x returns XML — treat as REST
-	return 'rest';
 }
 
 /**

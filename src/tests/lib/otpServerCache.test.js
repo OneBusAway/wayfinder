@@ -32,7 +32,10 @@ describe('otpServerCache', () => {
 		await preloadOtpVersion();
 
 		expect(getOtpApiType()).toBe('graphql');
-		expect(mockFetch).toHaveBeenCalledWith('https://otp.test.example.com');
+		expect(mockFetch).toHaveBeenCalledWith(
+			'https://otp.test.example.com',
+			expect.objectContaining({ signal: expect.any(AbortSignal) })
+		);
 	});
 
 	it('detects OTP 1.x as rest from JSON response with version.major = 1', async () => {
