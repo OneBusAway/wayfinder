@@ -11,7 +11,9 @@ vi.mock('@fortawesome/svelte-fontawesome', () => ({
 // Mock svelte-i18n (same pattern as TripPlanSearchField.test.js)
 vi.mock('svelte-i18n', () => {
 	const translations = {
-		'trip-planner.remove_recent_trip': 'Remove'
+		'trip-planner.remove_recent_trip': 'Remove recent trip',
+		'trip-planner.recent_searches': 'Recent Searches',
+		'trip-planner.clear_all': 'Clear All'
 	};
 	return {
 		t: {
@@ -24,9 +26,10 @@ vi.mock('svelte-i18n', () => {
 });
 
 // Use vi.hoisted so mock variables are available inside vi.mock factories
-const { mockRemoveTrip, mockStoreValue } = vi.hoisted(() => {
+const { mockRemoveTrip, mockClearAll, mockStoreValue } = vi.hoisted(() => {
 	return {
 		mockRemoveTrip: vi.fn(),
+		mockClearAll: vi.fn(),
 		mockStoreValue: { current: [] }
 	};
 });
@@ -37,7 +40,8 @@ vi.mock('$stores/recentTripsStore', () => ({
 			fn(mockStoreValue.current);
 			return () => {};
 		}),
-		removeTrip: mockRemoveTrip
+		removeTrip: mockRemoveTrip,
+		clearAll: mockClearAll
 	}
 }));
 
@@ -72,11 +76,10 @@ describe('RecentTripsList', () => {
 			mockStoreValue.current = [];
 			const { container } = render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-			expect(screen.queryAllByRole('button')).toHaveLength(0);
 			expect(container.querySelector('.mt-4')).toBeNull();
 		});
 
-		it('renders trip cards with correct from/to text', () => {
+		it('renders trip cards with from on one line and to on another', () => {
 			mockStoreValue.current = sampleTrips;
 
 			render(RecentTripsList, { props: { onSelect: vi.fn() } });
@@ -87,13 +90,13 @@ describe('RecentTripsList', () => {
 			expect(screen.getByText('Ballard')).toBeInTheDocument();
 		});
 
-		it('does NOT render a header or Clear All button', () => {
+		it('renders a header with "Recent Searches" and a "Clear All" button', () => {
 			mockStoreValue.current = sampleTrips;
 
 			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-			expect(screen.queryByText('Recent Searches')).not.toBeInTheDocument();
-			expect(screen.queryByText('Clear All')).not.toBeInTheDocument();
+			expect(screen.getByText('Recent Searches')).toBeInTheDocument();
+			expect(screen.getByText('Clear All')).toBeInTheDocument();
 		});
 	});
 
@@ -104,7 +107,7 @@ describe('RecentTripsList', () => {
 
 			render(RecentTripsList, { props: { onSelect: mockOnSelect } });
 
-			const firstCard = screen.getByText('Capitol Hill').closest('button');
+			const firstCard = screen.getByText('Capitol Hill').closest('[role="button"]');
 			await user.click(firstCard);
 
 			expect(mockOnSelect).toHaveBeenCalledTimes(1);
@@ -116,11 +119,21 @@ describe('RecentTripsList', () => {
 
 			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-			const removeButtons = screen.getAllByLabelText('Remove');
+			const removeButtons = screen.getAllByLabelText('Remove recent trip');
 			await user.click(removeButtons[0]);
 
 			expect(mockRemoveTrip).toHaveBeenCalledTimes(1);
 			expect(mockRemoveTrip).toHaveBeenCalledWith('trip-1');
+		});
+
+		it('calls clearAll when "Clear All" button is clicked', async () => {
+			mockStoreValue.current = sampleTrips;
+
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			await user.click(screen.getByText('Clear All'));
+
+			expect(mockClearAll).toHaveBeenCalledTimes(1);
 		});
 	});
 });

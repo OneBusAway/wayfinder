@@ -109,4 +109,43 @@ describe('recentTripsStore', () => {
 		expect(value).toHaveLength(0);
 		expect(localStorage.removeItem).toHaveBeenCalledWith('wayfinder_recent_trips');
 	});
+
+	it('should handle trips with null coordinates without crashing', () => {
+		// Add a valid trip first
+		recentTrips.addTrip(makeTripInput('A', 'B'));
+
+		// Adding another trip should not crash even if existing data has null coords
+		// (the isDuplicate guard should handle this)
+		expect(() => {
+			recentTrips.addTrip(makeTripInput('C', 'D', 3, 4));
+		}).not.toThrow();
+
+		const value = getStoreValue(recentTrips);
+		expect(value).toHaveLength(2);
+	});
+
+	it('should filter out malformed entries from localStorage on load', async () => {
+		const malformedData = [
+			{
+				id: '1',
+				fromPlace: 'A',
+				toPlace: 'B',
+				fromCoords: { lat: 1, lng: 1 },
+				toCoords: { lat: 2, lng: 2 }
+			},
+			{ id: '2', fromPlace: 'C' }, // missing toPlace, fromCoords, toCoords
+			null, // null entry
+			'invalid' // wrong type
+		];
+		localStorage.getItem.mockReturnValue(JSON.stringify(malformedData));
+
+		vi.resetModules();
+		const mod = await import('../../stores/recentTripsStore.js');
+		const store = mod.recentTrips;
+
+		const value = getStoreValue(store);
+		// Only the first valid entry should survive
+		expect(value).toHaveLength(1);
+		expect(value[0].fromPlace).toBe('A');
+	});
 });

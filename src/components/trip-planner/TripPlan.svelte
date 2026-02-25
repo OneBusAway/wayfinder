@@ -216,14 +216,18 @@
 				};
 				handleTripPlan(tripPlanData);
 
-				// Save to recent trips
-				recentTrips.addTrip({
-					fromPlace,
-					toPlace,
-					selectedFrom,
-					selectedTo,
-					tripOptions: $tripOptions
-				});
+				// Save to recent trips (non-critical side effect)
+				try {
+					recentTrips.addTrip({
+						fromPlace,
+						toPlace,
+						selectedFrom,
+						selectedTo,
+						tripOptions: $tripOptions
+					});
+				} catch (e) {
+					console.warn('Failed to save trip to recent history:', e);
+				}
 			}
 		} finally {
 			loading = false;
@@ -280,14 +284,14 @@
 		}
 	});
 
-	function handleRecentTripSelect(trip) {
+	async function handleRecentTripSelect(trip) {
 		fromPlace = trip.fromPlace;
 		toPlace = trip.toPlace;
 		selectedFrom = trip.fromCoords;
 		selectedTo = trip.toCoords;
 
 		// Auto-run the search
-		planTrip();
+		await planTrip();
 	}
 </script>
 

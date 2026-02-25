@@ -16,7 +16,12 @@ function createRecentTripsStore() {
 		try {
 			const stored = localStorage.getItem(STORAGE_KEY);
 			if (stored) {
-				initialTrips = JSON.parse(stored);
+				const parsed = JSON.parse(stored);
+				if (Array.isArray(parsed)) {
+					initialTrips = parsed.filter(
+						(t) => t && t.fromCoords && t.toCoords && t.fromPlace && t.toPlace
+					);
+				}
 			}
 		} catch (e) {
 			console.error('Failed to load recent trips from localStorage:', e);
@@ -49,8 +54,11 @@ function createRecentTripsStore() {
 				};
 
 				// Filter out duplicates (same from/to coordinates)
-				// We check if coords match roughly to avoid floating point issues
+				// Uses strict equality since coords are stored/recalled via JSON without arithmetic
 				const isDuplicate = (t) => {
+					if (!t.fromCoords || !t.toCoords || !newTrip.fromCoords || !newTrip.toCoords) {
+						return false;
+					}
 					const isSameFrom =
 						t.fromCoords.lat === newTrip.fromCoords.lat &&
 						t.fromCoords.lng === newTrip.fromCoords.lng;
@@ -67,7 +75,11 @@ function createRecentTripsStore() {
 
 				// Persist
 				if (browser) {
-					localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+					try {
+						localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+					} catch (e) {
+						console.warn('Failed to persist recent trips:', e);
+					}
 				}
 
 				return updated;
@@ -82,7 +94,11 @@ function createRecentTripsStore() {
 			update((trips) => {
 				const updated = trips.filter((t) => t.id !== id);
 				if (browser) {
-					localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+					try {
+						localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+					} catch (e) {
+						console.warn('Failed to persist recent trips:', e);
+					}
 				}
 				return updated;
 			});
