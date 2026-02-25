@@ -187,7 +187,7 @@ describe('GET /api/otp/plan', () => {
 		global.fetch = mockFetch;
 		mockApiType = 'graphql';
 
-		vi.doMock('$env/static/public', () => ({
+		vi.doMock('$env/dynamic/public', () => ({
 			env: { PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com' }
 		}));
 
@@ -219,7 +219,7 @@ describe('GET /api/otp/plan', () => {
 
 	it('returns 503 when PUBLIC_OTP_SERVER_URL is not configured', async () => {
 		vi.resetModules();
-		vi.doMock('$env/static/public', () => ({
+		vi.doMock('$env/dynamic/public', () => ({
 			env: { PUBLIC_OTP_SERVER_URL: '' }
 		}));
 		const mod = await import('../../routes/api/otp/plan/+server.js');
