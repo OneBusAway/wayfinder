@@ -21,7 +21,9 @@ vi.mock('$env/dynamic/public', () => ({
 	env: {
 		PUBLIC_ANALYTICS_DOMAIN: '',
 		PUBLIC_ANALYTICS_ENABLED: 'false',
-		PUBLIC_ANALYTICS_API_HOST: ''
+		PUBLIC_ANALYTICS_API_HOST: '',
+		PUBLIC_ARCGIS_API_KEY: '',
+		PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL: ''
 	}
 }));
 

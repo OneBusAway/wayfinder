@@ -53,6 +53,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@arcgis/core": "^4.34.8",
 		"@fortawesome/free-regular-svg-icons": "^6.6.0",
 		"@googlemaps/js-api-loader": "^1.16.8",
 		"@maplibre/maplibre-gl-leaflet": "^0.0.22",
@@ -64,5 +65,8 @@
 		"onebusaway-sdk": "^1.6.0",
 		"polyline-encoded": "^0.0.9",
 		"svelte-i18n": "^4.0.1"
+	},
+	"engines": {
+		"node": ">=20.0.0"
 	}
 }
