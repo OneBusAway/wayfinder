@@ -24,7 +24,7 @@ function createRecentTripsStore() {
 				}
 			}
 		} catch (e) {
-			console.error('Failed to load recent trips from localStorage:', e);
+			console.warn('Failed to load recent trips from localStorage:', e);
 		}
 	}
 
@@ -48,9 +48,7 @@ function createRecentTripsStore() {
 					fromPlace: trip.fromPlace,
 					toPlace: trip.toPlace,
 					fromCoords: trip.selectedFrom, // Store raw coords object {lat, lng}
-					toCoords: trip.selectedTo, // Store raw coords object {lat, lng}
-					// Store relevant options if needed
-					tripOptions: trip.tripOptions
+					toCoords: trip.selectedTo // Store raw coords object {lat, lng}
 				};
 
 				// Filter out duplicates (same from/to coordinates)
@@ -109,7 +107,11 @@ function createRecentTripsStore() {
 		 */
 		clearAll: () => {
 			if (browser) {
-				localStorage.removeItem(STORAGE_KEY);
+				try {
+					localStorage.removeItem(STORAGE_KEY);
+				} catch (e) {
+					console.warn('Failed to remove recent trips from localStorage:', e);
+				}
 			}
 			set([]);
 		}

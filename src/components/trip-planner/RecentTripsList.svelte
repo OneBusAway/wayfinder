@@ -39,7 +39,12 @@
 					tabindex="0"
 					class="dark:hover:bg-gray-750 group relative flex w-full items-center rounded-lg border border-gray-200 bg-white p-2.5 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
 					onclick={() => handleTripClick(trip)}
-					onkeydown={(e) => e.key === 'Enter' && handleTripClick(trip)}
+					onkeydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							handleTripClick(trip);
+						}
+					}}
 				>
 					<div class="mr-3 text-gray-400">
 						<FontAwesomeIcon icon={faClockRotateLeft} class="h-3.5 w-3.5" />

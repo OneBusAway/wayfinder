@@ -222,8 +222,7 @@
 						fromPlace,
 						toPlace,
 						selectedFrom,
-						selectedTo,
-						tripOptions: $tripOptions
+						selectedTo
 					});
 				} catch (e) {
 					console.warn('Failed to save trip to recent history:', e);
