@@ -463,11 +463,15 @@ export default class OpenStreetMapProvider {
 			return null;
 		}
 
-		const polyline = new this.L.Polyline(decodedPolyline, {
+		const polylineOpts = {
 			color: options.color || COLORS.POLYLINE,
 			weight: options.weight || 4,
 			opacity: options.opacity || 1
-		}).addTo(this.map);
+		};
+		if (options.dashArray) {
+			polylineOpts.dashArray = options.dashArray;
+		}
+		const polyline = new this.L.Polyline(decodedPolyline, polylineOpts).addTo(this.map);
 
 		this.polylines.push(polyline);
 

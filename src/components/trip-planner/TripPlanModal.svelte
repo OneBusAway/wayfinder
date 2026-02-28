@@ -42,11 +42,25 @@
 	}
 
 	let currPolylines = [];
-	let polylineStyle = {
-		weight: 8,
-		opacity: 0.8,
-		withArrow: false
-	};
+
+	// Build per-leg polyline style based on mode and route color
+	function getLegPolylineStyle(leg) {
+		if (leg.mode === 'WALK') {
+			return {
+				color: '#888888',
+				weight: 4,
+				opacity: 0.7,
+				dashArray: '8, 12',
+				withArrow: false
+			};
+		}
+		return {
+			color: leg.routeColor ? `#${leg.routeColor}` : undefined,
+			weight: 8,
+			opacity: 0.8,
+			withArrow: false
+		};
+	}
 
 	// draw the current itinerary route based on the active itinerary tab
 	async function drawRoute() {
@@ -63,7 +77,8 @@
 
 		itineraries[activeTab].legs.forEach((leg) => {
 			const shape = leg.legGeometry.points;
-			const polyline = mapProvider.createPolyline(shape, polylineStyle, true);
+			const style = getLegPolylineStyle(leg);
+			const polyline = mapProvider.createPolyline(shape, style, true);
 			currPolylines.push(polyline);
 		});
 	}
