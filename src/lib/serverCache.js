@@ -51,6 +51,9 @@ let cacheState = 'uninitialized';
 /** @type {Promise<Route[] | null> | null} */
 let initializationPromise = null;
 
+/** @type {boolean} */
+let timedOut = false;
+
 // Cache TTL: 1 hour
 const CACHE_TTL = 3600000;
 
@@ -156,13 +159,14 @@ export async function preloadRoutesData(forceRefresh = false) {
 	// Error cooldown: after a cold-start timeout don't immediately hammer OBA again.
 	// Only applies when there is no cached data to serve.
 	if (!routesCache && lastErrorTime !== null && now - lastErrorTime < ERROR_RETRY_DELAY) {
+		console.debug('[serverCache] Within error cooldown — serving without cached data');
 		return;
 	}
 
 	// A refresh is already in flight
 	if (initializationPromise) {
-		// Stale-while-revalidate: serve existing data without blocking
-		if (routesCache && !forceRefresh) {
+		// Stale-while-revalidate or already timed out: serve existing data without blocking
+		if (timedOut || (routesCache && !forceRefresh)) {
 			return;
 		}
 		// Cold start or forced refresh: wait for the in-flight fetch
@@ -172,11 +176,13 @@ export async function preloadRoutesData(forceRefresh = false) {
 
 	// Start a new refresh
 	cacheState = 'loading';
+	timedOut = false;
 	const promise = fetchRoutesData()
 		.then((routes) => {
 			routesCache = routes;
 			cacheTimestamp = routes ? Date.now() : null;
 			cacheState = routes ? 'loaded' : 'error';
+			if (routes) lastErrorTime = null;
 			return routes;
 		})
 		.catch((error) => {
@@ -186,6 +192,7 @@ export async function preloadRoutesData(forceRefresh = false) {
 		})
 		.finally(() => {
 			initializationPromise = null;
+			timedOut = false;
 		});
 
 	initializationPromise = promise;
@@ -199,15 +206,17 @@ export async function preloadRoutesData(forceRefresh = false) {
 	// cannot block all requests indefinitely when OBA is slow or unreachable.
 	try {
 		await withTimeout(promise, FETCH_TIMEOUT, 'OBA routes fetch');
-	} catch (err) {
+	} catch {
 		console.warn(
 			'[serverCache] Routes fetch timed out — requests will proceed without cached data'
 		);
+		cacheState = 'error';
 		lastErrorTime = Date.now();
-		// Unblock future requests: stop them from waiting on the hung in-flight fetch.
-		// The original fetch continues in the background; if OBA recovers it will
-		// populate the cache and the next request after the cooldown will serve data.
-		initializationPromise = null;
+		timedOut = true;
+		// Do NOT clear initializationPromise — the in-flight fetch continues in the
+		// background. Subsequent callers see timedOut=true and return immediately,
+		// preventing a second parallel fetch. When the background fetch eventually
+		// resolves it will populate the cache and reset timedOut via .finally().
 	}
 }
 
@@ -263,4 +272,5 @@ export function clearCache() {
 	cacheState = 'uninitialized';
 	initializationPromise = null;
 	lastErrorTime = null;
+	timedOut = false;
 }

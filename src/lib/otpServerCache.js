@@ -42,6 +42,13 @@ async function detectOtpVersion() {
 /**
  * Preloads OTP version detection into cache with TTL support.
  * Skips detection if PUBLIC_OTP_SERVER_URL is not configured.
+ *
+ * Stale-while-revalidate: when a cached type exists but is past TTL, a
+ * background refresh is kicked off and the caller returns immediately so the
+ * handle hook is not blocked. On a cold start (no type detected yet) the
+ * caller waits up to DETECT_TIMEOUT milliseconds (bounded by the AbortController
+ * inside detectOtpVersion) before proceeding.
+ *
  * @param {boolean} [forceRefresh=false]
  * @returns {Promise<void>}
  */
@@ -51,13 +58,18 @@ export async function preloadOtpVersion(forceRefresh = false) {
 	}
 
 	const now = Date.now();
-	const isStale = cacheTimestamp && now - cacheTimestamp > CACHE_TTL;
+	const isStale = cacheTimestamp !== null && now - cacheTimestamp > CACHE_TTL;
 
 	if (otpApiType && !isStale && !forceRefresh) {
 		return;
 	}
 
+	// A refresh is already in flight
 	if (initPromise) {
+		// Stale-while-revalidate: we have a value, don't block on background refresh
+		if (otpApiType && !forceRefresh) {
+			return;
+		}
 		await initPromise;
 		return;
 	}
@@ -65,7 +77,7 @@ export async function preloadOtpVersion(forceRefresh = false) {
 	const promise = detectOtpVersion()
 		.then((type) => {
 			otpApiType = type;
-			cacheTimestamp = now;
+			cacheTimestamp = Date.now();
 		})
 		.catch((err) => {
 			console.error('OTP version detection failed:', err.message);
@@ -76,6 +88,13 @@ export async function preloadOtpVersion(forceRefresh = false) {
 		});
 
 	initPromise = promise;
+
+	// Stale-while-revalidate: background refresh started, return immediately
+	if (otpApiType && !forceRefresh) {
+		return;
+	}
+
+	// Cold start: wait for detection (bounded by the AbortController in detectOtpVersion)
 	await promise;
 }
 

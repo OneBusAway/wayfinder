@@ -118,7 +118,7 @@ describe('otpServerCache', () => {
 		expect(mockFetch).toHaveBeenCalledTimes(1);
 	});
 
-	it('re-detects after TTL expires', async () => {
+	it('re-detects after TTL expires (stale-while-revalidate)', async () => {
 		vi.useFakeTimers();
 
 		mockFetch.mockResolvedValueOnce({
@@ -139,9 +139,45 @@ describe('otpServerCache', () => {
 			headers: new Headers({ 'content-type': 'application/xml' })
 		});
 
+		// SWR: returns immediately with stale 'graphql', background refresh starts
 		await preloadOtpVersion();
+		expect(getOtpApiType()).toBe('graphql');
+
+		// Let the background refresh promise chain flush
+		await Promise.resolve();
+		await Promise.resolve();
+		await Promise.resolve();
+
 		expect(getOtpApiType()).toBe('rest');
 		expect(mockFetch).toHaveBeenCalledTimes(2);
+
+		vi.useRealTimers();
+	});
+
+	it('stale-while-revalidate: does not block handle hook when OTP cache is stale', async () => {
+		vi.useFakeTimers();
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			headers: new Headers({ 'content-type': 'application/json' }),
+			json: async () => ({ version: { major: 2 } })
+		});
+
+		const { preloadOtpVersion, getOtpApiType } = await import('$lib/otpServerCache.js');
+		await preloadOtpVersion();
+		expect(getOtpApiType()).toBe('graphql');
+
+		// Advance past TTL
+		vi.advanceTimersByTime(3600001);
+
+		// Background fetch hangs — verifies we don't block on it
+		mockFetch.mockImplementation(() => new Promise(() => {}));
+
+		// Should return immediately (SWR), not hang
+		await preloadOtpVersion();
+
+		// Stale value still served
+		expect(getOtpApiType()).toBe('graphql');
 
 		vi.useRealTimers();
 	});

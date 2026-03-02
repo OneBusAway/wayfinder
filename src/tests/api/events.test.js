@@ -12,7 +12,7 @@ vi.mock('$env/dynamic/public', () => ({
 	}
 }));
 
-import { POST } from '$src/routes/api/events/+server.js';
+import { POST } from '../../routes/api/events/+server.js';
 
 describe('POST /api/events', () => {
 	beforeEach(() => {
