@@ -260,10 +260,11 @@ describe('otpServerCache', () => {
 		expect(getOtpApiType()).toBe('rest');
 	});
 
-	it('retries detection after HTTP error on next call (no stale cache)', async () => {
+	it('retries detection after ERROR_RETRY_DELAY expires (no stale cache)', async () => {
+		vi.useFakeTimers();
 		vi.spyOn(console, 'error').mockImplementation(() => {});
 
-		// First call: server returns 503
+		// First call: server returns 503 — sets lastErrorTime, enters cooldown
 		mockFetch.mockResolvedValueOnce({
 			ok: false,
 			status: 503,
@@ -274,7 +275,14 @@ describe('otpServerCache', () => {
 		await preloadOtpVersion();
 		expect(getOtpApiType()).toBeNull();
 
-		// Second call: server is back, returns OTP 2.x
+		// Within cooldown: should not retry
+		await preloadOtpVersion();
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+
+		// Advance past ERROR_RETRY_DELAY (30s)
+		vi.advanceTimersByTime(30_001);
+
+		// After cooldown: server is back, returns OTP 2.x
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
@@ -286,5 +294,6 @@ describe('otpServerCache', () => {
 		expect(mockFetch).toHaveBeenCalledTimes(2);
 
 		console.error.mockRestore();
+		vi.useRealTimers();
 	});
 });

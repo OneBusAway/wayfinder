@@ -559,6 +559,81 @@ describe('serverCache', () => {
 
 			vi.useRealTimers();
 		});
+
+		it('background fetch resolves after timeout and populates cache', async () => {
+			vi.useFakeTimers();
+
+			let resolveFetch;
+			mockAgenciesWithCoverageList.mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						resolveFetch = resolve;
+					})
+			);
+
+			const { preloadRoutesData, getCacheState, getRoutesCache } = await import(
+				'$lib/serverCache.js'
+			);
+
+			const preloadPromise = preloadRoutesData();
+			// Fire the 15-second cold-start timeout
+			await vi.advanceTimersByTimeAsync(15_000);
+			await preloadPromise;
+
+			expect(getCacheState()).toBe('error');
+			expect(getRoutesCache()).toBeNull();
+
+			// Now let the background fetch complete successfully
+			resolveFetch({ data: { list: mockAgencies } });
+
+			// Flush microtasks so the .then()/.finally() chain runs to completion
+			for (let i = 0; i < 8; i++) await Promise.resolve();
+
+			expect(getCacheState()).toBe('loaded');
+			expect(getRoutesCache()).not.toBeNull();
+
+			vi.useRealTimers();
+		});
+
+		it('cooldown expiry allows retry after ERROR_RETRY_DELAY', async () => {
+			vi.useFakeTimers();
+			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+			let rejectFetch;
+			mockAgenciesWithCoverageList.mockImplementation(
+				() =>
+					new Promise((_, reject) => {
+						rejectFetch = reject;
+					})
+			);
+
+			const { preloadRoutesData } = await import('$lib/serverCache.js');
+
+			// First call: times out at 15s, sets lastErrorTime
+			const p1 = preloadRoutesData();
+			await vi.advanceTimersByTimeAsync(15_000);
+			await p1;
+
+			// Within cooldown: should not trigger a new fetch
+			await preloadRoutesData();
+			expect(mockAgenciesWithCoverageList).toHaveBeenCalledTimes(1);
+
+			// Clear initializationPromise by letting the background fetch fail
+			rejectFetch(new Error('background failure'));
+			for (let i = 0; i < 4; i++) await Promise.resolve();
+
+			// Advance past ERROR_RETRY_DELAY (30s)
+			vi.advanceTimersByTime(30_001);
+
+			// After cooldown: a new fetch attempt should be made
+			mockAgenciesWithCoverageList.mockResolvedValue({ data: { list: [] } });
+			await preloadRoutesData();
+
+			expect(mockAgenciesWithCoverageList).toHaveBeenCalledTimes(2);
+
+			consoleErrorSpy.mockRestore();
+			vi.useRealTimers();
+		});
 	});
 
 	describe('agency filtering', () => {

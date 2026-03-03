@@ -15,6 +15,12 @@ const CACHE_TTL = 3600000;
 // Maximum time to wait for the OTP server to respond before giving up
 const DETECT_TIMEOUT = 10_000;
 
+// After a cold-start failure, minimum gap before retrying
+const ERROR_RETRY_DELAY = 30_000;
+
+/** @type {number | null} */
+let lastErrorTime = null;
+
 async function detectOtpVersion() {
 	const ac = new AbortController();
 	const timer = setTimeout(() => ac.abort(), DETECT_TIMEOUT);
@@ -64,6 +70,11 @@ export async function preloadOtpVersion(forceRefresh = false) {
 		return;
 	}
 
+	// Error cooldown: after a failure, don't immediately retry when there's no cached value.
+	if (!otpApiType && lastErrorTime !== null && now - lastErrorTime < ERROR_RETRY_DELAY) {
+		return;
+	}
+
 	// A refresh is already in flight
 	if (initPromise) {
 		// Stale-while-revalidate: we have a value, don't block on background refresh
@@ -78,10 +89,18 @@ export async function preloadOtpVersion(forceRefresh = false) {
 		.then((type) => {
 			otpApiType = type;
 			cacheTimestamp = Date.now();
+			lastErrorTime = null;
 		})
 		.catch((err) => {
-			console.error('OTP version detection failed:', err.message);
-			// Leave otpApiType as null — will default to REST in the route handler
+			if (err.name === 'AbortError') {
+				console.warn(`[otpServerCache] OTP version detection timed out after ${DETECT_TIMEOUT}ms`);
+			} else {
+				console.error('[otpServerCache] OTP version detection failed:', err.message);
+			}
+			lastErrorTime = Date.now();
+			if (otpApiType) {
+				cacheTimestamp = Date.now();
+			}
 		})
 		.finally(() => {
 			initPromise = null;
@@ -113,4 +132,5 @@ export function clearOtpCache() {
 	otpApiType = null;
 	cacheTimestamp = null;
 	initPromise = null;
+	lastErrorTime = null;
 }
