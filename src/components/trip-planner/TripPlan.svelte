@@ -17,6 +17,8 @@
 	} from '$stores/tripOptionsStore';
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
 	import { swapTripLocations } from '$lib/tripPlanUtils';
+	import { recentTrips } from '$stores/recentTripsStore';
+	import RecentTripsList from './RecentTripsList.svelte';
 
 	let { handleTripPlan, mapProvider } = $props();
 
@@ -213,6 +215,18 @@
 					toMarker
 				};
 				handleTripPlan(tripPlanData);
+
+				// Save to recent trips (non-critical side effect)
+				try {
+					recentTrips.addTrip({
+						fromPlace,
+						toPlace,
+						selectedFrom,
+						selectedTo
+					});
+				} catch (e) {
+					console.warn('Failed to save trip to recent history:', e);
+				}
 			}
 		} finally {
 			loading = false;
@@ -268,6 +282,16 @@
 			}
 		}
 	});
+
+	async function handleRecentTripSelect(trip) {
+		fromPlace = trip.fromPlace;
+		toPlace = trip.toPlace;
+		selectedFrom = trip.fromCoords;
+		selectedTo = trip.toCoords;
+
+		// Auto-run the search
+		await planTrip();
+	}
 </script>
 
 <div>
@@ -397,4 +421,6 @@
 			{/if}
 		</button>
 	</div>
+
+	<RecentTripsList onSelect={handleRecentTripSelect} />
 </div>
