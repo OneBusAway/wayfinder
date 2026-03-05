@@ -595,6 +595,40 @@ describe('serverCache', () => {
 			vi.useRealTimers();
 		});
 
+		it('second caller returns immediately via timedOut flag while background fetch is in flight', async () => {
+			vi.useFakeTimers();
+
+			let resolveFetch;
+
+			mockAgenciesWithCoverageList.mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						resolveFetch = resolve;
+					})
+			);
+
+			const { preloadRoutesData, getCacheState } = await import('$lib/serverCache.js');
+
+			const p1 = preloadRoutesData();
+
+			await vi.advanceTimersByTimeAsync(15_000);
+			await p1;
+
+			expect(getCacheState()).toBe('error');
+
+			await preloadRoutesData();
+
+			expect(mockAgenciesWithCoverageList).toHaveBeenCalledTimes(1);
+
+			resolveFetch({ data: { list: [] } });
+
+			for (let i = 0; i < 8; i++) {
+				await Promise.resolve();
+			}
+
+			vi.useRealTimers();
+		});
+
 		it('cooldown expiry allows retry after ERROR_RETRY_DELAY', async () => {
 			vi.useFakeTimers();
 			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});

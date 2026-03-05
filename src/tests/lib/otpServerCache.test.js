@@ -260,6 +260,32 @@ describe('otpServerCache', () => {
 		expect(getOtpApiType()).toBe('rest');
 	});
 
+	it('times out and enters cooldown when OTP server hangs', async () => {
+		vi.useFakeTimers();
+
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+		mockFetch.mockImplementation(() => new Promise(() => {}));
+
+		const { preloadOtpVersion, getOtpApiType } = await import('$lib/otpServerCache.js');
+
+		const p = preloadOtpVersion();
+
+		await vi.advanceTimersByTimeAsync(10_000);
+		await p;
+
+		expect(getOtpApiType()).toBeNull();
+
+		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('timed out'));
+
+		await preloadOtpVersion();
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+
+		warnSpy.mockRestore();
+		vi.useRealTimers();
+	});
+
 	it('retries detection after ERROR_RETRY_DELAY expires (no stale cache)', async () => {
 		vi.useFakeTimers();
 		vi.spyOn(console, 'error').mockImplementation(() => {});

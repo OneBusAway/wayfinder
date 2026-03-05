@@ -182,7 +182,13 @@ export async function preloadRoutesData(forceRefresh = false) {
 			routesCache = routes;
 			cacheTimestamp = routes ? Date.now() : null;
 			cacheState = routes ? 'loaded' : 'error';
-			if (routes) lastErrorTime = null;
+
+			if (routes) {
+				lastErrorTime = null;
+			} else {
+				lastErrorTime = Date.now();
+			}
+
 			return routes;
 		})
 		.catch((error) => {
@@ -206,10 +212,15 @@ export async function preloadRoutesData(forceRefresh = false) {
 	// cannot block all requests indefinitely when OBA is slow or unreachable.
 	try {
 		await withTimeout(promise, FETCH_TIMEOUT, 'OBA routes fetch');
-	} catch {
-		console.warn(
-			'[serverCache] Routes fetch timed out — requests will proceed without cached data'
-		);
+	} catch (err) {
+		if (err.message?.includes('timed out')) {
+			console.warn(
+				'[serverCache] Routes fetch timed out — requests will proceed without cached data'
+			);
+		} else {
+			console.error('[serverCache] Routes fetch failed during cold start:', err);
+		}
+
 		cacheState = 'error';
 		lastErrorTime = Date.now();
 		timedOut = true;

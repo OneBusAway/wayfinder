@@ -1,5 +1,20 @@
 import { PUBLIC_OTP_SERVER_URL } from '$env/static/public';
 
+/**
+ * @template T
+ * @param {Promise<T>} promise
+ * @param {number} ms
+ * @param {string} label
+ * @returns {Promise<T>}
+ */
+function withTimeout(promise, ms, label) {
+	let timeoutId;
+	const timeoutPromise = new Promise((_, reject) => {
+		timeoutId = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+	});
+	return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+}
+
 /** @type {'graphql' | 'rest' | null} */
 let otpApiType = null;
 
@@ -72,6 +87,7 @@ export async function preloadOtpVersion(forceRefresh = false) {
 
 	// Error cooldown: after a failure, don't immediately retry when there's no cached value.
 	if (!otpApiType && lastErrorTime !== null && now - lastErrorTime < ERROR_RETRY_DELAY) {
+		console.debug('[otpServerCache] Within error cooldown — serving without cached OTP version');
 		return;
 	}
 
@@ -113,8 +129,20 @@ export async function preloadOtpVersion(forceRefresh = false) {
 		return;
 	}
 
-	// Cold start: wait for detection (bounded by the AbortController in detectOtpVersion)
-	await promise;
+	// Cold start: wait for detection, bounded by withTimeout in addition to the AbortController
+	// inside detectOtpVersion. This ensures the caller is never blocked indefinitely when the
+	// OTP server is unreachable and the mock/real fetch does not honour the AbortSignal.
+	try {
+		await withTimeout(promise, DETECT_TIMEOUT, 'OTP version detection');
+	} catch (err) {
+		if (err.message?.includes('timed out')) {
+			console.warn(`[otpServerCache] OTP version detection timed out after ${DETECT_TIMEOUT}ms`);
+		} else {
+			console.error('[otpServerCache] OTP version detection failed during cold start:', err);
+		}
+
+		lastErrorTime = Date.now();
+	}
 }
 
 /**
