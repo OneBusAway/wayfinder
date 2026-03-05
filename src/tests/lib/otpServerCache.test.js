@@ -265,7 +265,14 @@ describe('otpServerCache', () => {
 
 		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-		mockFetch.mockImplementation(() => new Promise(() => {}));
+		mockFetch.mockImplementation(
+			(_url, { signal } = {}) =>
+				new Promise((_, reject) => {
+					signal?.addEventListener('abort', () =>
+						reject(new DOMException('signal aborted', 'AbortError'))
+					);
+				})
+		);
 
 		const { preloadOtpVersion, getOtpApiType } = await import('$lib/otpServerCache.js');
 

@@ -25,19 +25,7 @@ async function detectOtpVersion() {
 	const ac = new AbortController();
 	const timer = setTimeout(() => ac.abort(), DETECT_TIMEOUT);
 	try {
-		// Race the fetch against the abort signal so callers are never blocked
-		// indefinitely when the server is unreachable (works with real fetch and mocks).
-		const abortPromise = new Promise((_, reject) => {
-			ac.signal.addEventListener(
-				'abort',
-				() => reject(new DOMException('signal aborted', 'AbortError')),
-				{ once: true }
-			);
-		});
-		const response = await Promise.race([
-			fetch(PUBLIC_OTP_SERVER_URL, { signal: ac.signal }),
-			abortPromise
-		]);
+		const response = await fetch(PUBLIC_OTP_SERVER_URL, { signal: ac.signal });
 
 		if (!response.ok) {
 			throw new Error(`OTP server returned HTTP ${response.status}`);
