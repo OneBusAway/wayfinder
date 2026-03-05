@@ -32,7 +32,10 @@ describe('otpServerCache', () => {
 		await preloadOtpVersion();
 
 		expect(getOtpApiType()).toBe('graphql');
-		expect(mockFetch).toHaveBeenCalledWith('https://otp.test.example.com');
+		expect(mockFetch).toHaveBeenCalledWith(
+			'https://otp.test.example.com',
+			expect.objectContaining({ signal: expect.any(AbortSignal) })
+		);
 	});
 
 	it('detects OTP 1.x as rest from JSON response with version.major = 1', async () => {
@@ -115,7 +118,7 @@ describe('otpServerCache', () => {
 		expect(mockFetch).toHaveBeenCalledTimes(1);
 	});
 
-	it('re-detects after TTL expires', async () => {
+	it('re-detects after TTL expires (stale-while-revalidate)', async () => {
 		vi.useFakeTimers();
 
 		mockFetch.mockResolvedValueOnce({
@@ -136,9 +139,45 @@ describe('otpServerCache', () => {
 			headers: new Headers({ 'content-type': 'application/xml' })
 		});
 
+		// SWR: returns immediately with stale 'graphql', background refresh starts
 		await preloadOtpVersion();
+		expect(getOtpApiType()).toBe('graphql');
+
+		// Let the background refresh promise chain flush
+		await Promise.resolve();
+		await Promise.resolve();
+		await Promise.resolve();
+
 		expect(getOtpApiType()).toBe('rest');
 		expect(mockFetch).toHaveBeenCalledTimes(2);
+
+		vi.useRealTimers();
+	});
+
+	it('stale-while-revalidate: does not block handle hook when OTP cache is stale', async () => {
+		vi.useFakeTimers();
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			headers: new Headers({ 'content-type': 'application/json' }),
+			json: async () => ({ version: { major: 2 } })
+		});
+
+		const { preloadOtpVersion, getOtpApiType } = await import('$lib/otpServerCache.js');
+		await preloadOtpVersion();
+		expect(getOtpApiType()).toBe('graphql');
+
+		// Advance past TTL
+		vi.advanceTimersByTime(3600001);
+
+		// Background fetch hangs — verifies we don't block on it
+		mockFetch.mockImplementation(() => new Promise(() => {}));
+
+		// Should return immediately (SWR), not hang
+		await preloadOtpVersion();
+
+		// Stale value still served
+		expect(getOtpApiType()).toBe('graphql');
 
 		vi.useRealTimers();
 	});
@@ -221,10 +260,44 @@ describe('otpServerCache', () => {
 		expect(getOtpApiType()).toBe('rest');
 	});
 
-	it('retries detection after HTTP error on next call (no stale cache)', async () => {
+	it('times out and enters cooldown when OTP server hangs', async () => {
+		vi.useFakeTimers();
+
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+		mockFetch.mockImplementation(
+			(_url, { signal } = {}) =>
+				new Promise((_, reject) => {
+					signal?.addEventListener('abort', () =>
+						reject(new DOMException('signal aborted', 'AbortError'))
+					);
+				})
+		);
+
+		const { preloadOtpVersion, getOtpApiType } = await import('$lib/otpServerCache.js');
+
+		const p = preloadOtpVersion();
+
+		await vi.advanceTimersByTimeAsync(10_000);
+		await p;
+
+		expect(getOtpApiType()).toBeNull();
+
+		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('timed out'));
+
+		await preloadOtpVersion();
+
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+
+		warnSpy.mockRestore();
+		vi.useRealTimers();
+	});
+
+	it('retries detection after ERROR_RETRY_DELAY expires (no stale cache)', async () => {
+		vi.useFakeTimers();
 		vi.spyOn(console, 'error').mockImplementation(() => {});
 
-		// First call: server returns 503
+		// First call: server returns 503 — sets lastErrorTime, enters cooldown
 		mockFetch.mockResolvedValueOnce({
 			ok: false,
 			status: 503,
@@ -235,7 +308,14 @@ describe('otpServerCache', () => {
 		await preloadOtpVersion();
 		expect(getOtpApiType()).toBeNull();
 
-		// Second call: server is back, returns OTP 2.x
+		// Within cooldown: should not retry
+		await preloadOtpVersion();
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+
+		// Advance past ERROR_RETRY_DELAY (30s)
+		vi.advanceTimersByTime(30_001);
+
+		// After cooldown: server is back, returns OTP 2.x
 		mockFetch.mockResolvedValueOnce({
 			ok: true,
 			headers: new Headers({ 'content-type': 'application/json' }),
@@ -247,5 +327,6 @@ describe('otpServerCache', () => {
 		expect(mockFetch).toHaveBeenCalledTimes(2);
 
 		console.error.mockRestore();
+		vi.useRealTimers();
 	});
 });
