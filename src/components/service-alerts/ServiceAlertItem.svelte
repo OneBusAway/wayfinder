@@ -11,7 +11,7 @@
 	role="button"
 	tabindex="0"
 	onclick={() => openModal(alert)}
-	onkeydown={(e) => e.key === 'Enter'}
+	onkeydown={(e) => { if (e.key === 'Enter') openModal(alert); }}
 >
 	<div class="mt-2 flex-shrink">
 		<FontAwesomeIcon
