@@ -158,6 +158,64 @@ describe('PlausibleAnalytics', () => {
 				'Network failure'
 			);
 		});
+
+		it('throws error when name and url is missing', async () => {
+			await expect(analytics.forwardEvent({})).rejects.toThrow(
+				'forwardEvent requires name and url'
+			);
+		});
+	});
+
+	describe('isEnabled guards', () => {
+		let consoleSpy;
+
+		beforeEach(() => {
+			consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
+		});
+
+		afterEach(() => {
+			consoleSpy.mockRestore();
+		});
+
+		it('skips sending an event when analytics is disabled', async () => {
+			mockEnv.PUBLIC_ANALYTICS_ENABLED = 'false';
+
+			const result = await analytics.reportPageView('/test');
+			expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
+			expect(result).toBeUndefined();
+		});
+
+		it('skips sending when analytics is enabled but domain is empty', async () => {
+			mockEnv.PUBLIC_ANALYTICS_DOMAIN = '';
+
+			const result = await analytics.reportPageView('/test');
+			expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
+			expect(result).toBeUndefined();
+		});
+
+		it('skips sending when analytics is enabled but API host is empty', async () => {
+			mockEnv.PUBLIC_ANALYTICS_API_HOST = '';
+
+			const result = await analytics.reportPageView('/test');
+			expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
+			expect(result).toBeUndefined();
+		});
+
+		it('skips sending when domain is undefined', async () => {
+			delete mockEnv.PUBLIC_ANALYTICS_DOMAIN;
+
+			const result = await analytics.reportPageView('/test');
+			expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
+			expect(result).toBeUndefined();
+		});
+
+		it('skips sending when API host is undefined', async () => {
+			delete mockEnv.PUBLIC_ANALYTICS_API_HOST;
+
+			const result = await analytics.reportPageView('/test');
+			expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
+			expect(result).toBeUndefined();
+		});
 	});
 
 	it('sends an event via fetch and returns JSON result (reportPageView)', async () => {
@@ -177,56 +235,6 @@ describe('PlausibleAnalytics', () => {
 				headers: { 'Content-Type': 'application/json' }
 			})
 		);
-	});
-
-	it('skips sending an event when analytics is disabled', async () => {
-		mockEnv.PUBLIC_ANALYTICS_ENABLED = 'false';
-		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
-
-		const result = await analytics.reportPageView('/test');
-		expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
-		expect(result).toBeUndefined();
-		consoleSpy.mockRestore();
-	});
-
-	it('skips sending when analytics is enabled but domain is empty', async () => {
-		mockEnv.PUBLIC_ANALYTICS_DOMAIN = '';
-		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
-
-		const result = await analytics.reportPageView('/test');
-		expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
-		expect(result).toBeUndefined();
-		consoleSpy.mockRestore();
-	});
-
-	it('skips sending when analytics is enabled but API host is empty', async () => {
-		mockEnv.PUBLIC_ANALYTICS_API_HOST = '';
-		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
-
-		const result = await analytics.reportPageView('/test');
-		expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
-		expect(result).toBeUndefined();
-		consoleSpy.mockRestore();
-	});
-
-	it('skips sending when domain is undefined', async () => {
-		delete mockEnv.PUBLIC_ANALYTICS_DOMAIN;
-		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
-
-		const result = await analytics.reportPageView('/test');
-		expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
-		expect(result).toBeUndefined();
-		consoleSpy.mockRestore();
-	});
-
-	it('skips sending when API host is undefined', async () => {
-		delete mockEnv.PUBLIC_ANALYTICS_API_HOST;
-		const consoleSpy = vi.spyOn(console, 'debug').mockImplementation();
-
-		const result = await analytics.reportPageView('/test');
-		expect(consoleSpy).toHaveBeenCalledWith('Analytics disabled: skipping event');
-		expect(result).toBeUndefined();
-		consoleSpy.mockRestore();
 	});
 
 	it('throws an error if fetch response is not ok (reportPageView)', async () => {
