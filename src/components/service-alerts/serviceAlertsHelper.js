@@ -1,7 +1,7 @@
 export function filterActiveAlerts(situations) {
 	const now = Date.now();
 	return situations.filter((situation) =>
-		situation.activeWindows.some((window) => {
+		(situation.activeWindows ?? []).some((window) => {
 			const from = normalizeTimestamp(window.from) || 0;
 			// If no end date provided, default to Infinity.
 			const to = window.to ? normalizeTimestamp(window.to) : Infinity;

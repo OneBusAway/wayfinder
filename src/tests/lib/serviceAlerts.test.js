@@ -37,6 +37,12 @@ describe('filterActiveAlerts', () => {
 		expect(result).toHaveLength(1);
 	});
 
+	it('excludes situations that have no activeWindows field', () => {
+		const situations = [{}];
+		const result = filterActiveAlerts(situations);
+		expect(result).toHaveLength(0);
+	});
+
 	it('returns an empty array when current time is not within any active window', () => {
 		const situations = [
 			{
