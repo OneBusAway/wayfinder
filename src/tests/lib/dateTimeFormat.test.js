@@ -14,6 +14,8 @@ import {
 	convert24HourTo12Hour
 } from '$lib/dateTimeFormat';
 
+const INVALID_INPUTS = [null, undefined, 'invalid', Infinity, -Infinity, NaN];
+
 describe('msToTimeString', () => {
 	it('handles morning times', () => {
 		const result = msToTimeString(new Date('2024-01-16T09:15:00Z').valueOf());
@@ -53,6 +55,10 @@ describe('msToTimeString', () => {
 		);
 		expect(result).toBe('09:05 AM');
 	});
+
+	it.each(INVALID_INPUTS)(`returns "N/A" when the input is %s`, (input) => {
+		expect(msToTimeString(input)).toBe('N/A');
+	});
 });
 
 describe('msToLocalArrivalDepartureTimeString', () => {
@@ -81,28 +87,12 @@ describe('msToLocalArrivalDepartureTimeString', () => {
 		expect(result).toBe('09:05 AM');
 	});
 
-	it('returns "N/A" when the input is null', () => {
-		expect(msToLocalArrivalDepartureTimeString(null)).toBe('N/A');
-	});
-
-	it('returns "N/A" when the input is undefined', () => {
-		expect(msToLocalArrivalDepartureTimeString(undefined)).toBe('N/A');
-	});
-
-	it('returns "N/A" when the input is NaN', () => {
-		expect(msToLocalArrivalDepartureTimeString('invalid')).toBe('N/A');
+	it.each(INVALID_INPUTS)(`returns "N/A" when the input is %s`, (input) => {
+		expect(msToLocalArrivalDepartureTimeString(input)).toBe('N/A');
 	});
 });
 
 describe('formatSecondsFromMidnight', () => {
-	it('returns a blank string when its input is null', () => {
-		expect(formatSecondsFromMidnight(null)).toBe('');
-	});
-
-	it('returns a blank string when its input is undefined', () => {
-		expect(formatSecondsFromMidnight(undefined)).toBe('');
-	});
-
 	it('converts seconds since midnight to 12-hour time format', () => {
 		expect(formatSecondsFromMidnight(38280)).toBe('10:38 AM'); // 10:38 AM
 		expect(formatSecondsFromMidnight(13080)).toBe('3:38 AM'); // 3:38 AM
@@ -117,6 +107,10 @@ describe('formatSecondsFromMidnight', () => {
 
 	it('handles negative times (before midnight)', () => {
 		expect(formatSecondsFromMidnight(-3600)).toBe('11:00 PM'); // -1 hour -> 11:00 PM previous day
+	});
+
+	it.each(INVALID_INPUTS)('returns a blank string when the input is %s', (input) => {
+		expect(formatSecondsFromMidnight(input)).toBe('');
 	});
 });
 
@@ -169,51 +163,6 @@ describe('parseTimeInput', () => {
 		expect(parseTimeInput('14:00')).toBe('2:00 PM');
 	});
 
-	// Invalid inputs
-	it('returns null for empty string', () => {
-		expect(parseTimeInput('')).toBeNull();
-	});
-
-	it('returns null for null input', () => {
-		expect(parseTimeInput(null)).toBeNull();
-	});
-
-	it('returns null for undefined input', () => {
-		expect(parseTimeInput(undefined)).toBeNull();
-	});
-
-	it('returns null for invalid hour (24:00)', () => {
-		expect(parseTimeInput('24:00')).toBeNull();
-	});
-
-	it('returns null for invalid hour (25:00)', () => {
-		expect(parseTimeInput('25:00')).toBeNull();
-	});
-
-	it('returns null for invalid minutes (12:60)', () => {
-		expect(parseTimeInput('12:60')).toBeNull();
-	});
-
-	it('returns null for negative hour (-01:00)', () => {
-		expect(parseTimeInput('-01:00')).toBeNull();
-	});
-
-	it('returns null for negative minutes (12:-05)', () => {
-		expect(parseTimeInput('12:-05')).toBeNull();
-	});
-
-	it('returns null for malformed string (12)', () => {
-		expect(parseTimeInput('12')).toBeNull();
-	});
-
-	it('returns null for malformed string (12:00:00)', () => {
-		expect(parseTimeInput('12:00:00')).toBeNull();
-	});
-
-	it('returns null for non-numeric values', () => {
-		expect(parseTimeInput('ab:cd')).toBeNull();
-	});
-
 	// Pass-through for already-converted format
 	it('returns existing AM/PM format unchanged', () => {
 		expect(parseTimeInput('2:30 PM')).toBe('2:30 PM');
@@ -222,6 +171,14 @@ describe('parseTimeInput', () => {
 	it('returns existing AM format unchanged', () => {
 		expect(parseTimeInput('9:15 AM')).toBe('9:15 AM');
 	});
+
+	// Invalid inputs
+	it.each([...INVALID_INPUTS, '24:00', '25:00', '12:60', '-01:00', '12:-05', '12:00:00', 'ab:cd'])(
+		'returns null when the input is %s',
+		(input) => {
+			expect(parseTimeInput(input)).toBeNull();
+		}
+	);
 });
 
 describe('parseDateInput', () => {
@@ -247,48 +204,18 @@ describe('parseDateInput', () => {
 	});
 
 	// Invalid inputs
-	it('returns null for empty string', () => {
-		expect(parseDateInput('')).toBeNull();
-	});
-
-	it('returns null for null input', () => {
-		expect(parseDateInput(null)).toBeNull();
-	});
-
-	it('returns null for undefined input', () => {
-		expect(parseDateInput(undefined)).toBeNull();
-	});
-
-	it('returns null for invalid month (2026-13-01)', () => {
-		expect(parseDateInput('2026-13-01')).toBeNull();
-	});
-
-	it('returns null for invalid month (2026-00-01)', () => {
-		expect(parseDateInput('2026-00-01')).toBeNull();
-	});
-
-	it('returns null for invalid day (2026-01-32)', () => {
-		expect(parseDateInput('2026-01-32')).toBeNull();
-	});
-
-	it('returns null for invalid day (2026-01-00)', () => {
-		expect(parseDateInput('2026-01-00')).toBeNull();
-	});
-
-	it('returns null for malformed format (01-14-2026)', () => {
-		expect(parseDateInput('01-14-2026')).toBeNull();
-	});
-
-	it('returns null for incomplete date (2026-01)', () => {
-		expect(parseDateInput('2026-01')).toBeNull();
-	});
-
-	it('returns null for year out of range (1999-01-01)', () => {
-		expect(parseDateInput('1999-01-01')).toBeNull();
-	});
-
-	it('returns null for year out of range (2101-01-01)', () => {
-		expect(parseDateInput('2101-01-01')).toBeNull();
+	it.each([
+		...INVALID_INPUTS,
+		'2026-13-01',
+		'2026-00-01',
+		'2026-01-32',
+		'2026-01-00',
+		'01-14-2026',
+		'2026-01',
+		'1999-01-01',
+		'2101-01-01'
+	])('returns null when the input is %s', (input) => {
+		expect(parseDateInput(input)).toBeNull();
 	});
 });
 
@@ -526,6 +453,11 @@ describe('formatLastUpdated', () => {
 		const result = formatLastUpdated(timestamp, translations);
 		expect(result).toBe('0 sec ago');
 	});
+
+	// Invalid inputs
+	it.each(INVALID_INPUTS)('returns "N/A" when the input is %s', (input) => {
+		expect(formatLastUpdated(input, translations)).toBe('N/A');
+	});
 });
 
 describe('convertToISO8601', () => {
@@ -579,11 +511,12 @@ describe('convert24HourTo12Hour', () => {
 		expect(convert24HourTo12Hour(24)).toBeNull();
 	});
 
-	it('returns null when given a string', () => {
-		expect(convert24HourTo12Hour('invalid')).toBeNull();
+	it('accepts numeric strings as input', () => {
+		expect(convert24HourTo12Hour('14')).toBe(2);
 	});
 
-	it('returns null when given a negative number', () => {
-		expect(convert24HourTo12Hour(-1)).toBeNull();
+	// Invalid inputs
+	it.each([...INVALID_INPUTS, -1])('returns null when the input is %s', (input) => {
+		expect(convert24HourTo12Hour(input)).toBeNull();
 	});
 });
