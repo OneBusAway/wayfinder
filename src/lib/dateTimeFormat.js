@@ -253,7 +253,7 @@ export function convert24HourTo12Hour(hour) {
  * formatTimeForOTP(new Date('2026-01-14T14:30:00'))  // Returns '2:30 PM'
  */
 export function formatTimeForOTP(date) {
-	return localTimeFormat.format(date);
+	return apiTimeFormat.format(date);
 }
 
 /**
