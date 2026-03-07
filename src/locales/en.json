@@ -9,6 +9,8 @@
 	"trip-planner": {
 		"arrive": "Arrive",
 		"depart": "Depart",
+		"today": "Today",
+		"tomorrow": "Tomorrow",
 		"plan_your_trip": "Plan Your Trip",
 		"itinerary": "Itinerary",
 		"duration": "Duration",

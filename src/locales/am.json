@@ -7,6 +7,10 @@
 		"miles": "ማይሎች"
 	},
 	"trip-planner": {
+		"arrive": "መድረስ",
+		"depart": "መነሳት",
+		"today": "ዛሬ",
+		"tomorrow": "ነገ",
 		"plan_your_trip": "ጉዞዎን ያቅዱ",
 		"itinerary": "ጉዞ አይነት",
 		"duration": "ቆይታ ጊዜ",

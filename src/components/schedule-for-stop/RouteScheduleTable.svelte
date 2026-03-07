@@ -1,14 +1,8 @@
 <script>
 	import { t, isLoading } from 'svelte-i18n';
+	import { convert24HourTo12Hour } from '$lib/dateTimeFormat';
 
 	let { schedule } = $props();
-
-	function formatHour(hour) {
-		const hourInt = +hour;
-		if (hourInt === 0) return '12';
-		if (hourInt > 12) return hourInt - 12;
-		return hourInt;
-	}
 
 	function renderScheduleTable(schedule) {
 		const stopTimes = Object.entries(schedule.stopTimes);
@@ -61,7 +55,8 @@
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
 							title="Full Time: {hour}:{extractMinutes(times[0].arrivalTime)}"
 						>
-							{formatHour(hour)} <span class="text-sm text-gray-600 dark:text-gray-100">AM</span>
+							{convert24HourTo12Hour(hour)}
+							<span class="text-sm text-gray-600 dark:text-gray-100">AM</span>
 						</td>
 						<td
 							class="flex items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white"
@@ -95,7 +90,8 @@
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
 							title="Full Time: {hour}:{extractMinutes(times[0].arrivalTime)}"
 						>
-							{formatHour(hour)} <span class="text-sm text-gray-600 dark:text-gray-100">PM</span>
+							{convert24HourTo12Hour(hour)}
+							<span class="text-sm text-gray-600 dark:text-gray-100">PM</span>
 						</td>
 						<td
 							class="flex items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white"

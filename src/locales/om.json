@@ -7,6 +7,10 @@
 		"miles": "maayiliiwwan"
 	},
 	"trip-planner": {
+		"arrive": "Ga'uu",
+		"depart": "Deemu",
+		"today": "Har'a",
+		"tomorrow": "Boor",
 		"plan_your_trip": "Imala Kee Karoorfadhu",
 		"itinerary": "Karoorsa Imala",
 		"duration": "Turtii",

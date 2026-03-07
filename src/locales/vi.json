@@ -7,6 +7,10 @@
 		"miles": "dặm"
 	},
 	"trip-planner": {
+		"arrive": "Đến",
+		"depart": "Khởi hành",
+		"today": "Hôm nay",
+		"tomorrow": "Ngày mai",
 		"plan_your_trip": "Lập kế hoạch hành trình",
 		"itinerary": "Lịch trình",
 		"duration": "Thời gian",

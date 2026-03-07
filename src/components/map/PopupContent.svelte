@@ -1,6 +1,6 @@
 <script>
 	import { t } from 'svelte-i18n';
-	import { formatSecondsFromMidnight } from '$lib/formatters';
+	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
 	let { stopName, arrivalTime, handleStopMarkerSelect } = $props();
 </script>
 

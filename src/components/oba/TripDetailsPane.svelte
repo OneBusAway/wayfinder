@@ -2,7 +2,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { faBus, faLocationDot, faCheck } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { formatSecondsFromMidnight } from '$lib/formatters';
+	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
 
 	/**
 	 * @typedef {Object} Props

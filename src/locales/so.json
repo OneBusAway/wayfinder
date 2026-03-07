@@ -7,6 +7,10 @@
 		"miles": "meyl"
 	},
 	"trip-planner": {
+		"arrive": "Imaansho",
+		"depart": "Bax",
+		"today": "Maanta",
+		"tomorrow": "Berri",
 		"plan_your_trip": "Qorshee safarkaaga",
 		"itinerary": "Jadwalka safarka",
 		"duration": "Mudada",

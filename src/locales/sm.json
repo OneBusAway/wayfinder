@@ -7,6 +7,10 @@
 		"miles": "maila"
 	},
 	"trip-planner": {
+		"arrive": "Taunuu",
+		"depart": "Alu ese",
+		"today": "I le asō",
+		"tomorrow": "Taeao",
 		"plan_your_trip": "Fuafua Lau Malaga",
 		"itinerary": "Lisi o le Malaga",
 		"duration": "Umi o le Taimi",

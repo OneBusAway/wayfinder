@@ -7,6 +7,10 @@
 		"miles": "مایل"
 	},
 	"trip-planner": {
+		"arrive": "رسیدن",
+		"depart": "رفتن",
+		"today": "امروز",
+		"tomorrow": "فردا",
 		"plan_your_trip": "برنامه‌ریزی سفر",
 		"itinerary": "مسیر سفر",
 		"duration": "مدت زمان",

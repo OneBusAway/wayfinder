@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import { convertToISO8601 } from '$lib/dateTimeFormat';
 
 const GRAPHQL_QUERY = `
 query planTrip(
@@ -44,49 +45,6 @@ query planTrip(
     }
   }
 }`;
-
-/**
- * Convert date ("MM-DD-YYYY") + time ("h:mm AM/PM") to OffsetDateTime
- * ("YYYY-MM-DDThh:mm:ss±HH:MM") as required by OTP 2.x GraphQL API.
- *
- * The timezone offset is derived from the server process's locale for the
- * target date, which handles DST transitions correctly. This works when the
- * server runs in the same timezone as the transit agency's service area.
- *
- * @param {string} date - Date in "MM-DD-YYYY" format
- * @param {string} time - Time in "h:mm AM/PM" format
- * @returns {string|null} OffsetDateTime string, or null if time format is invalid
- */
-function convertToISO8601(date, time) {
-	const [month, day, year] = date.split('-');
-
-	const match = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-	if (!match) return null;
-
-	let hours = parseInt(match[1], 10);
-	const minutes = match[2];
-	const period = match[3].toUpperCase();
-
-	if (period === 'AM' && hours === 12) hours = 0;
-	else if (period === 'PM' && hours !== 12) hours += 12;
-
-	// Compute the UTC offset for this specific date/time in the server's timezone.
-	// Using the target date (not "now") ensures DST is handled correctly.
-	const localDate = new Date(
-		parseInt(year),
-		parseInt(month) - 1,
-		parseInt(day),
-		hours,
-		parseInt(minutes)
-	);
-	const offsetMinutes = -localDate.getTimezoneOffset();
-	const sign = offsetMinutes >= 0 ? '+' : '-';
-	const absOffset = Math.abs(offsetMinutes);
-	const offsetH = String(Math.floor(absOffset / 60)).padStart(2, '0');
-	const offsetM = String(absOffset % 60).padStart(2, '0');
-
-	return `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${minutes}:00${sign}${offsetH}:${offsetM}`;
-}
 
 /**
  * Convert comma-separated mode string (e.g. "TRANSIT,WALK") to GraphQL modes input.

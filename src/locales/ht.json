@@ -7,6 +7,10 @@
 		"miles": "mil"
 	},
 	"trip-planner": {
+		"arrive": "Rive",
+		"depart": "Pati",
+		"today": "Jodi a",
+		"tomorrow": "Demen",
 		"plan_your_trip": "Planifye Vwayaj Ou",
 		"itinerary": "Itinerè",
 		"duration": "Dire",

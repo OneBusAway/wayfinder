@@ -7,6 +7,10 @@
 		"miles": "milya"
 	},
 	"trip-planner": {
+		"arrive": "Dumating",
+		"depart": "Umalis",
+		"today": "Ngayon",
+		"tomorrow": "Bukas",
 		"plan_your_trip": "Planuhin ang iyong biyahe",
 		"itinerary": "Itineraryo",
 		"duration": "Tagal",
