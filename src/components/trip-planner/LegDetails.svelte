@@ -19,8 +19,6 @@
 	import { t } from 'svelte-i18n';
 	import { formatDistance } from '$lib/distanceUtils';
 	import { effectiveDistanceUnit } from '$stores/tripOptionsStore';
-	import { adjustColorForDarkMode } from '$lib/colorUtils';
-
 	let { leg, index, expandedSteps, toggleSteps, isLast = false } = $props();
 
 	let isWalking = leg.mode === 'WALK';
@@ -28,7 +26,6 @@
 	// Route color properties (from OTP API)
 	let hasRouteColor = !isWalking && !!leg.routeColor;
 	let routeColorHex = hasRouteColor ? `#${leg.routeColor}` : null;
-	let routeColorDark = hasRouteColor ? adjustColorForDarkMode(routeColorHex) : null;
 	let routeTextColorHex = leg.routeTextColor ? `#${leg.routeTextColor}` : '#ffffff';
 
 	// Get icon and colors based on transport mode
