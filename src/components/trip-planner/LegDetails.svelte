@@ -89,7 +89,6 @@
 		{#if hasRouteColor}
 			<div
 				class="absolute left-[23px] top-12 h-[calc(100%-40px)] w-0.5"
-				style="background-color: {routeColorHex}; --route-line-dark: {routeColorDark}"
 				style:background-color={routeColorHex}
 			></div>
 		{:else}
@@ -105,7 +104,6 @@
 	{#if hasRouteColor}
 		<div
 			class="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full shadow-md ring-4 ring-white dark:ring-gray-900"
-			style="background-color: {routeColorHex}; --route-bg-dark: {routeColorDark}"
 			style:background-color={routeColorHex}
 		>
 			{#if modeConfig.icon}
