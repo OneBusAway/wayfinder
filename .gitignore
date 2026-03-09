@@ -10,6 +10,10 @@ node_modules
 .DS_Store
 Thumbs.db
 
+# Cursor IDE - ignore local settings, allow shared agent configs
+.cursor/settings.json
+.cursor/mcp.json
+
 # Env
 .env
 .env.*
