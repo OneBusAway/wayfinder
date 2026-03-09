@@ -118,7 +118,9 @@
 			}
 
 			const midpoint = calculateMidpoint(orderedStops);
-			mapProvider.flyTo(midpoint.lat, midpoint.lng, 12);
+			if (midpoint) {
+				mapProvider.flyTo(midpoint.lat, midpoint.lon, 12);
+			}
 
 			for (const polylineData of polylinesData) {
 				const shape = polylineData.points;
