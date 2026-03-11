@@ -30,6 +30,7 @@
 	let expandedSteps = $state({});
 	let activeTab = $state(0);
 	let itineraryTabsContainer = $state(null);
+	let prevItinerariesRef = $state(null);
 
 	function toggleSteps(index) {
 		expandedSteps[index] = !expandedSteps[index];
@@ -96,6 +97,16 @@
 			itineraryTabsContainer.addEventListener('wheel', handleWheel, { passive: false });
 		}
 	});
+
+	$effect(() => {
+		// Only reset when itineraries reference changes (completely new trip), not on tab clicks
+		if (itineraries !== prevItinerariesRef && itineraries?.length > 0) {
+			prevItinerariesRef = itineraries;
+			activeTab = 0;
+			drawRoute();
+		}
+	});
+
 	onDestroy(() => {
 		mapProvider.removePinMarker(fromMarker);
 		mapProvider.removePinMarker(toMarker);
