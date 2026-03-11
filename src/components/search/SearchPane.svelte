@@ -20,6 +20,7 @@
 		handleViewAllRoutes,
 		handleStopMarkerSelect,
 		handleTripPlan,
+		clearTripData,
 		cssClasses = '',
 		mapProvider = null,
 		childContent
@@ -322,7 +323,7 @@
 				}}
 				disabled={!mapLoaded}
 			>
-				<TripPlan {mapProvider} {handleTripPlan} />
+				<TripPlan {mapProvider} {handleTripPlan} {clearTripData} />
 			</TabItem>
 		{/if}
 	</Tabs>

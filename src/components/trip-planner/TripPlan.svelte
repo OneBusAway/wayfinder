@@ -20,7 +20,7 @@
 	import { recentTrips } from '$stores/recentTripsStore';
 	import RecentTripsList from './RecentTripsList.svelte';
 
-	let { handleTripPlan, mapProvider } = $props();
+	let { handleTripPlan, mapProvider, clearTripData } = $props();
 
 	let fromPlace = $state('');
 	let toPlace = $state('');
@@ -138,6 +138,7 @@
 			selectedTo = null;
 			mapProvider.removePinMarker(toMarker);
 		}
+		clearTripData();
 	}
 
 	function swapLocations() {
