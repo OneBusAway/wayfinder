@@ -196,6 +196,8 @@
 
 		loading = true;
 		try {
+			mapProvider.clearAllPolylines();
+
 			if (fromMarker) {
 				mapProvider.removePinMarker(fromMarker);
 			}
