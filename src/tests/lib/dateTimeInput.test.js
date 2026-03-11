@@ -22,6 +22,10 @@ describe('getCurrentTimeForInput', () => {
 		vi.useFakeTimers();
 	});
 
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	it('returns current time in HH:MM format', () => {
 		vi.setSystemTime(new Date('2024-01-16T10:30:00Z'));
 		expect(getCurrentTimeForInput()).toBe('10:30');
