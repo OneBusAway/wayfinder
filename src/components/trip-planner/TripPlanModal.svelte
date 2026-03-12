@@ -89,17 +89,13 @@
 	}
 
 	onMount(() => {
-		if (itineraries?.length > 0) {
-			drawRoute();
-		}
-
 		if (browser && itineraryTabsContainer) {
 			itineraryTabsContainer.addEventListener('wheel', handleWheel, { passive: false });
 		}
 	});
 
 	$effect(() => {
-		// Only reset when itineraries reference changes (completely new trip), not on tab clicks
+		// Reset choice to first when itineraries change (new results)
 		if (itineraries !== prevItinerariesRef && itineraries?.length > 0) {
 			prevItinerariesRef = itineraries;
 			activeTab = 0;
