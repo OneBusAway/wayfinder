@@ -212,7 +212,6 @@
 			alert = data;
 			showAlertModal = true;
 		} catch (error) {
-
 			console.error('Error loading alerts:', error);
 		}
 	}
@@ -300,7 +299,7 @@
 				{clearPolylines}
 				{handleTripPlan}
 				{handleStopMarkerSelect}
-				clearTripItineraries={clearTripItineraries}
+				{clearTripItineraries}
 			>
 				{#snippet childContent()}
 					<SurveyLauncher />
