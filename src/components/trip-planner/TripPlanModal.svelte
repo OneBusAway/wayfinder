@@ -30,6 +30,7 @@
 	let expandedSteps = $state({});
 	let activeTab = $state(0);
 	let itineraryTabsContainer = $state(null);
+	let prevItinerariesRef = $state(null);
 
 	function toggleSteps(index) {
 		expandedSteps[index] = !expandedSteps[index];
@@ -88,14 +89,20 @@
 	}
 
 	onMount(() => {
-		if (itineraries?.length > 0) {
-			drawRoute();
-		}
-
 		if (browser && itineraryTabsContainer) {
 			itineraryTabsContainer.addEventListener('wheel', handleWheel, { passive: false });
 		}
 	});
+
+	$effect(() => {
+		// Reset choice to first when itineraries change (new results)
+		if (itineraries !== prevItinerariesRef && itineraries?.length > 0) {
+			prevItinerariesRef = itineraries;
+			activeTab = 0;
+			drawRoute();
+		}
+	});
+
 	onDestroy(() => {
 		mapProvider.removePinMarker(fromMarker);
 		mapProvider.removePinMarker(toMarker);
