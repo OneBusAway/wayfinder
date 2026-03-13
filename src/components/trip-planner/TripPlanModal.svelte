@@ -95,7 +95,7 @@
 	});
 
 	$effect(() => {
-		// Reset choice to first when itineraries change (new results)
+		// Reset choice when itinerary results change
 		if (itineraries !== prevItinerariesRef && itineraries?.length > 0) {
 			prevItinerariesRef = itineraries;
 			activeTab = 0;
@@ -104,9 +104,6 @@
 	});
 
 	onDestroy(() => {
-		mapProvider.removePinMarker(fromMarker);
-		mapProvider.removePinMarker(toMarker);
-
 		if (currPolylines.length > 0) {
 			currPolylines.forEach(async (polyline) => {
 				mapProvider.removePolyline(await polyline);

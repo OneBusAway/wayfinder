@@ -20,7 +20,7 @@
 	import { recentTrips } from '$stores/recentTripsStore';
 	import RecentTripsList from './RecentTripsList.svelte';
 
-	let { handleTripPlan, mapProvider, clearTripData } = $props();
+	let { handleTripPlan, mapProvider, clearTripItineraries } = $props();
 
 	let fromPlace = $state('');
 	let toPlace = $state('');
@@ -138,7 +138,7 @@
 			selectedTo = null;
 			mapProvider.removePinMarker(toMarker);
 		}
-		clearTripData();
+		clearTripItineraries();
 	}
 
 	function swapLocations() {
@@ -219,7 +219,7 @@
 				};
 				handleTripPlan(tripPlanData);
 
-				// Save to recent trips (non-critical side effect)
+				// Save to recent trips
 				try {
 					recentTrips.addTrip({
 						fromPlace,
@@ -243,6 +243,9 @@
 		const { type, lat, lng } = e.detail;
 		const coords = { lat, lng };
 		const label = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+		// Clear Trip Itineraries and recreate marker
+		clearTripItineraries();
 
 		if (type === 'from') {
 			if (fromMarker) {

@@ -20,7 +20,7 @@
 		handleViewAllRoutes,
 		handleStopMarkerSelect,
 		handleTripPlan,
-		clearTripData,
+		clearTripItineraries,
 		cssClasses = '',
 		mapProvider = null,
 		childContent
@@ -35,6 +35,7 @@
 	let mapLoaded = $state(false);
 	let isSurveyAnswered = $state(false);
 	let activeTab = $state('stops');
+	let isContextMenuTrigger = false;
 
 	function handleLocationClick(location) {
 		clearResults();
@@ -183,6 +184,7 @@
 	}
 
 	function handleTabSwitch() {
+		if (isContextMenuTrigger) return;
 		const event = new CustomEvent('tabSwitched');
 		window.dispatchEvent(event);
 	}
@@ -202,10 +204,11 @@
 	}
 
 	async function handleContextMenuTripPlan(e) {
+		isContextMenuTrigger = true;
 		activeTab = 'plan';
-		handlePlanTripTabClick();
 		await tick();
 		window.dispatchEvent(new CustomEvent('setTripPlanLocation', { detail: e.detail }));
+		isContextMenuTrigger = false;
 	}
 
 	onMount(() => {
@@ -323,7 +326,7 @@
 				}}
 				disabled={!mapLoaded}
 			>
-				<TripPlan {mapProvider} {handleTripPlan} {clearTripData} />
+				<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
 			</TabItem>
 		{/if}
 	</Tabs>

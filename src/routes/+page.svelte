@@ -191,11 +191,9 @@
 		selectedRoute = null;
 	}
 
-	function clearTripData() {
+	function clearTripItineraries() {
 		tripItineraries = [];
 		tripPlanError = null;
-		fromMarker = null;
-		toMarker = null;
 		currentModal = null;
 		mapProvider.clearAllPolylines();
 	}
@@ -214,6 +212,7 @@
 			alert = data;
 			showAlertModal = true;
 		} catch (error) {
+
 			console.error('Error loading alerts:', error);
 		}
 	}
@@ -299,9 +298,9 @@
 				{handleRouteSelected}
 				{handleViewAllRoutes}
 				{clearPolylines}
-				{clearTripData}
 				{handleTripPlan}
 				{handleStopMarkerSelect}
+				clearTripItineraries={clearTripItineraries}
 			>
 				{#snippet childContent()}
 					<SurveyLauncher />
