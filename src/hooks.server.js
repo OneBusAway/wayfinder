@@ -1,3 +1,4 @@
+import 'temporal-polyfill/global';
 import { preloadRoutesData } from '$lib/serverCache.js';
 import { preloadOtpVersion } from '$lib/otpServerCache.js';
 

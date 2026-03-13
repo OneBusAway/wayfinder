@@ -39,6 +39,9 @@ export default defineConfig({
 			}
 		},
 		environment: 'jsdom',
+		env: {
+			TZ: 'UTC'
+		},
 		setupFiles: ['./vitest-setup.js'],
 		globals: true
 	}

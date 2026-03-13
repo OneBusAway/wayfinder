@@ -7,6 +7,10 @@
 		"miles": "ម៉ាយល៍"
 	},
 	"trip-planner": {
+		"arrive": "មកដល់",
+		"depart": "ចាកចេញ",
+		"today": "ថ្ងៃនេះ",
+		"tomorrow": "ថ្ងៃស្អែក",
 		"plan_your_trip": "រៀបចំការធ្វើដំណើររបស់អ្នក",
 		"itinerary": "កាលវិភាគធ្វើដំណើរ",
 		"duration": "រយៈពេល",

@@ -6,11 +6,11 @@
 import { OTP_DEFAULTS, OPTIMIZE_TRANSFER_PENALTY } from './constants.js';
 import { formatCoordinates } from './otpUrlBuilder.js';
 import {
-	formatTimeForOTP,
-	formatDateForOTP,
 	parseTimeInput,
-	parseDateInput
-} from './dateTimeFormatters.js';
+	parseDateInput,
+	formatTimeForOTP,
+	formatDateForOTP
+} from '$lib/dateTimeFormat';
 
 /**
  * Creates a structured OTP trip plan request object.

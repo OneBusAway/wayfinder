@@ -7,6 +7,10 @@
 		"miles": "ໄມລ໌"
 	},
 	"trip-planner": {
+		"arrive": "ມາຮອດ",
+		"depart": "ອອກເດີນທາງ",
+		"today": "ມື້ນີ້",
+		"tomorrow": "ມື້ອື່ນ",
 		"plan_your_trip": "ວາງແຜນການເດີນທາງ",
 		"itinerary": "ລາຍການເດີນທາງ",
 		"duration": "ໄລຍະເວລາ",

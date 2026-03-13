@@ -461,6 +461,215 @@ describe('serverCache', () => {
 		});
 	});
 
+	describe('timeout and cooldown behaviour', () => {
+		it('cold-start timeout: resolves without hanging, cache stays null, state is error', async () => {
+			vi.useFakeTimers();
+
+			// Never-resolving fetch simulates a hung OBA server
+			mockAgenciesWithCoverageList.mockImplementation(() => new Promise(() => {}));
+
+			const { preloadRoutesData, getRoutesCache, getCacheState } = await import(
+				'$lib/serverCache.js'
+			);
+
+			const preloadPromise = preloadRoutesData();
+			// Fire the 15-second timeout
+			await vi.advanceTimersByTimeAsync(15_000);
+			await preloadPromise;
+
+			expect(getRoutesCache()).toBeNull();
+			expect(getCacheState()).toBe('error');
+
+			vi.useRealTimers();
+		});
+
+		it('cold-start timeout: no duplicate fetch is started (initializationPromise kept)', async () => {
+			vi.useFakeTimers();
+
+			mockAgenciesWithCoverageList.mockImplementation(() => new Promise(() => {}));
+
+			const { preloadRoutesData, getCacheState } = await import('$lib/serverCache.js');
+
+			// First call times out
+			const p1 = preloadRoutesData();
+			await vi.advanceTimersByTimeAsync(15_000);
+			await p1;
+
+			expect(getCacheState()).toBe('error');
+
+			// Second call within cooldown — should return immediately without a new fetch
+			await preloadRoutesData();
+
+			// The hung mock was only called once (the original cold-start call)
+			expect(mockAgenciesWithCoverageList).toHaveBeenCalledTimes(1);
+
+			vi.useRealTimers();
+		});
+
+		it('error cooldown: logs debug message and returns early within cooldown window', async () => {
+			vi.useFakeTimers();
+			const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+			mockAgenciesWithCoverageList.mockImplementation(() => new Promise(() => {}));
+
+			const { preloadRoutesData } = await import('$lib/serverCache.js');
+
+			// Trigger a timeout so lastErrorTime is set
+			const p1 = preloadRoutesData();
+			await vi.advanceTimersByTimeAsync(15_000);
+			await p1;
+
+			// Within the 30s cooldown window
+			vi.advanceTimersByTime(10_000);
+			await preloadRoutesData();
+
+			expect(debugSpy).toHaveBeenCalledWith(
+				'[serverCache] Within error cooldown — serving without cached data'
+			);
+			expect(mockAgenciesWithCoverageList).toHaveBeenCalledTimes(1);
+
+			debugSpy.mockRestore();
+			vi.useRealTimers();
+		});
+
+		it('stale-while-revalidate: returns immediately with stale data while background refresh runs', async () => {
+			vi.useFakeTimers();
+
+			const { preloadRoutesData, getRoutesCache, getCacheState } = await import(
+				'$lib/serverCache.js'
+			);
+
+			// Populate cache with a successful fetch
+			await preloadRoutesData();
+			expect(getCacheState()).toBe('loaded');
+			const staleRoutes = getRoutesCache();
+			expect(staleRoutes).not.toBeNull();
+
+			// Advance past TTL
+			vi.advanceTimersByTime(3_600_001);
+
+			// Make the background refresh hang so we can verify we didn't block on it
+			mockAgenciesWithCoverageList.mockImplementation(() => new Promise(() => {}));
+
+			// SWR: should return immediately even though background fetch hangs
+			await preloadRoutesData();
+
+			// Stale data is still available
+			expect(getRoutesCache()).toEqual(staleRoutes);
+
+			vi.useRealTimers();
+		});
+
+		it('background fetch resolves after timeout and populates cache', async () => {
+			vi.useFakeTimers();
+
+			let resolveFetch;
+			mockAgenciesWithCoverageList.mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						resolveFetch = resolve;
+					})
+			);
+
+			const { preloadRoutesData, getCacheState, getRoutesCache } = await import(
+				'$lib/serverCache.js'
+			);
+
+			const preloadPromise = preloadRoutesData();
+			// Fire the 15-second cold-start timeout
+			await vi.advanceTimersByTimeAsync(15_000);
+			await preloadPromise;
+
+			expect(getCacheState()).toBe('error');
+			expect(getRoutesCache()).toBeNull();
+
+			// Now let the background fetch complete successfully
+			resolveFetch({ data: { list: mockAgencies } });
+
+			// Flush microtasks so the .then()/.finally() chain runs to completion
+			for (let i = 0; i < 8; i++) await Promise.resolve();
+
+			expect(getCacheState()).toBe('loaded');
+			expect(getRoutesCache()).not.toBeNull();
+
+			vi.useRealTimers();
+		});
+
+		it('second caller returns immediately via timedOut flag while background fetch is in flight', async () => {
+			vi.useFakeTimers();
+
+			let resolveFetch;
+
+			mockAgenciesWithCoverageList.mockImplementation(
+				() =>
+					new Promise((resolve) => {
+						resolveFetch = resolve;
+					})
+			);
+
+			const { preloadRoutesData, getCacheState } = await import('$lib/serverCache.js');
+
+			const p1 = preloadRoutesData();
+
+			await vi.advanceTimersByTimeAsync(15_000);
+			await p1;
+
+			expect(getCacheState()).toBe('error');
+
+			await preloadRoutesData();
+
+			expect(mockAgenciesWithCoverageList).toHaveBeenCalledTimes(1);
+
+			resolveFetch({ data: { list: [] } });
+
+			for (let i = 0; i < 8; i++) {
+				await Promise.resolve();
+			}
+
+			vi.useRealTimers();
+		});
+
+		it('cooldown expiry allows retry after ERROR_RETRY_DELAY', async () => {
+			vi.useFakeTimers();
+			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+			let rejectFetch;
+			mockAgenciesWithCoverageList.mockImplementation(
+				() =>
+					new Promise((_, reject) => {
+						rejectFetch = reject;
+					})
+			);
+
+			const { preloadRoutesData } = await import('$lib/serverCache.js');
+
+			// First call: times out at 15s, sets lastErrorTime
+			const p1 = preloadRoutesData();
+			await vi.advanceTimersByTimeAsync(15_000);
+			await p1;
+
+			// Within cooldown: should not trigger a new fetch
+			await preloadRoutesData();
+			expect(mockAgenciesWithCoverageList).toHaveBeenCalledTimes(1);
+
+			// Clear initializationPromise by letting the background fetch fail
+			rejectFetch(new Error('background failure'));
+			for (let i = 0; i < 4; i++) await Promise.resolve();
+
+			// Advance past ERROR_RETRY_DELAY (30s)
+			vi.advanceTimersByTime(30_001);
+
+			// After cooldown: a new fetch attempt should be made
+			mockAgenciesWithCoverageList.mockResolvedValue({ data: { list: [] } });
+			await preloadRoutesData();
+
+			expect(mockAgenciesWithCoverageList).toHaveBeenCalledTimes(2);
+
+			consoleErrorSpy.mockRestore();
+			vi.useRealTimers();
+		});
+	});
+
 	describe('agency filtering', () => {
 		it('should only fetch routes for filtered agency when PRIVATE_OBA_AGENCY_FILTER is set', async () => {
 			mockEnv.PRIVATE_OBA_AGENCY_FILTER = 'agency1';

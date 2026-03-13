@@ -1,5 +1,5 @@
 <script>
-	import { formatTime } from '$lib/formatters';
+	import { msToTimeString } from '$lib/dateTimeFormat';
 	import { slide } from 'svelte/transition';
 	import {
 		faWalking,
@@ -114,12 +114,12 @@
 			<div class="flex items-center text-gray-600 dark:text-gray-300">
 				<FontAwesomeIcon icon={faClock} class="mr-1.5 h-3 w-3 text-blue-500" />
 				<span>{$t('trip-planner.start')}:</span>
-				<span class="ml-1 font-semibold">{formatTime(leg.startTime)}</span>
+				<span class="ml-1 font-semibold">{msToTimeString(leg.startTime)}</span>
 			</div>
 			<div class="flex items-center text-gray-600 dark:text-gray-300">
 				<FontAwesomeIcon icon={faClock} class="mr-1.5 h-3 w-3 text-red-500" />
 				<span>{$t('trip-planner.end')}:</span>
-				<span class="ml-1 font-semibold">{formatTime(leg.endTime)}</span>
+				<span class="ml-1 font-semibold">{msToTimeString(leg.endTime)}</span>
 			</div>
 		</div>
 

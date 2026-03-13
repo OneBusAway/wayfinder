@@ -7,6 +7,10 @@
 		"miles": "ማይላት"
 	},
 	"trip-planner": {
+		"arrive": "ብፃሕ",
+		"depart": "ይብገሱ",
+		"today": "ሎምዓንቲ",
+		"tomorrow": "ፅባሕ",
 		"plan_your_trip": "መገሻኻ ውጠን",
 		"itinerary": "መስመር መገሻ",
 		"duration": "ንውሓት ግዜ",

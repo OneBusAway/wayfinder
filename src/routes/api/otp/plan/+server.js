@@ -1,13 +1,7 @@
 import { error, json } from '@sveltejs/kit';
-import { PUBLIC_OTP_SERVER_URL } from '$env/static/public';
-import {
-	buildGraphQLQueryBody,
-	formatTimeForOTP,
-	formatDateForOTP,
-	mapGraphQLResponse,
-	getOtpApiType,
-	OTP_DEFAULTS
-} from '$lib/otp';
+import { env } from '$env/dynamic/public';
+import { buildGraphQLQueryBody, mapGraphQLResponse, getOtpApiType, OTP_DEFAULTS } from '$lib/otp';
+import { formatTimeForOTP, formatDateForOTP } from '$lib/dateTimeFormat';
 
 /**
  * Fetch trip plan from OTP 1.x REST API.
@@ -16,7 +10,7 @@ import {
  */
 async function fetchREST(params) {
 	const searchParams = new URLSearchParams(params);
-	const otpUrl = `${PUBLIC_OTP_SERVER_URL}/routers/default/plan?${searchParams}`;
+	const otpUrl = `${env.PUBLIC_OTP_SERVER_URL}/routers/default/plan?${searchParams}`;
 
 	const response = await fetch(otpUrl, {
 		headers: { Accept: 'application/json' }
@@ -36,7 +30,7 @@ async function fetchREST(params) {
  * @throws {HttpError} SvelteKit HttpError on non-2xx responses
  */
 async function fetchGraphQL(params) {
-	const graphqlUrl = `${PUBLIC_OTP_SERVER_URL}/gtfs/v1`;
+	const graphqlUrl = `${env.PUBLIC_OTP_SERVER_URL}/gtfs/v1`;
 
 	const response = await fetch(graphqlUrl, {
 		method: 'POST',
@@ -98,7 +92,7 @@ export async function GET({ url }) {
 		throw error(400, 'Missing required parameters: fromPlace and toPlace');
 	}
 
-	if (!PUBLIC_OTP_SERVER_URL) {
+	if (!env.PUBLIC_OTP_SERVER_URL) {
 		throw error(503, 'Trip planning is not configured for this region');
 	}
 

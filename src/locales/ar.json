@@ -7,6 +7,10 @@
 		"miles": "أميال"
 	},
 	"trip-planner": {
+		"arrive": "يصل",
+		"depart": "مغادرة",
+		"today": "اليوم",
+		"tomorrow": "غداً",
 		"plan_your_trip": "خطط رحلتك",
 		"itinerary": "مسار الرحلة",
 		"duration": "المدة",

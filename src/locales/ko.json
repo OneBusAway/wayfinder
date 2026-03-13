@@ -7,6 +7,10 @@
 		"miles": "마일"
 	},
 	"trip-planner": {
+		"arrive": "도착하다",
+		"depart": "출발하다",
+		"today": "오늘",
+		"tomorrow": "내일",
 		"plan_your_trip": "여행 계획하기",
 		"itinerary": "여정",
 		"duration": "소요 시간",

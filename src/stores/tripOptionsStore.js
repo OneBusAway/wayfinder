@@ -1,6 +1,5 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
-import { parseTimeInput } from '$lib/otp';
 import {
 	resolveDistanceUnit,
 	getWalkDistanceOptions,
@@ -145,49 +144,4 @@ export function formatWalkDistance(meters, unit) {
 	// For backwards compatibility, if unit is not provided, use imperial (original behavior)
 	const effectiveUnit = unit || UNIT_IMPERIAL;
 	return formatWalkDistanceLabel(meters, effectiveUnit);
-}
-
-// Helper to format departure time for pill display
-// Accepts an optional translator function for i18n support
-export function formatDepartureDisplay(opts, translator = null) {
-	if (opts.departureType === 'now') return null;
-
-	const timeStr = opts.departureTime || '';
-	const dateStr = opts.departureDate || '';
-
-	// Use translator if provided, otherwise fall back to English
-	const prefix =
-		opts.departureType === 'arriveBy'
-			? translator
-				? translator('trip-planner.arrive')
-				: 'Arrive'
-			: translator
-				? translator('trip-planner.depart')
-				: 'Depart';
-
-	if (timeStr) {
-		const formattedTime = parseTimeInput(timeStr);
-		if (!formattedTime) return prefix;
-
-		let dateSuffix = '';
-		if (dateStr) {
-			const today = new Date();
-			const tomorrow = new Date();
-			tomorrow.setDate(today.getDate() + 1);
-
-			const toYMD = (d) => d.toISOString().split('T')[0];
-
-			if (dateStr === toYMD(today)) {
-				dateSuffix = ', Today';
-			} else if (dateStr === toYMD(tomorrow)) {
-				dateSuffix = ', Tomorrow';
-			} else {
-				dateSuffix = `, ${dateStr}`;
-			}
-		}
-
-		return `${prefix} ${formattedTime}${dateSuffix}`;
-	}
-
-	return prefix;
 }

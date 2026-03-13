@@ -3,7 +3,7 @@
 	import RouteScheduleTable from '$components/schedule-for-stop/RouteScheduleTable.svelte';
 	import StopPageHeader from '$components/stops/StopPageHeader.svelte';
 	import StandalonePage from '$components/StandalonePage.svelte';
-	import { formatTime } from '$lib/formatters.js';
+	import { msToTimeString } from '$lib/dateTimeFormat.js';
 	import Accordion from '$components/containers/Accordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import { Datepicker } from 'flowbite-svelte';
@@ -97,7 +97,7 @@
 			const hour = date.getHours();
 			if (!grouped[hour]) grouped[hour] = [];
 			grouped[hour].push({
-				arrivalTime: formatTime(stopTime.arrivalTime)
+				arrivalTime: msToTimeString(stopTime.arrivalTime)
 			});
 		}
 		return grouped;

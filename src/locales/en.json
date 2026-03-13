@@ -9,6 +9,8 @@
 	"trip-planner": {
 		"arrive": "Arrive",
 		"depart": "Depart",
+		"today": "Today",
+		"tomorrow": "Tomorrow",
 		"plan_your_trip": "Plan Your Trip",
 		"itinerary": "Itinerary",
 		"duration": "Duration",
@@ -49,7 +51,10 @@
 		"unit_metric": "Metric (km, m)",
 		"unit_imperial": "Imperial (mi, ft)",
 		"swap_locations": "Swap From and To locations",
-		"error_code": "Error code"
+		"error_code": "Error code",
+		"remove_recent_trip": "Remove recent trip",
+		"recent_searches": "Recent Searches",
+		"clear_all": "Clear All"
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",

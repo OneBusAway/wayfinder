@@ -7,6 +7,10 @@
 		"miles": "マイル"
 	},
 	"trip-planner": {
+		"arrive": "到着",
+		"depart": "出発",
+		"today": "今日",
+		"tomorrow": "明日",
 		"plan_your_trip": "旅程を計画する",
 		"itinerary": "旅程",
 		"duration": "所要時間",
