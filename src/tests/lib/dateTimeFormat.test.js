@@ -552,6 +552,22 @@ describe('convertToISO8601', () => {
 	it('returns null for an invalid date format', () => {
 		expect(convertToISO8601('011-14-2026', '09:00 AM')).toBeNull();
 	});
+
+	it('returns null when date is null', () => {
+		expect(convertToISO8601(null, '9:00 AM')).toBeNull();
+	});
+
+	it('returns null when time is null', () => {
+		expect(convertToISO8601('01-14-2026', null)).toBeNull();
+	});
+
+	it('returns null when date is undefined', () => {
+		expect(convertToISO8601(undefined, '9:00 AM')).toBeNull();
+	});
+
+	it('returns null when time is undefined', () => {
+		expect(convertToISO8601('01-14-2026', undefined)).toBeNull();
+	});
 });
 
 describe('convert24HourTo12Hour', () => {
