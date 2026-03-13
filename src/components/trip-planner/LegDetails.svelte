@@ -19,14 +19,15 @@
 	import { t } from 'svelte-i18n';
 	import { formatDistance } from '$lib/distanceUtils';
 	import { effectiveDistanceUnit } from '$stores/tripOptionsStore';
+
 	let { leg, index, expandedSteps, toggleSteps, isLast = false } = $props();
 
-	let isWalking = leg.mode === 'WALK';
+	let isWalking = $derived(leg.mode === 'WALK');
 
 	// Route color properties (from OTP API)
-	let hasRouteColor = !isWalking && !!leg.routeColor;
-	let routeColorHex = hasRouteColor ? `#${leg.routeColor}` : null;
-	let routeTextColorHex = leg.routeTextColor ? `#${leg.routeTextColor}` : '#ffffff';
+	let hasRouteColor = $derived(!isWalking && !!leg.routeColor);
+	let routeColorHex = $derived(hasRouteColor ? `#${leg.routeColor}` : null);
+	let routeTextColorHex = $derived(leg.routeTextColor ? `#${leg.routeTextColor}` : '#ffffff');
 
 	// Get icon and colors based on transport mode
 	function getModeConfig(mode) {
@@ -78,68 +79,68 @@
 	}
 
 	let modeConfig = $derived(getModeConfig(leg.mode));
+
+	// Computed style/class pairs to avoid template duplication
+	let colorStyles = $derived.by(() => {
+		if (hasRouteColor) {
+			return {
+				timelineClass: '',
+				timelineStyle: `background-color: ${routeColorHex}`,
+				iconClass: '',
+				iconStyle: `background-color: ${routeColorHex}`,
+				iconColor: routeTextColorHex,
+				iconColorClass: '',
+				badgeClass: 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold shadow-sm',
+				badgeStyle: `background-color: ${routeColorHex}; color: ${routeTextColorHex}`
+			};
+		}
+		return {
+			timelineClass: isWalking
+				? 'border-l-2 border-dashed border-gray-300 dark:border-gray-600'
+				: 'bg-brand',
+			timelineStyle: '',
+			iconClass: modeConfig.bgColor,
+			iconStyle: '',
+			iconColor: '',
+			iconColorClass: modeConfig.iconColor,
+			badgeClass:
+				'inline-flex items-center rounded-full bg-brand-accent px-2.5 py-0.5 text-xs font-bold text-white shadow-sm',
+			badgeStyle: ''
+		};
+	});
 </script>
 
 <div class="relative flex items-start {isLast ? 'pb-2' : 'pb-6'}">
 	<!-- Timeline line -->
 	{#if !isLast}
-		{#if hasRouteColor}
-			<div
-				class="absolute left-[23px] top-12 h-[calc(100%-40px)] w-0.5"
-				style:background-color={routeColorHex}
-			></div>
-		{:else}
-			<div
-				class="absolute left-[23px] top-12 h-[calc(100%-40px)] w-0.5 {isWalking
-					? 'border-l-2 border-dashed border-gray-300 dark:border-gray-600'
-					: 'bg-brand'}"
-			></div>
-		{/if}
+		<div
+			class="absolute left-[23px] top-12 h-[calc(100%-40px)] w-0.5 {colorStyles.timelineClass}"
+			style={colorStyles.timelineStyle}
+		></div>
 	{/if}
 
 	<!-- Icon circle -->
-	{#if hasRouteColor}
-		<div
-			class="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full shadow-md ring-4 ring-white dark:ring-gray-900"
-			style:background-color={routeColorHex}
-		>
-			{#if modeConfig.icon}
-				<FontAwesomeIcon
-					icon={modeConfig.icon}
-					class="text-lg"
-					style="color: {routeTextColorHex}"
-				/>
-			{/if}
-		</div>
-	{:else}
-		<div
-			class="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full shadow-md ring-4 ring-white dark:ring-gray-900 {modeConfig.bgColor}"
-		>
-			{#if modeConfig.icon}
-				<FontAwesomeIcon icon={modeConfig.icon} class="{modeConfig.iconColor} text-lg" />
-			{/if}
-		</div>
-	{/if}
+	<div
+		class="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full shadow-md ring-4 ring-white dark:ring-gray-900 {colorStyles.iconClass}"
+		style={colorStyles.iconStyle}
+	>
+		{#if modeConfig.icon}
+			<FontAwesomeIcon
+				icon={modeConfig.icon}
+				class="{colorStyles.iconColorClass} text-lg"
+				style={colorStyles.iconColor ? `color: ${colorStyles.iconColor}` : ''}
+			/>
+		{/if}
+	</div>
 
 	<!-- Content -->
 	<div class="ml-4 flex-1 pt-1">
 		<!-- Header: Headsign + route badge -->
 		<div class="flex flex-wrap items-center gap-2">
 			{#if !isWalking && leg.routeShortName}
-				{#if hasRouteColor}
-					<span
-						class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold shadow-sm"
-						style="background-color: {routeColorHex}; color: {routeTextColorHex}"
-					>
-						{leg.routeShortName}
-					</span>
-				{:else}
-					<span
-						class="inline-flex items-center rounded-full bg-brand-accent px-2.5 py-0.5 text-xs font-bold text-white shadow-sm"
-					>
-						{leg.routeShortName}
-					</span>
-				{/if}
+				<span class={colorStyles.badgeClass} style={colorStyles.badgeStyle}>
+					{leg.routeShortName}
+				</span>
 			{/if}
 			<span class="font-semibold text-gray-900 dark:text-white">{leg.headsign}</span>
 		</div>

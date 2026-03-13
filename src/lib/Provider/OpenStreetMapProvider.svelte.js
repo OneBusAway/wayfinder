@@ -454,7 +454,7 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 	}
 
-	createPolyline(points, options = { withArrow: true }) {
+	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
 
 		const decodedPolyline = PolylineUtil.decode(points);
@@ -462,6 +462,8 @@ export default class OpenStreetMapProvider {
 			console.error('Failed to decode polyline:', points);
 			return null;
 		}
+
+		const withArrow = options.withArrow ?? true;
 
 		const polylineOpts = {
 			color: options.color || COLORS.POLYLINE,
@@ -475,7 +477,7 @@ export default class OpenStreetMapProvider {
 
 		this.polylines.push(polyline);
 
-		if (!options.withArrow) return polyline;
+		if (!withArrow) return polyline;
 
 		const arrowDecorator = this.L.polylineDecorator(polyline, {
 			patterns: [

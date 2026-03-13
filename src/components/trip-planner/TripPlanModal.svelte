@@ -78,7 +78,7 @@
 		itineraries[activeTab].legs.forEach((leg) => {
 			const shape = leg.legGeometry.points;
 			const style = getLegPolylineStyle(leg);
-			const polyline = mapProvider.createPolyline(shape, style, true);
+			const polyline = mapProvider.createPolyline(shape, style);
 			currPolylines.push(polyline);
 		});
 	}
