@@ -54,7 +54,7 @@ export function msToTimeString(
 	timeZone = getLocalTimeZone(),
 	dateTimeFormat = localTimeFormat
 ) {
-	if (ms === null || ms === undefined || isNaN(ms)) return 'N/A';
+	if (!Number.isFinite(ms)) return 'N/A';
 	const instant = Temporal.Instant.fromEpochMilliseconds(ms);
 	const plainTime = instant.toZonedDateTimeISO(timeZone).toPlainTime();
 	return dateTimeFormat.format(plainTime);
@@ -85,7 +85,7 @@ export function msToLocalArrivalDepartureTimeString(ms) {
  * formatSecondsFromMidnight(38280)  // Returns '10:38 AM'
  */
 export function formatSecondsFromMidnight(secondsSinceMidnight) {
-	if (secondsSinceMidnight === null || secondsSinceMidnight === undefined) return '';
+	if (!Number.isFinite(secondsSinceMidnight)) return '';
 
 	const midnight = new Temporal.PlainTime();
 	const time = midnight.add({ seconds: secondsSinceMidnight });
@@ -235,12 +235,12 @@ export function parseDateInput(dateString) {
  * convert24HourTo12Hour(23)  // Returns 11
  */
 export function convert24HourTo12Hour(hour) {
-	const hourInt = +hour;
-	if (isNaN(hourInt)) return null;
-	if (hourInt < 0 || hourInt > 23) return null;
-	if (hourInt === 0) return 12;
-	if (hourInt > 12) return hourInt - 12;
-	return hourInt;
+	const hourNum = typeof hour === 'string' ? Number(hour) : hour;
+	if (!Number.isFinite(hourNum)) return null;
+	if (hourNum < 0 || hourNum > 23) return null;
+	if (hourNum === 0) return 12;
+	if (hourNum > 12) return hourNum - 12;
+	return hourNum;
 }
 
 /**
@@ -286,6 +286,7 @@ export function formatDateForOTP(date) {
  * formatLastUpdated(1715894400000, { min: 'minute', sec: 'second', ago: 'ago' })  // Returns '1 minute 30 seconds ago'
  */
 export function formatLastUpdated(timestamp, translations) {
+	if (!Number.isFinite(timestamp)) return 'N/A';
 	const date = Temporal.Instant.fromEpochMilliseconds(timestamp);
 	const now = Temporal.Now.instant();
 	const { minutes, seconds } = now.since(date).round({ largestUnit: 'minute' });
