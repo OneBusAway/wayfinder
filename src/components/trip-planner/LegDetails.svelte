@@ -90,7 +90,8 @@
 				iconStyle: `background-color: ${routeColorHex}`,
 				iconColor: routeTextColorHex,
 				iconColorClass: '',
-				badgeClass: 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold shadow-sm',
+				badgeClass:
+					'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold shadow-sm',
 				badgeStyle: `background-color: ${routeColorHex}; color: ${routeTextColorHex}`
 			};
 		}
