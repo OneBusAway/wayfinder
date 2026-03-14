@@ -12,8 +12,6 @@
 	 * @property {any} mapProvider
 	 * @property {any} [itineraries]
 	 * @property {boolean} [loading]
-	 * @property {any} [fromMarker]
-	 * @property {any} [toMarker]
 	 */
 
 	/** @type {Props} */
@@ -22,8 +20,6 @@
 		itineraries = [],
 		error = null,
 		loading = false,
-		fromMarker = null,
-		toMarker = null,
 		closePane
 	} = $props();
 
