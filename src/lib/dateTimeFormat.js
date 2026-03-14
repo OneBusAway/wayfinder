@@ -45,8 +45,8 @@ export const apiTimeFormat = new Intl.DateTimeFormat('en-US', {
  * msToTimeString(1705395900000, 'America/New_York', fourDigitTimeFormat)  // Returns '04:05 AM'
  *
  * @param {number} ms - Milliseconds since Unix epoch
- * @param {string|null} timeZone - Time zone to convert to
- * @param {Intl.DateTimeFormat|null} dateTimeFormat - Intl.DateTimeFormat to use for formatting
+ * @param {string} timeZone - Time zone to convert to
+ * @param {Intl.DateTimeFormat} dateTimeFormat - Intl.DateTimeFormat to use for formatting
  * @returns {string} Time in the given format
  */
 export function msToTimeString(
@@ -97,15 +97,15 @@ export function formatSecondsFromMidnight(secondsSinceMidnight) {
  * Helper to format departure time for pill display
  * Accepts an optional translator function for i18n support
  * @param {Object} opts - Options object containing departureType, departureTime, and departureDate
- * @param {Object} [opts.departureType] - Departure type ('departAt' | 'arriveBy' | 'now')
+ * @param {string} [opts.departureType] - Departure type ('departAt' | 'arriveBy' | 'now')
  * @param {string} [opts.departureTime] - Departure time in 'HH:mm' format
  * @param {string} [opts.departureDate] - Departure date in 'YYYY-MM-DD' format
  * @param {Function} [translator] - Optional translator function for i18n support
- * @returns {string} Formatted departure time string
+ * @returns {string|null} Formatted departure time string, or null if departureType is 'now'
  *
  * @example
  * formatDepartureDisplay({ departureType: 'departAt', departureTime: '09:00', departureDate: null })  // Returns 'Depart 9:00 AM'
- * formatDepartureDisplay({ departureType: 'arriveBy', departureTime: '17:00', departureDate: '2025-06-15' }, translator)  // Returns 'Arrive 5:00 PM, Today'
+ * formatDepartureDisplay({ departureType: 'arriveBy', departureTime: '17:00', departureDate: '2025-06-15' }, translator)  // Returns 'Arrive 5:00 PM, Today' (assuming today is 2025-06-15)
  */
 export function formatDepartureDisplay(opts, translator = null) {
 	if (opts.departureType === 'now') return null;
@@ -223,7 +223,7 @@ export function parseDateInput(dateString) {
 }
 
 /**
- * Format an 24-hour hour to 12-hour format
+ * Format a 24-hour hour to 12-hour format
  *
  * @param {number} hour - Hour in 24-hour format
  * @returns {number|null} Hour in 12-hour format, or null if invalid
@@ -283,7 +283,7 @@ export function formatDateForOTP(date) {
  * @example
  * Note: The actual output of these examples depends on the current time
  * formatLastUpdated(1715894400000, { min: 'min', sec: 'sec', ago: 'ago' })  // Returns '1 min 30 sec ago'
- * formatLastUpdated(1715894400000, { min: 'minute', sec: 'second', ago: 'ago' })  // Returns '1 minute 30 seconds ago'
+ * formatLastUpdated(1715894400000, { min: 'minute', sec: 'second', ago: 'ago' })  // Returns '1 minute 30 second ago'
  */
 export function formatLastUpdated(timestamp, translations) {
 	if (!Number.isFinite(timestamp)) return 'N/A';
