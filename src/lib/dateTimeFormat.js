@@ -308,6 +308,9 @@ export function formatLastUpdated(timestamp, translations) {
  * @returns {string|null} OffsetDateTime string, or null if time or date format is invalid
  */
 export function convertToISO8601(date, time) {
+	if (!date || typeof date !== 'string') return null;
+	if (!time || typeof time !== 'string') return null;
+
 	const dateMatch = date.match(/^(\d{2})-(\d{2})-(\d{4})$/);
 	if (!dateMatch) return null;
 
