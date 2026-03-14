@@ -89,8 +89,11 @@ function getSeverityLevel(alert) {
 	return alert.severityLevel;
 }
 
-function isStartDateWithin24Hours(alert) {
+export function isStartDateWithin24Hours(alert) {
+	if (!alert) return false;
+	if (!alert.activePeriod || alert.activePeriod.length === 0) return false;
 	const startDate = alert.activePeriod[0].start;
+	if (!startDate) return false;
 	const now = Date.now() / 1000;
 	return startDate <= now && startDate >= now - 24 * 60 * 60;
 }

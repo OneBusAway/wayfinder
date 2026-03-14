@@ -37,7 +37,7 @@ vi.mock('gtfs-realtime-bindings', () => ({
 	}
 }));
 
-import { GET } from '../../routes/api/oba/alerts/+server.js';
+import { GET, isStartDateWithin24Hours } from '../../routes/api/oba/alerts/+server.js';
 
 describe('GET /api/oba/alerts', () => {
 	beforeEach(() => {
@@ -62,5 +62,37 @@ describe('GET /api/oba/alerts', () => {
 		const response = await GET();
 
 		expect(response.status).toBe(204);
+	});
+});
+
+describe('isStartDateWithin24Hours', () => {
+	it('returns false when alert is null', () => {
+		expect(isStartDateWithin24Hours(null)).toBe(false);
+	});
+
+	it('returns false when alert is undefined', () => {
+		expect(isStartDateWithin24Hours(undefined)).toBe(false);
+	});
+
+	it('returns false when activePeriod is an empty array', () => {
+		expect(isStartDateWithin24Hours({ activePeriod: [] })).toBe(false);
+	});
+
+	it('returns false when activePeriod is undefined', () => {
+		expect(isStartDateWithin24Hours({ activePeriod: undefined })).toBe(false);
+	});
+
+	it('returns false when activePeriod is null', () => {
+		expect(isStartDateWithin24Hours({ activePeriod: null })).toBe(false);
+	});
+
+	it('returns false when activePeriod[0].start is undefined', () => {
+		expect(isStartDateWithin24Hours({ activePeriod: [{}] })).toBe(false);
+	});
+
+	it('returns true when start is within the last 24 hours', () => {
+		const nowSeconds = Math.floor(Date.now() / 1000);
+		const oneHourAgo = nowSeconds - 60 * 60;
+		expect(isStartDateWithin24Hours({ activePeriod: [{ start: oneHourAgo }] })).toBe(true);
 	});
 });
