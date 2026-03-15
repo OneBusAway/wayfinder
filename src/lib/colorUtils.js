@@ -10,6 +10,7 @@
  * @returns {{r: number, g: number, b: number} | null} RGB object or null if invalid
  */
 export function hexToRgb(hex) {
+	if (!hex || typeof hex !== 'string') return null;
 	hex = hex.replace(/^#/, '');
 	// Expand 3-digit hex to 6-digit
 	if (hex.length === 3) {
@@ -21,10 +22,10 @@ export function hexToRgb(hex) {
 	const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	return result
 		? {
-				r: parseInt(result[1], 16),
-				g: parseInt(result[2], 16),
-				b: parseInt(result[3], 16)
-			}
+			r: parseInt(result[1], 16),
+			g: parseInt(result[2], 16),
+			b: parseInt(result[3], 16)
+		}
 		: null;
 }
 
@@ -141,6 +142,7 @@ export function lightenColor(hexColor, amount) {
  * @returns {number} Brightness value (0-255)
  */
 export function getBrightness(rgb) {
+	if (!rgb) return 0;
 	// Standard luminance formula
 	return 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
 }
