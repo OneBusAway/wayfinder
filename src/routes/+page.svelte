@@ -109,6 +109,7 @@
 		const customEvent = new CustomEvent('routeSelectedFromModal', {
 			detail: { route }
 		});
+
 		window.dispatchEvent(customEvent);
 		currentModal = null;
 		isRouteSelected = true;
@@ -124,6 +125,7 @@
 			clearInterval(currentIntervalId);
 			currentIntervalId = null;
 		}
+
 		mapProvider.unHighlightMarker(currentHighlightedStopId);
 		stop = null;
 		selectedTrip = null;
@@ -189,6 +191,13 @@
 		selectedRoute = null;
 	}
 
+	function clearTripItineraries() {
+		tripItineraries = [];
+		tripPlanError = null;
+		currentModal = null;
+		mapProvider.clearAllPolylines();
+	}
+
 	async function loadAlerts() {
 		try {
 			const response = await fetch('/api/oba/alerts');
@@ -206,6 +215,7 @@
 			console.error('Error loading alerts:', error);
 		}
 	}
+
 	/**
 	 *
 	 * @param {Object} tripPlanData - The data returned from the trip planning API.
@@ -289,6 +299,7 @@
 				{clearPolylines}
 				{handleTripPlan}
 				{handleStopMarkerSelect}
+				{clearTripItineraries}
 			>
 				{#snippet childContent()}
 					<SurveyLauncher />
