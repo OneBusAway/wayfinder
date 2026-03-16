@@ -53,7 +53,7 @@
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-900">
 						<td
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
-							title="Full Time: {hour}:{extractMinutes(times[0].arrivalTime)}"
+							title="Full Time: {hour}:{times[0]?.arrivalTime ? extractMinutes(times[0].arrivalTime) : ''}"
 						>
 							{convert24HourTo12Hour(hour)}
 							<span class="text-sm text-gray-600 dark:text-gray-100">AM</span>
@@ -88,7 +88,7 @@
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
 						<td
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
-							title="Full Time: {hour}:{extractMinutes(times[0].arrivalTime)}"
+							title="Full Time: {hour}:{times[0]?.arrivalTime ? extractMinutes(times[0].arrivalTime) : ''}"
 						>
 							{convert24HourTo12Hour(hour)}
 							<span class="text-sm text-gray-600 dark:text-gray-100">PM</span>
