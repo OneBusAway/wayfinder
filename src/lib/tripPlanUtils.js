@@ -47,3 +47,19 @@ export function swapTripLocations({
 		toMarker: newToMarker
 	};
 }
+
+/**
+ * Determines if there is a stay-seated interline transition between two legs.
+ * The transition occurs when a passenger stays on the same BUS vehicle
+ * while it continues under a different route.
+ *
+ * @param {Array} legs - The array of all legs in the trip
+ * @param {number} index - The index of the current leg to check
+ * @returns {boolean} True if the next leg is a stay-seated interline transition
+ */
+export function isStaySeatedTransition(legs, index) {
+	const prev = legs[index];
+	const next = legs[index + 1];
+
+	return prev?.mode === 'BUS' && next?.mode === 'BUS' && next?.interlineWithPreviousLeg === true;
+}

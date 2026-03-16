@@ -42,6 +42,7 @@
 		<LegDetails
 			{leg}
 			{index}
+			legs={itinerary.legs}
 			{expandedSteps}
 			{toggleSteps}
 			isLast={index === itinerary.legs.length - 1}
