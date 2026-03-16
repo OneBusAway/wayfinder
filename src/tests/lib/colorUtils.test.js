@@ -124,8 +124,8 @@ describe('colorUtils', () => {
 		let consoleErrorSpy;
 
 		beforeEach(() => {
-			consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
-			consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+			consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 		});
 
 		afterEach(() => {
