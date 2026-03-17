@@ -11,7 +11,9 @@
 	 * @typedef {Object} Props
 	 * @property {any} mapProvider
 	 * @property {any} [itineraries]
+	 * @property {any} [error]
 	 * @property {boolean} [loading]
+	 * @property {Function} closePane
 	 */
 
 	/** @type {Props} */
