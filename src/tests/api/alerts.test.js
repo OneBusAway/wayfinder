@@ -95,4 +95,21 @@ describe('isStartDateWithin24Hours', () => {
 		const oneHourAgo = nowSeconds - 60 * 60;
 		expect(isStartDateWithin24Hours({ activePeriod: [{ start: oneHourAgo }] })).toBe(true);
 	});
+
+	it('returns false when start is in the future', () => {
+		const nowSeconds = Math.floor(Date.now() / 1000);
+		const oneHourFromNow = nowSeconds + 60 * 60;
+		expect(isStartDateWithin24Hours({ activePeriod: [{ start: oneHourFromNow }] })).toBe(false);
+	});
+
+	it('returns false when start is more than 24 hours ago', () => {
+		const nowSeconds = Math.floor(Date.now() / 1000);
+		const twentyFiveHoursAgo = nowSeconds - 25 * 60 * 60;
+		expect(isStartDateWithin24Hours({ activePeriod: [{ start: twentyFiveHoursAgo }] })).toBe(false);
+	});
+
+	it('returns true when start is exactly now', () => {
+		const nowSeconds = Math.floor(Date.now() / 1000);
+		expect(isStartDateWithin24Hours({ activePeriod: [{ start: nowSeconds }] })).toBe(true);
+	});
 });
