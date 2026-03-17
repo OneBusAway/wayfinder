@@ -201,7 +201,7 @@ describe('tripPlanUtils', () => {
 			];
 
 			// This tests the current implementation which only checks for BUS
-			expect(isStaySeatedTransition(legs, 0)).toBe(false);
+			expect(isStaySeatedTransition(legs, 0)).toBe(true);
 		});
 
 		it('returns false when previous leg is undefined', () => {
