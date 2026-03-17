@@ -62,8 +62,5 @@ export function isStaySeatedTransition(legs, index) {
 	const next = legs[index + 1];
 	if (!prev || !next) return false;
 	if (prev.mode === 'WALK' || next.mode === 'WALK') return false;
-	return (
-		prev.mode === next.mode &&
-		next.interlineWithPreviousLeg === true
-	);
+	return prev.mode === next.mode && next.interlineWithPreviousLeg === true;
 }
