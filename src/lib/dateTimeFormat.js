@@ -45,8 +45,8 @@ export const apiTimeFormat = new Intl.DateTimeFormat('en-US', {
  * msToTimeString(1705395900000, 'America/New_York', fourDigitTimeFormat)  // Returns '04:05 AM'
  *
  * @param {number} ms - Milliseconds since Unix epoch
- * @param {string} timeZone - Time zone to convert to
- * @param {Intl.DateTimeFormat} dateTimeFormat - Intl.DateTimeFormat to use for formatting
+ * @param {string} [timeZone] - IANA timezone. Defaults to the local timezone.
+ * @param {Intl.DateTimeFormat} [dateTimeFormat] - Intl.DateTimeFormat to use for formatting. Defaults to localTimeFormat.
  * @returns {string} Time in the given format
  */
 export function msToTimeString(
