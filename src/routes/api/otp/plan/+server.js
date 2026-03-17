@@ -3,14 +3,15 @@ import { env } from '$env/dynamic/public';
 import { buildGraphQLQueryBody, mapGraphQLResponse, getOtpApiType, OTP_DEFAULTS } from '$lib/otp';
 import { formatTimeForOTP, formatDateForOTP, getLocalTimeZone } from '$lib/dateTimeFormat';
 
-/** Cached region timezone — resolved once on first use. */
+/** Cached region timezone — set once on first successful resolution. */
 let regionTimeZone;
 
 /**
  * Returns the IANA timezone for this transit region (e.g. "America/Los_Angeles").
  * Falls back to the server's local timezone when PUBLIC_OBA_TIMEZONE is not set.
- * Result is cached for the lifetime of the process (including fallback values).
- * A server restart is required after correcting an invalid PUBLIC_OBA_TIMEZONE.
+ * Valid timezones and the "not set" default are cached for the lifetime of the
+ * process. Invalid values are NOT cached, so fixing the env var takes effect
+ * on the next request without a restart.
  */
 function getRegionTimeZone() {
 	if (regionTimeZone) return regionTimeZone;
@@ -21,13 +22,13 @@ function getRegionTimeZone() {
 			new Intl.DateTimeFormat(undefined, { timeZone: tz });
 			regionTimeZone = tz;
 			return regionTimeZone;
-		} catch {
-			const fallback = getLocalTimeZone();
+		} catch (err) {
+			if (!(err instanceof RangeError)) throw err;
 			console.error(
-				`Invalid PUBLIC_OBA_TIMEZONE: "${tz}". Must be a valid IANA timezone (e.g. "America/Los_Angeles"). Falling back to ${fallback}.`
+				`Invalid PUBLIC_OBA_TIMEZONE: "${tz}". Must be a valid IANA timezone (e.g. "America/Los_Angeles"). Falling back to ${getLocalTimeZone()}.`
 			);
-			regionTimeZone = fallback;
-			return regionTimeZone;
+			// Don't cache — let the operator fix the env var without a restart
+			return getLocalTimeZone();
 		}
 	}
 	regionTimeZone = getLocalTimeZone();

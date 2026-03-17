@@ -933,12 +933,56 @@ describe('GET /api/otp/plan', () => {
 
 		await mod.GET({ url: makeURL() });
 
-		expect(consoleSpy).toHaveBeenCalledTimes(1);
+		// getRegionTimeZone() is called twice per request (buildParams + fetchGraphQL),
+		// and invalid values are not cached, so each call logs.
+		expect(consoleSpy).toHaveBeenCalled();
 		const errorMsg = consoleSpy.mock.calls[0][0];
 		expect(errorMsg).toContain('Not/A/Real/Timezone');
 		// Should include the actual fallback timezone value, not just "server locale"
 		expect(errorMsg).toMatch(/Falling back to \w+/);
 		expect(errorMsg).not.toContain('server locale');
+
+		consoleSpy.mockRestore();
+	});
+
+	it('does not cache invalid timezone fallback — picks up corrected value on next request', async () => {
+		vi.resetModules();
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		// Start with an invalid timezone
+		const mockEnv = {
+			PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+			PUBLIC_OBA_TIMEZONE: 'Not/A/Real/Timezone'
+		};
+		vi.doMock('$env/dynamic/public', () => ({ env: mockEnv }));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		// First request — falls back to server locale
+		await mod.GET({ url: makeURL() });
+		expect(consoleSpy).toHaveBeenCalled();
+
+		// Fix the timezone
+		mockEnv.PUBLIC_OBA_TIMEZONE = 'America/Los_Angeles';
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		// Second request — should now use the corrected timezone
+		await mod.GET({ url: makeURL() });
+
+		const [, options] = mockFetch.mock.calls[1];
+		const body = JSON.parse(options.body);
+		// February in PST = UTC-8
+		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T17:08:00-08:00');
 
 		consoleSpy.mockRestore();
 	});
