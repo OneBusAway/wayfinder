@@ -37,7 +37,8 @@ vi.mock('gtfs-realtime-bindings', () => ({
 	}
 }));
 
-import { GET, isStartDateWithin24Hours } from '../../routes/api/oba/alerts/+server.js';
+import { GET } from '../../routes/api/oba/alerts/+server.js';
+import { isStartDateWithin24Hours } from '$lib/alerts.js';
 
 describe('GET /api/oba/alerts', () => {
 	beforeEach(() => {
