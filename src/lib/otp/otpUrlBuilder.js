@@ -26,8 +26,8 @@ export function formatCoordinates(coords) {
  * @param {Object} request - Trip plan request with OTP parameters
  * @param {string} request.fromPlace - Origin coordinates (formatted)
  * @param {string} request.toPlace - Destination coordinates (formatted)
- * @param {string} request.time - Time in OTP format (h:mm AM/PM)
- * @param {string} request.date - Date in OTP format (MM-DD-YYYY)
+ * @param {string|null} request.time - Time in OTP format (h:mm AM/PM). Null omits the param (server generates default).
+ * @param {string|null} request.date - Date in OTP format (MM-DD-YYYY). Null omits the param (server generates default).
  * @param {string} request.mode - Transport modes
  * @param {boolean} request.arriveBy - Arrive by time flag
  * @param {number} request.maxWalkDistance - Max walk distance in meters

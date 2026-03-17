@@ -59,6 +59,13 @@ describe('msToTimeString', () => {
 	it.each(INVALID_INPUTS)(`returns "N/A" when the input is %s`, (input) => {
 		expect(msToTimeString(input)).toBe('N/A');
 	});
+
+	it('falls back to local timezone for invalid timezone string', () => {
+		const ms = new Date('2024-01-16T09:15:00Z').valueOf();
+		const localResult = msToTimeString(ms);
+		const result = msToTimeString(ms, 'Not/A/Timezone');
+		expect(result).toBe(localResult);
+	});
 });
 
 describe('msToLocalArrivalDepartureTimeString', () => {
@@ -179,6 +186,19 @@ describe('parseTimeInput', () => {
 			expect(parseTimeInput(input)).toBeNull();
 		}
 	);
+
+	it('re-throws non-RangeError exceptions', () => {
+		// Temporarily make apiTimeFormat.format throw a TypeError
+		const origFrom = Temporal.PlainTime.from;
+		Temporal.PlainTime.from = () => {
+			throw new TypeError('unexpected');
+		};
+		try {
+			expect(() => parseTimeInput('14:30')).toThrow(TypeError);
+		} finally {
+			Temporal.PlainTime.from = origFrom;
+		}
+	});
 });
 
 describe('parseDateInput', () => {
@@ -216,6 +236,18 @@ describe('parseDateInput', () => {
 		'2101-01-01'
 	])('returns null when the input is %s', (input) => {
 		expect(parseDateInput(input)).toBeNull();
+	});
+
+	it('re-throws non-RangeError exceptions', () => {
+		const origFrom = Temporal.PlainDate.from;
+		Temporal.PlainDate.from = () => {
+			throw new TypeError('unexpected');
+		};
+		try {
+			expect(() => parseDateInput('2026-01-14')).toThrow(TypeError);
+		} finally {
+			Temporal.PlainDate.from = origFrom;
+		}
 	});
 });
 

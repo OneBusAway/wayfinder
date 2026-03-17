@@ -9,13 +9,11 @@ export function isHighSeverity(alert) {
 		return false;
 	}
 
-	const isHighSeverity =
-		(alert &&
-			getSeverityLevel(alert) ===
-				GtfsRealtimeBindings.transit_realtime.Alert.SeverityLevel.SEVERE) ||
-		getSeverityLevel(alert) === GtfsRealtimeBindings.transit_realtime.Alert.SeverityLevel.WARNING;
-
-	return isHighSeverity;
+	const level = getSeverityLevel(alert);
+	return (
+		level === GtfsRealtimeBindings.transit_realtime.Alert.SeverityLevel.SEVERE ||
+		level === GtfsRealtimeBindings.transit_realtime.Alert.SeverityLevel.WARNING
+	);
 }
 
 function getSeverityLevel(alert) {

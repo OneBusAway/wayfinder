@@ -56,8 +56,17 @@ export function msToTimeString(
 ) {
 	if (!Number.isFinite(ms)) return 'N/A';
 	const instant = Temporal.Instant.fromEpochMilliseconds(ms);
-	const plainTime = instant.toZonedDateTimeISO(timeZone).toPlainTime();
-	return dateTimeFormat.format(plainTime);
+	try {
+		const plainTime = instant.toZonedDateTimeISO(timeZone).toPlainTime();
+		return dateTimeFormat.format(plainTime);
+	} catch (err) {
+		if (err instanceof RangeError) {
+			console.error(`msToTimeString: invalid timezone "${timeZone}", falling back to local`);
+			const plainTime = instant.toZonedDateTimeISO(getLocalTimeZone()).toPlainTime();
+			return dateTimeFormat.format(plainTime);
+		}
+		throw err;
+	}
 }
 
 /**
@@ -184,8 +193,9 @@ export function parseTimeInput(timeString) {
 	try {
 		const time = Temporal.PlainTime.from(timeString);
 		return apiTimeFormat.format(time);
-	} catch {
-		return null;
+	} catch (err) {
+		if (err instanceof RangeError) return null;
+		throw err;
 	}
 }
 
@@ -217,8 +227,9 @@ export function parseDateInput(dateString) {
 			return null;
 		}
 		return apiDateFormat.format(dateTime).replaceAll('/', '-');
-	} catch {
-		return null;
+	} catch (err) {
+		if (err instanceof RangeError) return null;
+		throw err;
 	}
 }
 
