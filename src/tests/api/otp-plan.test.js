@@ -75,7 +75,12 @@ function makeGraphQLResponse(edges = undefined) {
 									estimated: { time: '2026-02-19T17:44:00-08:00' }
 								}
 							},
-							route: { shortName: '10', longName: 'Capitol Hill - University District' },
+							route: {
+								shortName: '10',
+								longName: 'Capitol Hill - University District',
+								color: '4CAF50',
+								textColor: 'FFFFFF'
+							},
 							legGeometry: { points: 'bus_polyline_here' },
 							steps: []
 						},
@@ -373,7 +378,13 @@ describe('GET /api/otp/plan', () => {
 		expect(busLeg.headsign).toBe('Capitol Hill');
 		expect(busLeg.routeShortName).toBe('10');
 		expect(busLeg.routeLongName).toBe('Capitol Hill - University District');
+		expect(busLeg.routeColor).toBe('4CAF50');
+		expect(busLeg.routeTextColor).toBe('FFFFFF');
 		expect(busLeg.distance).toBe(4200.8);
+
+		// Walk legs have no route, so no color properties
+		expect(walkLeg.routeColor).toBeUndefined();
+		expect(walkLeg.routeTextColor).toBeUndefined();
 	});
 
 	it('prefers estimated.time over scheduledTime for leg start/end times', async () => {
