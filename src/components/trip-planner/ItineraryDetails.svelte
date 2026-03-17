@@ -1,8 +1,11 @@
 <script>
 	import LegDetails from './LegDetails.svelte';
 	import { msToTimeString } from '$lib/dateTimeFormat';
+	import { env } from '$env/dynamic/public';
 	import { t } from 'svelte-i18n';
 	let { itinerary, expandedSteps, toggleSteps } = $props();
+
+	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 </script>
 
 <!-- Summary Card -->
@@ -23,7 +26,7 @@
 			{$t('trip-planner.start_time')}
 		</p>
 		<p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">
-			{msToTimeString(itinerary.startTime)}
+			{msToTimeString(itinerary.startTime, regionTz)}
 		</p>
 	</div>
 	<div class="flex-1 px-3 text-center first:pl-0 last:pr-0">
@@ -31,7 +34,7 @@
 			{$t('trip-planner.end_time')}
 		</p>
 		<p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">
-			{msToTimeString(itinerary.endTime)}
+			{msToTimeString(itinerary.endTime, regionTz)}
 		</p>
 	</div>
 </div>
