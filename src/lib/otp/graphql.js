@@ -115,7 +115,7 @@ function buildGraphQLVariables(params) {
 	const [fromLat, fromLon] = fromParts;
 	const [toLat, toLon] = toParts;
 
-	const isoDateTime = convertToISO8601(params.date, params.time);
+	const isoDateTime = convertToISO8601(params.date, params.time, params.timeZone);
 	if (!isoDateTime) {
 		throw error(
 			400,

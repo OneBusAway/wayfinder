@@ -246,13 +246,22 @@ export function convert24HourTo12Hour(hour) {
 /**
  * Format a Date object to OTP API time format: "h:mm AM/PM"
  *
- * @param {Date} date - Date object (uses local time)
+ * @param {Date} date - Date object
+ * @param {string} [timeZone] - IANA timezone (e.g. "America/Los_Angeles"). Defaults to local.
  * @returns {string} Time in "h:mm AM/PM" format
  *
  * @example
  * formatTimeForOTP(new Date('2026-01-14T14:30:00'))  // Returns '2:30 PM'
  */
-export function formatTimeForOTP(date) {
+export function formatTimeForOTP(date, timeZone) {
+	if (timeZone) {
+		return new Intl.DateTimeFormat('en-US', {
+			hour: 'numeric',
+			minute: '2-digit',
+			hour12: true,
+			timeZone
+		}).format(date);
+	}
 	return apiTimeFormat.format(date);
 }
 
@@ -260,13 +269,24 @@ export function formatTimeForOTP(date) {
  * Format a Date object to OTP API date format: "MM-DD-YYYY"
  * Used for "Leave Now" mode where we need the current date.
  *
- * @param {Date} date - Date object (uses local time)
+ * @param {Date} date - Date object
+ * @param {string} [timeZone] - IANA timezone (e.g. "America/Los_Angeles"). Defaults to local.
  * @returns {string} Date in "MM-DD-YYYY" format
  *
  * @example
  * formatDateForOTP(new Date(2026, 0, 14))  // Returns '01-14-2026'
  */
-export function formatDateForOTP(date) {
+export function formatDateForOTP(date, timeZone) {
+	if (timeZone) {
+		return new Intl.DateTimeFormat('en-US', {
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+			timeZone
+		})
+			.format(date)
+			.replaceAll('/', '-');
+	}
 	return apiDateFormat.format(date).replaceAll('/', '-');
 }
 
@@ -299,15 +319,16 @@ export function formatLastUpdated(timestamp, translations) {
  * Convert date ("MM-DD-YYYY") + time ("h:mm AM/PM") to OffsetDateTime
  * ("YYYY-MM-DDThh:mm:ss±HH:MM") as required by OTP 2.x GraphQL API.
  *
- * The timezone offset is derived from the server process's locale for the
- * target date, which handles DST transitions correctly. This works when the
- * server runs in the same timezone as the transit agency's service area.
+ * The timezone is used to compute the correct UTC offset for the target date,
+ * handling DST transitions correctly. When timeZone is omitted, falls back to
+ * the server process's locale.
  *
  * @param {string} date - Date in "MM-DD-YYYY" format
  * @param {string} time - Time in "h:mm AM/PM" format
+ * @param {string} [timeZone] - IANA timezone (e.g. "America/Los_Angeles"). Defaults to server locale.
  * @returns {string|null} OffsetDateTime string, or null if time or date format is invalid
  */
-export function convertToISO8601(date, time) {
+export function convertToISO8601(date, time, timeZone) {
 	if (!date || typeof date !== 'string') return null;
 	if (!time || typeof time !== 'string') return null;
 
@@ -330,8 +351,8 @@ export function convertToISO8601(date, time) {
 
 	try {
 		const plainDateTime = Temporal.PlainDateTime.from({ year, month, day, hour, minute });
-		// toZonedDateTime resolves DST correctly for the target date (not "now")
-		const zdt = plainDateTime.toZonedDateTime(getLocalTimeZone());
+		// toZonedDateTime resolves DST correctly for the target date
+		const zdt = plainDateTime.toZonedDateTime(timeZone || getLocalTimeZone());
 
 		const yearStr = String(year).padStart(4, '0');
 		const monthStr = String(month).padStart(2, '0');

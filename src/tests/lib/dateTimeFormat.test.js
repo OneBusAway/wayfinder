@@ -249,6 +249,18 @@ describe('formatTimeForOTP', () => {
 		const date = new Date(2026, 0, 14, 20, 45);
 		expect(formatTimeForOTP(date)).toBe('8:45 PM');
 	});
+
+	it('formats time in a specific timezone', () => {
+		// 10:30 PM UTC = 2:30 PM Pacific (PST, UTC-8)
+		const date = new Date('2026-01-14T22:30:00Z');
+		expect(formatTimeForOTP(date, 'America/Los_Angeles')).toBe('2:30 PM');
+	});
+
+	it('formats time in eastern timezone', () => {
+		// 10:30 PM UTC = 5:30 PM Eastern (EST, UTC-5)
+		const date = new Date('2026-01-14T22:30:00Z');
+		expect(formatTimeForOTP(date, 'America/New_York')).toBe('5:30 PM');
+	});
 });
 
 describe('formatDateForOTP', () => {
@@ -275,6 +287,18 @@ describe('formatDateForOTP', () => {
 	it('handles year correctly', () => {
 		const date = new Date(2030, 6, 4); // July 4, 2030
 		expect(formatDateForOTP(date)).toBe('07-04-2030');
+	});
+
+	it('formats date in a specific timezone', () => {
+		// 2 AM UTC on Jan 15 = 6 PM PST on Jan 14 (still previous day in Pacific)
+		const date = new Date('2026-01-15T02:00:00Z');
+		expect(formatDateForOTP(date, 'America/Los_Angeles')).toBe('01-14-2026');
+	});
+
+	it('formats date in eastern timezone', () => {
+		// 3 AM UTC on Jan 15 = 10 PM EST on Jan 14
+		const date = new Date('2026-01-15T03:00:00Z');
+		expect(formatDateForOTP(date, 'America/New_York')).toBe('01-14-2026');
 	});
 });
 
@@ -499,6 +523,27 @@ describe('convertToISO8601', () => {
 
 	it('returns null when time is undefined', () => {
 		expect(convertToISO8601('01-14-2026', undefined)).toBeNull();
+	});
+
+	it('uses explicit timezone when provided', () => {
+		// January = PST = UTC-8
+		expect(convertToISO8601('01-14-2026', '5:19 PM', 'America/Los_Angeles')).toBe(
+			'2026-01-14T17:19:00-08:00'
+		);
+	});
+
+	it('uses correct DST offset for summer dates', () => {
+		// July = PDT = UTC-7
+		expect(convertToISO8601('07-04-2026', '5:19 PM', 'America/Los_Angeles')).toBe(
+			'2026-07-04T17:19:00-07:00'
+		);
+	});
+
+	it('uses explicit timezone for eastern time', () => {
+		// January = EST = UTC-5
+		expect(convertToISO8601('01-14-2026', '9:00 AM', 'America/New_York')).toBe(
+			'2026-01-14T09:00:00-05:00'
+		);
 	});
 });
 

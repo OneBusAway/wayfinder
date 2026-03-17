@@ -4,12 +4,32 @@ import { buildGraphQLQueryBody, mapGraphQLResponse, getOtpApiType, OTP_DEFAULTS 
 import { formatTimeForOTP, formatDateForOTP } from '$lib/dateTimeFormat';
 
 /**
+ * Returns the IANA timezone for this transit region (e.g. "America/Los_Angeles").
+ * Falls back to the server's local timezone when PUBLIC_OBA_TIMEZONE is not set.
+ */
+function getRegionTimeZone() {
+	const tz = env.PUBLIC_OBA_TIMEZONE;
+	if (tz) {
+		try {
+			Intl.DateTimeFormat(undefined, { timeZone: tz });
+			return tz;
+		} catch {
+			console.error(
+				`Invalid PUBLIC_OBA_TIMEZONE: "${tz}". Must be a valid IANA timezone (e.g. "America/Los_Angeles"). Falling back to server locale.`
+			);
+		}
+	}
+	return Intl.DateTimeFormat().resolvedOptions().timeZone;
+}
+
+/**
  * Fetch trip plan from OTP 1.x REST API.
  *
  * @throws {HttpError} SvelteKit HttpError on non-2xx responses
  */
 async function fetchREST(params) {
-	const searchParams = new URLSearchParams(params);
+	const { timeZone: _, ...restParams } = params;
+	const searchParams = new URLSearchParams(restParams);
 	const otpUrl = `${env.PUBLIC_OTP_SERVER_URL}/routers/default/plan?${searchParams}`;
 
 	const response = await fetch(otpUrl, {
@@ -50,9 +70,13 @@ async function fetchGraphQL(params) {
 function buildParamsFromRequest(url) {
 	const fromPlace = url.searchParams.get('fromPlace');
 	const toPlace = url.searchParams.get('toPlace');
+	const timeZone = getRegionTimeZone();
+
+	// Format "now" in the transit region's timezone so defaults are correct
+	// even when the server runs in UTC.
 	const now = new Date();
-	const defaultTime = formatTimeForOTP(now);
-	const defaultDate = formatDateForOTP(now);
+	const defaultTime = formatTimeForOTP(now, timeZone);
+	const defaultDate = formatDateForOTP(now, timeZone);
 
 	// Client sends time as "h:mm AM/PM" and date as "MM-DD-YYYY".
 	// REST passes these through as-is; GraphQL converts via convertToISO8601().
@@ -74,6 +98,7 @@ function buildParamsFromRequest(url) {
 		toPlace,
 		time,
 		date,
+		timeZone,
 		mode,
 		arriveBy,
 		maxWalkDistance,
