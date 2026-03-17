@@ -134,7 +134,9 @@ export async function GET({ url }) {
 		if (apiType === 'graphql') {
 			return await fetchGraphQL(params, getRegionTimeZone());
 		}
-		// Default to REST when apiType is 'rest' or null (server unreachable at startup)
+		// Default to REST when apiType is 'rest' or null (server unreachable at startup).
+		// Note: REST relies on OTP 1.x being configured in the transit agency's timezone;
+		// only the GraphQL path applies PUBLIC_OBA_TIMEZONE for datetime conversion.
 		return await fetchREST(params);
 	} catch (err) {
 		if (err.status) throw err;
