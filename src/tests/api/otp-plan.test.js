@@ -1013,6 +1013,41 @@ describe('GET /api/otp/plan', () => {
 		);
 	});
 
+	it('caches valid timezone across multiple requests', async () => {
+		vi.resetModules();
+
+		const mockEnv = {
+			PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+			PUBLIC_OBA_TIMEZONE: 'America/Los_Angeles'
+		};
+		vi.doMock('$env/dynamic/public', () => ({ env: mockEnv }));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		// Mutate env to a different timezone — should be ignored due to caching
+		mockEnv.PUBLIC_OBA_TIMEZONE = 'America/New_York';
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		const [, options] = mockFetch.mock.calls[1];
+		const body = JSON.parse(options.body);
+		// Still uses Los Angeles (PST, -08:00), not New York (EST, -05:00)
+		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T17:08:00-08:00');
+	});
+
 	// -- Error propagation tests --
 
 	it('propagates HttpError from GraphQL validation instead of swallowing it', async () => {
