@@ -85,10 +85,8 @@ function buildParamsFromRequest(url) {
 	// Defaults use the transit region's timezone so they are correct even when
 	// the server runs in UTC.
 	const timeZone = getRegionTimeZone();
-	const time =
-		url.searchParams.get('time') || formatTimeForOTP(new Date(), timeZone);
-	const date =
-		url.searchParams.get('date') || formatDateForOTP(new Date(), timeZone);
+	const time = url.searchParams.get('time') || formatTimeForOTP(new Date(), timeZone);
+	const date = url.searchParams.get('date') || formatDateForOTP(new Date(), timeZone);
 
 	const mode = url.searchParams.get('mode') || OTP_DEFAULTS.mode;
 	const arriveBy = url.searchParams.get('arriveBy') || String(OTP_DEFAULTS.arriveBy);
