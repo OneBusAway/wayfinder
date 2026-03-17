@@ -361,7 +361,8 @@ export function convertToISO8601(date, time, timeZone) {
 		const minuteStr = String(minute).padStart(2, '0');
 
 		return `${yearStr}-${monthStr}-${dayStr}T${hourStr}:${minuteStr}:00${zdt.offset}`;
-	} catch {
-		return null;
+	} catch (err) {
+		if (err instanceof RangeError) return null;
+		throw err;
 	}
 }
