@@ -557,6 +557,14 @@ describe('convertToISO8601', () => {
 			'2026-03-08T03:30:00-07:00'
 		);
 	});
+
+	it('handles DST fall-back ambiguous time correctly', () => {
+		// 1:30 AM on November 1, 2026 exists twice in Pacific time (clocks fall back 2→1 AM).
+		// Temporal's "compatible" disambiguation picks the earlier offset (PDT, -07:00).
+		expect(convertToISO8601('11-01-2026', '1:30 AM', 'America/Los_Angeles')).toBe(
+			'2026-11-01T01:30:00-07:00'
+		);
+	});
 });
 
 describe('convert24HourTo12Hour', () => {
