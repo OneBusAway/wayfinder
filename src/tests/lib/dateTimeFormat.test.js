@@ -552,11 +552,10 @@ describe('convertToISO8601', () => {
 
 	it('handles DST spring-forward gap correctly', () => {
 		// 2:30 AM on March 8, 2026 does not exist in Pacific time (clocks spring forward 2→3 AM)
-		// Temporal resolves this to 3:30 AM PDT
-		const result = convertToISO8601('03-08-2026', '2:30 AM', 'America/Los_Angeles');
-		expect(result).not.toBeNull();
-		// The offset should be PDT (-07:00) since the time is resolved into daylight time
-		expect(result).toContain('-07:00');
+		// Temporal resolves this to 3:30 AM PDT — output must use the resolved time, not the input
+		expect(convertToISO8601('03-08-2026', '2:30 AM', 'America/Los_Angeles')).toBe(
+			'2026-03-08T03:30:00-07:00'
+		);
 	});
 });
 

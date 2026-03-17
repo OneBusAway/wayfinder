@@ -354,11 +354,13 @@ export function convertToISO8601(date, time, timeZone) {
 		// toZonedDateTime resolves DST correctly for the target date
 		const zdt = plainDateTime.toZonedDateTime(timeZone || getLocalTimeZone());
 
-		const yearStr = String(year).padStart(4, '0');
-		const monthStr = String(month).padStart(2, '0');
-		const dayStr = String(day).padStart(2, '0');
-		const hourStr = String(hour).padStart(2, '0');
-		const minuteStr = String(minute).padStart(2, '0');
+		// Use Temporal-resolved values so DST gaps produce a valid datetime
+		// (e.g. 2:30 AM during spring-forward resolves to 3:30 AM)
+		const yearStr = String(zdt.year).padStart(4, '0');
+		const monthStr = String(zdt.month).padStart(2, '0');
+		const dayStr = String(zdt.day).padStart(2, '0');
+		const hourStr = String(zdt.hour).padStart(2, '0');
+		const minuteStr = String(zdt.minute).padStart(2, '0');
 
 		return `${yearStr}-${monthStr}-${dayStr}T${hourStr}:${minuteStr}:00${zdt.offset}`;
 	} catch (err) {
