@@ -1,25 +1,33 @@
 import { error, json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
 import { buildGraphQLQueryBody, mapGraphQLResponse, getOtpApiType, OTP_DEFAULTS } from '$lib/otp';
-import { formatTimeForOTP, formatDateForOTP } from '$lib/dateTimeFormat';
+import { formatTimeForOTP, formatDateForOTP, getLocalTimeZone } from '$lib/dateTimeFormat';
+
+/** Cached region timezone — resolved once on first use. */
+let regionTimeZone;
 
 /**
  * Returns the IANA timezone for this transit region (e.g. "America/Los_Angeles").
  * Falls back to the server's local timezone when PUBLIC_OBA_TIMEZONE is not set.
+ * Result is cached for the lifetime of the process.
  */
 function getRegionTimeZone() {
+	if (regionTimeZone) return regionTimeZone;
+
 	const tz = env.PUBLIC_OBA_TIMEZONE;
 	if (tz) {
 		try {
-			Intl.DateTimeFormat(undefined, { timeZone: tz });
-			return tz;
+			new Intl.DateTimeFormat(undefined, { timeZone: tz });
+			regionTimeZone = tz;
+			return regionTimeZone;
 		} catch {
 			console.error(
 				`Invalid PUBLIC_OBA_TIMEZONE: "${tz}". Must be a valid IANA timezone (e.g. "America/Los_Angeles"). Falling back to server locale.`
 			);
 		}
 	}
-	return Intl.DateTimeFormat().resolvedOptions().timeZone;
+	regionTimeZone = getLocalTimeZone();
+	return regionTimeZone;
 }
 
 /**
@@ -28,8 +36,7 @@ function getRegionTimeZone() {
  * @throws {HttpError} SvelteKit HttpError on non-2xx responses
  */
 async function fetchREST(params) {
-	const { timeZone: _, ...restParams } = params;
-	const searchParams = new URLSearchParams(restParams);
+	const searchParams = new URLSearchParams(params);
 	const otpUrl = `${env.PUBLIC_OTP_SERVER_URL}/routers/default/plan?${searchParams}`;
 
 	const response = await fetch(otpUrl, {
@@ -47,15 +54,17 @@ async function fetchREST(params) {
 /**
  * Fetch trip plan from OTP 2.x GraphQL API.
  *
+ * @param {Object} params - OTP query parameters
+ * @param {string} timeZone - IANA timezone for datetime conversion
  * @throws {HttpError} SvelteKit HttpError on non-2xx responses
  */
-async function fetchGraphQL(params) {
+async function fetchGraphQL(params, timeZone) {
 	const graphqlUrl = `${env.PUBLIC_OTP_SERVER_URL}/gtfs/v1`;
 
 	const response = await fetch(graphqlUrl, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-		body: JSON.stringify(buildGraphQLQueryBody(params))
+		body: JSON.stringify(buildGraphQLQueryBody({ ...params, timeZone }))
 	});
 
 	if (!response.ok) {
@@ -70,18 +79,16 @@ async function fetchGraphQL(params) {
 function buildParamsFromRequest(url) {
 	const fromPlace = url.searchParams.get('fromPlace');
 	const toPlace = url.searchParams.get('toPlace');
-	const timeZone = getRegionTimeZone();
-
-	// Format "now" in the transit region's timezone so defaults are correct
-	// even when the server runs in UTC.
-	const now = new Date();
-	const defaultTime = formatTimeForOTP(now, timeZone);
-	const defaultDate = formatDateForOTP(now, timeZone);
 
 	// Client sends time as "h:mm AM/PM" and date as "MM-DD-YYYY".
 	// REST passes these through as-is; GraphQL converts via convertToISO8601().
-	const time = url.searchParams.get('time') || defaultTime;
-	const date = url.searchParams.get('date') || defaultDate;
+	// Defaults use the transit region's timezone so they are correct even when
+	// the server runs in UTC.
+	const timeZone = getRegionTimeZone();
+	const time =
+		url.searchParams.get('time') || formatTimeForOTP(new Date(), timeZone);
+	const date =
+		url.searchParams.get('date') || formatDateForOTP(new Date(), timeZone);
 
 	const mode = url.searchParams.get('mode') || OTP_DEFAULTS.mode;
 	const arriveBy = url.searchParams.get('arriveBy') || String(OTP_DEFAULTS.arriveBy);
@@ -93,12 +100,11 @@ function buildParamsFromRequest(url) {
 	const transferPenalty =
 		url.searchParams.get('transferPenalty') || String(OTP_DEFAULTS.transferPenalty);
 
-	const params = {
+	return {
 		fromPlace,
 		toPlace,
 		time,
 		date,
-		timeZone,
 		mode,
 		arriveBy,
 		maxWalkDistance,
@@ -106,8 +112,6 @@ function buildParamsFromRequest(url) {
 		showIntermediateStops,
 		transferPenalty
 	};
-
-	return params;
 }
 
 export async function GET({ url }) {
@@ -125,7 +129,7 @@ export async function GET({ url }) {
 
 	try {
 		if (apiType === 'graphql') {
-			return await fetchGraphQL(params);
+			return await fetchGraphQL(params, getRegionTimeZone());
 		}
 		// Default to REST when apiType is 'rest' or null (server unreachable at startup)
 		return await fetchREST(params);
