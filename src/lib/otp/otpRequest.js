@@ -5,12 +5,7 @@
 
 import { OTP_DEFAULTS, OPTIMIZE_TRANSFER_PENALTY } from './constants.js';
 import { formatCoordinates } from './otpUrlBuilder.js';
-import {
-	parseTimeInput,
-	parseDateInput,
-	formatTimeForOTP,
-	formatDateForOTP
-} from '$lib/dateTimeFormat';
+import { parseTimeInput, parseDateInput } from '$lib/dateTimeFormat';
 
 /**
  * Creates a structured OTP trip plan request object.
@@ -40,27 +35,20 @@ export function createTripPlanRequest(options) {
 		optimize = 'fastest'
 	} = options;
 
-	// Determine time and date
+	// Determine time and date.
+	// "Leave Now" omits time/date so the server generates timezone-aware defaults
+	// using PUBLIC_OBA_TIMEZONE. This avoids the browser sending its local time
+	// which may differ from the transit region's timezone.
 	let otpTime, otpDate;
 
 	if (departureType === 'now' || (!time && !date)) {
-		// "Leave Now" mode - use current time
-		const now = new Date();
-		otpTime = formatTimeForOTP(now);
-		otpDate = formatDateForOTP(now);
+		otpTime = null;
+		otpDate = null;
 	} else {
 		// Scheduled departure/arrival
 		// Parse user inputs (HH:mm, YYYY-MM-DD) to OTP formats
-		otpTime = time ? parseTimeInput(time) : formatTimeForOTP(new Date());
-		otpDate = date ? parseDateInput(date) : formatDateForOTP(new Date());
-
-		// Fallback to current time if parsing fails
-		if (!otpTime) {
-			otpTime = formatTimeForOTP(new Date());
-		}
-		if (!otpDate) {
-			otpDate = formatDateForOTP(new Date());
-		}
+		otpTime = time ? parseTimeInput(time) : null;
+		otpDate = date ? parseDateInput(date) : null;
 	}
 
 	// Determine arriveBy based on departure type

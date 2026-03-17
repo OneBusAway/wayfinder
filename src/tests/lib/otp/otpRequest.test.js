@@ -57,16 +57,16 @@ describe('createTripPlanRequest', () => {
 	});
 
 	// Time handling
-	it('uses current time when departureType is "now"', () => {
+	it('omits time/date when departureType is "now" (server generates timezone-aware defaults)', () => {
 		const request = createTripPlanRequest({ from, to, departureType: 'now' });
-		expect(request.time).toBe('2:30 PM');
-		expect(request.date).toBe('01-14-2026');
+		expect(request.time).toBeNull();
+		expect(request.date).toBeNull();
 	});
 
-	it('uses current time when no time/date provided', () => {
+	it('omits time/date when no time/date provided', () => {
 		const request = createTripPlanRequest({ from, to });
-		expect(request.time).toBe('2:30 PM');
-		expect(request.date).toBe('01-14-2026');
+		expect(request.time).toBeNull();
+		expect(request.date).toBeNull();
 	});
 
 	it('uses provided time for scheduled departure', () => {
@@ -155,7 +155,7 @@ describe('createTripPlanRequest', () => {
 	});
 
 	// Fallback handling
-	it('falls back to current time if time parsing fails', () => {
+	it('returns null time if time parsing fails', () => {
 		const request = createTripPlanRequest({
 			from,
 			to,
@@ -163,10 +163,10 @@ describe('createTripPlanRequest', () => {
 			time: 'invalid',
 			date: '2026-01-15'
 		});
-		expect(request.time).toBe('2:30 PM'); // Falls back to current time
+		expect(request.time).toBeNull(); // Server will generate default
 	});
 
-	it('falls back to current date if date parsing fails', () => {
+	it('returns null date if date parsing fails', () => {
 		const request = createTripPlanRequest({
 			from,
 			to,
@@ -174,7 +174,7 @@ describe('createTripPlanRequest', () => {
 			time: '09:30',
 			date: 'invalid'
 		});
-		expect(request.date).toBe('01-14-2026'); // Falls back to current date
+		expect(request.date).toBeNull(); // Server will generate default
 	});
 });
 
@@ -223,7 +223,7 @@ describe('createRequestFromTripOptions', () => {
 		expect(request.transferPenalty).toBe(0);
 	});
 
-	it('handles departureType "now"', () => {
+	it('handles departureType "now" by omitting time/date', () => {
 		const tripOptions = {
 			departureType: 'now',
 			departureTime: null,
@@ -234,8 +234,8 @@ describe('createRequestFromTripOptions', () => {
 		};
 
 		const request = createRequestFromTripOptions(from, to, tripOptions);
-		expect(request.time).toBe('2:30 PM');
-		expect(request.date).toBe('01-14-2026');
+		expect(request.time).toBeNull();
+		expect(request.date).toBeNull();
 	});
 
 	it('handles departureType "departAt"', () => {

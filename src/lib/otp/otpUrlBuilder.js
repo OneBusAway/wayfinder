@@ -40,8 +40,6 @@ export function buildOTPParams(request) {
 	const params = new URLSearchParams({
 		fromPlace: request.fromPlace,
 		toPlace: request.toPlace,
-		time: request.time,
-		date: request.date,
 		mode: request.mode,
 		arriveBy: String(request.arriveBy),
 		maxWalkDistance: String(request.maxWalkDistance),
@@ -49,6 +47,10 @@ export function buildOTPParams(request) {
 		showIntermediateStops: String(request.showIntermediateStops),
 		transferPenalty: String(request.transferPenalty)
 	});
+
+	// Omit time/date for "Leave Now" so the server generates timezone-aware defaults
+	if (request.time) params.set('time', request.time);
+	if (request.date) params.set('date', request.date);
 
 	return params;
 }
