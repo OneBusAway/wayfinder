@@ -2,7 +2,15 @@
 	import LegDetails from './LegDetails.svelte';
 	import { msToTimeString } from '$lib/dateTimeFormat';
 	import { t } from 'svelte-i18n';
+	import { isStaySeatedTransition } from '$lib/tripPlanUtils';
 	let { itinerary, expandedSteps, toggleSteps } = $props();
+
+	// Minimal local route name function for next leg
+	function getRouteName(leg) {
+		if (!leg) return '';
+		if (leg.tripHeadsign) return `${leg.routeShortName ?? leg.routeLongName} - ${leg.tripHeadsign}`;
+		return `${leg.routeShortName} ${leg.routeLongName}`;
+	}
 </script>
 
 <!-- Summary Card -->
@@ -39,12 +47,16 @@
 <!-- Legs Timeline -->
 <div class="space-y-0">
 	{#each itinerary.legs as leg, index}
+		{@const isInterline = isStaySeatedTransition(itinerary.legs, index)}
+		{@const nextLeg = itinerary.legs[index + 1]}
+		{@const nextLegRouteName = getRouteName(nextLeg)}
 		<LegDetails
 			{leg}
 			{index}
-			legs={itinerary.legs}
+			{isInterline}
 			{expandedSteps}
 			{toggleSteps}
+			{nextLegRouteName}
 			isLast={index === itinerary.legs.length - 1}
 		/>
 	{/each}

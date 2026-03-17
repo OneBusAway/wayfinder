@@ -49,9 +49,9 @@ export function swapTripLocations({
 }
 
 /**
- * Determines if there is a stay-seated interline transition between two legs.
- * The transition occurs when a passenger stays on the same BUS vehicle
- * while it continues under a different route.
+ * Determines if there is a stay-seated transition between two legs. That occurs when a
+ * passenger stays on the same vehicle and it continues under a different id.
+ * @see https://github.com/opentripplanner/OpenTripPlanner/pull/4264
  *
  * @param {Array} legs - The array of all legs in the trip
  * @param {number} index - The index of the current leg to check
@@ -60,6 +60,7 @@ export function swapTripLocations({
 export function isStaySeatedTransition(legs, index) {
 	const prev = legs[index];
 	const next = legs[index + 1];
-
-	return prev?.mode === 'BUS' && next?.mode === 'BUS' && next?.interlineWithPreviousLeg === true;
+	return (
+		prev?.mode === next?.mode && prev?.mode !== 'WALK' && next?.interlineWithPreviousLeg === true
+	);
 }

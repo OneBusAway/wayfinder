@@ -44,7 +44,7 @@
 		"route_optimization": "Route Optimization",
 		"fastest_trip": "Fastest Trip",
 		"fewest_transfers": "Fewest Transfers",
-		"stay_on_board": "Remain on this bus. It continues beyond this stop as another route.",
+		"stay_on_board": "Remain on board. This trip continues as Route {route}.",
 		"walking_distance": "Walking Distance",
 		"max_walking_distance": "Maximum walking distance",
 		"distance_unit": "Distance Unit",
