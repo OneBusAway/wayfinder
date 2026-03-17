@@ -21,9 +21,12 @@ function getRegionTimeZone() {
 			regionTimeZone = tz;
 			return regionTimeZone;
 		} catch {
+			const fallback = getLocalTimeZone();
 			console.error(
-				`Invalid PUBLIC_OBA_TIMEZONE: "${tz}". Must be a valid IANA timezone (e.g. "America/Los_Angeles"). Falling back to server locale.`
+				`Invalid PUBLIC_OBA_TIMEZONE: "${tz}". Must be a valid IANA timezone (e.g. "America/Los_Angeles"). Falling back to ${fallback}.`
 			);
+			regionTimeZone = fallback;
+			return regionTimeZone;
 		}
 	}
 	regionTimeZone = getLocalTimeZone();

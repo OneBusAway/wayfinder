@@ -877,6 +877,87 @@ describe('GET /api/otp/plan', () => {
 		expect(body.variables.dateTime.earliestDeparture).toBeTruthy();
 	});
 
+	// -- Timezone tests --
+
+	it('uses configured PUBLIC_OBA_TIMEZONE for GraphQL datetime offset', async () => {
+		vi.resetModules();
+		vi.doMock('$env/dynamic/public', () => ({
+			env: {
+				PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+				PUBLIC_OBA_TIMEZONE: 'America/Los_Angeles'
+			}
+		}));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		const [, options] = mockFetch.mock.calls[0];
+		const body = JSON.parse(options.body);
+		// February in PST = UTC-8
+		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T17:08:00-08:00');
+	});
+
+	it('falls back to server locale and logs error when PUBLIC_OBA_TIMEZONE is invalid', async () => {
+		vi.resetModules();
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.doMock('$env/dynamic/public', () => ({
+			env: {
+				PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+				PUBLIC_OBA_TIMEZONE: 'Not/A/Real/Timezone'
+			}
+		}));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		expect(consoleSpy).toHaveBeenCalledTimes(1);
+		const errorMsg = consoleSpy.mock.calls[0][0];
+		expect(errorMsg).toContain('Not/A/Real/Timezone');
+		// Should include the actual fallback timezone value, not just "server locale"
+		expect(errorMsg).toMatch(/Falling back to \w+/);
+		expect(errorMsg).not.toContain('server locale');
+
+		consoleSpy.mockRestore();
+	});
+
+	it('uses server locale when PUBLIC_OBA_TIMEZONE is empty', async () => {
+		vi.resetModules();
+		vi.doMock('$env/dynamic/public', () => ({
+			env: {
+				PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+				PUBLIC_OBA_TIMEZONE: ''
+			}
+		}));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		const [, options] = mockFetch.mock.calls[0];
+		const body = JSON.parse(options.body);
+		// Should use the local timezone offset (same as tzSuffix helper)
+		expect(body.variables.dateTime.earliestDeparture).toBe(
+			`2026-02-19T17:08:00${tzSuffix(2026, 2, 19, 17, 8)}`
+		);
+	});
+
 	// -- Error propagation tests --
 
 	it('propagates HttpError from GraphQL validation instead of swallowing it', async () => {
