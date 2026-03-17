@@ -9,7 +9,8 @@ let regionTimeZone;
 /**
  * Returns the IANA timezone for this transit region (e.g. "America/Los_Angeles").
  * Falls back to the server's local timezone when PUBLIC_OBA_TIMEZONE is not set.
- * Result is cached for the lifetime of the process.
+ * Result is cached for the lifetime of the process (including fallback values).
+ * A server restart is required after correcting an invalid PUBLIC_OBA_TIMEZONE.
  */
 function getRegionTimeZone() {
 	if (regionTimeZone) return regionTimeZone;
