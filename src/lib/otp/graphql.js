@@ -37,7 +37,7 @@ query planTrip(
             lon
             arrival { scheduledTime estimated { time } }
           }
-          route { shortName longName }
+          route { shortName longName color textColor }
           legGeometry { points }
           steps { relativeDirection streetName distance absoluteDirection }
         }
@@ -92,9 +92,9 @@ function convertModesToGraphQL(modeString) {
  * Build GraphQL variables from the collected query parameters.
  *
  * @param {Object} params - Parameter object. Uses: fromPlace, toPlace, date,
- *   time, mode, arriveBy, wheelchair (all strings). Remaining REST-specific
- *   params (maxWalkDistance, showIntermediateStops, transferPenalty) are not
- *   mapped to the GraphQL schema and are ignored here.
+ *   time, timeZone, mode, arriveBy, wheelchair (all strings). Remaining
+ *   REST-specific params (maxWalkDistance, showIntermediateStops,
+ *   transferPenalty) are not mapped to the GraphQL schema and are ignored here.
  * @returns {Object} GraphQL variables matching the planTrip query signature
  * @throws {HttpError} 400 if coordinates or date/time format is invalid
  */
@@ -115,7 +115,7 @@ function buildGraphQLVariables(params) {
 	const [fromLat, fromLon] = fromParts;
 	const [toLat, toLon] = toParts;
 
-	const isoDateTime = convertToISO8601(params.date, params.time);
+	const isoDateTime = convertToISO8601(params.date, params.time, params.timeZone);
 	if (!isoDateTime) {
 		throw error(
 			400,
@@ -225,6 +225,8 @@ export function mapGraphQLResponse(graphqlData) {
 			if (leg.route) {
 				mapped.routeShortName = leg.route.shortName;
 				mapped.routeLongName = leg.route.longName;
+				if (leg.route.color) mapped.routeColor = leg.route.color;
+				if (leg.route.textColor) mapped.routeTextColor = leg.route.textColor;
 			}
 
 			return mapped;

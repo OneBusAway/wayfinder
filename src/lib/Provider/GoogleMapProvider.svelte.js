@@ -459,7 +459,14 @@ export default class GoogleMapProvider {
 		});
 	}
 
-	async createPolyline(shape, addArrow = true) {
+	async createPolyline(shape, options = {}) {
+		// Backward compat: old callers pass a boolean as the second arg
+		if (typeof options === 'boolean') {
+			options = { withArrow: options };
+		}
+
+		const withArrow = options.withArrow !== undefined ? options.withArrow : true;
+
 		await window.google.maps.importLibrary('geometry');
 
 		const decodedPath = google.maps.geometry.encoding.decodePath(shape);
@@ -468,12 +475,28 @@ export default class GoogleMapProvider {
 		const polylineOptions = {
 			path,
 			geodesic: true,
-			strokeColor: COLORS.POLYLINE,
-			strokeOpacity: 1.0,
-			strokeWeight: 5
+			strokeColor: options.color || COLORS.POLYLINE,
+			strokeOpacity: options.dashArray ? 0 : (options.opacity ?? 1.0),
+			strokeWeight: options.weight || 5
 		};
 
-		if (addArrow) {
+		const icons = [];
+
+		// Dashed line for walking legs
+		if (options.dashArray) {
+			icons.push({
+				icon: {
+					path: 'M 0,-1 0,1',
+					strokeOpacity: options.opacity ?? 1.0,
+					strokeColor: options.color || COLORS.POLYLINE,
+					scale: options.weight || 5
+				},
+				offset: '0',
+				repeat: '20px'
+			});
+		}
+
+		if (withArrow) {
 			const arrowSymbol = {
 				path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
 				scale: 2,
@@ -481,13 +504,15 @@ export default class GoogleMapProvider {
 				strokeWeight: 3
 			};
 
-			polylineOptions.icons = [
-				{
-					icon: arrowSymbol,
-					offset: '100%',
-					repeat: '50px'
-				}
-			];
+			icons.push({
+				icon: arrowSymbol,
+				offset: '100%',
+				repeat: '50px'
+			});
+		}
+
+		if (icons.length > 0) {
+			polylineOptions.icons = icons;
 		}
 
 		const polyline = new window.google.maps.Polyline(polylineOptions);

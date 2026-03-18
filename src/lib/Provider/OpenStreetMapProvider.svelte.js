@@ -454,7 +454,7 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 	}
 
-	createPolyline(points, options = { withArrow: true }) {
+	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
 
 		const decodedPolyline = PolylineUtil.decode(points);
@@ -463,15 +463,21 @@ export default class OpenStreetMapProvider {
 			return null;
 		}
 
-		const polyline = new this.L.Polyline(decodedPolyline, {
+		const withArrow = options.withArrow ?? true;
+
+		const polylineOpts = {
 			color: options.color || COLORS.POLYLINE,
 			weight: options.weight || 4,
-			opacity: options.opacity || 1
-		}).addTo(this.map);
+			opacity: options.opacity ?? 1
+		};
+		if (options.dashArray) {
+			polylineOpts.dashArray = options.dashArray;
+		}
+		const polyline = new this.L.Polyline(decodedPolyline, polylineOpts).addTo(this.map);
 
 		this.polylines.push(polyline);
 
-		if (!options.withArrow) return polyline;
+		if (!withArrow) return polyline;
 
 		const arrowDecorator = this.L.polylineDecorator(polyline, {
 			patterns: [

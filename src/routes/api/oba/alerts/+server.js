@@ -2,6 +2,7 @@ import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import { env } from '$env/dynamic/private';
 import { buildURL } from '$lib/urls.js';
 import { getAgencyFilter, alertBelongsToAgency } from '$lib/agencyFilter.js';
+import { isValidAlert } from '$lib/alerts.js';
 
 const REGION_PATH = `regions/${env.PRIVATE_REGION_ID}/`;
 
@@ -65,36 +66,4 @@ export async function GET() {
 			}
 		);
 	}
-}
-
-function isValidAlert(alert) {
-	return isAgencyWideAlert(alert) && isStartDateWithin24Hours(alert) && isHighSeverity(alert);
-}
-
-function isHighSeverity(alert) {
-	if (!alert) {
-		return false;
-	}
-
-	const isHighSeverity =
-		(alert &&
-			getSeverityLevel(alert) ===
-				GtfsRealtimeBindings.transit_realtime.Alert.SeverityLevel.SEVERE) ||
-		getSeverityLevel(alert) === GtfsRealtimeBindings.transit_realtime.Alert.SeverityLevel.WARNING;
-
-	return isHighSeverity;
-}
-
-function getSeverityLevel(alert) {
-	return alert.severityLevel;
-}
-
-function isStartDateWithin24Hours(alert) {
-	const startDate = alert.activePeriod[0].start;
-	const now = Date.now() / 1000;
-	return startDate <= now && startDate >= now - 24 * 60 * 60;
-}
-
-function isAgencyWideAlert(alert) {
-	return alert.informedEntity && alert.informedEntity.length > 0;
 }
