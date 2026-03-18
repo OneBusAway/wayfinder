@@ -468,7 +468,7 @@ export default class OpenStreetMapProvider {
 		const polylineOpts = {
 			color: options.color || COLORS.POLYLINE,
 			weight: options.weight || 4,
-			opacity: options.opacity || 1
+			opacity: options.opacity ?? 1
 		};
 		if (options.dashArray) {
 			polylineOpts.dashArray = options.dashArray;

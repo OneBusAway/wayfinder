@@ -244,7 +244,6 @@
 		const coords = { lat, lng };
 		const label = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 
-		// Clear Trip Itineraries and recreate marker
 		clearTripItineraries();
 
 		if (type === 'from') {

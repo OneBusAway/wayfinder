@@ -26,8 +26,8 @@ export function formatCoordinates(coords) {
  * @param {Object} request - Trip plan request with OTP parameters
  * @param {string} request.fromPlace - Origin coordinates (formatted)
  * @param {string} request.toPlace - Destination coordinates (formatted)
- * @param {string} request.time - Time in OTP format (h:mm AM/PM)
- * @param {string} request.date - Date in OTP format (MM-DD-YYYY)
+ * @param {string|null} request.time - Time in OTP format (h:mm AM/PM). Null omits the param (server generates default).
+ * @param {string|null} request.date - Date in OTP format (MM-DD-YYYY). Null omits the param (server generates default).
  * @param {string} request.mode - Transport modes
  * @param {boolean} request.arriveBy - Arrive by time flag
  * @param {number} request.maxWalkDistance - Max walk distance in meters
@@ -40,8 +40,6 @@ export function buildOTPParams(request) {
 	const params = new URLSearchParams({
 		fromPlace: request.fromPlace,
 		toPlace: request.toPlace,
-		time: request.time,
-		date: request.date,
 		mode: request.mode,
 		arriveBy: String(request.arriveBy),
 		maxWalkDistance: String(request.maxWalkDistance),
@@ -49,6 +47,10 @@ export function buildOTPParams(request) {
 		showIntermediateStops: String(request.showIntermediateStops),
 		transferPenalty: String(request.transferPenalty)
 	});
+
+	// Omit time/date for "Leave Now" so the server generates timezone-aware defaults
+	if (request.time) params.set('time', request.time);
+	if (request.date) params.set('date', request.date);
 
 	return params;
 }
