@@ -11,21 +11,13 @@
 	 * @typedef {Object} Props
 	 * @property {any} mapProvider
 	 * @property {any} [itineraries]
+	 * @property {any} [error]
 	 * @property {boolean} [loading]
-	 * @property {any} [fromMarker]
-	 * @property {any} [toMarker]
+	 * @property {Function} closePane
 	 */
 
 	/** @type {Props} */
-	let {
-		mapProvider,
-		itineraries = [],
-		error = null,
-		loading = false,
-		fromMarker = null,
-		toMarker = null,
-		closePane
-	} = $props();
+	let { mapProvider, itineraries = [], error = null, loading = false, closePane } = $props();
 
 	let expandedSteps = $state({});
 	let activeTab = $state(0);
@@ -43,11 +35,25 @@
 	}
 
 	let currPolylines = [];
-	let polylineStyle = {
-		weight: 8,
-		opacity: 0.8,
-		withArrow: false
-	};
+
+	// Build per-leg polyline style based on mode and route color
+	function getLegPolylineStyle(leg) {
+		if (leg.mode === 'WALK') {
+			return {
+				color: '#888888',
+				weight: 4,
+				opacity: 0.7,
+				dashArray: '8, 12',
+				withArrow: false
+			};
+		}
+		return {
+			color: leg.routeColor ? `#${leg.routeColor}` : undefined,
+			weight: 8,
+			opacity: 0.8,
+			withArrow: false
+		};
+	}
 
 	// draw the current itinerary route based on the active itinerary tab
 	async function drawRoute() {
@@ -64,7 +70,8 @@
 
 		itineraries[activeTab].legs.forEach((leg) => {
 			const shape = leg.legGeometry.points;
-			const polyline = mapProvider.createPolyline(shape, polylineStyle, true);
+			const style = getLegPolylineStyle(leg);
+			const polyline = mapProvider.createPolyline(shape, style);
 			currPolylines.push(polyline);
 		});
 	}
@@ -95,7 +102,7 @@
 	});
 
 	$effect(() => {
-		// Reset choice to first when itineraries change (new results)
+		// Reset choice when itinerary results change
 		if (itineraries !== prevItinerariesRef && itineraries?.length > 0) {
 			prevItinerariesRef = itineraries;
 			activeTab = 0;
@@ -104,9 +111,6 @@
 	});
 
 	onDestroy(() => {
-		mapProvider.removePinMarker(fromMarker);
-		mapProvider.removePinMarker(toMarker);
-
 		if (currPolylines.length > 0) {
 			currPolylines.forEach(async (polyline) => {
 				mapProvider.removePolyline(await polyline);

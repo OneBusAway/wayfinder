@@ -112,6 +112,24 @@ describe('buildOTPParams', () => {
 		const params = buildOTPParams({ ...baseRequest, date: '12-31-2026' });
 		expect(params.get('date')).toBe('12-31-2026');
 	});
+
+	it('omits time and date when null (Leave Now)', () => {
+		const params = buildOTPParams({ ...baseRequest, time: null, date: null });
+		expect(params.has('time')).toBe(false);
+		expect(params.has('date')).toBe(false);
+	});
+
+	it('includes date but omits time when only time is null', () => {
+		const params = buildOTPParams({ ...baseRequest, time: null, date: '01-14-2026' });
+		expect(params.has('time')).toBe(false);
+		expect(params.get('date')).toBe('01-14-2026');
+	});
+
+	it('includes time but omits date when only date is null', () => {
+		const params = buildOTPParams({ ...baseRequest, time: '2:30 PM', date: null });
+		expect(params.get('time')).toBe('2:30 PM');
+		expect(params.has('date')).toBe(false);
+	});
 });
 
 describe('buildOTPUrl', () => {

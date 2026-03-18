@@ -75,7 +75,12 @@ function makeGraphQLResponse(edges = undefined) {
 									estimated: { time: '2026-02-19T17:44:00-08:00' }
 								}
 							},
-							route: { shortName: '10', longName: 'Capitol Hill - University District' },
+							route: {
+								shortName: '10',
+								longName: 'Capitol Hill - University District',
+								color: '4CAF50',
+								textColor: 'FFFFFF'
+							},
 							legGeometry: { points: 'bus_polyline_here' },
 							steps: []
 						},
@@ -373,7 +378,13 @@ describe('GET /api/otp/plan', () => {
 		expect(busLeg.headsign).toBe('Capitol Hill');
 		expect(busLeg.routeShortName).toBe('10');
 		expect(busLeg.routeLongName).toBe('Capitol Hill - University District');
+		expect(busLeg.routeColor).toBe('4CAF50');
+		expect(busLeg.routeTextColor).toBe('FFFFFF');
 		expect(busLeg.distance).toBe(4200.8);
+
+		// Walk legs have no route, so no color properties
+		expect(walkLeg.routeColor).toBeUndefined();
+		expect(walkLeg.routeTextColor).toBeUndefined();
 	});
 
 	it('prefers estimated.time over scheduledTime for leg start/end times', async () => {
@@ -875,6 +886,166 @@ describe('GET /api/otp/plan', () => {
 		const [, options] = mockFetch.mock.calls[0];
 		const body = JSON.parse(options.body);
 		expect(body.variables.dateTime.earliestDeparture).toBeTruthy();
+	});
+
+	// -- Timezone tests --
+
+	it('uses configured PUBLIC_OBA_TIMEZONE for GraphQL datetime offset', async () => {
+		vi.resetModules();
+		vi.doMock('$env/dynamic/public', () => ({
+			env: {
+				PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+				PUBLIC_OBA_TIMEZONE: 'America/Los_Angeles'
+			}
+		}));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		const [, options] = mockFetch.mock.calls[0];
+		const body = JSON.parse(options.body);
+		// February in PST = UTC-8
+		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T17:08:00-08:00');
+	});
+
+	it('falls back to server locale and logs error when PUBLIC_OBA_TIMEZONE is invalid', async () => {
+		vi.resetModules();
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.doMock('$env/dynamic/public', () => ({
+			env: {
+				PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+				PUBLIC_OBA_TIMEZONE: 'Not/A/Real/Timezone'
+			}
+		}));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		// getRegionTimeZone() is called twice per request (buildParams + fetchGraphQL),
+		// and invalid values are not cached, so each call logs.
+		expect(consoleSpy).toHaveBeenCalled();
+		const errorMsg = consoleSpy.mock.calls[0][0];
+		expect(errorMsg).toContain('Not/A/Real/Timezone');
+		// Should include the actual fallback timezone value, not just "server locale"
+		expect(errorMsg).toMatch(/Falling back to \w+/);
+		expect(errorMsg).not.toContain('server locale');
+
+		consoleSpy.mockRestore();
+	});
+
+	it('does not cache invalid timezone fallback — picks up corrected value on next request', async () => {
+		vi.resetModules();
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		// Start with an invalid timezone
+		const mockEnv = {
+			PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+			PUBLIC_OBA_TIMEZONE: 'Not/A/Real/Timezone'
+		};
+		vi.doMock('$env/dynamic/public', () => ({ env: mockEnv }));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		// First request — falls back to server locale
+		await mod.GET({ url: makeURL() });
+		expect(consoleSpy).toHaveBeenCalled();
+
+		// Fix the timezone
+		mockEnv.PUBLIC_OBA_TIMEZONE = 'America/Los_Angeles';
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		// Second request — should now use the corrected timezone
+		await mod.GET({ url: makeURL() });
+
+		const [, options] = mockFetch.mock.calls[1];
+		const body = JSON.parse(options.body);
+		// February in PST = UTC-8
+		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T17:08:00-08:00');
+
+		consoleSpy.mockRestore();
+	});
+
+	it('uses server locale when PUBLIC_OBA_TIMEZONE is empty', async () => {
+		vi.resetModules();
+		vi.doMock('$env/dynamic/public', () => ({
+			env: {
+				PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+				PUBLIC_OBA_TIMEZONE: ''
+			}
+		}));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		const [, options] = mockFetch.mock.calls[0];
+		const body = JSON.parse(options.body);
+		// Should use the local timezone offset (same as tzSuffix helper)
+		expect(body.variables.dateTime.earliestDeparture).toBe(
+			`2026-02-19T17:08:00${tzSuffix(2026, 2, 19, 17, 8)}`
+		);
+	});
+
+	it('caches valid timezone across multiple requests', async () => {
+		vi.resetModules();
+
+		const mockEnv = {
+			PUBLIC_OTP_SERVER_URL: 'https://otp.test.example.com',
+			PUBLIC_OBA_TIMEZONE: 'America/Los_Angeles'
+		};
+		vi.doMock('$env/dynamic/public', () => ({ env: mockEnv }));
+		const mod = await import('../../routes/api/otp/plan/+server.js');
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		// Mutate env to a different timezone — should be ignored due to caching
+		mockEnv.PUBLIC_OBA_TIMEZONE = 'America/New_York';
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await mod.GET({ url: makeURL() });
+
+		const [, options] = mockFetch.mock.calls[1];
+		const body = JSON.parse(options.body);
+		// Still uses Los Angeles (PST, -08:00), not New York (EST, -05:00)
+		expect(body.variables.dateTime.earliestDeparture).toBe('2026-02-19T17:08:00-08:00');
 	});
 
 	// -- Error propagation tests --

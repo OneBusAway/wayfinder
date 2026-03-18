@@ -1,5 +1,6 @@
 <script>
 	import { msToTimeString } from '$lib/dateTimeFormat';
+	import { env } from '$env/dynamic/public';
 	import { slide } from 'svelte/transition';
 	import {
 		faWalking,
@@ -22,7 +23,14 @@
 
 	let { leg, index, expandedSteps, toggleSteps, isLast = false } = $props();
 
-	let isWalking = leg.mode === 'WALK';
+	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
+
+	let isWalking = $derived(leg.mode === 'WALK');
+
+	// Route color properties (from OTP API)
+	let hasRouteColor = $derived(!isWalking && !!leg.routeColor);
+	let routeColorHex = $derived(hasRouteColor ? `#${leg.routeColor}` : null);
+	let routeTextColorHex = $derived(leg.routeTextColor ? `#${leg.routeTextColor}` : '#ffffff');
 
 	// Get icon and colors based on transport mode
 	function getModeConfig(mode) {
@@ -74,24 +82,58 @@
 	}
 
 	let modeConfig = $derived(getModeConfig(leg.mode));
+
+	// Computed style/class pairs to avoid template duplication
+	let colorStyles = $derived.by(() => {
+		if (hasRouteColor) {
+			return {
+				timelineClass: '',
+				timelineStyle: `background-color: ${routeColorHex}`,
+				iconClass: '',
+				iconStyle: `background-color: ${routeColorHex}`,
+				iconColor: routeTextColorHex,
+				iconColorClass: '',
+				badgeClass:
+					'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold shadow-sm',
+				badgeStyle: `background-color: ${routeColorHex}; color: ${routeTextColorHex}`
+			};
+		}
+		return {
+			timelineClass: isWalking
+				? 'border-l-2 border-dashed border-gray-300 dark:border-gray-600'
+				: 'bg-brand',
+			timelineStyle: '',
+			iconClass: modeConfig.bgColor,
+			iconStyle: '',
+			iconColor: '',
+			iconColorClass: modeConfig.iconColor,
+			badgeClass:
+				'inline-flex items-center rounded-full bg-brand-accent px-2.5 py-0.5 text-xs font-bold text-white shadow-sm',
+			badgeStyle: ''
+		};
+	});
 </script>
 
 <div class="relative flex items-start {isLast ? 'pb-2' : 'pb-6'}">
 	<!-- Timeline line -->
 	{#if !isLast}
 		<div
-			class="absolute left-[23px] top-12 h-[calc(100%-40px)] w-0.5 {isWalking
-				? 'border-l-2 border-dashed border-gray-300 dark:border-gray-600'
-				: 'bg-brand'}"
+			class="absolute left-[23px] top-12 h-[calc(100%-40px)] w-0.5 {colorStyles.timelineClass}"
+			style={colorStyles.timelineStyle}
 		></div>
 	{/if}
 
 	<!-- Icon circle -->
 	<div
-		class="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full shadow-md ring-4 ring-white dark:ring-gray-900 {modeConfig.bgColor}"
+		class="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full shadow-md ring-4 ring-white dark:ring-gray-900 {colorStyles.iconClass}"
+		style={colorStyles.iconStyle}
 	>
 		{#if modeConfig.icon}
-			<FontAwesomeIcon icon={modeConfig.icon} class="{modeConfig.iconColor} text-lg" />
+			<FontAwesomeIcon
+				icon={modeConfig.icon}
+				class="{colorStyles.iconColorClass} text-lg"
+				style={colorStyles.iconColor ? `color: ${colorStyles.iconColor}` : ''}
+			/>
 		{/if}
 	</div>
 
@@ -100,9 +142,7 @@
 		<!-- Header: Headsign + route badge -->
 		<div class="flex flex-wrap items-center gap-2">
 			{#if !isWalking && leg.routeShortName}
-				<span
-					class="inline-flex items-center rounded-full bg-brand-accent px-2.5 py-0.5 text-xs font-bold text-white shadow-sm"
-				>
+				<span class={colorStyles.badgeClass} style={colorStyles.badgeStyle}>
 					{leg.routeShortName}
 				</span>
 			{/if}
@@ -114,12 +154,12 @@
 			<div class="flex items-center text-gray-600 dark:text-gray-300">
 				<FontAwesomeIcon icon={faClock} class="mr-1.5 h-3 w-3 text-blue-500" />
 				<span>{$t('trip-planner.start')}:</span>
-				<span class="ml-1 font-semibold">{msToTimeString(leg.startTime)}</span>
+				<span class="ml-1 font-semibold">{msToTimeString(leg.startTime, regionTz)}</span>
 			</div>
 			<div class="flex items-center text-gray-600 dark:text-gray-300">
 				<FontAwesomeIcon icon={faClock} class="mr-1.5 h-3 w-3 text-red-500" />
 				<span>{$t('trip-planner.end')}:</span>
-				<span class="ml-1 font-semibold">{msToTimeString(leg.endTime)}</span>
+				<span class="ml-1 font-semibold">{msToTimeString(leg.endTime, regionTz)}</span>
 			</div>
 		</div>
 
