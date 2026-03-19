@@ -5,6 +5,7 @@
 		PUBLIC_NAV_BAR_LINKS
 	} from '$env/static/public';
 
+	import { t } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 	import OverflowMenu from './OverflowMenu.svelte';
 	import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher.svelte';
@@ -252,8 +253,9 @@
 				<a
 					href={value}
 					class="block px-2 py-1 font-semibold text-surface-foreground dark:text-surface-foreground-dark"
-					>{key}</a
-				>
+					>
+						{$t(key)}
+				</a>
 			</div>
 		{/each}
 
