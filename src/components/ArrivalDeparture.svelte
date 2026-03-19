@@ -1,6 +1,7 @@
 <script>
 	import { t } from 'svelte-i18n';
 	import { msToLocalArrivalDepartureTimeString } from '$lib/dateTimeFormat';
+	import { bookmarks } from '$src/stores/bookmarksStore';
 	let { arrivalDeparture, includeArrivalDepartureInStatusLabel = true } = $props();
 
 	const MS_IN_MINS = 60000;
@@ -209,6 +210,8 @@
 	});
 
 	let arrivalInfo = $derived(computeArrivalInfo(currentTime));
+
+	let isSaved = $state(false);
 </script>
 
 <div class="flex flex-col gap-1">
@@ -226,4 +229,21 @@
 	<p class="text-lg font-semibold {arrivalInfo.color}">
 		{arrivalInfo.timeText}
 	</p>
+	<button
+		type="button"
+		class="mt-2 block w-max p-4 rounded bg-black py-2 text-sm font-semibold text-white hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-accent"
+		onclick={(e) => {
+			e.stopPropagation();
+			if (isSaved) {
+				return;
+			}
+			bookmarks.save({
+				routeName: arrivalDeparture.routeShortName || arrivalDeparture.routeLongName || null,
+				description: arrivalDeparture.tripHeadsign || arrivalDeparture.routeLongName || ""
+			});
+			isSaved = true;
+		}}
+	>
+		{isSaved ? 'Saved' : 'Save Route'}
+	</button>
 </div>

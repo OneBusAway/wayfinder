@@ -162,7 +162,7 @@
 		location = results.location;
 		query = results.query;
 	}
-
+ 
 	function clearResults() {
 		if (polylines) {
 			mapProvider.clearAllPolylines();

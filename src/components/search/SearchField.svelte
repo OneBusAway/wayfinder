@@ -1,7 +1,8 @@
 <script>
 	import { t } from 'svelte-i18n';
 	import analytics from '$lib/Analytics/PlausibleAnalytics';
-
+	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 	/**
 	 * @typedef {Object} Props
 	 * @property {string} [value]
@@ -9,9 +10,14 @@
 
 	/** @type {Props} */
 	let { value = $bindable(''), handleSearchResults } = $props();
-
+	const routeNameFromBookmarks = $page.state?.name;
+	const previousPage = $page.state?.previousPage;
 	async function handleSearch() {
 		try {
+			// If user is coming from bookmarks and has a route name in state, prioritize that for search results
+			if (!value && previousPage === 'bookmarks' && routeNameFromBookmarks) {
+				value = routeNameFromBookmarks;
+			}
 			const trimmedValue = (value || '').trim();
 			const response = await fetch(`/api/oba/search?query=${encodeURIComponent(trimmedValue)}`);
 			const results = await response.json();
@@ -32,6 +38,13 @@
 			handleSearch();
 		}
 	};
+
+	// If user is coming from bookmarks and has a route name in state, automatically perform search on mount
+	onMount(() => {
+		if (previousPage === 'bookmarks' && routeNameFromBookmarks) {
+			handleSearch();
+		}
+	});
 </script>
 
 <div>
