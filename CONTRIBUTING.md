@@ -18,7 +18,7 @@ If you have an idea for something new, open an issue first to discuss it. This s
 
 - **Link to the issue** your PR addresses (e.g., "Closes #123").
 - **Keep PRs focused and small.** One feature or fix per PR. If you're touching multiple unrelated things, split them up.
-- **Run formatting before pushing:** `npm run format` takes care of Prettier. Run `npm run lint` to catch anything ESLint flags. Even better, run `npm run prepush` which does formatting, linting, and tests all at once.
+- **Run formatting before pushing:** `npm run format` takes care of Prettier. Run `npm run lint` to catch anything ESLint flags.
 - **Write a clear description** of what you changed and why. Reviewers shouldn't have to reverse-engineer your intent from the diff.
 - **Make sure tests pass.** Run `npm run test` locally. If you're adding new functionality, add tests for it.
 
