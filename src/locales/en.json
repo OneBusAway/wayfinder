@@ -7,6 +7,7 @@
 		"miles": "miles"
 	},
 	"trip-planner": {
+    "plan_this_trip": "Plan this trip",
 		"arrive": "Arrive",
 		"depart": "Depart",
 		"today": "Today",
@@ -161,6 +162,7 @@
 		"NW": "Northwest"
 	},
 	"service_alerts": {
+    "view_alert_details": "View alert details",
 		"more_info": "More info",
 		"close": "Close",
 		"service_alerts": "Service Alerts",

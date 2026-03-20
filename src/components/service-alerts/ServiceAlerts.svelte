@@ -101,7 +101,7 @@
 {/if}
 
 {#if $modalOpen && modalAlert}
-	<div class="center" onkeydown={handleKeydown} role="button" tabindex="0">
+	<div class="center" onkeydown={handleKeydown} role="button" aria-label={$t("service_alerts.close")} tabindex="0">
 		<Modal
 			outsideclose={true}
 			title={modalAlert?.summary?.value || $t('service_alerts.service_alert')}
