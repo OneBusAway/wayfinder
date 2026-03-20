@@ -8,7 +8,7 @@
 
 <div
 	class="flex cursor-pointer items-start gap-3 rounded-lg p-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-	role="button"
+	role="button" aria-label={$t("service_alerts.view_alert_details")}
 	tabindex="0"
 	onclick={() => openModal(alert)}
 	onkeydown={(e) => {

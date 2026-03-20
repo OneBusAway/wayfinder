@@ -35,7 +35,7 @@
 		<div class="space-y-2">
 			{#each $recentTrips as trip (trip.id)}
 				<div
-					role="button"
+					role="button" aria-label={$t("trip-planner.plan_this_trip")}
 					tabindex="0"
 					class="dark:hover:bg-gray-750 group relative flex w-full items-center rounded-lg border border-gray-200 bg-white p-2.5 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
 					onclick={() => handleTripClick(trip)}
