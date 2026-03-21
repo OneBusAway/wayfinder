@@ -464,11 +464,15 @@ export default class OpenStreetMapProvider {
 		}
 
 		const withArrow = options.withArrow ?? true;
+		const targetOpacity = options.opacity ?? 1;
+
+		// Used to avoid running fade/arrow logic after the polyline was removed.
+		const fadeInToken = Symbol('fadeInToken');
 
 		const polylineOpts = {
 			color: options.color || COLORS.POLYLINE,
 			weight: options.weight || 4,
-			opacity: options.opacity ?? 1
+			opacity: 0
 		};
 		if (options.dashArray) {
 			polylineOpts.dashArray = options.dashArray;
@@ -477,7 +481,65 @@ export default class OpenStreetMapProvider {
 
 		this.polylines.push(polyline);
 
-		if (!withArrow) return polyline;
+		polyline.__fadeInToken = fadeInToken;
+		polyline.__fadeInRafId = null;
+		polyline.__fadeDeferredMoveEnd = null;
+
+		// Defer fade-in until the route is relevant to what the user sees:
+		// - Already intersects the viewport → start immediately.
+		// - Otherwise wait for the next moveend (e.g. after flyTo / pan / zoom), then start.
+		// startTime is taken when the fade actually begins so the 600ms isn't "burned" while off-screen.
+		const beginFadeIn = () => {
+			if (polyline.__fadeInToken !== fadeInToken || !this.map?.hasLayer(polyline)) return;
+
+			const durationMs = 600;
+			const startTime = performance.now();
+			const step = (now) => {
+				if (polyline.__fadeInToken !== fadeInToken || !this.map?.hasLayer(polyline)) {
+					polyline.__fadeInRafId = null;
+					return;
+				}
+
+				const elapsed = now - startTime;
+				const progress = Math.min(elapsed / durationMs, 1);
+
+				if (progress < 1) {
+					const easedProgress = 1 - Math.pow(1 - progress, 3);
+					polyline.setStyle({ opacity: targetOpacity * easedProgress });
+					polyline.__fadeInRafId = requestAnimationFrame(step);
+				} else {
+					polyline.setStyle({ opacity: targetOpacity });
+					if (withArrow) {
+						this.addArrowDecorator(polyline);
+					}
+					polyline.__fadeInRafId = null;
+				}
+			};
+
+			polyline.__fadeInRafId = requestAnimationFrame(step);
+		};
+
+		const polyBounds = polyline.getBounds();
+		const mapBounds = this.map.getBounds();
+		const overlapsViewport = mapBounds.intersects(polyBounds);
+
+		if (overlapsViewport) {
+			beginFadeIn();
+		} else {
+			const onMoveEnd = () => {
+				this.map.off('moveend', onMoveEnd);
+				polyline.__fadeDeferredMoveEnd = null;
+				beginFadeIn();
+			};
+			polyline.__fadeDeferredMoveEnd = onMoveEnd;
+			this.map.on('moveend', onMoveEnd);
+		}
+
+		return polyline;
+	}
+
+	addArrowDecorator(polyline) {
+		if (!polyline || !this.L || !this.map) return null;
 
 		const arrowDecorator = this.L.polylineDecorator(polyline, {
 			patterns: [
@@ -498,12 +560,23 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 
 		polyline.arrowDecorator = arrowDecorator;
-
-		return polyline;
+		return arrowDecorator;
 	}
 
 	removePolyline(polyline) {
 		if (!polyline) return;
+
+		if (polyline.__fadeDeferredMoveEnd && this.map) {
+			this.map.off('moveend', polyline.__fadeDeferredMoveEnd);
+			polyline.__fadeDeferredMoveEnd = null;
+		}
+
+		if (polyline.__fadeInRafId != null) {
+			cancelAnimationFrame(polyline.__fadeInRafId);
+			polyline.__fadeInRafId = null;
+		}
+
+		polyline.__fadeInToken = null;
 
 		if (polyline.arrowDecorator) {
 			polyline.arrowDecorator.remove();
@@ -527,6 +600,15 @@ export default class OpenStreetMapProvider {
 
 		this.polylines.forEach((polyline) => {
 			if (polyline) {
+				if (polyline.__fadeDeferredMoveEnd && this.map) {
+					this.map.off('moveend', polyline.__fadeDeferredMoveEnd);
+					polyline.__fadeDeferredMoveEnd = null;
+				}
+				if (polyline.__fadeInRafId != null) {
+					cancelAnimationFrame(polyline.__fadeInRafId);
+					polyline.__fadeInRafId = null;
+				}
+				polyline.__fadeInToken = null;
 				if (polyline.arrowDecorator) {
 					polyline.arrowDecorator.remove();
 					polyline.arrowDecorator = null;
