@@ -3,8 +3,9 @@
     This Svelte component renders a FontAwesome arrow icon that rotates based on the provided `stopDirection` prop.
 
     Props:
-    - `stopDirection` (string): The direction in which the arrow should point. 
-      Possible values are 'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'. 
+    - `heading` (number, optional): Degrees for `transform: rotate(Ndeg)` (takes precedence over stopDirection).
+    - `stopDirection` (string): The direction in which the arrow should point when `heading` is not set.
+      Possible values are 'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'.
       If the value is not one of these, the arrow will be hidden.
 -->
 
@@ -15,10 +16,11 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {string} [stopDirection]
+	 * @property {number} [heading]
 	 */
 
 	/** @type {Props} */
-	let { stopDirection = '' } = $props();
+	let { stopDirection = '', heading } = $props();
 
 	function rotationAngleClass() {
 		switch (stopDirection) {
@@ -44,4 +46,10 @@
 	}
 </script>
 
-<FontAwesomeIcon icon={faArrowRight} class={rotationAngleClass()} />
+{#if typeof heading === 'number'}
+	<span class="inline-block" style="transform: rotate({heading}deg);">
+		<FontAwesomeIcon icon={faArrowRight} class="" />
+	</span>
+{:else}
+	<FontAwesomeIcon icon={faArrowRight} class={rotationAngleClass()} />
+{/if}

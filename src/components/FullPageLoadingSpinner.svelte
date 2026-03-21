@@ -1,7 +1,10 @@
 <script>
 	import { t } from 'svelte-i18n';
+
+	let { visible = true } = $props();
 </script>
 
+{#if visible}
 <div
 	class="flex h-full items-center justify-center bg-neutral-800 bg-gradient-to-br from-zinc-300 to-zinc-700 dark:from-zinc-500"
 >
@@ -23,3 +26,4 @@
 		{$t('loading')}...
 	</div>
 </div>
+{/if}
