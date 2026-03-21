@@ -1,8 +1,11 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test, describe, vi } from 'vitest';
+import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import StopModal from '../StopModal.svelte';
-import { mockStopData } from '../../../tests/fixtures/obaData.js';
+import {
+	mockStopData,
+	mockArrivalsAndDeparturesResponse
+} from '../../../tests/fixtures/obaData.js';
 
 // Allow child components to render naturally - they should be properly implemented
 
@@ -22,6 +25,19 @@ vi.mock('svelte-i18n', () => ({
 	}
 }));
 
+function stubArrivalsFetch() {
+	// StopPane fetches arrivals on mount; stub so CI never hangs on network/timing.
+	vi.stubGlobal(
+		'fetch',
+		vi.fn(() =>
+			Promise.resolve({
+				ok: true,
+				json: () => Promise.resolve(mockArrivalsAndDeparturesResponse)
+			})
+		)
+	);
+}
+
 describe('StopModal', () => {
 	const defaultProps = {
 		stop: mockStopData,
@@ -29,6 +45,12 @@ describe('StopModal', () => {
 		handleUpdateRouteMap: vi.fn(),
 		tripSelected: vi.fn()
 	};
+
+	beforeEach(stubArrivalsFetch);
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
 
 	test('renders modal with stop name as title', () => {
 		render(StopModal, { props: defaultProps });
@@ -54,22 +76,33 @@ describe('StopModal', () => {
 		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 	});
 
-	test('handles closePane function prop', async () => {
-		const closePaneFn = vi.fn();
-		const props = {
-			...defaultProps,
-			closePane: closePaneFn
-		};
+	test(
+		'handles closePane function prop',
+		async () => {
+			const closePaneFn = vi.fn();
+			const props = {
+				...defaultProps,
+				closePane: closePaneFn
+			};
 
-		const user = userEvent.setup();
-		render(StopModal, { props });
+			const user = userEvent.setup({ delay: null });
+			render(StopModal, { props });
 
-		// Click the close button to test the closePane function
-		const closeButton = screen.getByRole('button', { name: /close/i });
-		await user.click(closeButton);
+			const closeButton = await waitFor(() =>
+				screen.getByRole('button', { name: /close/i })
+			);
 
-		expect(closePaneFn).toHaveBeenCalledTimes(1);
-	});
+			await user.click(closeButton);
+
+			await waitFor(
+				() => {
+					expect(closePaneFn).toHaveBeenCalledTimes(1);
+				},
+				{ timeout: 10000 }
+			);
+		},
+		15000
+	);
 
 	test('handles handleUpdateRouteMap function prop', () => {
 		const updateRouteMapFn = vi.fn();
@@ -221,6 +254,12 @@ describe('StopModal Integration', () => {
 		handleUpdateRouteMap: vi.fn(),
 		tripSelected: vi.fn()
 	};
+
+	beforeEach(stubArrivalsFetch);
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
 
 	test('modal integration works properly', () => {
 		// Test the actual integration between ModalPane and StopPane

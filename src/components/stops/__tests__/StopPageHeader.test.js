@@ -129,11 +129,11 @@ describe('StopPageHeader', () => {
 		render(StopPageHeader, { props: defaultProps });
 
 		// Check for arrivals & departures tab
-		const arrivalsTab = screen.getByRole('link', { name: /arrivals & departures/i });
+		const arrivalsTab = screen.getByRole('tab', { name: /arrivals & departures/i });
 		expect(arrivalsTab).toHaveAttribute('href', '/stops/1_75403');
 
 		// Check for schedule tab
-		const scheduleTab = screen.getByRole('link', { name: /route schedules/i });
+		const scheduleTab = screen.getByRole('tab', { name: /route schedules/i });
 		expect(scheduleTab).toHaveAttribute('href', '/stops/1_75403/schedule');
 	});
 
@@ -146,9 +146,10 @@ describe('StopPageHeader', () => {
 
 		render(StopPageHeader, { props: defaultProps });
 
-		const arrivalsTab = screen.getByRole('link', { name: /arrivals & departures/i });
+		const arrivalsTab = screen.getByRole('tab', { name: /arrivals & departures/i });
 		// The active tab should have the current prop set to true
 		expect(arrivalsTab).toBeInTheDocument();
+		expect(arrivalsTab).toHaveAttribute('aria-selected', 'true');
 	});
 
 	test('highlights schedule tab when on schedule page', () => {
@@ -160,8 +161,10 @@ describe('StopPageHeader', () => {
 
 		render(StopPageHeader, { props: defaultProps });
 
-		const scheduleTab = screen.getByRole('link', { name: /route schedules/i });
+		const scheduleTab = screen.getByRole('tab', { name: /route schedules/i });
 		expect(scheduleTab).toBeInTheDocument();
+		// Note: $app/stores is statically mocked to the arrivals route; schedule `current`
+		// is not reflected unless the page mock is made dynamic.
 	});
 
 	test('handles different stop directions', () => {
@@ -187,10 +190,10 @@ describe('StopPageHeader', () => {
 		expect(screen.getByText('12345')).toBeInTheDocument();
 
 		// Check that tab links use the new stop ID
-		const arrivalsTab = screen.getByRole('link', { name: /arrivals & departures/i });
+		const arrivalsTab = screen.getByRole('tab', { name: /arrivals & departures/i });
 		expect(arrivalsTab).toHaveAttribute('href', '/stops/1_12345');
 
-		const scheduleTab = screen.getByRole('link', { name: /route schedules/i });
+		const scheduleTab = screen.getByRole('tab', { name: /route schedules/i });
 		expect(scheduleTab).toHaveAttribute('href', '/stops/1_12345/schedule');
 	});
 
@@ -229,18 +232,16 @@ describe('StopPageHeader', () => {
 		expect(heading).toBeInTheDocument();
 
 		const allLinks = screen.getAllByRole('link');
-		expect(allLinks).toHaveLength(3);
+		expect(allLinks).toHaveLength(1);
 
 		const backToMapLink = screen.getByRole('link', { name: /back to map/i });
 		expect(backToMapLink).toBeInTheDocument();
 		expect(backToMapLink).toHaveAttribute('href', '/');
 
-		const tabLinks = allLinks.filter(
-			(link) =>
-				link.textContent.includes('Arrivals & Departures') ||
-				link.textContent.includes('Route Schedules')
-		);
-		expect(tabLinks).toHaveLength(2);
+		const tabs = screen.getAllByRole('tab');
+		expect(tabs).toHaveLength(2);
+		expect(tabs[0]).toHaveTextContent(/arrivals & departures/i);
+		expect(tabs[1]).toHaveTextContent(/route schedules/i);
 	});
 
 	test('information sections have proper layout', () => {
