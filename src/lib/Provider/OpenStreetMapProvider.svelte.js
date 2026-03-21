@@ -11,7 +11,7 @@ import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/gen
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
-
+import {PUBLIC_MAPLIBRE_STYLE} from '$env/static/public';
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
@@ -22,7 +22,7 @@ export default class OpenStreetMapProvider {
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
-		this.maplibreLayer = 'positron';
+		this.maplibreLayer = PUBLIC_MAPLIBRE_STYLE || 'positron';
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.showStopsRoutesAtZoom = 16;
@@ -49,12 +49,6 @@ export default class OpenStreetMapProvider {
 		this.map = this.L.map(element, { zoomControl: false }).setView([options.lat, options.lng], 14);
 
 		this.L.control.zoom({ position: 'bottomright' }).addTo(this.map);
-
-		// TODO: Make this configurable through env file
-
-		/*
-		 * for more styles https://github.com/teamapps-org/maplibre-gl-styles
-		 */
 		this.maplibreLayer = this.L.maplibreGL({
 			style: `https://tiles.openfreemap.org/styles/${this.maplibreLayer}`,
 			interactive: true,
