@@ -198,5 +198,10 @@
 		"type": "enum",
 		"enum": ["native", "english", "native-english", "english-native", "code"],
 		"description": "Display format for the language switcher dropdown menu"
+	},
+	"PUBLIC_MAPLIBRE_STYLE" : {
+		"required": false,
+		"type": "string",
+		"description": "Defines a style for MapLibre map. Defaults to positron if not set"
 	}
-}
+} 
