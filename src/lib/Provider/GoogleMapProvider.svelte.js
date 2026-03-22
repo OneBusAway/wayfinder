@@ -351,18 +351,18 @@ export default class GoogleMapProvider {
 
 		this.vehicleMarkers.push(marker);
 
-		const vehicleData = {
+		marker.vehicleData = $state({
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
 			predicted: vehicle.predicted
-		};
+		});
 
 		const popupContainer = document.createElement('div');
 		marker.popupComponent = mount(VehiclePopupContent, {
 			target: popupContainer,
-			props: vehicleData
+			props: marker.vehicleData
 		});
 
 		marker.infoWindow = new google.maps.InfoWindow({
@@ -393,17 +393,13 @@ export default class GoogleMapProvider {
 			anchor: new google.maps.Point(iconWidth / 2, iconHeight / 2)
 		});
 
-		const updatedData = {
+		Object.assign(marker.vehicleData, {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicleStatus.vehicleId,
 			lastUpdateTime: vehicleStatus.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name,
+			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
 			predicted: vehicleStatus.predicted
-		};
-
-		if (marker.popupComponent) {
-			marker.popupComponent.$set(updatedData);
-		}
+		});
 	}
 
 	removeVehicleMarker(marker) {
