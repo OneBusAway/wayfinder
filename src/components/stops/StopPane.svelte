@@ -19,8 +19,77 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} stop
-	 * @property {any} [arrivalsAndDeparturesResponse]
+	 * @property {{
+	 *   id: string,
+	 *   name: string,
+	 *   lat: number,
+	 *   lon: number,
+	 *   direction: string,
+	 *   routeIds: string[],
+	 *   routes: {
+	 *     id: string,
+	 *     shortName: string,
+	 *     type: number
+	 *   }[]
+	 * }} stop
+	 * @property {{
+	 *   entry: {
+	 *     stopId: string,
+	 *     arrivalsAndDepartures: {
+	 *       routeId: string,
+	 *       routeShortName: string,
+	 *       routeLongName: string,
+	 *       tripId: string,
+	 *       tripHeadsign: string,
+	 *       serviceDate: number,
+	 *       predicted: boolean,
+	 *       scheduleDeviation: number,
+	 *       distanceFromStop: number,
+	 *       numberOfStopsAway: number,
+	 *       tripStatus: {
+	 *         activeTripId: string,
+	 *         vehicleId: string,
+	 *         position: { lat: number, lon: number },
+	 *         orientation: number,
+	 *         status: string
+	 *       } | null,
+	 *       frequency: any | null,
+	 *       predictedArrivalTime: number | null,
+	 *       scheduledArrivalTime: number,
+	 *       predictedDepartureTime: number | null,
+	 *       scheduledDepartureTime: number,
+	 *       status: string,
+	 *       lastUpdateTime: number,
+	 *       blockTripSequence: number,
+	 *       vehicleId: string | null
+	 *     }[],
+	 *   },
+	 *   references: {
+	 *     routes: {
+	 *       id: string,
+	 *       nullSafeShortName: string,
+	 *       shortName: string,
+	 *       longName: string,
+	 *       description: string,
+	 *       type: number,
+	 *       url: string,
+	 *       color: string,
+	 *       textColor: string
+	 *     }[],
+	 *     situations: {
+	 *       id: string,
+	 *       summary: string,
+	 *       description: string,
+	 *       severity: string,
+	 *       reason: string,
+	 *       effect: string,
+	 *       cause: string,
+	 *       url: string,
+	 *       activeWindows: { from: number, to: number }[],
+	 *       informedEntities: { agencyId: string, routeId: string | null, stopId: string | null, tripId: string | null }[]
+	 *     }[]
+	 *   }
+	 * }} [arrivalsAndDeparturesResponse]
 	 */
 
 	/** @type {Props} */

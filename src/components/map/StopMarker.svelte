@@ -4,13 +4,23 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} stop
-	 * @property {any} onClick
-	 * @property {any} icon
+	 * @property {{
+	 *   id: string,
+	 *   name: string,
+	 *   lat: number,
+	 *   lon: number,
+	 *   direction: string,
+	 *   routes: {
+	 *     id: string,
+	 *     shortName: string,
+	 *     type: number
+	 *   }[]
+	 * }} stop
+	 * @property {() => void} onClick
+	 * @property {import('@fortawesome/fontawesome-svg-core').IconDefinition} icon
 	 * @property {boolean} [isHighlighted]
 	 * @property {boolean} [showRoutesLabel]
 	 */
-
 	/** @type {Props} */
 	let { stop, onClick, icon, isHighlighted = false, showRoutesLabel = false } = $props();
 
