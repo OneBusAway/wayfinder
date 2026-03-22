@@ -16,7 +16,15 @@ const vehicleMarkersMap = new Map();
 export async function fetchVehicles(routeId) {
 	const response = await fetch(`/api/oba/trips-for-route/${routeId}`);
 	const responseBody = await response.json();
-	return responseBody.data || {};
+	if (!response.ok) {
+		console.warn('fetchVehicles: request failed', routeId, response.status);
+		return { references: { trips: [] }, list: [] };
+	}
+	const data = responseBody.data;
+	if (!data?.references?.trips || !Array.isArray(data.list)) {
+		return { references: { trips: [] }, list: [] };
+	}
+	return data;
 }
 
 export async function updateVehicleMarkers(routeId, mapProvider, routeType) {
@@ -34,7 +42,8 @@ export async function updateVehicleMarkers(routeId, mapProvider, routeType) {
 		const activeTripId = tripStatus?.status?.activeTripId;
 		const activeTrip = activeTripMap.get(activeTripId);
 
-		if (activeTrip && activeTrip?.routeId === routeId && tripStatus.status !== 'CANCELED') {
+		// OBA puts the trip state string on status.status (e.g. SCHEDULED, CANCELED), not on status itself
+		if (activeTrip && activeTrip?.routeId === routeId && tripStatus.status?.status !== 'CANCELED') {
 			const vehicleStatus = tripStatus.status;
 
 			activeTripIds.add(activeTripId);
