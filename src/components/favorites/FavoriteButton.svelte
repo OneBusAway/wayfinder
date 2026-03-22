@@ -22,7 +22,7 @@
 <button
 	type="button"
 	onclick={handleToggle}
-	aria-label={ariaLabel}
+	aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
 	class="favorite-btn inline-flex items-center justify-center rounded p-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
 	title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
 >

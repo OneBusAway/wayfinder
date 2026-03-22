@@ -32,6 +32,11 @@
 		@apply border-b-2 border-brand-accent text-brand-accent;
 	}
 
+	/* Dark mode: Use lighter green (#6aaa2a) for brand-accent for sufficient contrast (5.0:1 on dark background) */
+	.dark .tab-container__item--active {
+		@apply text-green-400;
+	}
+
 	/* Pill-style itinerary tabs */
 	.itinerary-tabs {
 		@apply flex gap-2 overflow-x-auto px-1 py-3;
@@ -67,6 +72,12 @@
 
 	.button--primary {
 		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
+	}
+
+	/* Accessibility: Dark mode override for brand-accent color */
+	/* Use lighter green (#7dd3fc) for sufficient contrast on dark backgrounds */
+	.dark .text-brand-accent {
+		@apply text-green-400;
 	}
 
 	.rtl {

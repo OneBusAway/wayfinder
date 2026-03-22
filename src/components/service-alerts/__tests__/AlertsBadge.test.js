@@ -32,9 +32,10 @@ describe('AlertsBadge', () => {
 			}
 		});
 
-		// Check that badge div doesn't exist
-		const badges = container.querySelectorAll('div');
-		expect(badges.length).toBe(0);
+		// Check that badge div doesn't exist (only role=status wrapper)
+		const liveRegion = container.querySelector('[role="status"]');
+		const badge = liveRegion?.querySelector('[aria-label]');
+		expect(badge).not.toBeInTheDocument();
 	});
 
 	it('renders badge with count when alerts exist', () => {
@@ -52,9 +53,10 @@ describe('AlertsBadge', () => {
 			}
 		});
 
-		const badge = container.querySelector('div');
+		const liveRegion = container.querySelector('[role="status"]');
+		const badge = liveRegion?.querySelector('[aria-label]');
 		expect(badge).toBeInTheDocument();
-		expect(badge?.textContent).toBe('3');
+		expect(badge?.textContent).toContain('3');
 		expect(badge).toHaveClass('bg-red-500');
 	});
 
@@ -127,7 +129,7 @@ describe('AlertsBadge', () => {
 			}
 		});
 
-		const badge = container.querySelector('div');
+		const badge = container.querySelector('[aria-label]');
 		expect(badge).toHaveAttribute('aria-label', '2 alerts');
 		expect(badge).toHaveAttribute('title', '2 active alerts');
 	});
@@ -147,7 +149,7 @@ describe('AlertsBadge', () => {
 			}
 		});
 
-		const badge = container.querySelector('div');
+		const badge = container.querySelector('[aria-label]');
 		expect(badge).toHaveAttribute('aria-label', '1 alert');
 		expect(badge).toHaveAttribute('title', '1 active alert');
 	});

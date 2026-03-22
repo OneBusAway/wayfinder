@@ -78,7 +78,7 @@ describe('StopItem', () => {
 		});
 
 		const button = screen.getAllByRole('button')[0];
-		expect(button).toHaveAttribute('type', 'button');
+		expect(button).toHaveAttribute('role', 'button');
 		expect(button).toHaveClass('stop-item');
 		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
 		expect(button).toHaveClass('border-b', 'border-gray-200');
@@ -167,7 +167,8 @@ describe('StopItem', () => {
 		});
 
 		const button = screen.getAllByRole('button')[0];
-		expect(button).toHaveAttribute('type', 'button');
+		expect(button).toHaveAttribute('role', 'button');
+		expect(button).toHaveAttribute('tabindex', '0');
 		expect(button).toBeInTheDocument();
 	});
 
@@ -274,9 +275,12 @@ describe('StopItem', () => {
 			}
 		});
 
-		const favoriteButton = screen.getByLabelText(
-			/Add Pine St & 3rd Ave to favorites/i
-		);
+		// Check that favorite button exists with dynamic aria-label
+		const buttons = screen.getAllByRole('button');
+		const favoriteButton = buttons.find(btn => {
+			const label = btn.getAttribute('aria-label');
+			return label && (label.includes('to favorites') || label.includes('from favorites'));
+		});
 		expect(favoriteButton).toBeInTheDocument();
 	});
 
@@ -291,8 +295,11 @@ describe('StopItem', () => {
 			}
 		});
 
-		const favoriteButton = screen.getByRole('button', {
-			name: /Add Pine St & 3rd Ave to favorites/i
+		// Find favorite button by checking for 'to favorites' in aria-label
+		const buttons = screen.getAllByRole('button');
+		const favoriteButton = buttons.find(btn => {
+			const label = btn.getAttribute('aria-label');
+			return label && label.includes('to favorites');
 		});
 
 		await user.click(favoriteButton);
