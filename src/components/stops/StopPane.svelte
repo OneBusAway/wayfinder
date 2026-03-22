@@ -11,6 +11,7 @@
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
 	import { surveyStore, showSurveyModal, markSurveyAnswered } from '$stores/surveyStore';
+	import { arrivalUpdatesStore } from '$stores/arrivalUpdatesStore';
 	import { getUserId } from '$lib/utils/user';
 	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
 	import analytics from '$lib/Analytics/PlausibleAnalytics';
@@ -59,6 +60,16 @@
 			}
 
 			const data = await response.json();
+			const newArrivals = data.data.entry.arrivalsAndDepartures;
+			
+			// Track arrival changes for dynamic updates
+			if (arrivalsAndDepartures?.arrivalsAndDepartures) {
+				arrivalUpdatesStore.updateArrivals(
+					arrivalsAndDepartures.arrivalsAndDepartures,
+					newArrivals
+				);
+			}
+			
 			arrivalsAndDeparturesResponse = data;
 			arrivalsAndDepartures = data.data.entry;
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
@@ -75,6 +86,7 @@
 		if (interval) clearInterval(interval);
 
 		loadData(stopID);
+		arrivalUpdatesStore.startPolling(stopID, () => loadData(stopID));
 
 		interval = setInterval(() => {
 			loadData(stopID);
@@ -90,6 +102,7 @@
 
 	onDestroy(() => {
 		if (interval) clearInterval(interval);
+		arrivalUpdatesStore.stopPolling();
 	});
 
 	let routeShortNames = $derived(
