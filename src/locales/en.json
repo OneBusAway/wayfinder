@@ -53,6 +53,7 @@
 		"swap_locations": "Swap From and To locations",
 		"error_code": "Error code",
 		"remove_recent_trip": "Remove recent trip",
+		"recent_trip": "Use recent trip from {from} to {to}",
 		"recent_searches": "Recent Searches",
 		"clear_all": "Clear All"
 	},
@@ -170,7 +171,9 @@
 		"no_description": "No detailed description available for this alert",
 		"page": "Page",
 		"show": "Show",
-		"hide": "Hide"
+		"hide": "Hide",
+		"open_alert": "Open service alert details: {summary}",
+		"alert_modal": "Service alert details dialog"
 	},
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
