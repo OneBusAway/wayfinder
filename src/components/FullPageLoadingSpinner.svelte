@@ -3,10 +3,14 @@
 </script>
 
 <div
+	role="status"
+	aria-live="polite"
+	aria-label={$t('loading_page')}
 	class="flex h-full items-center justify-center bg-neutral-800 bg-gradient-to-br from-zinc-300 to-zinc-700 dark:from-zinc-500"
 >
 	<div class="flex items-center font-semibold text-white">
 		<svg
+			aria-hidden="true"
 			class="-ml-1 mr-3 h-5 w-5 animate-spin"
 			xmlns="http://www.w3.org/2000/svg"
 			fill="none"
