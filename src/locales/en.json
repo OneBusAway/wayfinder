@@ -51,6 +51,7 @@
 		"unit_metric": "Metric (km, m)",
 		"unit_imperial": "Imperial (mi, ft)",
 		"swap_locations": "Swap From and To locations",
+		"clear": "Clear",
 		"error_code": "Error code",
 		"remove_recent_trip": "Remove recent trip",
 		"recent_searches": "Recent Searches",
@@ -171,6 +172,9 @@
 		"page": "Page",
 		"show": "Show",
 		"hide": "Hide"
+	},
+	"survey": {
+		"required_question": "Required question"
 	},
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
