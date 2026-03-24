@@ -1,4 +1,5 @@
 {
+    "loading_page": "Page is loading, please wait",
 	"units": {
 		"meters": "m",
 		"kilometers": "km",
@@ -23,7 +24,6 @@
 		"meters": "meters",
 		"no_itineraries_found": "No itineraries found",
 		"loading": "Loading",
-		"loading_page": "Page is loading, please wait",
 		"planning": "Planning",
 		"from": "From",
 		"to": "To",
