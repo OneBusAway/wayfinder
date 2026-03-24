@@ -1,12 +1,24 @@
-import { writable, derived } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 const REFRESH_INTERVAL = 30 * 1000; // 30 seconds
 
+function compareArrivals(oldArrivals, newArrivals) {
+	// Create ID sets for comparison
+	const oldIds = new Set(oldArrivals.map((a) => a.tripId || a.id));
+	const newIds = new Set(newArrivals.map((a) => a.tripId || a.id));
+
+	// Find new arrivals
+	const added = newArrivals.filter((a) => !oldIds.has(a.tripId || a.id));
+
+	// Find removed arrivals
+	const removed = oldArrivals.filter((a) => !newIds.has(a.tripId || a.id));
+
+	return { added, removed };
+}
+
 function createArrivalUpdatesStore() {
 	let refreshInterval = null;
-	let stopId = null;
-	let fetchCallback = null;
 
 	const isPolling = writable(false);
 	const lastUpdated = writable(null);
@@ -14,25 +26,8 @@ function createArrivalUpdatesStore() {
 	const removedArrivals = writable([]);
 	const previousArrivals = writable([]);
 
-	function compareArrivals(oldArrivals, newArrivals) {
-		// Create ID sets for comparison
-		const oldIds = new Set(oldArrivals.map((a) => a.tripId || a.id));
-		const newIds = new Set(newArrivals.map((a) => a.tripId || a.id));
-
-		// Find new arrivals
-		const added = newArrivals.filter((a) => !oldIds.has(a.tripId || a.id));
-
-		// Find removed arrivals
-		const removed = oldArrivals.filter((a) => !newIds.has(a.tripId || a.id));
-
-		return { added, removed };
-	}
-
 	function startPolling(sid, fetchFn) {
 		if (!browser) return;
-
-		stopId = sid;
-		fetchCallback = fetchFn;
 
 		if (refreshInterval) {
 			clearInterval(refreshInterval);
@@ -65,8 +60,6 @@ function createArrivalUpdatesStore() {
 		}
 
 		isPolling.set(false);
-		stopId = null;
-		fetchCallback = null;
 		newArrivals.set([]);
 		removedArrivals.set([]);
 	}

@@ -23,7 +23,7 @@
 				</div>
 			</div>
 		</div>
-		<FavoriteButton id={stop.id} type="stop" ariaLabel={`Add ${stop.name} to favorites`} />
+		<FavoriteButton id={stop.id} type="stop" name={stop.name} ariaLabel={`Add ${stop.name} to favorites`} />
 	</div>
 	<AlertsBadge id={stop.id} type="stop" />
 </div>

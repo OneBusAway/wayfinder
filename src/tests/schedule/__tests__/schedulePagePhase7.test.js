@@ -1,34 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('Schedule Page - Phase 7 Features', () => {
-	let component;
-	let mockScheduleData;
-
 	beforeEach(() => {
-		mockScheduleData = {
-			entry: {
-				stopRouteSchedules: [
-					{
-						routeId: 'route1',
-						stopRouteDirectionSchedules: [
-							{
-								tripHeadsign: 'Downtown',
-								scheduleStopTimes: [
-									{ arrivalTime: new Date('2026-03-23T08:15:00').getTime() },
-									{ arrivalTime: new Date('2026-03-23T10:30:00').getTime() },
-									{ arrivalTime: new Date('2026-03-23T18:45:00').getTime() },
-									{ arrivalTime: new Date('2026-03-23T20:00:00').getTime() }
-								]
-							}
-						]
-					}
-				]
-			},
-			references: {
-				stops: [{ id: 'stop1', name: 'Test Stop', direction: 'Eastbound' }],
-				routes: [{ id: 'route1', shortName: '44', longName: 'Route 44' }]
-			}
-		};
+		// Reset before each test
 	});
 
 	it('filters schedules by selected time - only shows departures after selected time', () => {
@@ -113,7 +87,6 @@ describe('Schedule Page - Phase 7 Features', () => {
 
 	it('shows default empty message when no schedules exist for date', () => {
 		const schedules = [];
-		const selectedTime = ''; // No time filter
 
 		const isEmpty = schedules.length === 0;
 

@@ -23,6 +23,7 @@
 		"meters": "meters",
 		"no_itineraries_found": "No itineraries found",
 		"loading": "Loading",
+		"loading_page": "Page is loading, please wait",
 		"planning": "Planning",
 		"from": "From",
 		"to": "To",
@@ -58,6 +59,7 @@
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",
+		"favorites": "Favorites",
 		"plan_trip": "Plan a Trip"
 	},
 	"search": {
@@ -186,5 +188,9 @@
 	"context-menu": {
 		"start_here": "Start Here",
 		"end_here": "End Here"
+	},
+	"favorites": {
+		"empty_state": "No favorites yet. Click the ⭐ on any stop to save it here!",
+		"remove": "Remove from favorites"
 	}
 }

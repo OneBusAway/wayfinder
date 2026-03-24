@@ -2,7 +2,7 @@
 	import { favorites } from '$stores/favoritesStore';
 	import { onMount } from 'svelte';
 
-	let { id, type = 'stop', ariaLabel = 'Add to favorites' } = $props();
+	let { id, type = 'stop', name = '' } = $props();
 
 	let isFavorited = $state(false);
 
@@ -15,7 +15,7 @@
 
 	function handleToggle(e) {
 		e.stopPropagation();
-		favorites.toggleFavorite(id, type);
+		favorites.toggleFavorite(id, type, name);
 	}
 </script>
 

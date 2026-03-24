@@ -1,10 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
 import StopItem from '$components/StopItem.svelte';
 import FavoriteButton from '$components/favorites/FavoriteButton.svelte';
 import AlertsBadge from '$components/service-alerts/AlertsBadge.svelte';
-import { favorites } from '$stores/favoritesStore';
 
 describe('Accessibility Tests', () => {
 	describe('StopItem Keyboard Accessibility', () => {

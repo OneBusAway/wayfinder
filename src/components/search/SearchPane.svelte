@@ -1,6 +1,7 @@
 <script>
 	import SearchField from '$components/search/SearchField.svelte';
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
+	import FavoritesPanel from '$components/search/FavoritesPanel.svelte';
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { faMapPin, faSignsPost } from '@fortawesome/free-solid-svg-icons';
@@ -314,6 +315,16 @@
 					{$t('search.for_a_list_of_available_routes')}</span
 				>
 			</div>
+		</TabItem>
+
+		<TabItem
+			open={activeTab === 'favorites'}
+			title={$t('tabs.favorites', { default: 'Favorites' })}
+			on:click={() => {
+				activeTab = 'favorites';
+			}}
+		>
+			<FavoritesPanel {handleStopMarkerSelect} {handleRouteSelected} {mapProvider} />
 		</TabItem>
 
 		{#if env.PUBLIC_OTP_SERVER_URL}

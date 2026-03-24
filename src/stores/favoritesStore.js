@@ -11,12 +11,10 @@ function createFavoritesStore() {
 			const stored = localStorage.getItem(STORAGE_KEY);
 			if (stored) {
 				const parsed = JSON.parse(stored);
-				if (Array.isArray(parsed)) {
-					initialFavorites = parsed;
-				}
+				initialFavorites = Array.isArray(parsed) ? parsed : [];
 			}
-		} catch (e) {
-			console.warn('Failed to load favorites from localStorage:', e);
+		} catch {
+			// localStorage access may fail in private browsing or when quota exceeded
 		}
 	}
 
@@ -25,17 +23,18 @@ function createFavoritesStore() {
 	return {
 		subscribe,
 
-		addFavorite: (id, type = 'stop') => {
+		addFavorite: (id, type = 'stop', name = '') => {
 			update((favorites) => {
-				const exists = favorites.some((fav) => fav.id === id && fav.type === type);
-				if (exists) return favorites;
+				if (favorites.some((fav) => fav.id === id && fav.type === type)) {
+					return favorites;
+				}
 
-				const newFavorites = [...favorites, { id, type, addedAt: Date.now() }];
+				const newFavorites = [...favorites, { id, type, name, addedAt: Date.now() }];
 				if (browser) {
 					try {
 						localStorage.setItem(STORAGE_KEY, JSON.stringify(newFavorites));
-					} catch (e) {
-						console.warn('Failed to persist favorites:', e);
+					} catch {
+						// localStorage may be full or unavailable
 					}
 				}
 				return newFavorites;
@@ -48,30 +47,26 @@ function createFavoritesStore() {
 				if (browser) {
 					try {
 						localStorage.setItem(STORAGE_KEY, JSON.stringify(newFavorites));
-					} catch (e) {
-						console.warn('Failed to persist favorites:', e);
+					} catch {
+						// localStorage may be full or unavailable
 					}
 				}
 				return newFavorites;
 			});
 		},
 
-		toggleFavorite: (id, type = 'stop') => {
+		toggleFavorite: (id, type = 'stop', name = '') => {
 			update((favorites) => {
 				const exists = favorites.some((fav) => fav.id === id && fav.type === type);
-				let newFavorites;
-
-				if (exists) {
-					newFavorites = favorites.filter((fav) => !(fav.id === id && fav.type === type));
-				} else {
-					newFavorites = [...favorites, { id, type, addedAt: Date.now() }];
-				}
+				const newFavorites = exists
+					? favorites.filter((fav) => !(fav.id === id && fav.type === type))
+					: [...favorites, { id, type, name, addedAt: Date.now() }];
 
 				if (browser) {
 					try {
 						localStorage.setItem(STORAGE_KEY, JSON.stringify(newFavorites));
-					} catch (e) {
-						console.warn('Failed to persist favorites:', e);
+					} catch {
+						// localStorage may be full or unavailable
 					}
 				}
 				return newFavorites;
@@ -80,22 +75,23 @@ function createFavoritesStore() {
 
 		isFavorite: (id, type = 'stop') => {
 			let result = false;
-			subscribe((favorites) => {
-				result = favorites.some((fav) => fav.id === id && fav.type === type);
-			})();
-			return result;
-		},
+		const unsubscribe = subscribe((favorites) => {
+			result = favorites.some((fav) => fav.id === id && fav.type === type);
+		});
+		unsubscribe();
+		return result;
+	},
 
-		clearAll: () => {
-			if (browser) {
-				try {
-					localStorage.removeItem(STORAGE_KEY);
-				} catch (e) {
-					console.warn('Failed to remove favorites from localStorage:', e);
-				}
+	clearAll: () => {
+		if (browser) {
+			try {
+				localStorage.removeItem(STORAGE_KEY);
+			} catch {
+				// localStorage may be unavailable
 			}
-			set([]);
 		}
+		set([]);
+	}
 	};
 }
 
