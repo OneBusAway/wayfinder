@@ -117,6 +117,7 @@
 	"route": "route",
 	"route_modal_title": "Route {name}",
 	"loading": "Loading",
+	"loading_status": "Loading",
 	"arrives": "arrives",
 	"NA": "N/A",
 	"time": {
