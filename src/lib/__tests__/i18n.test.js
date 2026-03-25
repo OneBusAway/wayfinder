@@ -159,7 +159,7 @@ describe('i18n', () => {
 			mockGetLocaleFromNavigator.mockReturnValue('de');
 
 			const locale = getInitialLocale();
-			expect(locale).toBe('de');
+			expect(locale).toBe('en'); // 'de' not registered, falls back to 'en'
 			expect(mockGetLocaleFromNavigator).toHaveBeenCalled();
 
 			// Restore original
