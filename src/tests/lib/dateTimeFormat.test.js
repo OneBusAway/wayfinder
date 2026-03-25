@@ -16,35 +16,44 @@ import {
 
 const INVALID_INPUTS = [null, undefined, 'invalid', Infinity, -Infinity, NaN];
 
+/** Intl / runtime may emit "am"/"pm" or "AM"/"PM" depending on ICU; normalize for assertions. */
+function normalizeMeridiem(s) {
+	return s.replace(/\b(am|pm)\b/gi, (_, m) => m.toUpperCase());
+}
+
+function expectTimeEqual(actual, expectedCanonical) {
+	expect(normalizeMeridiem(actual)).toBe(expectedCanonical);
+}
+
 describe('msToTimeString', () => {
 	it('handles morning times', () => {
 		const result = msToTimeString(new Date('2024-01-16T09:15:00Z').valueOf());
-		expect(result).toBe('9:15 AM');
+		expectTimeEqual(result, '9:15 AM');
 	});
 
 	it('handles afternoon times', () => {
 		const result = msToTimeString(new Date('2024-01-16T14:45:00Z').valueOf());
-		expect(result).toBe('2:45 PM');
+		expectTimeEqual(result, '2:45 PM');
 	});
 
 	it('handles midnight', () => {
 		const result = msToTimeString(new Date('2024-01-16T00:00:00Z').valueOf());
-		expect(result).toBe('12:00 AM');
+		expectTimeEqual(result, '12:00 AM');
 	});
 
 	it('handles noon', () => {
 		const result = msToTimeString(new Date('2024-01-16T12:00:00Z').valueOf());
-		expect(result).toBe('12:00 PM');
+		expectTimeEqual(result, '12:00 PM');
 	});
 
 	it('pads minutes with leading zeros', () => {
 		const result = msToTimeString(new Date('2024-01-16T09:05:00Z').valueOf());
-		expect(result).toBe('9:05 AM');
+		expectTimeEqual(result, '9:05 AM');
 	});
 
 	it('handles time zone conversion', () => {
 		const result = msToTimeString(new Date('2024-01-16T09:05:00Z').valueOf(), 'America/New_York');
-		expect(result).toBe('4:05 AM');
+		expectTimeEqual(result, '4:05 AM');
 	});
 
 	it('handles custom format', () => {
@@ -53,7 +62,7 @@ describe('msToTimeString', () => {
 			'UTC',
 			fourDigitTimeFormat
 		);
-		expect(result).toBe('09:05 AM');
+		expectTimeEqual(result, '09:05 AM');
 	});
 
 	it.each(INVALID_INPUTS)(`returns "N/A" when the input is %s`, (input) => {
@@ -71,27 +80,27 @@ describe('msToTimeString', () => {
 describe('msToLocalArrivalDepartureTimeString', () => {
 	it('handles morning times', () => {
 		const result = msToLocalArrivalDepartureTimeString(new Date('2024-01-16T09:15:00Z').valueOf());
-		expect(result).toBe('09:15 AM');
+		expectTimeEqual(result, '09:15 AM');
 	});
 
 	it('handles afternoon times', () => {
 		const result = msToLocalArrivalDepartureTimeString(new Date('2024-01-16T14:45:00Z').valueOf());
-		expect(result).toBe('02:45 PM');
+		expectTimeEqual(result, '02:45 PM');
 	});
 
 	it('handles midnight', () => {
 		const result = msToLocalArrivalDepartureTimeString(new Date('2024-01-16T00:00:00Z').valueOf());
-		expect(result).toBe('12:00 AM');
+		expectTimeEqual(result, '12:00 AM');
 	});
 
 	it('handles noon', () => {
 		const result = msToLocalArrivalDepartureTimeString(new Date('2024-01-16T12:00:00Z').valueOf());
-		expect(result).toBe('12:00 PM');
+		expectTimeEqual(result, '12:00 PM');
 	});
 
 	it('pads minutes with leading Zeros', () => {
 		const result = msToLocalArrivalDepartureTimeString(new Date('2024-01-16T09:05:00Z').valueOf());
-		expect(result).toBe('09:05 AM');
+		expectTimeEqual(result, '09:05 AM');
 	});
 
 	it.each(INVALID_INPUTS)(`returns "N/A" when the input is %s`, (input) => {
@@ -101,19 +110,19 @@ describe('msToLocalArrivalDepartureTimeString', () => {
 
 describe('formatSecondsFromMidnight', () => {
 	it('converts seconds since midnight to 12-hour time format', () => {
-		expect(formatSecondsFromMidnight(38280)).toBe('10:38 AM'); // 10:38 AM
-		expect(formatSecondsFromMidnight(13080)).toBe('3:38 AM'); // 3:38 AM
-		expect(formatSecondsFromMidnight(0)).toBe('12:00 AM'); // midnight
-		expect(formatSecondsFromMidnight(43200)).toBe('12:00 PM'); // noon
-		expect(formatSecondsFromMidnight(86399)).toBe('11:59 PM'); // 11:59 PM
+		expectTimeEqual(formatSecondsFromMidnight(38280), '10:38 AM'); // 10:38 AM
+		expectTimeEqual(formatSecondsFromMidnight(13080), '3:38 AM'); // 3:38 AM
+		expectTimeEqual(formatSecondsFromMidnight(0), '12:00 AM'); // midnight
+		expectTimeEqual(formatSecondsFromMidnight(43200), '12:00 PM'); // noon
+		expectTimeEqual(formatSecondsFromMidnight(86399), '11:59 PM'); // 11:59 PM
 	});
 
 	it('handles times after midnight (next day service)', () => {
-		expect(formatSecondsFromMidnight(90000)).toBe('1:00 AM'); // 25:00 -> 1:00 AM next day
+		expectTimeEqual(formatSecondsFromMidnight(90000), '1:00 AM'); // 25:00 -> 1:00 AM next day
 	});
 
 	it('handles negative times (before midnight)', () => {
-		expect(formatSecondsFromMidnight(-3600)).toBe('11:00 PM'); // -1 hour -> 11:00 PM previous day
+		expectTimeEqual(formatSecondsFromMidnight(-3600), '11:00 PM'); // -1 hour -> 11:00 PM previous day
 	});
 
 	it.each(INVALID_INPUTS)('returns a blank string when the input is %s', (input) => {
