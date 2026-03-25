@@ -50,18 +50,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DIFF-01 | — | Pending |
-| DIFF-02 | — | Pending |
-| DIFF-03 | — | Pending |
-| TRAN-01 | — | Pending |
-| TRAN-02 | — | Pending |
-| TEST-01 | — | Pending |
+| DIFF-01 | Phase 1 | Pending |
+| DIFF-02 | Phase 1 | Pending |
+| DIFF-03 | Phase 1 | Pending |
+| TEST-01 | Phase 1 | Pending |
+| TRAN-01 | Phase 2 | Pending |
+| TRAN-02 | Phase 2 | Pending |
 
 **Coverage:**
 - v1.0 requirements: 6 total
-- Mapped to phases: 0
-- Unmapped: 6
+- Mapped to phases: 6
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-25*
-*Last updated: 2026-03-25 after initial definition*
+*Last updated: 2026-03-25 after roadmap creation*
