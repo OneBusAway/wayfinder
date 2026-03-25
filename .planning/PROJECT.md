@@ -29,8 +29,12 @@ Riders see an accurate, always-current arrivals list without stale departed buse
 
 ### Active
 
-- [ ] Fade-out transition (200ms) for departures leaving the list
-- [ ] Fade-in transition (300ms) for new arrivals appearing
+(None — all milestone v1.0 requirements validated)
+
+### Recently Validated
+
+- Fade-out transition 200ms (Milestone Phase 2) — `out:fade={{ duration: 200 }}` on keyed arrival items
+- Fade-in transition 300ms (Milestone Phase 2) — `in:fade={{ duration: 300 }}` on keyed arrival items
 - [ ] Arrival diffing — identify new/removed/unchanged arrivals by tripId+serviceDate
 - [ ] Fade-out transition (200ms) for departures leaving the list
 - [ ] Fade-in transition (300ms) for new arrivals appearing
@@ -88,4 +92,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after Phase 1 (Diffing & Filtering) completion*
+*Last updated: 2026-03-25 after Phase 2 (Transitions) completion — milestone v1.0 complete*
