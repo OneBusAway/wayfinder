@@ -39,7 +39,9 @@ Plans:
   1. A bus leaving the list fades out over ~200ms before its row is removed from the DOM
   2. A bus appearing for the first time fades in over ~300ms rather than appearing instantly
   3. Buses that were present in both the previous and current poll do not animate at all
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 02-01-PLAN.md — Add fade transitions to StopPane arrival list (in:fade 300ms, out:fade 200ms)
 
 ## Progress
 
@@ -49,4 +51,4 @@ Phases execute in numeric order: 1 → 2
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Diffing & Filtering | 2/2 | Complete   | 2026-03-25 |
-| 2. Transitions | 0/? | Not started | - |
+| 2. Transitions | 0/1 | Not started | - |
