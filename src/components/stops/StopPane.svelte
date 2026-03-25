@@ -17,6 +17,7 @@
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix } from '$lib/utils';
 	import { diffArrivals, makeKey } from '$lib/arrivalDiffing';
+	import { fade } from 'svelte/transition';
 
 	/**
 	 * @typedef {Object} Props
@@ -248,18 +249,20 @@
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival (makeKey(arrival))}
-								<AccordionItem data={arrival} data-new={arrival._isNew}>
-									{#snippet header()}
-										<span>
-											<ArrivalDeparture arrivalDeparture={arrival} />
-										</span>
-									{/snippet}
-									<TripDetailsPane
-										{stop}
-										tripId={arrival.tripId}
-										serviceDate={arrival.serviceDate}
-									/>
-								</AccordionItem>
+								<div in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
+									<AccordionItem data={arrival} data-new={arrival._isNew}>
+										{#snippet header()}
+											<span>
+												<ArrivalDeparture arrivalDeparture={arrival} />
+											</span>
+										{/snippet}
+										<TripDetailsPane
+											{stop}
+											tripId={arrival.tripId}
+											serviceDate={arrival.serviceDate}
+										/>
+									</AccordionItem>
+								</div>
 							{/each}
 						</Accordion>
 					{/key}
