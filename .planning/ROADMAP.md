@@ -12,7 +12,7 @@ Two phases deliver the complete feature. Phase 1 builds the diffing logic — fi
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Diffing & Filtering** - Arrivals are filtered and diffed by stable key; logic is unit-tested
+- [x] **Phase 1: Diffing & Filtering** - Arrivals are filtered and diffed by stable key; logic is unit-tested (completed 2026-03-25)
 - [ ] **Phase 2: Transitions** - Departures fade out and new arrivals fade in during each poll refresh
 
 ## Phase Details
@@ -26,10 +26,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Rows do not jump or reorder between polls when the same bus is present in consecutive refreshes
   3. Arrivals that were not present in the previous poll are tagged as new (verifiable via test or DOM attribute)
   4. Unit tests pass for: filter departed, tag new, stable key derivation, empty list edge case
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 01-01-PLAN.md — TDD: Create arrivalDiffing utility (filterDeparted, makeKey, diffArrivals) with unit tests
-- [ ] 01-02-PLAN.md — Wire diffArrivals into StopPane.svelte polling cycle
+- [x] 01-02-PLAN.md — Wire diffArrivals into StopPane.svelte polling cycle
 
 ### Phase 2: Transitions
 **Goal**: List changes are visually smooth — riders see departures fade away and new arrivals materialize rather than the list snapping to a new state
@@ -48,5 +48,5 @@ Phases execute in numeric order: 1 → 2
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Diffing & Filtering | 1/2 | In Progress|  |
+| 1. Diffing & Filtering | 2/2 | Complete   | 2026-03-25 |
 | 2. Transitions | 0/? | Not started | - |
