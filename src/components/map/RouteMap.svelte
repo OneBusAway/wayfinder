@@ -61,7 +61,6 @@
 
 		const stopTimes = tripData?.data?.entry?.schedule?.stopTimes ?? [];
 		const stops = tripData?.data?.references?.stops ?? [];
-		// TODO: implement better way to transition to route shape
 		const location = calculateMidpoint(stops);
 
 		mapProvider.flyTo(location.lat, location.lng, 13);

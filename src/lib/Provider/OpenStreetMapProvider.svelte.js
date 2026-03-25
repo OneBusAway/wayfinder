@@ -454,6 +454,41 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 	}
 
+	animatePolylineOpacity(polyline, targetOpacity, durationMs = 320) {
+		if (!polyline) {
+			return Promise.resolve();
+		}
+
+		if (typeof window === 'undefined' || durationMs <= 0) {
+			polyline.setStyle({ opacity: targetOpacity });
+			return Promise.resolve();
+		}
+
+		return new Promise((resolve) => {
+			const start = performance.now();
+
+			const step = (timestamp) => {
+				if (!polyline._map) {
+					resolve();
+					return;
+				}
+
+				const elapsed = timestamp - start;
+				const progress = Math.min(elapsed / durationMs, 1);
+				polyline.setStyle({ opacity: targetOpacity * progress });
+
+				if (progress < 1) {
+					window.requestAnimationFrame(step);
+					return;
+				}
+
+				resolve();
+			};
+
+			window.requestAnimationFrame(step);
+		});
+	}
+
 	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
 
@@ -464,11 +499,13 @@ export default class OpenStreetMapProvider {
 		}
 
 		const withArrow = options.withArrow ?? true;
+		const animate = options.animate ?? true;
+		const targetOpacity = options.opacity ?? 1;
 
 		const polylineOpts = {
 			color: options.color || COLORS.POLYLINE,
 			weight: options.weight || 4,
-			opacity: options.opacity ?? 1
+			opacity: animate ? 0 : targetOpacity
 		};
 		if (options.dashArray) {
 			polylineOpts.dashArray = options.dashArray;
@@ -476,6 +513,10 @@ export default class OpenStreetMapProvider {
 		const polyline = new this.L.Polyline(decodedPolyline, polylineOpts).addTo(this.map);
 
 		this.polylines.push(polyline);
+
+		if (animate) {
+			this.animatePolylineOpacity(polyline, targetOpacity);
+		}
 
 		if (!withArrow) return polyline;
 

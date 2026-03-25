@@ -63,8 +63,92 @@ const FETCH_TIMEOUT = 15_000;
 // After a cold-start timeout, minimum gap before retrying
 const ERROR_RETRY_DELAY = 30_000;
 
+// Concurrency and retry tuning to avoid hammering upstream API on startup
+const ROUTE_FETCH_CONCURRENCY = 2;
+const MAX_RETRY_ATTEMPTS = 3;
+const INITIAL_RETRY_DELAY_MS = 750;
+
 /** @type {number | null} */
 let lastErrorTime = null;
+
+/**
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
+function sleep(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+function isRateLimitError(error) {
+	if (!error || typeof error !== 'object') {
+		return false;
+	}
+
+	const maybeError = /** @type {{ status?: number, message?: string }} */ (error);
+	return (
+		maybeError.status === 429 ||
+		Boolean(maybeError.message?.includes('"code":429')) ||
+		Boolean(maybeError.message?.toLowerCase().includes('rate limit exceeded'))
+	);
+}
+
+/**
+ * @template T
+ * @param {() => Promise<T>} operation
+ * @param {string} label
+ * @returns {Promise<T>}
+ */
+async function withRetry(operation, label) {
+	for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt += 1) {
+		try {
+			return await operation();
+		} catch (error) {
+			if (!isRateLimitError(error) || attempt === MAX_RETRY_ATTEMPTS) {
+				throw error;
+			}
+
+			const backoffMs = INITIAL_RETRY_DELAY_MS * 2 ** (attempt - 1) + Math.floor(Math.random() * 200);
+			console.warn(`[serverCache] ${label} rate-limited (attempt ${attempt}/${MAX_RETRY_ATTEMPTS}), retrying in ${backoffMs}ms`);
+			await sleep(backoffMs);
+		}
+	}
+
+	throw new Error(`[serverCache] ${label} exhausted retries`);
+}
+
+/**
+ * @template TIn
+ * @template TOut
+ * @param {TIn[]} items
+ * @param {number} concurrency
+ * @param {(item: TIn, index: number) => Promise<TOut>} mapper
+ * @returns {Promise<TOut[]>}
+ */
+async function mapWithConcurrency(items, concurrency, mapper) {
+	const results = new Array(items.length);
+	let index = 0;
+
+	async function worker() {
+		while (true) {
+			const currentIndex = index;
+			index += 1;
+
+			if (currentIndex >= items.length) {
+				return;
+			}
+
+			results[currentIndex] = await mapper(items[currentIndex], currentIndex);
+		}
+	}
+
+	const workerCount = Math.min(concurrency, items.length);
+	await Promise.all(Array.from({ length: workerCount }, () => worker()));
+	return results;
+}
 
 /**
  * Races a promise against a timeout. The timeout timer is always cleared
@@ -89,7 +173,10 @@ function withTimeout(promise, ms, label) {
  */
 async function fetchRoutesData() {
 	try {
-		const agenciesResponse = await oba.agenciesWithCoverage.list();
+		const agenciesResponse = await withRetry(
+			() => oba.agenciesWithCoverage.list(),
+			'agenciesWithCoverage.list'
+		);
 		const allAgencies = agenciesResponse.data.list;
 		const agencyFilter = getAgencyFilter();
 		const agencies = agencyFilter
@@ -109,21 +196,28 @@ async function fetchRoutesData() {
 		agenciesCache = agencies;
 		boundsCache = calculateBoundsFromAgencies(agencies);
 
-		const routesPromises = agencies.map(async (agency) => {
-			const routesResponse = await oba.routesForAgency.list(agency.agencyId);
-			const routes = routesResponse.data.list;
-			const references = routesResponse.data.references;
+		const routes = await mapWithConcurrency(
+			agencies,
+			ROUTE_FETCH_CONCURRENCY,
+			async (agency) => {
+				const routesResponse = await withRetry(
+					() => oba.routesForAgency.list(agency.agencyId),
+					`routesForAgency.list(${agency.agencyId})`
+				);
+				const routes = routesResponse.data.list;
+				const references = routesResponse.data.references;
 
-			const agencyReferenceMap = new Map(references.agencies.map((agency) => [agency.id, agency]));
+				const agencyReferenceMap = new Map(
+					references.agencies.map((agency) => [agency.id, agency])
+				);
 
-			routes.forEach((route) => {
-				route.agencyInfo = agencyReferenceMap.get(route.agencyId);
-			});
+				routes.forEach((route) => {
+					route.agencyInfo = agencyReferenceMap.get(route.agencyId);
+				});
 
-			return routes;
-		});
-
-		const routes = await Promise.all(routesPromises);
+				return routes;
+			}
+		);
 		return routes.flat();
 	} catch (error) {
 		console.error('Error fetching routes:', {
