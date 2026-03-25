@@ -148,7 +148,9 @@
 		"route_schedules": "Route Schedules",
 		"no_schedules_available": "No schedules available for the selected date.",
 		"stop_id": "Stop ID",
-		"direction": "Direction"
+		"direction": "Direction",
+		"short_line_legend": "Ends before final destination — tap for details",
+		"ends_at_short_line": "Ends at {destination} — does not continue to {mainDestination}"
 	},
 	"direction": {
 		"N": "North",

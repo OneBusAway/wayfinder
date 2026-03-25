@@ -74,11 +74,15 @@
 			let stopRouteDirectionSchedules = routeSchedule.stopRouteDirectionSchedules;
 
 			stopRouteDirectionSchedules.forEach((directionSchedule) => {
-				const stopTimesGroupedByHour = groupStopTimesByHour(directionSchedule.scheduleStopTimes);
+				const stopTimesGroupedByHour = groupStopTimesByHour(
+					directionSchedule.scheduleStopTimes,
+					directionSchedule.tripHeadsign
+				);
 				const routeName = getRouteName(routeId, directionSchedule.tripHeadsign);
 
 				schedulesMap.set(routeName, {
 					tripHeadsign: routeName,
+					mainHeadsign: directionSchedule.tripHeadsign,
 					stopTimes: stopTimesGroupedByHour
 				});
 			});
@@ -90,14 +94,17 @@
 		return `${route.shortName ?? route.longName} - ${tripHeadsign}`;
 	}
 
-	function groupStopTimesByHour(stopTimes) {
+	function groupStopTimesByHour(stopTimes, mainHeadsign) {
 		const grouped = {};
 		for (let stopTime of stopTimes) {
 			const date = new Date(stopTime.arrivalTime);
 			const hour = date.getHours();
 			if (!grouped[hour]) grouped[hour] = [];
 			grouped[hour].push({
-				arrivalTime: msToTimeString(stopTime.arrivalTime)
+				arrivalTime: msToTimeString(stopTime.arrivalTime),
+				timestamp: stopTime.arrivalTime,
+				stopHeadsign: stopTime.stopHeadsign ?? null,
+				isShortLine: !!(stopTime.stopHeadsign && stopTime.stopHeadsign !== mainHeadsign)
 			});
 		}
 		return grouped;
