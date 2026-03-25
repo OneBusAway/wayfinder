@@ -108,6 +108,12 @@
 		clearResults();
 		try {
 			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
+
+			if (!response.ok) {
+				console.error(`Failed to fetch route data: ${response.status}`);
+				return;
+			}
+
 			const stopsForRoute = await response.json();
 			const stopsMap = new Map(stopsForRoute.data.references.stops.map((stop) => [stop.id, stop]));
 			const polylinesData = stopsForRoute.data.entry.polylines;
