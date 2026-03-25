@@ -8,7 +8,8 @@
 
 	import { t, isLoading } from 'svelte-i18n';
 	import { removeAgencyPrefix } from '$lib/utils';
-	let { stopName, stopId, stopDirection } = $props();
+	import FavoriteToggle from '$components/favorites/FavoriteToggle.svelte';
+	let { stopName, stopId, stopDirection, stopLat = null, stopLon = null } = $props();
 </script>
 
 <div class="my-4">
@@ -26,6 +27,13 @@
 	<div class="text-center">
 		<h1 class="flex items-center justify-center gap-2 text-3xl font-bold text-brand-accent">
 			{stopName}
+			<FavoriteToggle
+				type="stop"
+				entityId={stopId}
+				name={stopName}
+				direction={stopDirection}
+				coords={stopLat && stopLon ? { lat: stopLat, lng: stopLon } : null}
+			/>
 		</h1>
 		<div class="text-normal mt-2 flex items-center justify-center gap-x-8 text-gray-700">
 			<div class="rounded-md bg-gray-50 px-2 py-1">
