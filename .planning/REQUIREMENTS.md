@@ -9,9 +9,9 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Arrival Diffing
 
-- [ ] **DIFF-01**: Departed arrivals (ETA < 0) are filtered out on each poll refresh
-- [ ] **DIFF-02**: Arrivals are keyed by tripId+serviceDate for stable identity across polls
-- [ ] **DIFF-03**: New arrivals (not in previous poll) are identified for animation targeting
+- [x] **DIFF-01**: Departed arrivals (ETA < 0) are filtered out on each poll refresh
+- [x] **DIFF-02**: Arrivals are keyed by tripId+serviceDate for stable identity across polls
+- [x] **DIFF-03**: New arrivals (not in previous poll) are identified for animation targeting
 
 ### Transitions
 
@@ -20,7 +20,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Testing
 
-- [ ] **TEST-01**: Unit tests for diffing logic (filter departed, tag new, stable keys, edge cases)
+- [x] **TEST-01**: Unit tests for diffing logic (filter departed, tag new, stable keys, edge cases)
 
 ## Future Requirements
 
@@ -50,10 +50,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DIFF-01 | Phase 1 | Pending |
-| DIFF-02 | Phase 1 | Pending |
-| DIFF-03 | Phase 1 | Pending |
-| TEST-01 | Phase 1 | Pending |
+| DIFF-01 | Phase 1 | Complete |
+| DIFF-02 | Phase 1 | Complete |
+| DIFF-03 | Phase 1 | Complete |
+| TEST-01 | Phase 1 | Complete |
 | TRAN-01 | Phase 2 | Pending |
 | TRAN-02 | Phase 2 | Pending |
 
