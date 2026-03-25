@@ -16,6 +16,8 @@
 	import analytics from '$lib/Analytics/PlausibleAnalytics';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix } from '$lib/utils';
+	import { diffArrivals, makeKey } from '$lib/arrivalDiffing';
+	import { fade } from 'svelte/transition';
 
 	/**
 	 * @typedef {Object} Props
@@ -35,6 +37,7 @@
 	let loading = $state(false);
 	let error = $state();
 	let serviceAlerts = $state([]);
+	let previousArrivals = $state(null);
 
 	let interval = null;
 	let currentStopSurvey = $state(null);
@@ -60,7 +63,11 @@
 
 			const data = await response.json();
 			arrivalsAndDeparturesResponse = data;
-			arrivalsAndDepartures = data.data.entry;
+			const entry = data.data.entry;
+			const rawArrivals = entry.arrivalsAndDepartures || [];
+			const diffed = diffArrivals(previousArrivals, rawArrivals, Date.now());
+			previousArrivals = rawArrivals;
+			arrivalsAndDepartures = { ...entry, arrivalsAndDepartures: diffed };
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
 			error = null; // Clear previous errors if successful
 		} catch (err) {
@@ -84,6 +91,7 @@
 	$effect(() => {
 		if (stop?.id) {
 			clearInterval(interval);
+			previousArrivals = null;
 			resetDataFetchInterval(stop.id);
 		}
 	});
@@ -240,19 +248,21 @@
 				{:else}
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
-							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
-								<AccordionItem data={arrival}>
-									{#snippet header()}
-										<span>
-											<ArrivalDeparture arrivalDeparture={arrival} />
-										</span>
-									{/snippet}
-									<TripDetailsPane
-										{stop}
-										tripId={arrival.tripId}
-										serviceDate={arrival.serviceDate}
-									/>
-								</AccordionItem>
+							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival (makeKey(arrival))}
+								<div in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
+									<AccordionItem data={arrival} data-new={arrival._isNew}>
+										{#snippet header()}
+											<span>
+												<ArrivalDeparture arrivalDeparture={arrival} />
+											</span>
+										{/snippet}
+										<TripDetailsPane
+											{stop}
+											tripId={arrival.tripId}
+											serviceDate={arrival.serviceDate}
+										/>
+									</AccordionItem>
+								</div>
 							{/each}
 						</Accordion>
 					{/key}
