@@ -41,7 +41,7 @@ Plans:
   3. Buses that were present in both the previous and current poll do not animate at all
 **Plans:** 1 plan
 Plans:
-- [ ] 02-01-PLAN.md — Add fade transitions to StopPane arrival list (in:fade 300ms, out:fade 200ms)
+- [x] 02-01-PLAN.md — Add fade transitions to StopPane arrival list (in:fade 300ms, out:fade 200ms)
 
 ## Progress
 
