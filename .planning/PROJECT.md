@@ -23,11 +23,14 @@ Riders see an accurate, always-current arrivals list without stale departed buse
 
 ### Validated
 
-- Favorites/bookmarks system (Phase 1, PR #436) — localStorage store, star toggle, favorites tab
+- Favorites/bookmarks system (GSoC Phase 1, PR #436) — localStorage store, star toggle, favorites tab
+- Arrival diffing & filtering (Milestone Phase 1) — filterDeparted, makeKey, diffArrivals utility + StopPane integration
+- Stable row identity (Milestone Phase 1) — keyed {#each} by tripId+serviceDate, no reshuffle across polls
 
 ### Active
 
-- [ ] Dynamic arrival filtering — remove departed buses (ETA < 0) on each poll
+- [ ] Fade-out transition (200ms) for departures leaving the list
+- [ ] Fade-in transition (300ms) for new arrivals appearing
 - [ ] Arrival diffing — identify new/removed/unchanged arrivals by tripId+serviceDate
 - [ ] Fade-out transition (200ms) for departures leaving the list
 - [ ] Fade-in transition (300ms) for new arrivals appearing
@@ -85,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after milestone v1.0 initialization*
+*Last updated: 2026-03-25 after Phase 1 (Diffing & Filtering) completion*
