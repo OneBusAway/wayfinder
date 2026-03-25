@@ -2,11 +2,10 @@
 	import StopItem from '$components/StopItem.svelte';
 	import ModalPane from '$components/navigation/ModalPane.svelte';
 	import { t } from 'svelte-i18n';
+	import { bookmarks } from '$src/stores/bookmarksStore';
 
 	let { selectedRoute, stops, mapProvider, closePane } = $props();
-
 	let showFullDescription = $state(false);
-
 	// Check if description is long enough to need truncation (roughly 3 lines)
 	const isDescriptionLong = $derived(
 		selectedRoute?.description ? selectedRoute.description.length > 120 : false
@@ -34,7 +33,7 @@
 
 	function toggleDescription() {
 		showFullDescription = !showFullDescription;
-	}
+	}	
 </script>
 
 <ModalPane {closePane} title={title()}>
@@ -64,6 +63,19 @@
 							</button>
 						{/if}
 					</div>
+					<button
+						type="button"
+						class="mx-auto mt-2 block w-1/2 rounded bg-black py-2 text-sm font-semibold text-white hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-accent"
+						onclick={() => {
+							bookmarks.save({
+								routeName: selectedRoute.shortName || selectedRoute.nullSafeShortName || selectedRoute.longName || null,
+								description: selectedRoute.description || selectedRoute.longName
+							});
+							closePane();
+						}}
+					>
+						Save Route
+					</button>
 				</div>
 			</div>
 

@@ -81,7 +81,6 @@
 					/>
 				</svg>
 			</div>
-
 			<div>
 				{#if filteredRoutes.length > 0}
 					{#each filteredRoutes as route}

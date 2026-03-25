@@ -20,7 +20,7 @@
 	let error = $state(null);
 	let interval;
 	let busPosition = $state(0);
-
+ 
 	function calculateBusPosition() {
 		if (tripDetails && tripDetails.status && tripDetails.status.position) {
 			const { lat, lon } = tripDetails.status.position;
@@ -45,15 +45,14 @@
 			}
 			const response = await fetch(url);
 
-			if (!response.ok) {
+			if (!response.ok) { 
 				error = 'Unable to fetch trip details';
 				return;
 			}
 
 			const jsonBody = await response.json();
 			const data = jsonBody.data;
-
-			tripDetails = data.entry;
+			tripDetails = data.entry; 
 
 			if (data?.references?.routes) {
 				routeInfo = data.references.routes.find((route) => route.id === tripDetails.routeId);

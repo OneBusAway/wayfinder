@@ -27,7 +27,7 @@
 	import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
-
+	
 	// Parse initial coordinates from URL query parameters
 	const initialCoords = parseInitialCoordinates(
 		$page.url.searchParams,
@@ -255,6 +255,7 @@
 			if (initialCoords) {
 				cleanUrlParams();
 			}
+
 		}
 	});
 
@@ -268,6 +269,7 @@
 			currentIntervalId = null;
 		}
 	});
+	
 </script>
 
 <svelte:head>
