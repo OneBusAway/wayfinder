@@ -297,13 +297,15 @@ export default class OpenStreetMapProvider {
 
 		this.vehicleMarkers.push(marker);
 
-		marker.vehicleData = $state({
+		let vehicleData = $state({
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
 			predicted: vehicle.predicted
 		});
+
+		marker.vehicleData = vehicleData;
 
 		marker.bindPopup(document.createElement('div'));
 
@@ -352,7 +354,7 @@ export default class OpenStreetMapProvider {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicleStatus.vehicleId,
 			lastUpdateTime: vehicleStatus.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
+			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name,
 			predicted: vehicleStatus.predicted
 		});
 	}
