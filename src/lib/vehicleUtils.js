@@ -15,13 +15,14 @@ const vehicleMarkersMap = new Map();
 
 export async function fetchVehicles(routeId) {
 	const response = await fetch(`/api/oba/trips-for-route/${routeId}`);
-	const responseBody = await response.json();
 	if (!response.ok) {
 		console.warn('fetchVehicles: request failed', routeId, response.status);
 		return { references: { trips: [] }, list: [] };
 	}
+	const responseBody = await response.json();
 	const data = responseBody.data;
 	if (!data?.references?.trips || !Array.isArray(data.list)) {
+		console.warn('fetchVehicles: unexpected response structure for route', routeId);
 		return { references: { trips: [] }, list: [] };
 	}
 	return data;
@@ -43,7 +44,7 @@ export async function updateVehicleMarkers(routeId, mapProvider, routeType) {
 		const activeTrip = activeTripMap.get(activeTripId);
 
 		// OBA puts the trip state string on status.status (e.g. SCHEDULED, CANCELED), not on status itself
-		if (activeTrip && activeTrip?.routeId === routeId && tripStatus.status?.status !== 'CANCELED') {
+		if (activeTrip && activeTrip.routeId === routeId && tripStatus.status?.status !== 'CANCELED') {
 			const vehicleStatus = tripStatus.status;
 
 			activeTripIds.add(activeTripId);
@@ -72,9 +73,20 @@ export function removeInactiveMarkers(activeTripIds, mapProvider) {
 }
 
 export async function fetchAndUpdateVehicles(routeId, mapProvider, routeType) {
-	await updateVehicleMarkers(routeId, mapProvider, routeType);
 
-	return setInterval(() => updateVehicleMarkers(routeId, mapProvider, routeType), 30000);
+	try {
+        await updateVehicleMarkers(routeId, mapProvider, routeType);
+    } catch (error) {
+        console.error('fetchAndUpdateVehicles: initial fetch failed', routeId, error);
+    }
+
+	return setInterval(async () => {
+        try {
+            await updateVehicleMarkers(routeId, mapProvider, routeType);
+        } catch (error) {
+            console.error('fetchAndUpdateVehicles: polling update failed', routeId, error);
+        }
+    }, 30000);
 }
 
 export function clearVehicleMarkersMap() {
