@@ -10,7 +10,7 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {string} [items] - Props to track all possible item IDs
+	 * @property {string[]} [items] - Props to track all possible item IDs
 	 * @property {import('svelte').Snippet} [children]
 	 */
 

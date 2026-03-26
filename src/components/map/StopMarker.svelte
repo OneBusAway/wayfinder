@@ -4,23 +4,23 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {{
-	 *   id: string,
-	 *   name: string,
-	 *   lat: number,
-	 *   lon: number,
-	 *   direction: string,
-	 *   routes: {
-	 *     id: string,
-	 *     shortName: string,
-	 *     type: number
-	 *   }[]
-	 * }} stop
+	 * @property {(
+	 *   import('onebusaway-sdk/resources/stop').StopRetrieveResponse & {
+	 *     data: import('onebusaway-sdk/resources/stop').StopRetrieveResponse.Data & {
+	 *       entry: import('onebusaway-sdk/resources/stop').StopRetrieveResponse.Data.Entry & {
+	 *         routes: (import('onebusaway-sdk/resources/shared').References.Route & {
+	 *           code?: string
+	 *         })[]
+	 *       }
+	 *     }
+	 *   }
+	 * )} stop
 	 * @property {() => void} onClick
 	 * @property {import('@fortawesome/fontawesome-svg-core').IconDefinition} icon
 	 * @property {boolean} [isHighlighted]
 	 * @property {boolean} [showRoutesLabel]
 	 */
+
 	/** @type {Props} */
 	let { stop, onClick, icon, isHighlighted = false, showRoutesLabel = false } = $props();
 
