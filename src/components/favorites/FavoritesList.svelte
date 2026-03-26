@@ -6,14 +6,7 @@
 
 	let { onStopClick = () => {}, onRouteClick = () => {} } = $props();
 
-	let items = $state([]);
-
-	$effect(() => {
-		const unsubscribe = favorites.subscribe((list) => {
-			items = list;
-		});
-		return unsubscribe;
-	});
+	let items = $derived($favorites);
 
 	function handleItemClick(item) {
 		if (item.type === 'stop') {

@@ -58,8 +58,8 @@ function createFavoritesStore() {
 					type: item.type,
 					entityId: item.entityId,
 					name: item.name,
-					direction: item.direction || null,
-					coords: item.coords || null,
+					direction: item.direction ?? null,
+					coords: item.coords ?? null,
 					timestamp: Date.now()
 				};
 
