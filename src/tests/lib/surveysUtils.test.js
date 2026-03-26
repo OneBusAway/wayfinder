@@ -1,4 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+vi.mock('$stores/surveyStore', () => ({
+	showSurveyModal: {
+		set: vi.fn()
+	},
+	markSurveyAnswered: vi.fn(),
+	surveyStore: {
+		update: vi.fn()
+	}
+}));
+
 import {
 	getValidSurveys,
 	getValidStopSurvey,
@@ -6,7 +17,8 @@ import {
 	getMapSurvey,
 	submitHeroQuestion,
 	updateSurveyResponse,
-	getPrioritySurvey
+	getPrioritySurvey,
+	skipSurvey
 } from '../../lib/Surveys/surveyUtils';
 
 beforeEach(() => {
@@ -316,5 +328,49 @@ describe('Survey Visibility and Multiple Responses', () => {
 		const selectedSurvey = await getPrioritySurvey(surveys, null);
 
 		expect(selectedSurvey).toEqual(surveys[2]);
+	});
+});
+
+describe('skipSurvey', () => {
+	it('should set only _skipped_timestamp for recurring surveys', () => {
+		const survey = {
+			id: '123',
+			allows_multiple_responses: true,
+			always_visible: true
+		};
+
+		skipSurvey(survey);
+
+		expect(localStorage.getItem('survey_123_skipped_timestamp')).toBeDefined();
+		expect(localStorage.getItem('survey_123_skipped')).toBeNull();
+	});
+
+	it('should set only _skipped for one-time surveys', () => {
+		const survey = {
+			id: '456',
+			allows_multiple_responses: false,
+			always_visible: false
+		};
+
+		skipSurvey(survey);
+
+		expect(localStorage.getItem('survey_456_skipped')).toBeDefined();
+		expect(localStorage.getItem('survey_456_skipped_timestamp')).toBeNull();
+	});
+
+	it('should remove stale _skipped flag when skipping a recurring survey', () => {
+		const survey = {
+			id: '789',
+			allows_multiple_responses: true,
+			always_visible: true
+		};
+
+		// Simulate stale flag from old buggy behavior
+		localStorage.setItem('survey_789_skipped', 'true');
+
+		skipSurvey(survey);
+
+		expect(localStorage.getItem('survey_789_skipped')).toBeNull();
+		expect(localStorage.getItem('survey_789_skipped_timestamp')).toBeDefined();
 	});
 });
