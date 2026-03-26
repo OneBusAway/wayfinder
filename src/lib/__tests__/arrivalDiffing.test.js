@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterDeparted, makeKey, diffArrivals } from '../arrivalDiffing';
+import { filterDeparted, makeKey } from '../arrivalDiffing';
 
 // Factory function for creating test arrival objects
 function makeArrival({
@@ -106,88 +106,37 @@ describe('filterDeparted', () => {
 		const result = filterDeparted(arrivals, now);
 		expect(result).toHaveLength(0);
 	});
-});
 
-describe('diffArrivals', () => {
-	const now = 60000 * 100;
-
-	it('tags all arrivals as _isNew when prevArrivals is an empty array', () => {
-		const current = [makeArrival({ scheduledArrivalTime: 60000 * 105 })];
-		const result = diffArrivals([], current, now);
-		expect(result).toHaveLength(1);
-		expect(result[0]._isNew).toBe(true);
-	});
-
-	it('tags all arrivals as _isNew when prevArrivals is null', () => {
-		const current = [makeArrival({ scheduledArrivalTime: 60000 * 105 })];
-		const result = diffArrivals(null, current, now);
-		expect(result).toHaveLength(1);
-		expect(result[0]._isNew).toBe(true);
-	});
-
-	it('tags an existing arrival as _isNew = false when it was in previous set', () => {
-		const arrivalA = makeArrival({ tripId: '1_tripA', scheduledArrivalTime: 60000 * 105 });
-		const result = diffArrivals([arrivalA], [arrivalA], now);
-		expect(result).toHaveLength(1);
-		expect(result[0]._isNew).toBe(false);
-	});
-
-	it('tags genuinely new arrival as _isNew = true while existing stays false', () => {
-		const arrivalA = makeArrival({ tripId: '1_tripA', scheduledArrivalTime: 60000 * 105 });
-		const arrivalB = makeArrival({ tripId: '1_tripB', scheduledArrivalTime: 60000 * 110 });
-		const result = diffArrivals([arrivalA], [arrivalA, arrivalB], now);
-		expect(result).toHaveLength(2);
-		const taggedA = result.find((r) => r.tripId === '1_tripA');
-		const taggedB = result.find((r) => r.tripId === '1_tripB');
-		expect(taggedA._isNew).toBe(false);
-		expect(taggedB._isNew).toBe(true);
-	});
-
-	it('filters departed arrivals before tagging', () => {
-		const arrivalA = makeArrival({
-			tripId: '1_tripA',
-			scheduledArrivalTime: 60000 * 90 // departed
+	it('falls back to scheduledArrivalTime when predicted is true but predictedArrivalTime is 0', () => {
+		// OBA API uses 0 as sentinel for "no prediction available"
+		const arrival = makeArrival({
+			predictedArrivalTime: 0,
+			scheduledArrivalTime: 60000 * 105,
+			predicted: true
 		});
-		const arrivalB = makeArrival({
-			tripId: '1_tripB',
-			scheduledArrivalTime: 60000 * 110 // future
+		const result = filterDeparted([arrival], now);
+		expect(result).toHaveLength(1); // scheduled time is in the future, so kept
+	});
+
+	it('uses predictedDepartureTime for stopSequence === 0 when predicted is true', () => {
+		const arrival = makeArrival({
+			stopSequence: 0,
+			scheduledDepartureTime: 60000 * 105,
+			predictedDepartureTime: 60000 * 95, // predicted says departed
+			predicted: true
 		});
-		const result = diffArrivals([arrivalA], [arrivalA, arrivalB], now);
-		// A is filtered out (departed), only B remains
-		expect(result).toHaveLength(1);
-		expect(result[0].tripId).toBe('1_tripB');
-		expect(result[0]._isNew).toBe(true);
+		const result = filterDeparted([arrival], now);
+		expect(result).toHaveLength(0); // predicted departure is in the past
 	});
 
-	it('does not mutate the input arrays', () => {
-		const arrivalA = makeArrival({ tripId: '1_tripA', scheduledArrivalTime: 60000 * 105 });
-		const arrivalB = makeArrival({ tripId: '1_tripB', scheduledArrivalTime: 60000 * 110 });
-		const prev = [arrivalA];
-		const current = [arrivalA, arrivalB];
-		const prevCopy = [...prev];
-		const currentCopy = [...current];
-
-		diffArrivals(prev, current, now);
-
-		// Verify arrays are unchanged
-		expect(prev).toEqual(prevCopy);
-		expect(current).toEqual(currentCopy);
-		// Verify original objects were not mutated
-		expect(arrivalA._isNew).toBeUndefined();
-		expect(arrivalB._isNew).toBeUndefined();
-	});
-
-	it('preserves order of current arrivals after tagging', () => {
-		const arrivalA = makeArrival({ tripId: '1_tripA', scheduledArrivalTime: 60000 * 105 });
-		const arrivalB = makeArrival({ tripId: '1_tripB', scheduledArrivalTime: 60000 * 110 });
-		// Pass B before A
-		const result = diffArrivals([], [arrivalB, arrivalA], now);
-		expect(result[0].tripId).toBe('1_tripB');
-		expect(result[1].tripId).toBe('1_tripA');
-	});
-
-	it('returns empty array when current is empty', () => {
-		const result = diffArrivals([], [], now);
-		expect(result).toEqual([]);
+	it('falls back to scheduledDepartureTime for stopSequence === 0 when predictedDepartureTime is 0', () => {
+		const arrival = makeArrival({
+			stopSequence: 0,
+			scheduledDepartureTime: 60000 * 105,
+			predictedDepartureTime: 0,
+			predicted: true
+		});
+		const result = filterDeparted([arrival], now);
+		expect(result).toHaveLength(1); // falls back to scheduled, which is in the future
 	});
 });

@@ -1,5 +1,5 @@
 /**
- * Arrival diffing utilities for dynamic arrival list updates.
+ * Arrival filtering utilities for dynamic arrival list updates.
  *
  * Pure functions with no side effects — safe to import anywhere and
  * straightforward to unit-test without mocking Svelte or the DOM.
@@ -69,25 +69,3 @@ export function filterDeparted(arrivals, now) {
 	});
 }
 
-/**
- * Diffs two successive arrival lists, filtering departed buses and tagging
- * each remaining arrival with `_isNew` to indicate whether it appeared for
- * the first time in this poll cycle.
- *
- * - Arrivals present in `prevArrivals` (matched by tripId+serviceDate) get `_isNew = false`
- * - Arrivals not present in `prevArrivals` get `_isNew = true`
- * - If `prevArrivals` is null or empty, every current arrival is tagged `_isNew = true`
- *
- * Does NOT mutate the input arrays or their elements — returns new objects via spread.
- * Preserves the original order of `currentArrivals`.
- *
- * @param {Array<object>|null} prevArrivals - Arrivals from the previous poll (or null on first load)
- * @param {Array<object>} currentArrivals - Arrivals from the current poll
- * @param {number} now - Current time in milliseconds since epoch
- * @returns {Array<object>} Filtered and tagged arrivals with `_isNew` property added
- */
-export function diffArrivals(prevArrivals, currentArrivals, now) {
-	const filtered = filterDeparted(currentArrivals, now);
-	const prevKeys = new Set((prevArrivals || []).map((a) => makeKey(a)));
-	return filtered.map((a) => ({ ...a, _isNew: !prevKeys.has(makeKey(a)) }));
-}

@@ -6,7 +6,7 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import SurveyModal from '$components/surveys/SurveyModal.svelte';
 	import ServiceAlerts from '$components/service-alerts/ServiceAlerts.svelte';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, tick } from 'svelte';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
@@ -16,7 +16,7 @@
 	import analytics from '$lib/Analytics/PlausibleAnalytics';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix } from '$lib/utils';
-	import { diffArrivals, makeKey } from '$lib/arrivalDiffing';
+	import { filterDeparted, makeKey } from '$lib/arrivalDiffing';
 	import { fade } from 'svelte/transition';
 
 	/**
@@ -37,7 +37,7 @@
 	let loading = $state(false);
 	let error = $state();
 	let serviceAlerts = $state([]);
-	let previousArrivals = $state(null);
+	let isFirstLoad = $state(true);
 
 	let interval = null;
 	let currentStopSurvey = $state(null);
@@ -65,11 +65,14 @@
 			arrivalsAndDeparturesResponse = data;
 			const entry = data.data.entry;
 			const rawArrivals = entry.arrivalsAndDepartures || [];
-			const diffed = diffArrivals(previousArrivals, rawArrivals, Date.now());
-			previousArrivals = rawArrivals;
-			arrivalsAndDepartures = { ...entry, arrivalsAndDepartures: diffed };
+			const filtered = filterDeparted(rawArrivals, Date.now());
+			arrivalsAndDepartures = { ...entry, arrivalsAndDepartures: filtered };
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
-			error = null; // Clear previous errors if successful
+			error = null;
+			if (isFirstLoad) {
+				await tick();
+				isFirstLoad = false;
+			}
 		} catch (err) {
 			if (err.name !== 'AbortError') {
 				error = 'Unable to fetch arrival/departure data';
@@ -91,7 +94,7 @@
 	$effect(() => {
 		if (stop?.id) {
 			clearInterval(interval);
-			previousArrivals = null;
+			isFirstLoad = true;
 			resetDataFetchInterval(stop.id);
 		}
 	});
@@ -249,8 +252,8 @@
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival (makeKey(arrival))}
-								<div in:fade={{ duration: 300 }} out:fade={{ duration: 200 }}>
-									<AccordionItem data={arrival} data-new={arrival._isNew}>
+								<div in:fade={{ duration: isFirstLoad ? 0 : 300 }} out:fade={{ duration: 200 }}>
+									<AccordionItem data={arrival}>
 										{#snippet header()}
 											<span>
 												<ArrivalDeparture arrivalDeparture={arrival} />
