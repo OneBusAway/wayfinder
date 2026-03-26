@@ -1,3 +1,5 @@
+import { plainTimeToDate } from '$lib/dateTimeFormat';
+
 const fourDigit24HourTimeFormat = new Intl.DateTimeFormat(undefined, {
 	hour: '2-digit',
 	minute: '2-digit',
@@ -20,5 +22,5 @@ export function getTodayDateForInput() {
  */
 export function getCurrentTimeForInput() {
 	const now = Temporal.Now.plainTimeISO();
-	return fourDigit24HourTimeFormat.format(now);
+	return fourDigit24HourTimeFormat.format(plainTimeToDate(now));
 }
