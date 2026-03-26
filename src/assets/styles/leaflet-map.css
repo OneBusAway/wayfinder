@@ -25,3 +25,9 @@
 .leaflet-control {
 	background-color: #fff;
 }
+
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+	background: #1f2937;
+	color: #f3f4f6;
+}
