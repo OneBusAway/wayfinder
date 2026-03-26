@@ -73,20 +73,19 @@ export function removeInactiveMarkers(activeTripIds, mapProvider) {
 }
 
 export async function fetchAndUpdateVehicles(routeId, mapProvider, routeType) {
-
 	try {
-        await updateVehicleMarkers(routeId, mapProvider, routeType);
-    } catch (error) {
-        console.error('fetchAndUpdateVehicles: initial fetch failed', routeId, error);
-    }
+		await updateVehicleMarkers(routeId, mapProvider, routeType);
+	} catch (error) {
+		console.error('fetchAndUpdateVehicles: initial fetch failed', routeId, error);
+	}
 
 	return setInterval(async () => {
-        try {
-            await updateVehicleMarkers(routeId, mapProvider, routeType);
-        } catch (error) {
-            console.error('fetchAndUpdateVehicles: polling update failed', routeId, error);
-        }
-    }, 30000);
+		try {
+			await updateVehicleMarkers(routeId, mapProvider, routeType);
+		} catch (error) {
+			console.error('fetchAndUpdateVehicles: polling update failed', routeId, error);
+		}
+	}, 30000);
 }
 
 export function clearVehicleMarkersMap() {
