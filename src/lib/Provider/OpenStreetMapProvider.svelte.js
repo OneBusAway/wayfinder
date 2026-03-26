@@ -11,7 +11,8 @@ import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/gen
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
-import {PUBLIC_MAPLIBRE_STYLE} from '$env/static/public';
+import { PUBLIC_MAPLIBRE_STYLE } from '$env/static/public';
+
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
