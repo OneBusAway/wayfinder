@@ -468,7 +468,7 @@ export default class OpenStreetMapProvider {
 			const start = performance.now();
 
 			const step = (timestamp) => {
-				if (!polyline._map) {
+				if (!this.map || !this.map.hasLayer(polyline)) {
 					resolve();
 					return;
 				}
@@ -499,7 +499,7 @@ export default class OpenStreetMapProvider {
 		}
 
 		const withArrow = options.withArrow ?? true;
-		const animate = options.animate ?? true;
+		const animate = options.animate ?? false;
 		const targetOpacity = options.opacity ?? 1;
 
 		const polylineOpts = {

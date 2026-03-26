@@ -55,7 +55,7 @@
 			shapeData = await shapeResponse.json();
 			const shapePoints = shapeData?.data?.entry?.points;
 			if (shapePoints && isMounted) {
-				await mapProvider.createPolyline(shapePoints);
+				await mapProvider.createPolyline(shapePoints, { animate: true });
 			}
 		}
 
