@@ -15,7 +15,7 @@ beforeEach(() => {
 	vi.stubGlobal('localStorage', {
 		getItem: vi.fn((key) => store[key] || null),
 		setItem: vi.fn((key, value) => {
-			store[key] = value;
+			store[key] = String(value);
 		}),
 		removeItem: vi.fn((key) => {
 			delete store[key];
@@ -335,7 +335,7 @@ describe('skipSurvey', () => {
 
 		skipSurvey(survey);
 
-		expect(localStorage.getItem('survey_2_skipped')).toBeTruthy();
+		expect(localStorage.getItem('survey_2_skipped')).toBe('true');
 		expect(localStorage.getItem('survey_2_skipped_timestamp')).toBeNull();
 	});
 
