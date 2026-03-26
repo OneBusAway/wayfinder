@@ -10,7 +10,7 @@
 	{#if arrivalTime != null}
 		<p class="my-4 flex items-center text-gray-700 dark:text-gray-400">
 			<span class="mr-2 rounded-md bg-purple-600 px-2 py-1 text-white">Arrival time:</span>
-			<span>{formatSecondsFromMidnight(arrivalTime)}</span>
+			<span class="dark:text-gray-100">{formatSecondsFromMidnight(arrivalTime)}</span>
 		</p>
 	{/if}
 	<div class="mt-auto flex justify-center">
