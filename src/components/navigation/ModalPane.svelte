@@ -46,9 +46,5 @@
 	</div>
 </div>
 
-<style lang="postcss">
-	.close-button {
-		@apply rounded px-4 py-2;
-		@apply transition duration-300 ease-in-out hover:bg-neutral-200 dark:hover:bg-neutral-200/50;
-	}
+<style>
 </style>
