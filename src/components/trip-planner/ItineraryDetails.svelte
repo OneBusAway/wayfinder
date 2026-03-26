@@ -3,17 +3,10 @@
 	import { msToTimeString } from '$lib/dateTimeFormat';
 	import { env } from '$env/dynamic/public';
 	import { t } from 'svelte-i18n';
-	import { isStaySeatedTransition } from '$lib/tripPlanUtils';
+	import { isStaySeatedTransition, getRouteName } from '$lib/tripPlanUtils';
 	let { itinerary, expandedSteps, toggleSteps } = $props();
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
-
-	// Minimal local route name function for next leg
-	function getRouteName(leg) {
-		if (!leg) return '';
-		if (leg.tripHeadsign) return `${leg.routeShortName ?? leg.routeLongName} - ${leg.tripHeadsign}`;
-		return `${leg.routeShortName} ${leg.routeLongName}`;
-	}
 </script>
 
 <!-- Summary Card -->

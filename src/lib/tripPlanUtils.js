@@ -64,3 +64,16 @@ export function isStaySeatedTransition(legs, index) {
 	if (prev.mode === 'WALK' || next.mode === 'WALK') return false;
 	return prev.mode === next.mode && next.interlineWithPreviousLeg === true;
 }
+
+/**
+ * Format a route name for display (e.g. in "stay on board" interline messages).
+ *
+ * @param {Object|null|undefined} leg - An OTP leg object
+ * @returns {string} Formatted route name
+ */
+export function getRouteName(leg) {
+	if (!leg) return '';
+	const name = leg.routeShortName ?? leg.routeLongName;
+	if (leg.headsign) return name ? `${name} - ${leg.headsign}` : leg.headsign;
+	return name ?? '';
+}
