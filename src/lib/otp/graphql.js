@@ -25,6 +25,7 @@ query planTrip(
           duration
           distance
           headsign
+          interlineWithPreviousLeg
           from {
             name
             lat
@@ -217,7 +218,8 @@ export function mapGraphQLResponse(graphqlData) {
 					lon: leg.to?.lon
 				},
 				legGeometry: leg.legGeometry || { points: '' },
-				steps: leg.steps || []
+				steps: leg.steps || [],
+				interlineWithPreviousLeg: leg.interlineWithPreviousLeg || false
 			};
 
 			if (fromTime) mapped.startTime = new Date(fromTime).getTime();
