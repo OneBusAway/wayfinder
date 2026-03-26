@@ -13,10 +13,6 @@ cp .env.example .env
 npm run dev
 ```
 
-## Contributing
-
-Want to contribute? Check out [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on finding issues, opening PRs, and code style.
-
 ## `.env` File Keys
 
 See `.env.example` for an example of the required keys and values.
@@ -141,3 +137,7 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+## Contributing
+
+Want to contribute? Check out [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on finding issues, opening PRs, and code style.

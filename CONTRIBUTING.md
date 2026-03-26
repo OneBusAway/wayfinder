@@ -4,15 +4,13 @@ Thanks for your interest in contributing! Wayfinder is an open source project an
 
 ## Getting Started
 
-Head over to the [README](README.md) for setup instructions — it's just `npm install`, copy `.env.example` to `.env`, and `npm run dev`. If you hit any issues getting things running, open a discussion or ask in the project's Slack channel.
+Head over to the [README](README.md) for setup instructions — it's just `npm install`, copy `.env.example` to `.env`, and `npm run dev`. If you hit any issues getting things running, open a discussion or ask in the [OneBusAway Slack workspace](https://opentransitsoftwarefoundation.org/join-our-slack).
 
 ## Finding Something to Work On
 
-Browse the [issues list](https://github.com/OneBusAway/wayfinder/issues) and look for anything tagged **good first issue** if you're new to the project. Before you start coding, **comment on the issue** to let maintainers know you'd like to take it on — this avoids duplicate work. Please don't open a PR for an issue nobody has assigned to you.
+Browse the [issues list](https://github.com/OneBusAway/wayfinder/issues) and look for anything tagged **good first issue** if you're new to the project. If you'd like to work on an issue, comment on it first so a maintainer can assign it to you; this avoids duplicate effort.
 
 If you have an idea for something new, open an issue first to discuss it. This saves everyone time in case the feature doesn't align with the project's direction.
-
-**Note:** Once a maintainer assigns the issue to you, that's your green light to start. If you haven't been assigned yet, hold off on opening a branch.
 
 ## Opening a PR
 
@@ -32,7 +30,7 @@ Using AI tools is totally fine. But you own every line you submit — understand
 
 ## Communication
 
-Be kind and respectful. Ask questions in issue comments or the project's Slack channel — don't DM maintainers with general questions. If you're stuck on something, that's okay! Just ask. We'd rather help you get unstuck early than review a PR that went sideways.
+Be kind and respectful. Ask questions in issue comments or the [OneBusAway Slack](https://opentransitsoftwarefoundation.org/join-our-slack) — don't DM maintainers with general questions. If you're stuck on something, that's okay! Just ask. We'd rather help you get unstuck early than review a PR that went sideways.
 
 ## Review Timeline
 
