@@ -47,3 +47,33 @@ export function swapTripLocations({
 		toMarker: newToMarker
 	};
 }
+
+/**
+ * Determines if there is a stay-seated transition between two legs. That occurs when a
+ * passenger stays on the same vehicle and it continues under a different id.
+ * @see https://github.com/opentripplanner/OpenTripPlanner/pull/4264
+ *
+ * @param {Array} legs - The array of all legs in the trip
+ * @param {number} index - The index of the current leg to check
+ * @returns {boolean} True if the next leg is a stay-seated interline transition
+ */
+export function isStaySeatedTransition(legs, index) {
+	const prev = legs[index];
+	const next = legs[index + 1];
+	if (!prev || !next) return false;
+	if (prev.mode === 'WALK' || next.mode === 'WALK') return false;
+	return prev.mode === next.mode && next.interlineWithPreviousLeg === true;
+}
+
+/**
+ * Format a route name for display (e.g. in "stay on board" interline messages).
+ *
+ * @param {Object|null|undefined} leg - An OTP leg object
+ * @returns {string} Formatted route name
+ */
+export function getRouteName(leg) {
+	if (!leg) return '';
+	const name = leg.routeShortName ?? leg.routeLongName;
+	if (leg.headsign) return name ? `${name} - ${leg.headsign}` : leg.headsign;
+	return name ?? '';
+}

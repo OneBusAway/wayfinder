@@ -1,12 +1,9 @@
 <script>
-	import { onMount } from 'svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faLocationCrosshairs } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
 
 	let { handleLocationObtained } = $props();
-
-	let button = $state();
 
 	function handleClick() {
 		if (!navigator.geolocation) {
@@ -24,14 +21,10 @@
 			}
 		);
 	}
-
-	onMount(() => {
-		button.addEventListener('click', handleClick);
-	});
 </script>
 
 <button
-	bind:this={button}
+	onclick={handleClick}
 	class="custom-map-control-button"
 	aria-label={$t('map.find_my_location')}
 >

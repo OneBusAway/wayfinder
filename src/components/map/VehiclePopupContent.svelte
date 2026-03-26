@@ -12,7 +12,9 @@
 	});
 </script>
 
-<div class="max-w-xs rounded-lg bg-white p-4 text-gray-800 shadow-md dark:bg-gray-800 dark:text-gray-100">
+<div
+	class="max-w-xs rounded-lg bg-white p-4 text-gray-800 shadow-md dark:bg-gray-800 dark:text-gray-100"
+>
 	<div class="mb-2 flex items-center">
 		<div
 			class="rounded bg-green-100 px-2 py-1 text-lg font-bold text-brand-accent dark:bg-green-900/40 dark:text-green-300"
@@ -23,9 +25,9 @@
 	<div class="text-sm text-gray-600 dark:text-gray-300">
 		{#if predicted}
 			<span>{$t('vehicle.number')}</span>
-			<span class="font-semibold text-blue-500">{vehicleId || $t('NA')}</span> |
+			<span class="font-semibold text-blue-500 dark:text-blue-400">{vehicleId || $t('NA')}</span> |
 			<span>{$t('vehicle.data_updated')}</span>
-			<span class="font-semibold text-blue-500">{lastUpdatedText}</span>
+			<span class="font-semibold text-blue-500 dark:text-blue-400">{lastUpdatedText}</span>
 		{:else}
 			<span class="font-semibold text-gray-500 dark:text-gray-400">{$t('vehicle.no_real_time_data')}</span>
 		{/if}
