@@ -2,14 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { createVehicleIconSvg } from '../generateVehicleIcon';
 import { RouteType } from '$config/routeConfig';
 
-vi.mock('$lib/mathUtils', () => ({
-	toDirection: vi.fn((val) => {
-		if (val === null || val === undefined || Number.isNaN(val) || !Number.isFinite(val)) {
-			return null;
-		}
-		return val;
-	})
-}));
+vi.mock('$lib/mathUtils', async () => {
+	const actual = await vi.importActual('$lib/mathUtils');
+	return { ...actual };
+});
 
 vi.mock('$config/routeConfig', () => ({
 	generateRouteTypeSvgForDisplay: vi.fn(() => '<path d="M0,0 L10,10"/>'),
@@ -24,7 +20,7 @@ describe('createVehicleIconSvg', () => {
 		const svg = createVehicleIconSvg(null);
 		expect(svg).not.toContain('<line');
 		expect(svg).not.toContain('<polygon');
-		expect(svg).toContain('<!-- Circle background (no directional arrow) -->');
+		expect(svg).toContain('<circle');
 	});
 
 	it('should not include arrow when orientation is NaN', () => {
@@ -49,21 +45,21 @@ describe('createVehicleIconSvg', () => {
 		const svg = createVehicleIconSvg(90);
 		expect(svg).toContain('<line');
 		expect(svg).toContain('<polygon');
-		expect(svg).toContain('rotate(90)');
+		expect(svg).toContain('rotate(0)');
 	});
 
 	it('should include arrow pointing north when orientation is 0', () => {
 		const svg = createVehicleIconSvg(0);
 		expect(svg).toContain('<line');
 		expect(svg).toContain('<polygon');
-		expect(svg).toContain('rotate(0)');
+		expect(svg).toContain('rotate(90)');
 	});
 
 	it('should include arrow pointing south when orientation is 180', () => {
 		const svg = createVehicleIconSvg(180);
 		expect(svg).toContain('<line');
 		expect(svg).toContain('<polygon');
-		expect(svg).toContain('rotate(180)');
+		expect(svg).toContain('rotate(270)');
 	});
 
 	it('should use custom color when provided', () => {
