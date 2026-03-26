@@ -91,7 +91,7 @@
 	{:else if tripDetails}
 		<h2 class="h2">
 			{#if routeInfo}
-				{$_('trip_details.route')} {routeInfo.shortName}
+				{$_('trip_details.route')} {routeInfo.shortName} -
 			{/if}
 		</h2>
 		{#if tripDetails.schedule?.stopTimes.length > 0}
@@ -134,9 +134,9 @@
 				{/each}
 			</div>
 		{:else}
-			{$_('trip_details.no_stops')}
+		<p class="text-black dark:text-white">{$_('trip_details.no_stops')}</p>
 		{/if}
 	{:else}
-		{$_('trip_details.loading')}
+	<p class="text-black dark:text-white">{$_('trip_details.loading')}</p>
 	{/if}
 </div>
