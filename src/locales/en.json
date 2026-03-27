@@ -45,6 +45,7 @@
 		"route_optimization": "Route Optimization",
 		"fastest_trip": "Fastest Trip",
 		"fewest_transfers": "Fewest Transfers",
+		"stay_on_board": "Remain on board. This trip continues as Route {route}.",
 		"walking_distance": "Walking Distance",
 		"max_walking_distance": "Maximum walking distance",
 		"distance_unit": "Distance Unit",
@@ -54,6 +55,7 @@
 		"swap_locations": "Swap From and To locations",
 		"error_code": "Error code",
 		"remove_recent_trip": "Remove recent trip",
+		"recent_trip": "Use recent trip from {from} to {to}",
 		"recent_searches": "Recent Searches",
 		"clear_all": "Clear All"
 	},
@@ -171,7 +173,9 @@
 		"no_description": "No detailed description available for this alert",
 		"page": "Page",
 		"show": "Show",
-		"hide": "Hide"
+		"hide": "Hide",
+		"open_alert": "Open service alert details: {summary}",
+		"alert_modal": "Service alert details dialog"
 	},
 	"view_stop_information": "View Stop Information",
 	"stop_details": {

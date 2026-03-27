@@ -17,7 +17,7 @@ vi.mock('$lib/vehicleUtils', () => ({
 }));
 
 vi.mock('$lib/mathUtils', () => ({
-	calculateMidpoint: vi.fn().mockReturnValue({ lat: 47.6062, lng: -122.3321 })
+	calculateMidpoint: vi.fn().mockReturnValue({ lat: 47.6062, lon: -122.3321 })
 }));
 
 vi.mock('$config/routeConfig', () => ({

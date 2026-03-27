@@ -2,6 +2,34 @@ export function getLocalTimeZone() {
 	return new Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
+/**
+ * Convert a Temporal.PlainTime to a local Date object.
+ * This lets us pass the result to Intl.DateTimeFormat.format() without relying
+ * on the temporal-polyfill's Intl patch, which breaks when the browser ships
+ * native Temporal but not native Intl–Temporal integration.
+ *
+ * Uses local time (not UTC) so the formatted output matches the PlainTime's
+ * hour/minute when used with formatters that have no timeZone specified.
+ * WARNING: Do not pass the result to a formatter with timeZone: 'UTC' — the
+ * local-time Date will be re-interpreted in UTC, shifting the displayed hour
+ * by the local UTC offset. For UTC formatters, use Date.UTC() directly instead
+ * (see formatSecondsFromMidnight for an example).
+ *
+ * @param {Temporal.PlainTime} plainTime
+ * @returns {Date}
+ */
+export function plainTimeToDate(plainTime) {
+	return new Date(
+		1970,
+		0,
+		1,
+		plainTime.hour,
+		plainTime.minute,
+		plainTime.second,
+		plainTime.millisecond
+	);
+}
+
 // Time formats
 export const utcTimeFormat = new Intl.DateTimeFormat(undefined, {
 	hour: 'numeric',
@@ -58,12 +86,12 @@ export function msToTimeString(
 	const instant = Temporal.Instant.fromEpochMilliseconds(ms);
 	try {
 		const plainTime = instant.toZonedDateTimeISO(timeZone).toPlainTime();
-		return dateTimeFormat.format(plainTime);
+		return dateTimeFormat.format(plainTimeToDate(plainTime));
 	} catch (err) {
 		if (err instanceof RangeError) {
 			console.error(`msToTimeString: invalid timezone "${timeZone}", falling back to local`);
 			const plainTime = instant.toZonedDateTimeISO(getLocalTimeZone()).toPlainTime();
-			return dateTimeFormat.format(plainTime);
+			return dateTimeFormat.format(plainTimeToDate(plainTime));
 		}
 		throw err;
 	}
@@ -99,7 +127,9 @@ export function formatSecondsFromMidnight(secondsSinceMidnight) {
 	const midnight = new Temporal.PlainTime();
 	const time = midnight.add({ seconds: secondsSinceMidnight });
 
-	return utcTimeFormat.format(time);
+	// Use Date.UTC so the hour/minute values survive unchanged when
+	// utcTimeFormat (timeZone: 'UTC') re-interprets the timestamp in UTC
+	return utcTimeFormat.format(new Date(Date.UTC(1970, 0, 1, time.hour, time.minute, time.second)));
 }
 
 /**
@@ -192,7 +222,7 @@ export function parseTimeInput(timeString) {
 
 	try {
 		const time = Temporal.PlainTime.from(timeString);
-		return apiTimeFormat.format(time);
+		return apiTimeFormat.format(plainTimeToDate(time));
 	} catch (err) {
 		if (err instanceof RangeError) return null;
 		throw err;
@@ -226,7 +256,9 @@ export function parseDateInput(dateString) {
 		if (dateTime.year < 2000 || dateTime.year > 2100) {
 			return null;
 		}
-		return apiDateFormat.format(dateTime).replaceAll('/', '-');
+		// Local Date (not UTC) because apiDateFormat has no timeZone specified
+		const date = new Date(dateTime.year, dateTime.month - 1, dateTime.day);
+		return apiDateFormat.format(date).replaceAll('/', '-');
 	} catch (err) {
 		if (err instanceof RangeError) return null;
 		throw err;
