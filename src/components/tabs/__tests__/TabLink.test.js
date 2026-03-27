@@ -20,7 +20,7 @@ describe('TabLink', () => {
 		expect(screen.getByText('Arrivals tab')).toBeInTheDocument();
 	});
 
-	it('reflects current state in aria-selected', async () => {
+	it('renders a semantic link regardless of current state', async () => {
 		const { rerender } = render(TabLink, {
 			props: {
 				href: '/stops/1_123',
@@ -29,12 +29,12 @@ describe('TabLink', () => {
 			}
 		});
 
-		const tab = screen.getByRole('tab');
-		expect(tab).toHaveAttribute('aria-selected', 'false');
+		const link = screen.getByRole('link', { name: 'Arrivals tab' });
+		expect(link).toHaveAttribute('href', '/stops/1_123');
 
 		await rerender({ current: true });
 
-		expect(tab).toHaveAttribute('aria-selected', 'true');
+		expect(link).toHaveAttribute('href', '/stops/1_123');
 	});
 
 	it('applies the href prop to the anchor', () => {
@@ -46,6 +46,9 @@ describe('TabLink', () => {
 			}
 		});
 
-		expect(screen.getByRole('tab')).toHaveAttribute('href', '/stops/1_123/schedule');
+		expect(screen.getByRole('link', { name: 'Arrivals tab' })).toHaveAttribute(
+			'href',
+			'/stops/1_123/schedule'
+		);
 	});
 });

@@ -48,7 +48,7 @@
 
 {#if typeof heading === 'number'}
 	<span class="inline-block" style="transform: rotate({heading}deg);">
-		<FontAwesomeIcon icon={faArrowRight} class="" />
+		<FontAwesomeIcon icon={faArrowRight} />
 	</span>
 {:else}
 	<FontAwesomeIcon icon={faArrowRight} class={rotationAngleClass()} />

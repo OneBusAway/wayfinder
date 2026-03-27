@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import CompassArrow from '$components/controls/CompassArrow.svelte';
 
 vi.mock('@fortawesome/svelte-fontawesome', async () => {
-	const { default: FontAwesomeIcon } = await import('./mocks/FontAwesomeIconMock.svelte');
+	const { default: FontAwesomeIcon } = await import(
+		'../../../tests/mocks/FontAwesomeIconMock.svelte'
+	);
 	return { FontAwesomeIcon };
 });
 

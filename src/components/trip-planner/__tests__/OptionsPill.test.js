@@ -28,11 +28,10 @@ describe('OptionsPill', () => {
 
 		let pill = container.querySelector('span');
 		expect(pill).toBeTruthy();
-		expect(pill).not.toHaveClass('options-pill--active');
+		expect(screen.queryByTestId('options-pill-active')).not.toBeInTheDocument();
 
 		await rerender({ label: 'Walk', active: true });
 
-		pill = container.querySelector('span');
-		expect(pill).toHaveClass('options-pill--active');
+		expect(screen.getByTestId('options-pill-active')).toBeInTheDocument();
 	});
 });

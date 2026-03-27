@@ -76,33 +76,27 @@ describe('StopModal', () => {
 		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 	});
 
-	test(
-		'handles closePane function prop',
-		async () => {
-			const closePaneFn = vi.fn();
-			const props = {
-				...defaultProps,
-				closePane: closePaneFn
-			};
+	test('handles closePane function prop', async () => {
+		const closePaneFn = vi.fn();
+		const props = {
+			...defaultProps,
+			closePane: closePaneFn
+		};
 
-			const user = userEvent.setup({ delay: null });
-			render(StopModal, { props });
+		const user = userEvent.setup({ delay: null });
+		render(StopModal, { props });
 
-			const closeButton = await waitFor(() =>
-				screen.getByRole('button', { name: /close/i })
-			);
+		const closeButton = await waitFor(() => screen.getByRole('button', { name: /close/i }));
 
-			await user.click(closeButton);
+		await user.click(closeButton);
 
-			await waitFor(
-				() => {
-					expect(closePaneFn).toHaveBeenCalledTimes(1);
-				},
-				{ timeout: 10000 }
-			);
-		},
-		15000
-	);
+		await waitFor(
+			() => {
+				expect(closePaneFn).toHaveBeenCalledTimes(1);
+			},
+			{ timeout: 2000 }
+		);
+	}, 5000);
 
 	test('handles handleUpdateRouteMap function prop', () => {
 		const updateRouteMapFn = vi.fn();

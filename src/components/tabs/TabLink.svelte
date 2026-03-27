@@ -11,7 +11,7 @@
 </script>
 
 <div class="tab-container__item" class:tab-container__item--active={current}>
-	<a {href} class="block" role="tab" aria-selected={current ? 'true' : 'false'}>
+	<a {href} class="block">
 		{@render children?.()}
 	</a>
 </div>

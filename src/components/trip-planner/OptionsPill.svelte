@@ -11,7 +11,7 @@
 	class:ring-2={active}
 	class:ring-brand={active}
 	class:font-semibold={active}
-	class:options-pill--active={active}
+	data-testid={active ? 'options-pill-active' : undefined}
 	role={onclick ? 'button' : undefined}
 	{onclick}
 >
