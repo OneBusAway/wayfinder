@@ -55,6 +55,8 @@
 			const shapeResponse = await fetch(`/api/oba/shape/${shapeId}`);
 			if (shapeResponse.ok) {
 				shapeData = await shapeResponse.json();
+			} else {
+				console.error(`Failed to fetch shape: shapeId=${shapeId}, status=${shapeResponse.status}`);
 			}
 
 			const shapePoints = shapeData?.data?.entry?.points;

@@ -12,6 +12,8 @@ import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
 
+const polylineAnimationState = new WeakMap();
+
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
@@ -466,9 +468,6 @@ export default class OpenStreetMapProvider {
 		const withArrow = options.withArrow ?? true;
 		const targetOpacity = options.opacity ?? 1;
 
-		// Used to avoid running fade/arrow logic after the polyline was removed.
-		const fadeInToken = Symbol('fadeInToken');
-
 		const polylineOpts = {
 			color: options.color || COLORS.POLYLINE,
 			weight: options.weight || 4,
@@ -481,22 +480,29 @@ export default class OpenStreetMapProvider {
 
 		this.polylines.push(polyline);
 
-		polyline.__fadeInToken = fadeInToken;
-		polyline.__fadeInRafId = null;
-		polyline.__fadeDeferredMoveEnd = null;
+		const state = {
+			fadeInToken: Symbol('fadeInToken'),
+			fadeInRafId: null,
+			fadeDeferredMoveEnd: null
+		};
+		polylineAnimationState.set(polyline, state);
 
 		// Defer fade-in until the route is relevant to what the user sees:
 		// - Already intersects the viewport → start immediately.
 		// - Otherwise wait for the next moveend (e.g. after flyTo / pan / zoom), then start.
 		// startTime is taken when the fade actually begins so the 600ms isn't "burned" while off-screen.
 		const beginFadeIn = () => {
-			if (polyline.__fadeInToken !== fadeInToken || !this.map?.hasLayer(polyline)) return;
+			const currentState = polylineAnimationState.get(polyline);
+			if (!currentState || !this.map?.hasLayer(polyline)) return;
 
 			const durationMs = 600;
 			const startTime = performance.now();
 			const step = (now) => {
-				if (polyline.__fadeInToken !== fadeInToken || !this.map?.hasLayer(polyline)) {
-					polyline.__fadeInRafId = null;
+				const stepState = polylineAnimationState.get(polyline);
+				if (!stepState || !this.map?.hasLayer(polyline)) {
+					if (stepState) {
+						stepState.fadeInRafId = null;
+					}
 					return;
 				}
 
@@ -506,17 +512,17 @@ export default class OpenStreetMapProvider {
 				if (progress < 1) {
 					const easedProgress = 1 - Math.pow(1 - progress, 3);
 					polyline.setStyle({ opacity: targetOpacity * easedProgress });
-					polyline.__fadeInRafId = requestAnimationFrame(step);
+					stepState.fadeInRafId = requestAnimationFrame(step);
 				} else {
 					polyline.setStyle({ opacity: targetOpacity });
 					if (withArrow) {
 						this.addArrowDecorator(polyline);
 					}
-					polyline.__fadeInRafId = null;
+					stepState.fadeInRafId = null;
 				}
 			};
 
-			polyline.__fadeInRafId = requestAnimationFrame(step);
+			currentState.fadeInRafId = requestAnimationFrame(step);
 		};
 
 		const polyBounds = polyline.getBounds();
@@ -527,12 +533,14 @@ export default class OpenStreetMapProvider {
 			beginFadeIn();
 		} else {
 			const onMoveEnd = () => {
-				this.map.off('moveend', onMoveEnd);
-				polyline.__fadeDeferredMoveEnd = null;
+				const moveState = polylineAnimationState.get(polyline);
+				if (moveState) {
+					moveState.fadeDeferredMoveEnd = null;
+				}
 				beginFadeIn();
 			};
-			polyline.__fadeDeferredMoveEnd = onMoveEnd;
-			this.map.on('moveend', onMoveEnd);
+			state.fadeDeferredMoveEnd = onMoveEnd;
+			this.map.once('moveend', onMoveEnd);
 		}
 
 		return polyline;
@@ -563,25 +571,31 @@ export default class OpenStreetMapProvider {
 		return arrowDecorator;
 	}
 
-	removePolyline(polyline) {
-		if (!polyline) return;
+	_cleanupPolyline(polyline) {
+		const state = polylineAnimationState.get(polyline);
 
-		if (polyline.__fadeDeferredMoveEnd && this.map) {
-			this.map.off('moveend', polyline.__fadeDeferredMoveEnd);
-			polyline.__fadeDeferredMoveEnd = null;
+		if (state?.fadeInRafId != null) {
+			cancelAnimationFrame(state.fadeInRafId);
+			state.fadeInRafId = null;
 		}
 
-		if (polyline.__fadeInRafId != null) {
-			cancelAnimationFrame(polyline.__fadeInRafId);
-			polyline.__fadeInRafId = null;
+		this.map?.off('moveend', state?.fadeDeferredMoveEnd);
+		if (state) {
+			state.fadeDeferredMoveEnd = null;
 		}
 
-		polyline.__fadeInToken = null;
-
-		if (polyline.arrowDecorator) {
+		if (polyline?.arrowDecorator) {
 			polyline.arrowDecorator.remove();
 			polyline.arrowDecorator = null;
 		}
+
+		polylineAnimationState.delete(polyline);
+	}
+
+	removePolyline(polyline) {
+		if (!polyline) return;
+
+		this._cleanupPolyline(polyline);
 
 		polyline.remove();
 
@@ -600,19 +614,7 @@ export default class OpenStreetMapProvider {
 
 		this.polylines.forEach((polyline) => {
 			if (polyline) {
-				if (polyline.__fadeDeferredMoveEnd && this.map) {
-					this.map.off('moveend', polyline.__fadeDeferredMoveEnd);
-					polyline.__fadeDeferredMoveEnd = null;
-				}
-				if (polyline.__fadeInRafId != null) {
-					cancelAnimationFrame(polyline.__fadeInRafId);
-					polyline.__fadeInRafId = null;
-				}
-				polyline.__fadeInToken = null;
-				if (polyline.arrowDecorator) {
-					polyline.arrowDecorator.remove();
-					polyline.arrowDecorator = null;
-				}
+				this._cleanupPolyline(polyline);
 				polyline.remove();
 			}
 		});
