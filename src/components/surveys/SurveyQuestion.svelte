@@ -17,15 +17,15 @@
 		option: `rounded font-medium text-gray-800 transition-all hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700`
 	};
 
-	const sizeClasses = {
+	const sizeClasses = $derived({
 		label: variant === 'compact' ? 'mb-2 text-xl' : 'mb-4 text-2xl',
 		input: variant === 'compact' ? 'mt-1 px-3 py-2 text-lg' : 'mt-2 px-5 py-4 text-xl',
 		option: variant === 'compact' ? 'p-1 text-lg' : 'p-2 text-lg'
-	};
+	});
 
-	const errorClasses = {
+	const errorClasses = $derived({
 		label: variant === 'compact' ? 'text-red-500' : 'text-xl text-red-500'
-	};
+	});
 
 	function handleInput(event) {
 		onInputChange(event, question, index);
@@ -53,7 +53,7 @@
 	/>
 {:else if question.content.type === 'radio'}
 	<div class={`mt-2 space-y-${variant === 'compact' ? '0' : '2'}`}>
-		{#each question.content.options as option}
+		{#each question.content.options as option (option)}
 			<Radio
 				name="radio-{index}"
 				value={option}
@@ -67,7 +67,7 @@
 	</div>
 {:else if question.content.type === 'checkbox'}
 	<div class={`mt-2 space-y-${variant === 'compact' ? '0' : '2'}`}>
-		{#each question.content.options as option}
+		{#each question.content.options as option (option)}
 			<Checkbox
 				name="checkbox-{index}"
 				value={option}

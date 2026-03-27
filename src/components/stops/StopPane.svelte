@@ -37,7 +37,7 @@
 	let serviceAlerts = $state([]);
 
 	let interval = null;
-	let currentStopSurvey = $state(null);
+	let currentStopSurvey = $derived($surveyStore);
 	let remainingSurveyQuestions = $state([]);
 
 	let abortController = null;
@@ -161,10 +161,6 @@
 	function handleHeroQuestionChange(event) {
 		heroAnswer = event.target.value;
 	}
-
-	$effect(() => {
-		currentStopSurvey = $surveyStore;
-	});
 </script>
 
 {#if $isLoading}
@@ -240,7 +236,7 @@
 				{:else}
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
-							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
+							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival (arrival.tripId + arrival.scheduledArrivalTime)}
 								<AccordionItem data={arrival}>
 									{#snippet header()}
 										<span>

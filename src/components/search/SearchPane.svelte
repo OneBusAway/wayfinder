@@ -2,6 +2,7 @@
 	import SearchField from '$components/search/SearchField.svelte';
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
 	import { onMount, onDestroy, tick } from 'svelte';
+	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { faMapPin, faSignsPost } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
@@ -77,7 +78,7 @@
 		if (stopGroupings.length === 0) return [];
 
 		let orderedStops = [];
-		let seenStopIds = new Set();
+		let seenStopIds = new SvelteSet();
 
 		stopGroupings.forEach((grouping) => {
 			if (!grouping.stopGroups || grouping.stopGroups.length === 0) return;
@@ -115,7 +116,9 @@
 			}
 
 			const stopsForRoute = await response.json();
-			const stopsMap = new Map(stopsForRoute.data.references.stops.map((stop) => [stop.id, stop]));
+			const stopsMap = new SvelteMap(
+				stopsForRoute.data.references.stops.map((stop) => [stop.id, stop])
+			);
 			const polylinesData = stopsForRoute.data.entry.polylines;
 
 			const stopGroupings = stopsForRoute.data.entry.stopGroupings;
@@ -289,7 +292,7 @@
 				{/if}
 
 				{#if routes?.length > 0}
-					{#each routes as route}
+					{#each routes as route (route.id)}
 						<SearchResultItem
 							on:click={() => handleRouteClick(route)}
 							icon={prioritizedRouteTypeForDisplay(route.type)}
@@ -299,7 +302,7 @@
 					{/each}
 				{/if}
 				{#if stops?.length > 0}
-					{#each stops as stop}
+					{#each stops as stop (stop.id)}
 						<SearchResultItem
 							on:click={() => handleStopClick(stop)}
 							icon={faSignsPost}

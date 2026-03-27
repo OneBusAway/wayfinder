@@ -51,7 +51,7 @@
 					</td>
 				</tr>
 			{:else}
-				{#each scheduleData.amTimes as [hour, times]}
+				{#each scheduleData.amTimes as [hour, times] (hour)}
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-900">
 						<td
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
@@ -86,7 +86,7 @@
 					</td>
 				</tr>
 			{:else}
-				{#each scheduleData.pmTimes as [hour, times]}
+				{#each scheduleData.pmTimes as [hour, times] (hour)}
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
 						<td
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"

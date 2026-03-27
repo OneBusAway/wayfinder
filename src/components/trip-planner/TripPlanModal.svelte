@@ -130,7 +130,7 @@
 
 	{#if itineraries.length > 0}
 		<div class="itinerary-tabs" bind:this={itineraryTabsContainer}>
-			{#each itineraries as itinerary, index}
+			{#each itineraries as itinerary, index (index)}
 				<ItineraryTab {index} {activeTab} {setActiveTab} {itinerary} />
 			{/each}
 		</div>

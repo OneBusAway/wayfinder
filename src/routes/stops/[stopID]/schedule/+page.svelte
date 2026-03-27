@@ -10,6 +10,7 @@
 	import { onMount } from 'svelte';
 	import { t, isLoading } from 'svelte-i18n';
 	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let selectedDate = $state(new Date());
 	let prevSelectedDate = $state(null);
@@ -21,8 +22,8 @@
 	let accordionComponent = $state();
 	let allRoutesExpanded = $state(false);
 
-	let schedulesMap = new Map();
-	let routeReference = new Map();
+	let schedulesMap = new SvelteMap();
+	let routeReference = new SvelteMap();
 	let currentDate = new Date();
 
 	stopId = $page.params.stopID;
@@ -185,7 +186,7 @@
 					</p>
 				{:else}
 					<Accordion bind:this={accordionComponent}>
-						{#each schedules as schedule}
+						{#each schedules as schedule (schedule.tripHeadsign)}
 							<AccordionItem>
 								{#snippet header()}
 									<span>{schedule.tripHeadsign}</span>

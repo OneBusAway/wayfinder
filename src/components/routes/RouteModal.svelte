@@ -69,7 +69,7 @@
 
 			<div class="space-y-2 rounded-lg">
 				<div>
-					{#each stops as stop}
+					{#each stops as stop (stop.id)}
 						<StopItem {stop} {handleStopItemClick} />
 					{/each}
 				</div>

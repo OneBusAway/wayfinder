@@ -9,6 +9,7 @@ import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/generateVehicleIcon';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
+import { SvelteMap } from 'svelte/reactivity';
 
 export default class GoogleMapProvider {
 	constructor(apiKey, handleStopMarkerSelect) {
@@ -16,10 +17,10 @@ export default class GoogleMapProvider {
 		this.map = null;
 		this.globalInfoWindow = null;
 		this.popupContentComponent = null;
-		this.stopsMap = new Map();
+		this.stopsMap = new SvelteMap();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
-		this.markersMap = new Map();
+		this.markersMap = new SvelteMap();
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.showStopsRoutesAtZoom = 16;

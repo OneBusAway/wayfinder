@@ -1,5 +1,6 @@
 <script>
 	import { t } from 'svelte-i18n';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import {
 		faWalking,
@@ -15,7 +16,7 @@
 	function getTransportModes(legs) {
 		if (!legs) return [];
 		const modes = [];
-		const seenModes = new Set();
+		const seenModes = new SvelteSet();
 
 		for (const leg of legs) {
 			if (!seenModes.has(leg.mode)) {
@@ -58,7 +59,7 @@
 	<span class="font-semibold">{durationMinutes} {$t('time.min')}</span>
 	{#if transportModes.length > 0}
 		<span class="flex items-center gap-1 text-xs opacity-80">
-			{#each transportModes as mode, i}
+			{#each transportModes as mode, i (mode + i)}
 				{@const icon = getModeIcon(mode)}
 				{#if icon}
 					{#if i > 0}

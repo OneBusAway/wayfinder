@@ -1,12 +1,13 @@
 <script>
 	import { setContext } from 'svelte';
 	import { writable, derived } from 'svelte/store';
+	import { SvelteSet } from 'svelte/reactivity';
 
 	// Store for animation state
 	const skipAnimation = writable(false);
 
 	// Create a store to track multiple active items using a Set
-	const activeItems = writable(new Set());
+	const activeItems = writable(new SvelteSet());
 
 	/**
 	 * @typedef {Object} Props
@@ -46,7 +47,7 @@
 				skipAnimation,
 				activate: () => {
 					activeItems.update((items) => {
-						const newItems = new Set(items);
+						const newItems = new SvelteSet(items);
 						if (newItems.has(id)) {
 							newItems.delete(id);
 						} else {

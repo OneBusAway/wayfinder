@@ -16,8 +16,10 @@
 		}
 	}
 
-	const lightModeColor = route.color ? `#${route.color}` : '#000000';
-	const darkModeColor = route.color ? adjustColorForDarkMode(`#${route.color}`) : '#ffffff';
+	const lightModeColor = $derived(route.color ? `#${route.color}` : '#000000');
+	const darkModeColor = $derived(
+		route.color ? adjustColorForDarkMode(`#${route.color}`) : '#ffffff'
+	);
 </script>
 
 <button

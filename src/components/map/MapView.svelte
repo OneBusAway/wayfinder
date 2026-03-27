@@ -1,6 +1,7 @@
 <script>
 	import { browser } from '$app/environment';
 	import { onMount, onDestroy } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import {
 		PUBLIC_OBA_REGION_CENTER_LAT as initialLat,
 		PUBLIC_OBA_REGION_CENTER_LNG as initialLng
@@ -41,8 +42,8 @@
 	let mapElement = $state();
 	let allStops = $state([]);
 	// O(1) lookup for existing stops
-	let allStopsMap = new Map();
-	let stopsCache = new Map();
+	let allStopsMap = new SvelteMap();
+	let stopsCache = new SvelteMap();
 
 	const Modes = {
 		NORMAL: 'normal',
@@ -185,7 +186,7 @@
 		const newStops = stopsData.data.list;
 		const routeReference = stopsData.data.references.routes || [];
 
-		const routeLookup = new Map(routeReference.map((route) => [route.id, route]));
+		const routeLookup = new SvelteMap(routeReference.map((route) => [route.id, route]));
 
 		// merge the stops routeIds with the route data and deduplicate efficiently
 		newStops.forEach((stop) => {

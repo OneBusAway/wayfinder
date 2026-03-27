@@ -84,7 +84,7 @@
 
 			<div>
 				{#if filteredRoutes.length > 0}
-					{#each filteredRoutes as route}
+					{#each filteredRoutes as route (route.id)}
 						<RouteItem {route} {handleModalRouteClick} />
 					{/each}
 				{:else}

@@ -112,7 +112,7 @@
 			<div class="relative">
 				<div class="absolute bottom-0 left-3.5 top-0 w-[1px] bg-neutral-400"></div>
 
-				{#each tripDetails.schedule.stopTimes as tripStop, index}
+				{#each tripDetails.schedule.stopTimes as tripStop, index (tripStop.stopId + index)}
 					<div class="mb-4 flex items-center">
 						<div
 							class="relative flex size-8 items-center justify-center rounded-md border border-neutral-400 bg-white dark:bg-neutral-800"

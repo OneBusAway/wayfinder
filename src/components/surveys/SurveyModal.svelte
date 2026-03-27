@@ -138,7 +138,7 @@
 						/>
 					{:else}
 						<div class="space-y-8">
-							{#each remainingQuestions as question, index}
+							{#each remainingQuestions as question, index (question.id)}
 								<SurveyQuestion
 									{question}
 									index={index + 1}

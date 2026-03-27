@@ -147,7 +147,7 @@
 					aria-label={$t('language_switcher.available_languages')}
 					class="flex flex-col py-1"
 				>
-					{#each languages as lang}
+					{#each languages as lang (lang.code)}
 						<button
 							type="button"
 							role="option"

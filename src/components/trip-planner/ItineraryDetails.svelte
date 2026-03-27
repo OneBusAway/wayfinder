@@ -42,7 +42,7 @@
 
 <!-- Legs Timeline -->
 <div class="space-y-0">
-	{#each itinerary.legs as leg, index}
+	{#each itinerary.legs as leg, index (index)}
 		{@const isInterline = isStaySeatedTransition(itinerary.legs, index)}
 		{@const nextLeg = itinerary.legs[index + 1]}
 		{@const nextLegRouteName = getRouteName(nextLeg)}

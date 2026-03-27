@@ -247,7 +247,7 @@
 		aria-label="Main navigation"
 		class="flex items-center gap-x-2 px-1 py-1 md:gap-x-4 md:px-2 md:py-2"
 	>
-		{#each visibleLinks as { key, value }}
+		{#each visibleLinks as { key, value } (key)}
 			<div class="flex-shrink-0 rounded-md border bg-surface/80 dark:bg-surface-dark">
 				<a
 					href={value}

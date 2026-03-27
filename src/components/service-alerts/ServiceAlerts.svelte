@@ -69,7 +69,7 @@
 
 		{#if !isAlertsHidden}
 			<div class="space-y-2">
-				{#each paginatedAlerts as alert}
+				{#each paginatedAlerts as alert (alert.id)}
 					<ServiceAlertItem {alert} {openModal} />
 				{/each}
 			</div>

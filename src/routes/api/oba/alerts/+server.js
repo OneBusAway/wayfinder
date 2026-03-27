@@ -20,7 +20,7 @@ export async function GET() {
 		);
 
 		const response = await fetch(alertsURL);
-
+		console.log(response);
 		const buffer = await response.arrayBuffer();
 
 		const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(new Uint8Array(buffer));

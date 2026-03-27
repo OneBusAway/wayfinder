@@ -11,6 +11,7 @@ import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/gen
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
+import { SvelteMap } from 'svelte/reactivity';
 
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
@@ -19,11 +20,11 @@ export default class OpenStreetMapProvider {
 		this.L = null;
 		this.globalInfoWindow = null;
 		this.popupContentComponent = null;
-		this.stopsMap = new Map();
+		this.stopsMap = new SvelteMap();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
 		this.maplibreLayer = 'positron';
-		this.markersMap = new Map();
+		this.markersMap = new SvelteMap();
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.showStopsRoutesAtZoom = 16;
 		this.routeLabelsVisible = false;
