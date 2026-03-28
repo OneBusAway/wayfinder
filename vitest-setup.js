@@ -41,7 +41,7 @@ vi.mock('svelte-i18n', () => ({
 	t: {
 		subscribe: vi.fn((fn) => {
 			fn((key) => key); // Return a function that returns the key
-			return () => { };
+			return () => {};
 		})
 	},
 	_: vi.fn((key) => key),
@@ -51,7 +51,7 @@ vi.mock('svelte-i18n', () => ({
 	locale: {
 		subscribe: vi.fn((fn) => {
 			fn('en');
-			return () => { };
+			return () => {};
 		})
 	}
 }));
@@ -148,10 +148,10 @@ globalThis.__OBA_LOGO_URL_DARK__ = '';
 const mockAnimate = function () {
 	return {
 		finished: Promise.resolve(),
-		cancel: () => { },
-		pause: () => { },
-		play: () => { },
-		reverse: () => { },
+		cancel: () => {},
+		pause: () => {},
+		play: () => {},
+		reverse: () => {},
 		onfinish: null,
 		oncancel: null,
 		startTime: 0,
@@ -172,5 +172,3 @@ if (typeof HTMLElement !== 'undefined') {
 if (typeof SVGElement !== 'undefined') {
 	SVGElement.prototype.animate = mockAnimate;
 }
-
-
