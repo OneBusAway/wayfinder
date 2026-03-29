@@ -36,5 +36,5 @@
 		</div>
 		<FavoriteButton id={route.id} type="route" name={getDisplayRouteName(route)} ariaLabel={`Add ${getDisplayRouteName(route)} to favorites`} />
 	</button>
-	<AlertsBadge id={route.id} type="route" />
+	<AlertsBadge alerts={[]} id={route.id} type="route" />
 </div>

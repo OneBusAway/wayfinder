@@ -1,8 +1,21 @@
 <script>
 	import FavoriteButton from '$components/favorites/FavoriteButton.svelte';
 	import AlertsBadge from '$components/service-alerts/AlertsBadge.svelte';
+	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 
 	let { stop, handleStopItemClick } = $props();
+
+	let alerts = $state([]);
+
+	$effect(() => {
+		if (!stop?.id) return;
+		fetch(`/api/oba/arrivals-and-departures-for-stop/${stop.id}`)
+			.then(r => r.json())
+			.then(data => {
+				alerts = filterActiveAlerts(data.data?.references?.situations || []);
+			})
+			.catch(() => {});
+	});
 </script>
 
 <div class="flex items-center gap-2">
@@ -25,5 +38,5 @@
 		</div>
 		<FavoriteButton id={stop.id} type="stop" name={stop.name} ariaLabel={`Add ${stop.name} to favorites`} />
 	</div>
-	<AlertsBadge id={stop.id} type="stop" />
+	<AlertsBadge {alerts} id={stop.id} type="stop" />
 </div>

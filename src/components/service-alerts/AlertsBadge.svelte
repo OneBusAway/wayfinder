@@ -1,26 +1,18 @@
 <script>
-	import { alertsStore } from '$stores/alertsStore';
+	let { alerts = [], id, type = 'stop' } = $props();
 
-	let { id, type = 'stop' } = $props();
-
-	let alertCount = $state(0);
-	let unsubscribe = undefined;
-
-	$effect(() => {
-		// Only fetch for stops, not routes
-		if (type === 'stop' && id) {
-			alertsStore.fetchAlertsForStop(id);
+	let alertCount = $derived.by(() => {
+		if (type === 'stop') {
+			return alerts.length;
+		} else if (type === 'route') {
+			return alerts.filter((alert) => {
+				if (!alert.affectedEntity) return false;
+				return alert.affectedEntity.some(
+					(entity) => entity.routeId === id || entity.route?.id === id
+				);
+			}).length;
 		}
-
-		// Subscribe to store updates
-		unsubscribe = alertsStore.subscribe(() => {
-			alertCount = alertsStore.getAlertCount(id, type);
-		});
-
-		// Cleanup subscription
-		return () => {
-			if (unsubscribe) unsubscribe();
-		};
+		return 0;
 	});
 </script>
 
