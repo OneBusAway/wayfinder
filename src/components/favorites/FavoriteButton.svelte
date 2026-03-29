@@ -1,7 +1,7 @@
 <script>
 	import { favorites } from '$stores/favoritesStore';
 
-	let { id, type = 'stop', name = '' } = $props();
+	let { id, type = 'stop', name = '', ariaLabel = '' } = $props();
 
 	let isFavorited = $state(false);
 
@@ -30,7 +30,7 @@
 <button
 	type="button"
 	onclick={handleToggle}
-	aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+	aria-label={isFavorited ? 'Remove from favorites' : (ariaLabel || 'Add to favorites')}
 	class="favorite-btn inline-flex items-center justify-center rounded p-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
 	title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
 >
