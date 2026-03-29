@@ -1,23 +1,26 @@
 <script>
 	import { alertsStore } from '$stores/alertsStore';
-	import { onMount } from 'svelte';
 
 	let { id, type = 'stop' } = $props();
 
 	let alertCount = $state(0);
+	let unsubscribe = undefined;
 
-	onMount(() => {
-		// Fetch alerts when component mounts
+	$effect(() => {
+		// Only fetch for stops, not routes
 		if (type === 'stop' && id) {
 			alertsStore.fetchAlertsForStop(id);
 		}
 
 		// Subscribe to store updates
-		const unsubscribe = alertsStore.subscribe(() => {
+		unsubscribe = alertsStore.subscribe(() => {
 			alertCount = alertsStore.getAlertCount(id, type);
 		});
 
-		return unsubscribe;
+		// Cleanup subscription
+		return () => {
+			if (unsubscribe) unsubscribe();
+		};
 	});
 </script>
 
