@@ -1,16 +1,24 @@
 <script>
 	import { favorites } from '$stores/favoritesStore';
-	import { onMount } from 'svelte';
 
 	let { id, type = 'stop', name = '' } = $props();
 
 	let isFavorited = $state(false);
 
-	onMount(() => {
-		const unsubscribe = favorites.subscribe((favs) => {
+	let unsubscribe = undefined;
+
+	$effect(() => {
+		// Re-subscribe whenever id or type changes
+		if (unsubscribe) unsubscribe();
+		
+		unsubscribe = favorites.subscribe((favs) => {
 			isFavorited = favs.some((fav) => fav.id === id && fav.type === type);
 		});
-		return unsubscribe;
+
+		// Cleanup on destroy
+		return () => {
+			if (unsubscribe) unsubscribe();
+		};
 	});
 
 	function handleToggle(e) {
