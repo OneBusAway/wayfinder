@@ -115,13 +115,30 @@
 			emptySchedules = allSchedules.length === 0;
 			return;
 		}
-		const selectedHour = parseInt(selectedTime.split(':')[0]);
-		schedules = allSchedules.map(schedule => ({
-			...schedule,
-			stopTimes: Object.fromEntries(
-				Object.entries(schedule.stopTimes).filter(([hour]) => parseInt(hour) >= selectedHour)
-			)
-		})).filter(schedule => Object.keys(schedule.stopTimes).length > 0);
+		const [hourPart, minutePart] = selectedTime.split(':');
+		const selectedHour = parseInt(hourPart, 10);
+		const selectedMinute = minutePart !== undefined ? parseInt(minutePart, 10) : 0;
+		const selectedTotalMinutes = selectedHour * 60 + selectedMinute;
+
+		schedules = allSchedules
+			.map((schedule) => {
+				const filteredEntries = Object.entries(schedule.stopTimes)
+					.map(([hour, times]) => {
+						const hourNum = parseInt(hour, 10);
+						if (Number.isNaN(hourNum)) return null;
+						if (hourNum < selectedHour) return null;
+						if (hourNum > selectedHour) return [hour, times];
+						const filteredTimes = times.filter((timeObj) => {
+							const date = new Date(timeObj.timestamp);
+							const totalMinutes = date.getHours() * 60 + date.getMinutes();
+							return totalMinutes >= selectedTotalMinutes;
+						});
+						return filteredTimes.length ? [hour, filteredTimes] : null;
+					})
+					.filter((entry) => entry !== null);
+				return { ...schedule, stopTimes: Object.fromEntries(filteredEntries) };
+			})
+			.filter((schedule) => Object.keys(schedule.stopTimes).length > 0);
 		emptySchedules = schedules.length === 0;
 	}
 
