@@ -124,6 +124,7 @@
 		"collapse_all_routes": "Sarara Hunda Dhoksi",
 		"route_schedules": "Sagantaa Sararaa",
 		"no_schedules_available": "Guyyaa filatameef sagantaan hin jiru.",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "Eenyummaa Dhaabbii",
 		"direction": "Kallattii"
 	},

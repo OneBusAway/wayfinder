@@ -124,6 +124,7 @@
 		"collapse_all_routes": "Згорнути всі маршрути",
 		"route_schedules": "Розклад маршрутів",
 		"no_schedules_available": "Немає розкладу на обрану дату.",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "ID зупинки",
 		"direction": "Напрямок"
 	},

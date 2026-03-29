@@ -124,6 +124,7 @@
 		"collapse_all_routes": "Réduire toutes les lignes",
 		"route_schedules": "Horaires des lignes",
 		"no_schedules_available": "Aucun horaire disponible pour la date sélectionnée.",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "ID de l'arrêt",
 		"direction": "Direction"
 	},

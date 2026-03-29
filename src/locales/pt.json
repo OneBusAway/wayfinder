@@ -124,6 +124,7 @@
 		"collapse_all_routes": "Recolher Todas as Linhas",
 		"route_schedules": "Horários das Linhas",
 		"no_schedules_available": "Nenhum horário disponível para a data selecionada.",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "ID da Parada",
 		"direction": "Direção"
 	},

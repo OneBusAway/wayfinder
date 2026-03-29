@@ -124,6 +124,7 @@
 		"collapse_all_routes": "جمع کردن همه خطوط",
 		"route_schedules": "برنامه زمانی خطوط",
 		"no_schedules_available": "برنامه‌ای برای تاریخ انتخاب شده موجود نیست.",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "شناسه ایستگاه",
 		"direction": "جهت"
 	},

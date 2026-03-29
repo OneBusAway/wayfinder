@@ -124,6 +124,7 @@
 		"collapse_all_routes": "ਸਾਰੇ ਰੂਟ ਸਮੇਟੋ",
 		"route_schedules": "ਰੂਟ ਸਮਾਂ-ਸਾਰਣੀਆਂ",
 		"no_schedules_available": "ਚੁਣੀ ਗਈ ਤਾਰੀਖ ਲਈ ਕੋਈ ਸਮਾਂ-ਸਾਰਣੀ ਉਪਲਬਧ ਨਹੀਂ।",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "ਸਟਾਪ ID",
 		"direction": "ਦਿਸ਼ਾ"
 	},

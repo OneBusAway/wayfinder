@@ -284,7 +284,7 @@
 				{#if emptySchedules}
 					<p class="text-center text-gray-700 dark:text-gray-400">
 						{#if selectedTime}
-							{$isLoading ? '' : `No departures found for ${selectedDate.toLocaleDateString()} after ${selectedTime}`}
+							{$isLoading ? '' : $t('schedule_for_stop.no_departures_after_time', { date: selectedDate.toLocaleDateString(), time: selectedTime })}
 						{:else}
 							{$isLoading ? '' : $t('schedule_for_stop.no_schedules_available')}
 						{/if}

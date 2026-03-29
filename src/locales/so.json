@@ -124,6 +124,7 @@
 		"collapse_all_routes": "Laabo Dhamaan",
 		"route_schedules": "Jadwalka waddooyinka",
 		"no_schedules_available": "Jadwal lama heli karo taariikhda la doortay.",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "Aqoonsiga joogsiga",
 		"direction": "Jihada"
 	},

@@ -124,6 +124,7 @@
 		"collapse_all_routes": "전체 노선 접기",
 		"route_schedules": "노선 시간표",
 		"no_schedules_available": "선택한 날짜의 운행 정보가 없습니다.",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "정류장 ID",
 		"direction": "방면"
 	},
