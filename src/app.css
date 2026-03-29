@@ -75,7 +75,7 @@
 	}
 
 	/* Accessibility: Dark mode override for brand-accent color */
-	/* Use lighter green (#7dd3fc) for sufficient contrast on dark backgrounds */
+	/* Use Tailwind green-400 (#4ade80) for sufficient contrast on dark backgrounds */
 	.dark .text-brand-accent {
 		@apply text-green-400;
 	}
