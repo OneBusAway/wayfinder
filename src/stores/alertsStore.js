@@ -29,13 +29,11 @@ function createAlertsStore() {
 
 	function getAlertsForStop(stopId) {
 		if (!stopId || !Array.isArray(alerts)) return [];
-		// Alerts from stop data apply to that stop
 		return alerts;
 	}
 
 	function getAlertsForRoute(routeId) {
 		if (!routeId || !Array.isArray(alerts)) return [];
-		// Filter alerts that mention this route
 		return alerts.filter((alert) => {
 			if (!alert.affectedEntity) return false;
 			return alert.affectedEntity.some(

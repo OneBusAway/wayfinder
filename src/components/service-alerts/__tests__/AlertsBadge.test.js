@@ -3,7 +3,6 @@ import { render } from '@testing-library/svelte';
 import AlertsBadge from '../AlertsBadge.svelte';
 import * as alertsStoreModule from '$stores/alertsStore';
 
-// Mock the alerts store
 vi.mock('$stores/alertsStore', () => ({
 	alertsStore: {
 		subscribe: vi.fn(),
@@ -13,66 +12,48 @@ vi.mock('$stores/alertsStore', () => ({
 }));
 
 describe('AlertsBadge', () => {
+	const setupMocks = (alerts = [], count = 0) => {
+		alertsStoreModule.alertsStore.subscribe.mockImplementation((callback) => {
+			callback(alerts);
+			return () => {};
+		});
+		alertsStoreModule.alertsStore.fetchAlertsForStop.mockResolvedValue(alerts);
+		alertsStoreModule.alertsStore.getAlertCount.mockReturnValue(count);
+	};
+
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	it('renders nothing when alert count is 0', () => {
-		alertsStoreModule.alertsStore.subscribe.mockImplementation((callback) => {
-			callback([]);
-			return () => {};
-		});
-		alertsStoreModule.alertsStore.fetchAlertsForStop.mockResolvedValue([]);
-		alertsStoreModule.alertsStore.getAlertCount.mockReturnValue(0);
+		setupMocks([], 0);
 
 		const { container } = render(AlertsBadge, {
-			props: {
-				id: 'stop123',
-				type: 'stop'
-			}
+			props: { id: 'stop123', type: 'stop' }
 		});
 
-		// Check that badge div doesn't exist (only role=status wrapper)
-		const liveRegion = container.querySelector('[role="status"]');
-		const badge = liveRegion?.querySelector('[aria-label]');
+		const badge = container.querySelector('[role="status"]')?.querySelector('[aria-label]');
 		expect(badge).not.toBeInTheDocument();
 	});
 
 	it('renders badge with count when alerts exist', () => {
-		alertsStoreModule.alertsStore.subscribe.mockImplementation((callback) => {
-			callback([{ id: 'alert1' }]);
-			return () => {};
-		});
-		alertsStoreModule.alertsStore.fetchAlertsForStop.mockResolvedValue([{ id: 'alert1' }]);
-		alertsStoreModule.alertsStore.getAlertCount.mockReturnValue(3);
+		setupMocks([{ id: 'alert1' }], 3);
 
 		const { container } = render(AlertsBadge, {
-			props: {
-				id: 'stop123',
-				type: 'stop'
-			}
+			props: { id: 'stop123', type: 'stop' }
 		});
 
-		const liveRegion = container.querySelector('[role="status"]');
-		const badge = liveRegion?.querySelector('[aria-label]');
+		const badge = container.querySelector('[aria-label]');
 		expect(badge).toBeInTheDocument();
 		expect(badge?.textContent).toContain('3');
 		expect(badge).toHaveClass('bg-red-500');
 	});
 
 	it('shows 9+ when alert count exceeds 9', () => {
-		alertsStoreModule.alertsStore.subscribe.mockImplementation((callback) => {
-			callback([{ id: 'alert1' }]);
-			return () => {};
-		});
-		alertsStoreModule.alertsStore.fetchAlertsForStop.mockResolvedValue([{ id: 'alert1' }]);
-		alertsStoreModule.alertsStore.getAlertCount.mockReturnValue(15);
+		setupMocks([{ id: 'alert1' }], 15);
 
 		const { container } = render(AlertsBadge, {
-			props: {
-				id: 'stop123',
-				type: 'stop'
-			}
+			props: { id: 'stop123', type: 'stop' }
 		});
 
 		const badge = container.querySelector('div');
@@ -80,53 +61,30 @@ describe('AlertsBadge', () => {
 	});
 
 	it('calls fetchAlertsForStop when component mounts with stop type', () => {
-		alertsStoreModule.alertsStore.subscribe.mockImplementation((callback) => {
-			callback([]);
-			return () => {};
-		});
-		alertsStoreModule.alertsStore.fetchAlertsForStop.mockResolvedValue([]);
-		alertsStoreModule.alertsStore.getAlertCount.mockReturnValue(0);
+		setupMocks([], 0);
 
 		render(AlertsBadge, {
-			props: {
-				id: 'stop123',
-				type: 'stop'
-			}
+			props: { id: 'stop123', type: 'stop' }
 		});
 
 		expect(alertsStoreModule.alertsStore.fetchAlertsForStop).toHaveBeenCalledWith('stop123');
 	});
 
 	it('does not call fetchAlertsForStop for route type', () => {
-		alertsStoreModule.alertsStore.subscribe.mockImplementation((callback) => {
-			callback([]);
-			return () => {};
-		});
-		alertsStoreModule.alertsStore.getAlertCount.mockReturnValue(0);
+		setupMocks([], 0);
 
 		render(AlertsBadge, {
-			props: {
-				id: 'route456',
-				type: 'route'
-			}
+			props: { id: 'route456', type: 'route' }
 		});
 
 		expect(alertsStoreModule.alertsStore.fetchAlertsForStop).not.toHaveBeenCalled();
 	});
 
-	it('has proper accessibility attributes', () => {
-		alertsStoreModule.alertsStore.subscribe.mockImplementation((callback) => {
-			callback([{ id: 'alert1' }]);
-			return () => {};
-		});
-		alertsStoreModule.alertsStore.fetchAlertsForStop.mockResolvedValue([{ id: 'alert1' }]);
-		alertsStoreModule.alertsStore.getAlertCount.mockReturnValue(2);
+	it('has correct aria-label for multiple alerts', () => {
+		setupMocks([{ id: 'alert1' }], 2);
 
 		const { container } = render(AlertsBadge, {
-			props: {
-				id: 'stop123',
-				type: 'stop'
-			}
+			props: { id: 'stop123', type: 'stop' }
 		});
 
 		const badge = container.querySelector('[aria-label]');
@@ -134,19 +92,11 @@ describe('AlertsBadge', () => {
 		expect(badge).toHaveAttribute('title', '2 active alerts');
 	});
 
-	it('has correct singular aria-label for single alert', () => {
-		alertsStoreModule.alertsStore.subscribe.mockImplementation((callback) => {
-			callback([{ id: 'alert1' }]);
-			return () => {};
-		});
-		alertsStoreModule.alertsStore.fetchAlertsForStop.mockResolvedValue([{ id: 'alert1' }]);
-		alertsStoreModule.alertsStore.getAlertCount.mockReturnValue(1);
+	it('has correct aria-label for single alert', () => {
+		setupMocks([{ id: 'alert1' }], 1);
 
 		const { container } = render(AlertsBadge, {
-			props: {
-				id: 'stop123',
-				type: 'stop'
-			}
+			props: { id: 'stop123', type: 'stop' }
 		});
 
 		const badge = container.querySelector('[aria-label]');

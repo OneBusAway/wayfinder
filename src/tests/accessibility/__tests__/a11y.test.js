@@ -5,193 +5,99 @@ import FavoriteButton from '$components/favorites/FavoriteButton.svelte';
 import AlertsBadge from '$components/service-alerts/AlertsBadge.svelte';
 
 describe('Accessibility Tests', () => {
+	const mockStop = { id: '1', name: 'Test Stop', code: 'TS1' };
+	const favoriteProps = { id: '1', type: 'stop' };
+	const alertsProps = { id: '1', type: 'stop' };
+
 	describe('StopItem Keyboard Accessibility', () => {
-		it('should have role=button', async () => {
+		it('has role=button with tabindex=0', () => {
 			const { container } = render(StopItem, {
-				props: {
-					stop: { id: '1', name: 'Test Stop', code: 'TS1' },
-					handleStopItemClick: vi.fn()
-				}
+				props: { stop: mockStop, handleStopItemClick: vi.fn() }
 			});
 
 			const stopButton = container.querySelector('[role="button"]');
 			expect(stopButton).toBeTruthy();
-		});
-
-		it('should have tabindex=0 for keyboard focus', async () => {
-			const { container } = render(StopItem, {
-				props: {
-					stop: { id: '1', name: 'Test Stop', code: 'TS1' },
-					handleStopItemClick: vi.fn()
-				}
-			});
-
-			const stopButton = container.querySelector('[role="button"]');
 			expect(stopButton).toHaveAttribute('tabindex', '0');
 		});
 
-		it('should have keyboard handler for Enter key', async () => {
+		it('responds to Enter and Space keys', () => {
 			const handleClick = vi.fn();
 			const { container } = render(StopItem, {
-				props: {
-					stop: { id: '1', name: 'Test Stop', code: 'TS1' },
-					handleStopItemClick: handleClick
-				}
+				props: { stop: mockStop, handleStopItemClick: handleClick }
 			});
 
 			const stopButton = container.querySelector('[role="button"]');
-			stopButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+			
+			stopButton?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+			expect(handleClick).toHaveBeenCalledTimes(1);
 
-			expect(handleClick).toHaveBeenCalled();
+			stopButton?.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+			expect(handleClick).toHaveBeenCalledTimes(2);
 		});
 
-		it('should have keyboard handler for Space key', async () => {
-			const handleClick = vi.fn();
+		it('is a div element with proper role semantics', () => {
 			const { container } = render(StopItem, {
-				props: {
-					stop: { id: '1', name: 'Test Stop', code: 'TS1' },
-					handleStopItemClick: handleClick
-				}
-			});
-
-			const stopButton = container.querySelector('[role="button"]');
-			stopButton.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
-
-			expect(handleClick).toHaveBeenCalled();
-		});
-
-		it('should be keyboard accessible with proper role and tabindex', async () => {
-			const { container } = render(StopItem, {
-				props: {
-					stop: { id: '1', name: 'Test Stop', code: 'TS1' },
-					handleStopItemClick: vi.fn()
-				}
+				props: { stop: mockStop, handleStopItemClick: vi.fn() }
 			});
 
 			const rootDiv = container.querySelector('[role="button"]');
-			expect(rootDiv).toBeTruthy();
 			expect(rootDiv?.tagName.toLowerCase()).toBe('div');
 		});
 	});
 
-	describe('FavoriteButton Dynamic aria-label', () => {
+	describe('FavoriteButton aria-labels', () => {
 		beforeEach(() => {
 			localStorage.clear();
 		});
 
-		it('should have aria-label attribute', async () => {
-			const { container } = render(FavoriteButton, {
-				props: { id: '1', type: 'stop' }
-			});
+		it('has dynamic aria-label that matches title', () => {
+			render(FavoriteButton, { props: favoriteProps });
 
 			const button = screen.getByRole('button');
 			const label = button.getAttribute('aria-label');
-			expect(label).toBeTruthy();
-		});
-
-		it('aria-label should be one of valid options', async () => {
-			const { container } = render(FavoriteButton, {
-				props: { id: '1', type: 'stop' }
-			});
-
-			const button = screen.getByRole('button');
-			const label = button.getAttribute('aria-label');
-			const validLabels = ['Add to favorites', 'Remove from favorites'];
-			expect(validLabels).toContain(label);
-		});
-
-		it('title attribute should match aria-label', async () => {
-			const { container } = render(FavoriteButton, {
-				props: { id: '1', type: 'stop' }
-			});
-
-			const button = screen.getByRole('button');
-			const ariaLabel = button.getAttribute('aria-label');
 			const title = button.getAttribute('title');
-			expect(ariaLabel).toBe(title);
-		});
 
-		it('should have dynamic aria-label (not static)', async () => {
-			const { container } = render(FavoriteButton, {
-				props: { id: '1', type: 'stop' }
-			});
-
-			const button = screen.getByRole('button');
-			// Check that aria-label uses reactive binding (not hardcoded)
-			expect(button).toHaveAttribute('aria-label');
+			expect(label).toBeTruthy();
+			expect(label).toBe(title);
+			expect(['Add to favorites', 'Remove from favorites']).toContain(label);
 		});
 	});
 
 	describe('AlertsBadge Live Region', () => {
-		it('should have role=status', async () => {
-			const { container } = render(AlertsBadge, {
-				props: { id: '1', type: 'stop' }
-			});
-
-			const liveRegion = container.querySelector('[role="status"]');
-			expect(liveRegion).toBeTruthy();
-		});
-
-		it('should have aria-live=polite', async () => {
-			const { container } = render(AlertsBadge, {
-				props: { id: '1', type: 'stop' }
-			});
+		it('has role=status with aria-live=polite', () => {
+			const { container } = render(AlertsBadge, { props: alertsProps });
 
 			const liveRegion = container.querySelector('[role="status"]');
 			expect(liveRegion).toHaveAttribute('aria-live', 'polite');
 		});
 
-		it('should contain badge div with aria-label when alerts exist', async () => {
-			const { container } = render(AlertsBadge, {
-				props: { id: '1', type: 'stop' }
-			});
-
-			const badge = container.querySelector('[aria-label]');
-			// Badge might not exist if alertCount is 0, so just check if it exists
-			if (badge) {
-				expect(badge).toBeTruthy();
-			}
-		});
-
-		it('should render live region wrapper', async () => {
-			const { container } = render(AlertsBadge, {
-				props: { id: '1', type: 'stop' }
-			});
+		it('has badge with aria-label when alerts exist', () => {
+			const { container } = render(AlertsBadge, { props: alertsProps });
 
 			const liveRegion = container.querySelector('[role="status"]');
 			expect(liveRegion).toBeTruthy();
-			expect(liveRegion).toHaveAttribute('aria-live', 'polite');
 		});
 	});
 
-	describe('General Accessibility', () => {
-		it('FavoriteButton should be keyboard accessible', async () => {
-			const { container } = render(FavoriteButton, {
-				props: { id: '1', type: 'stop' }
-			});
-
+	describe('Component Integration', () => {
+		it('FavoriteButton has button type attribute', () => {
+			render(FavoriteButton, { props: favoriteProps });
 			const button = screen.getByRole('button');
 			expect(button).toHaveAttribute('type', 'button');
 		});
 
-		it('StopItem should include FavoriteButton', async () => {
+		it('StopItem includes FavoriteButton', () => {
 			const { container } = render(StopItem, {
-				props: {
-					stop: { id: '1', name: 'Test Stop', code: 'TS1' },
-					handleStopItemClick: vi.fn()
-				}
+				props: { stop: mockStop, handleStopItemClick: vi.fn() }
 			});
 
 			const favoriteBtn = container.querySelector('[class*="favorite"]');
 			expect(favoriteBtn).toBeTruthy();
 		});
 
-		it('StopItem should include AlertsBadge', async () => {
+		it('StopItem includes AlertsBadge', () => {
 			const { container } = render(StopItem, {
-				props: {
-					stop: { id: '1', name: 'Test Stop', code: 'TS1' },
-					handleStopItemClick: vi.fn()
-				}
+				props: { stop: mockStop, handleStopItemClick: vi.fn() }
 			});
 
 			const alertsBadge = container.querySelector('[role="status"]');

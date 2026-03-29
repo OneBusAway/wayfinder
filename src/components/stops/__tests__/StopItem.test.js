@@ -275,11 +275,10 @@ describe('StopItem', () => {
 			}
 		});
 
-		// Check that favorite button exists with dynamic aria-label
 		const buttons = screen.getAllByRole('button');
 		const favoriteButton = buttons.find(btn => {
 			const label = btn.getAttribute('aria-label');
-			return label && (label.includes('to favorites') || label.includes('from favorites'));
+			return label?.includes('to favorites') || label?.includes('from favorites');
 		});
 		expect(favoriteButton).toBeInTheDocument();
 	});
@@ -299,7 +298,7 @@ describe('StopItem', () => {
 		const buttons = screen.getAllByRole('button');
 		const favoriteButton = buttons.find(btn => {
 			const label = btn.getAttribute('aria-label');
-			return label && label.includes('to favorites');
+			return label?.includes('to favorites');
 		});
 
 		await user.click(favoriteButton);

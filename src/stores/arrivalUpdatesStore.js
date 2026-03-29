@@ -4,14 +4,10 @@ import { browser } from '$app/environment';
 const REFRESH_INTERVAL = 30 * 1000; // 30 seconds
 
 function compareArrivals(oldArrivals, newArrivals) {
-	// Create ID sets for comparison
 	const oldIds = new Set(oldArrivals.map((a) => a.tripId || a.id));
 	const newIds = new Set(newArrivals.map((a) => a.tripId || a.id));
 
-	// Find new arrivals
 	const added = newArrivals.filter((a) => !oldIds.has(a.tripId || a.id));
-
-	// Find removed arrivals
 	const removed = oldArrivals.filter((a) => !newIds.has(a.tripId || a.id));
 
 	return { added, removed };
@@ -35,12 +31,10 @@ function createArrivalUpdatesStore() {
 
 		isPolling.set(true);
 
-		// Initial fetch
 		if (fetchFn) {
 			fetchFn();
 		}
 
-		// Set up interval polling
 		refreshInterval = setInterval(async () => {
 			if (fetchFn) {
 				try {
@@ -67,7 +61,6 @@ function createArrivalUpdatesStore() {
 	function updateArrivals(oldArrivals, newArrivals_) {
 		const { added, removed } = compareArrivals(oldArrivals || [], newArrivals_ || []);
 
-		// Update stores with diff
 		newArrivals.set(added);
 		removedArrivals.set(removed);
 		previousArrivals.set(newArrivals_);

@@ -41,7 +41,6 @@
 					mapProvider.addMarker(markerOptions);
 					mapProvider.flyTo(stop.lat, stop.lon, 20);
 
-					// ADDED THE TIMEOUT HERE to match SearchPane.svelte
 					setTimeout(() => {
 						handleStopMarkerSelect(stop);
 					}, 100);

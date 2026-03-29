@@ -26,7 +26,7 @@ describe('arrivalUpdatesStore', () => {
 		const newArrivals = [
 			{ tripId: '1', arrivalTime: 1000 },
 			{ tripId: '2', arrivalTime: 2000 },
-			{ tripId: '3', arrivalTime: 3000 } // New
+			{ tripId: '3', arrivalTime: 3000 }
 		];
 
 		arrivalUpdatesStore.updateArrivals(oldArrivals, newArrivals);
@@ -51,7 +51,6 @@ describe('arrivalUpdatesStore', () => {
 		const newArrivals = [
 			{ tripId: '1', arrivalTime: 1000 },
 			{ tripId: '2', arrivalTime: 2000 }
-			// tripId 3 removed
 		];
 
 		arrivalUpdatesStore.updateArrivals(oldArrivals, newArrivals);

@@ -22,7 +22,6 @@ describe('alertsStore', () => {
 	});
 
 	it('getAlertsForStop filters alerts by stop ID', () => {
-		// Mock alerts
 		const mockAlerts = [
 			{
 				id: 'alert1',
@@ -36,8 +35,6 @@ describe('alertsStore', () => {
 			}
 		];
 
-		// We test the logic without actually fetching
-		// In a real scenario, this would be called after fetchAlerts()
 		const alerts = mockAlerts.filter((alert) =>
 			alert.affectedStops?.includes('stop1')
 		);
@@ -69,7 +66,6 @@ describe('alertsStore', () => {
 	});
 
 	it('getAlertCount works for both stop and route types', () => {
-		// This tests the type logic
 		const stopCount = alertsStore.getAlertCount('stop123', 'stop');
 		const routeCount = alertsStore.getAlertCount('route456', 'route');
 
