@@ -15,6 +15,7 @@ function compareArrivals(oldArrivals, newArrivals) {
 
 function createArrivalUpdatesStore() {
 	let refreshInterval = null;
+	let currentStopId = null;
 
 	const isPolling = writable(false);
 	const lastUpdated = writable(null);
@@ -24,18 +25,16 @@ function createArrivalUpdatesStore() {
 
 	function startPolling(sid, fetchFn) {
 		if (!browser) return;
-
 		if (refreshInterval) {
 			clearInterval(refreshInterval);
 		}
-
+		currentStopId = sid;
 		isPolling.set(true);
-
 		if (fetchFn) {
 			fetchFn();
 		}
-
 		refreshInterval = setInterval(async () => {
+			if (currentStopId !== sid) return;
 			if (fetchFn) {
 				try {
 					await fetchFn();
@@ -52,6 +51,7 @@ function createArrivalUpdatesStore() {
 			clearInterval(refreshInterval);
 			refreshInterval = null;
 		}
+		currentStopId = null;
 
 		isPolling.set(false);
 		newArrivals.set([]);
