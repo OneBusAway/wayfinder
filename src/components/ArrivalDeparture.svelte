@@ -5,15 +5,15 @@
 
 	const MS_IN_MINS = 60000;
 
-	let routeShortName = arrivalDeparture.routeShortName;
-	let tripHeadsign = arrivalDeparture.tripHeadsign;
-	let scheduledArrivalTime = arrivalDeparture.scheduledArrivalTime;
-	let predictedArrivalTime = arrivalDeparture.predictedArrivalTime;
-	let scheduledDepartureTime = arrivalDeparture.scheduledDepartureTime;
-	let predictedDepartureTime = arrivalDeparture.predictedDepartureTime;
-	let tripStatus = arrivalDeparture.tripStatus;
-	let frequency = arrivalDeparture.frequency;
-	let stopSequence = arrivalDeparture.stopSequence || 1; // Default to 1 if not provided
+	let routeShortName = $derived(arrivalDeparture.routeShortName);
+	let tripHeadsign = $derived(arrivalDeparture.tripHeadsign);
+	let scheduledArrivalTime = $derived(arrivalDeparture.scheduledArrivalTime);
+	let predictedArrivalTime = $derived(arrivalDeparture.predictedArrivalTime);
+	let scheduledDepartureTime = $derived(arrivalDeparture.scheduledDepartureTime);
+	let predictedDepartureTime = $derived(arrivalDeparture.predictedDepartureTime);
+	let tripStatus = $derived(arrivalDeparture.tripStatus);
+	let frequency = $derived(arrivalDeparture.frequency);
+	let stopSequence = $derived(arrivalDeparture.stopSequence || 1); // Default to 1 if not provided
 
 	function computeColor(scheduledMins, predictedMins, isPredicted) {
 		// If this is a scheduled (non-real-time) arrival, always show in blue

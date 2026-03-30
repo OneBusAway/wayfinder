@@ -10,6 +10,12 @@
 	class="flex cursor-pointer items-start gap-3 rounded-lg p-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
 	role="button"
 	tabindex="0"
+	aria-label={$t('service_alerts.open_alert', {
+		values: {
+			summary:
+				alert?.summary?.value || alert?.description?.value || $t('service_alerts.service_alert')
+		}
+	})}
 	onclick={() => openModal(alert)}
 	onkeydown={(e) => {
 		if (e.key === 'Enter') openModal(alert);

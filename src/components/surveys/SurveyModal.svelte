@@ -102,7 +102,7 @@
 	}
 
 	async function updateSurveyResponse() {
-		if (surveyPublicId) [(surveyPublicIdentifier = surveyPublicId)];
+		if (surveyPublicId) surveyPublicIdentifier = surveyPublicId;
 		updateSurveyResponseUtil(surveyPublicIdentifier, surveyResponse);
 	}
 
