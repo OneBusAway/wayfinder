@@ -127,10 +127,10 @@
 		"description": "Base URL of the OpenTripPlanner server for trip planning"
 	},
 	"PUBLIC_OBA_TIMEZONE": {
-		"required": false,
+		"required": true,
 		"type": "string",
-		"allowEmpty": true,
-		"description": "IANA timezone for the transit region (e.g. 'America/Los_Angeles'). Recommended when the server runs in a different timezone than the transit agency. Falls back to the server's default timezone if not set."
+		"allowEmpty": false,
+		"description": "IANA timezone for the transit region (e.g. 'America/Los_Angeles'). Required so that dates and times in the trip planner are expressed in the transit agency's timezone, regardless of the user's or server's local timezone."
 	},
 	"PUBLIC_DISTANCE_UNIT": {
 		"required": true,
