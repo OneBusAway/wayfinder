@@ -126,7 +126,9 @@
 		"no_schedules_available": "No hay horarios disponibles para la fecha seleccionada.",
 		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "ID de la parada",
-		"direction": "Dirección"
+		"direction": "Dirección",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 
 	"direction": {

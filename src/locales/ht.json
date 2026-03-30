@@ -126,7 +126,9 @@
 		"no_schedules_available": "Pa gen orè disponib pou dat ou chwazi a.",
 		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "ID Arè",
-		"direction": "Direksyon"
+		"direction": "Direksyon",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "Nò",

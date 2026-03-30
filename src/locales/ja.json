@@ -126,7 +126,9 @@
 		"no_schedules_available": "選択した日付の時刻表はありません。",
 		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "停留所ID",
-		"direction": "方面"
+		"direction": "方面",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "北",

@@ -126,7 +126,9 @@
 		"no_schedules_available": "Нет расписания на выбранную дату.",
 		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "ID остановки",
-		"direction": "Направление"
+		"direction": "Направление",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "Север",

@@ -3,23 +3,18 @@
 
 	let { id, type = 'stop', name = '', ariaLabel = '' } = $props();
 
-	let isFavorited = $state(false);
-
-	let unsubscribe = undefined;
+	let storeValue = $state([]);
 
 	$effect(() => {
-		// Re-subscribe whenever id or type changes
-		if (unsubscribe) unsubscribe();
-		
-		unsubscribe = favorites.subscribe((favs) => {
-			isFavorited = favs.some((fav) => fav.id === id && fav.type === type);
+		const unsubscribe = favorites.subscribe((favs) => {
+			storeValue = favs;
 		});
-
-		// Cleanup on destroy
-		return () => {
-			if (unsubscribe) unsubscribe();
-		};
+		return unsubscribe;
 	});
+
+	const isFavorited = $derived(
+		storeValue.some((fav) => fav.id === id && fav.type === type)
+	);
 
 	function handleToggle(e) {
 		e.stopPropagation();

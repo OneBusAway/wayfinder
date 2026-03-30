@@ -151,7 +151,9 @@
 		"no_schedules_available": "No schedules available for the selected date.",
 		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "Stop ID",
-		"direction": "Direction"
+		"direction": "Direction",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "North",

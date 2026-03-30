@@ -126,7 +126,9 @@
 		"no_schedules_available": "Немає розкладу на обрану дату.",
 		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "ID зупинки",
-		"direction": "Напрямок"
+		"direction": "Напрямок",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "Північ",

@@ -126,7 +126,9 @@
 		"no_schedules_available": "Không có lịch trình nào khả dụng cho ngày đã chọn.",
 		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "Mã điểm dừng",
-		"direction": "Hướng"
+		"direction": "Hướng",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "Bắc",

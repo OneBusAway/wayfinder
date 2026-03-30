@@ -221,20 +221,21 @@
 				<div class="flex flex-col gap-4 md:flex-row md:items-end">
 					<div class="shrink-0">
 						<label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-							Date
+							{$t('schedule_for_stop.date_label')}
 						</label>
-						<div class="z-20 min-w-32 md:w-[200px]">
+						<div class="relative z-50 min-w-32 md:w-[200px]">
 							<Datepicker
 								bind:value={selectedDate}
 								inputClass="w-full px-3 py-2 border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700"
 								firstDayOfWeek={getFirstDayOfWeek()}
+								color="green"
 							/>
 						</div>
 					</div>
 
 					<div>
 						<label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-							Time
+							{$t('schedule_for_stop.time_label')}
 						</label>
 						<input
 							type="time"

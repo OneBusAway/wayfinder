@@ -126,7 +126,9 @@
 		"no_schedules_available": "Walang magagamit na iskedyul para sa napiling petsa.",
 		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "ID ng hintuan",
-		"direction": "Direksyon"
+		"direction": "Direksyon",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 
 	"direction": {

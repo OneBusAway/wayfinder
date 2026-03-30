@@ -126,7 +126,9 @@
 		"no_schedules_available": "ንዝተመርጸ ዕለት ዝኾነ መደብ የለን።",
 		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "መለለዪ መዕረፊ",
-		"direction": "ኣንፈት"
+		"direction": "ኣንፈት",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "ሰሜን",
