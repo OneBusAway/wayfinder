@@ -1,4 +1,4 @@
-import oba, { handleOBAResponse } from '$lib/obaSdk.js';
+import oba, { handleOBAResponse } from '$lib/obaSdk';
 import { getAgencyFilter, filterByRouteId } from '$lib/agencyFilter.js';
 
 /** @type {import('./$types').RequestHandler} */
