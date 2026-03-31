@@ -133,7 +133,7 @@
 			for (const polylineData of polylinesData) {
 				const shape = polylineData.points;
 				let polyline;
-				polyline = mapProvider.createPolyline(shape);
+				polyline = mapProvider.createPolyline(shape, { animate: true });
 				polylines.push(polyline);
 			}
 
