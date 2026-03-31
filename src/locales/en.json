@@ -190,5 +190,10 @@
 	"context-menu": {
 		"start_here": "Start Here",
 		"end_here": "End Here"
-	}
+	},
+	"loading":"Loading",
+	"main_navigation": "Main navigation",
+	"more_navigation_option" : "More navigation option",
+	"clear" : "Clear",
+	"required_question" : "Required question"
 }
