@@ -1,194 +1,198 @@
 {
-	"units": {
-		"meters": "m",
-		"kilometers": "km",
-		"feet": "ft",
-		"mile": "mile",
-		"miles": "miles"
-	},
-	"trip-planner": {
-		"arrive": "Arrive",
-		"depart": "Depart",
-		"today": "Today",
-		"tomorrow": "Tomorrow",
-		"plan_your_trip": "Plan Your Trip",
-		"itinerary": "Itinerary",
-		"duration": "Duration",
-		"start_time": "Start Time",
-		"end_time": "End Time",
-		"minutes": "min",
-		"distance": "Distance:",
-		"end": "End",
-		"start": "Start",
-		"meters": "meters",
-		"no_itineraries_found": "No itineraries found",
+		"units": {
+					"meters": "m",
+					"kilometers": "km",
+					"feet": "ft",
+					"mile": "mile",
+					"miles": "miles"
+		},
+		"trip-planner": {
+					"arrive": "Arrive",
+					"depart": "Depart",
+					"today": "Today",
+					"tomorrow": "Tomorrow",
+					"plan_your_trip": "Plan Your Trip",
+					"itinerary": "Itinerary",
+					"duration": "Duration",
+					"start_time": "Start Time",
+					"end_time": "End Time",
+					"minutes": "min",
+					"distance": "Distance:",
+					"end": "End",
+					"start": "Start",
+					"meters": "meters",
+					"no_itineraries_found": "No itineraries found",
+					"loading": "Loading",
+					"planning": "Planning",
+					"from": "From",
+					"to": "To",
+					"search_for_a_place": "Search for a place",
+					"trip_itineraries": "Trip Itineraries",
+					"show_steps": "Show Steps",
+					"hide_steps": "Hide Steps",
+					"options": "Options",
+					"trip_options": "Trip Options",
+					"cancel": "Cancel",
+					"done": "Done",
+					"departure_time": "Departure Time",
+					"leave_now": "Leave Now",
+					"depart_at": "Depart At",
+					"arrive_by": "Arrive By",
+					"wheelchair_accessible": "Wheelchair accessible",
+					"wheelchair_desc": "Find routes suitable for mobility devices and wheelchairs",
+					"wheelchair": "Wheelchair",
+					"route_optimization": "Route Optimization",
+					"fastest_trip": "Fastest Trip",
+					"fewest_transfers": "Fewest Transfers",
+					"stay_on_board": "Remain on board. This trip continues as Route {route}.",
+					"walking_distance": "Walking Distance",
+					"max_walking_distance": "Maximum walking distance",
+					"distance_unit": "Distance Unit",
+					"unit_auto": "Auto-detect",
+					"unit_metric": "Metric (km, m)",
+					"unit_imperial": "Imperial (mi, ft)",
+					"swap_locations": "Swap From and To locations",
+					"error_code": "Error code",
+					"remove_recent_trip": "Remove recent trip",
+					"recent_trip": "Use recent trip from {from} to {to}",
+					"recent_searches": "Recent Searches",
+					"clear_all": "Clear All"
+		},
+		"tabs": {
+					"stops-and-stations": "Stops and Stations",
+					"plan_trip": "Plan a Trip"
+		},
+		"search": {
+					"placeholder": "Search for stops, routes, and places",
+					"results_for": "Search results for",
+					"clear_results": "Clear results",
+					"search": "Search",
+					"click_here": "Click here",
+					"for_a_list_of_available_routes": "for a list of available routes",
+					"search_for_routes": "Search for routes...",
+					"no_routes_found": "No routes found",
+					"all_routes": "All Routes",
+					"clear": "Clear"
+		},
+		"header": {
+					"home": "Home",
+					"about": "About",
+					"contact": "Contact",
+					"fares_and_tolls": "Fares & Tolls"
+		},
+		"navigation": {
+					"back_to_map": "Back to Map"
+		},
+		"status": {
+					"scheduled": "scheduled",
+					"early": "early",
+					"late": "late",
+					"on_time": "on time",
+					"min": "min",
+					"arrives_on_time": "arrives on time",
+					"scheduled_not_real_time": "Scheduled/not real-time",
+					"canceled": "Canceled",
+					"canceled_arrival": "Canceled arrival",
+					"canceled_departure": "Canceled departure",
+					"frequency_from": "Every {headway} min from {time}",
+					"frequency_until": "Every {headway} min until {time}",
+					"late_without_arrive_depart": "{delay} min late",
+					"early_without_arrive_depart": "{delay} min early",
+					"arrived_delayed": "Arrived {delay} min late",
+					"arrived_early": "Arrived {delay} min early",
+					"arrived_ontime": "Arrived on time",
+					"depart_delayed": "Departed {delay} min late",
+					"depart_early": "Departed {delay} min early",
+					"departed_ontime": "Departed on time",
+					"scheduled_arrival": "Scheduled arriving at",
+					"scheduled_departure": "Scheduled departure"
+		},
+		"alert": {
+					"more_info": "More info",
+					"close": "Close"
+		},
+		"arrivals_and_departures": "Arrivals and departures",
+		"show_more": "Show more",
+		"show_less": "Show less",
+		"no_arrivals_or_departures_in_next_30_minutes": "No arrivals or departures in the next 30 minutes",
+		"stop": "Stop",
+		"routes": "Routes",
+		"route": "route",
+		"route_modal_title": "Route {name}",
 		"loading": "Loading",
-		"planning": "Planning",
-		"from": "From",
-		"to": "To",
-		"search_for_a_place": "Search for a place",
-		"trip_itineraries": "Trip Itineraries",
-		"show_steps": "Show Steps",
-		"hide_steps": "Hide Steps",
-		"options": "Options",
-		"trip_options": "Trip Options",
-		"cancel": "Cancel",
-		"done": "Done",
-		"departure_time": "Departure Time",
-		"leave_now": "Leave Now",
-		"depart_at": "Depart At",
-		"arrive_by": "Arrive By",
-		"wheelchair_accessible": "Wheelchair accessible",
-		"wheelchair_desc": "Find routes suitable for mobility devices and wheelchairs",
-		"wheelchair": "Wheelchair",
-		"route_optimization": "Route Optimization",
-		"fastest_trip": "Fastest Trip",
-		"fewest_transfers": "Fewest Transfers",
-		"stay_on_board": "Remain on board. This trip continues as Route {route}.",
-		"walking_distance": "Walking Distance",
-		"max_walking_distance": "Maximum walking distance",
-		"distance_unit": "Distance Unit",
-		"unit_auto": "Auto-detect",
-		"unit_metric": "Metric (km, m)",
-		"unit_imperial": "Imperial (mi, ft)",
-		"swap_locations": "Swap From and To locations",
-		"error_code": "Error code",
-		"remove_recent_trip": "Remove recent trip",
-		"recent_trip": "Use recent trip from {from} to {to}",
-		"recent_searches": "Recent Searches",
-		"clear_all": "Clear All"
-	},
-	"tabs": {
-		"stops-and-stations": "Stops and Stations",
-		"plan_trip": "Plan a Trip"
-	},
-	"search": {
-		"placeholder": "Search for stops, routes, and places",
-		"results_for": "Search results for",
-		"clear_results": "Clear results",
-		"search": "Search",
-		"click_here": "Click here",
-		"for_a_list_of_available_routes": "for a list of available routes",
-		"search_for_routes": "Search for routes...",
-		"no_routes_found": "No routes found",
-		"all_routes": "All Routes"
-	},
-	"header": {
-		"home": "Home",
-		"about": "About",
-		"contact": "Contact",
-		"fares_and_tolls": "Fares & Tolls"
-	},
-	"navigation": {
-		"back_to_map": "Back to Map"
-	},
-	"status": {
-		"scheduled": "scheduled",
-		"early": "early",
-		"late": "late",
-		"on_time": "on time",
-		"min": "min",
-		"arrives_on_time": "arrives on time",
-		"scheduled_not_real_time": "Scheduled/not real-time",
-		"canceled": "Canceled",
-		"canceled_arrival": "Canceled arrival",
-		"canceled_departure": "Canceled departure",
-		"frequency_from": "Every {headway} min from {time}",
-		"frequency_until": "Every {headway} min until {time}",
-		"late_without_arrive_depart": "{delay} min late",
-		"early_without_arrive_depart": "{delay} min early",
-		"arrived_delayed": "Arrived {delay} min late",
-		"arrived_early": "Arrived {delay} min early",
-		"arrived_ontime": "Arrived on time",
-		"depart_delayed": "Departed {delay} min late",
-		"depart_early": "Departed {delay} min early",
-		"departed_ontime": "Departed on time",
-		"scheduled_arrival": "Scheduled arriving at",
-		"scheduled_departure": "Scheduled departure"
-	},
-	"alert": {
-		"more_info": "More info",
-		"close": "Close"
-	},
-	"arrivals_and_departures": "Arrivals and departures",
-	"show_more": "Show more",
-	"show_less": "Show less",
-	"no_arrivals_or_departures_in_next_30_minutes": "No arrivals or departures in the next 30 minutes",
-	"stop": "Stop",
-	"routes": "Routes",
-	"route": "route",
-	"route_modal_title": "Route {name}",
-	"loading": "Loading",
-	"arrives": "arrives",
-	"NA": "N/A",
-	"time": {
-		"ago": "ago",
-		"now": "now",
-		"sec": "sec",
-		"secs": "secs",
-		"min": "min",
-		"mins": "mins",
-		"minutes": "minutes"
-	},
-	"vehicle": {
-		"number": "Vehicle #",
-		"data_updated": "Data updated",
-		"no_real_time_data": "We don't have real-time data for this vehicle now.",
-		"next_stop": "Next stop:"
-	},
-	"arrivals_and_departures_for_stop": {
-		"title": "Arrivals and Departures"
-	},
-	"schedule_for_stop": {
-		"view_schedule": "View Schedule",
-		"no_am_schedules_available": "No AM schedules available",
-		"no_pm_schedules_available": "No PM schedules available",
-		"minutes": "Minutes",
-		"hour": "Hour",
-		"show_all_routes": "Show All Routes",
-		"collapse_all_routes": "Collapse All Routes",
-		"route_schedules": "Route Schedules",
-		"no_schedules_available": "No schedules available for the selected date.",
-		"stop_id": "Stop ID",
-		"direction": "Direction"
-	},
-	"direction": {
-		"N": "North",
-		"NE": "Northeast",
-		"E": "East",
-		"SE": "Southeast",
-		"S": "South",
-		"SW": "Southwest",
-		"W": "West",
-		"NW": "Northwest"
-	},
-	"service_alerts": {
-		"more_info": "More info",
-		"close": "Close",
-		"service_alerts": "Service Alerts",
-		"service_alert": "Service Alert",
-		"advice": "Advice",
-		"no_summary": "No summary available for this alert",
-		"no_description": "No detailed description available for this alert",
-		"page": "Page",
-		"show": "Show",
-		"hide": "Hide",
-		"open_alert": "Open service alert details: {summary}",
-		"alert_modal": "Service alert details dialog"
-	},
-	"view_stop_information": "View Stop Information",
-	"stop_details": {
-		"view_details": "View Details"
-	},
-	"language_switcher": {
-		"select_language": "Select language: {language}",
-		"available_languages": "Available languages"
-	},
-	"map": {
-		"find_my_location": "Find My Location"
-	},
-	"context-menu": {
-		"start_here": "Start Here",
-		"end_here": "End Here"
-	}
+		"arrives": "arrives",
+		"NA": "N/A",
+		"time": {
+					"ago": "ago",
+					"now": "now",
+					"sec": "sec",
+					"secs": "secs",
+					"min": "min",
+					"mins": "mins",
+					"minutes": "minutes"
+		},
+		"vehicle": {
+					"number": "Vehicle #",
+					"data_updated": "Data updated",
+					"no_real_time_data": "We don't have real-time data for this vehicle now.",
+					"next_stop": "Next stop:"
+		},
+		"arrivals_and_departures_for_stop": {
+					"title": "Arrivals and Departures"
+		},
+		"schedule_for_stop": {
+					"view_schedule": "View Schedule",
+					"no_am_schedules_available": "No AM schedules available",
+					"no_pm_schedules_available": "No PM schedules available",
+					"minutes": "Minutes",
+					"hour": "Hour",
+					"show_all_routes": "Show All Routes",
+					"collapse_all_routes": "Collapse All Routes",
+					"route_schedules": "Route Schedules",
+					"no_schedules_available": "No schedules available for the selected date.",
+					"stop_id": "Stop ID",
+					"direction": "Direction"
+		},
+		"direction": {
+					"N": "North",
+					"NE": "Northeast",
+					"E": "East",
+					"SE": "Southeast",
+					"S": "South",
+					"SW": "Southwest",
+					"W": "West",
+					"NW": "Northwest"
+		},
+		"service_alerts": {
+					"more_info": "More info",
+					"close": "Close",
+					"service_alerts": "Service Alerts",
+					"service_alert": "Service Alert",
+					"advice": "Advice",
+					"no_summary": "No summary available for this alert",
+					"no_description": "No detailed description available for this alert",
+					"page": "Page",
+					"show": "Show",
+					"hide": "Hide",
+					"open_alert": "Open service alert details: {summary}",
+					"alert_modal": "Service alert details dialog"
+		},
+		"view_stop_information": "View Stop Information",
+		"stop_details": {
+					"view_details": "View Details"
+		},
+		"language_switcher": {
+					"select_language": "Select language: {language}",
+					"available_languages": "Available languages"
+		},
+		"map": {
+					"find_my_location": "Find My Location"
+		},
+		"context-menu": {
+					"start_here": "Start Here",
+					"end_here": "End Here"
+		},
+		"survey": {
+					"required_question": "Required question"
+		}
 }
