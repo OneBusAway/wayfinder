@@ -1,4 +1,4 @@
-import { PUBLIC_OTP_SERVER_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 
 /** @type {'graphql' | 'rest' | null} */
 let otpApiType = null;
@@ -25,7 +25,7 @@ async function detectOtpVersion() {
 	const ac = new AbortController();
 	const timer = setTimeout(() => ac.abort(), DETECT_TIMEOUT);
 	try {
-		const response = await fetch(PUBLIC_OTP_SERVER_URL, { signal: ac.signal });
+		const response = await fetch(env.PUBLIC_OTP_SERVER_URL, { signal: ac.signal });
 
 		if (!response.ok) {
 			throw new Error(`OTP server returned HTTP ${response.status}`);
@@ -59,7 +59,7 @@ async function detectOtpVersion() {
  * @returns {Promise<void>}
  */
 export async function preloadOtpVersion(forceRefresh = false) {
-	if (!PUBLIC_OTP_SERVER_URL) {
+	if (!env.PUBLIC_OTP_SERVER_URL) {
 		return;
 	}
 

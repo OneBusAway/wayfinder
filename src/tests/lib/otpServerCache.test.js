@@ -2,9 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 let mockOtpServerUrl = 'https://otp.test.example.com';
 
-vi.mock('$env/static/public', () => ({
-	get PUBLIC_OTP_SERVER_URL() {
-		return mockOtpServerUrl;
+vi.mock('$env/dynamic/public', () => ({
+	env: {
+		get PUBLIC_OTP_SERVER_URL() {
+			return mockOtpServerUrl;
+		}
 	}
 }));
 
