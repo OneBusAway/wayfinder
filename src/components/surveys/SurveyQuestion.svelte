@@ -1,6 +1,6 @@
 <script>
 	import { Radio, Checkbox, Input } from 'flowbite-svelte';
-
+	import { t } from 'svelte-i18n';
 	let {
 		question,
 		required,
@@ -38,7 +38,7 @@
 		{question.content.label_text}
 	{/if}
 	{#if required && question.content.type !== 'label'}
-		<span class="ml-1 text-red-500" aria-label="Required question">*</span>
+		<span class="ml-1 text-red-500" aria-label={$t('survey.required_question')}>*</span>
 	{/if}
 </label>
 
