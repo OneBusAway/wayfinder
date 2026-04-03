@@ -190,5 +190,10 @@
 	"context-menu": {
 		"start_here": "Start Here",
 		"end_here": "End Here"
+	},
+	"trip_details": {
+		"route": "Route",
+		"no_stops": "No stop times available for this trip.",
+		"loading": "Loading trip details..."
 	}
 }

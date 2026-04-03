@@ -1,4 +1,5 @@
 <script>
+	import { _ } from 'svelte-i18n';
 	import { onMount, onDestroy } from 'svelte';
 	import { faBus, faLocationDot, faCheck } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
@@ -105,7 +106,7 @@
 	{:else if tripDetails}
 		<h2 class="h2">
 			{#if routeInfo}
-				Route {routeInfo.shortName} -
+				{$_('trip_details.route')} {routeInfo.shortName} -
 			{/if}
 		</h2>
 		{#if tripDetails.schedule?.stopTimes.length > 0}
@@ -148,9 +149,9 @@
 				{/each}
 			</div>
 		{:else}
-			<p class="text-black dark:text-white">No stop times available for this trip.</p>
+		<p class="text-black dark:text-white">{$_('trip_details.no_stops')}</p>
 		{/if}
 	{:else}
-		<p class="text-black dark:text-white">Loading trip details...</p>
+	<p class="text-black dark:text-white">{$_('trip_details.loading')}</p>
 	{/if}
 </div>
