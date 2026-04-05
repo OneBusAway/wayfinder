@@ -55,13 +55,12 @@
 			shapeData = await shapeResponse.json();
 			const shapePoints = shapeData?.data?.entry?.points;
 			if (shapePoints && isMounted) {
-				await mapProvider.createPolyline(shapePoints);
+				await mapProvider.createPolyline(shapePoints, { animate: true });
 			}
 		}
 
 		const stopTimes = tripData?.data?.entry?.schedule?.stopTimes ?? [];
 		const stops = tripData?.data?.references?.stops ?? [];
-		// TODO: implement better way to transition to route shape
 		const location = calculateMidpoint(stops);
 
 		if (location) {
