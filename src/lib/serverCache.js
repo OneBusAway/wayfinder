@@ -1,4 +1,4 @@
-import oba from '$lib/obaSdk.js';
+import oba from '$lib/obaSdk';
 import { calculateBoundsFromAgencies } from '$lib/mathUtils.js';
 import { getAgencyFilter } from '$lib/agencyFilter.js';
 

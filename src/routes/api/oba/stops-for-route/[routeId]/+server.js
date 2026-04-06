@@ -1,4 +1,4 @@
-import oba, { handleOBAResponse } from '$lib/obaSdk.js';
+import oba, { handleOBAResponse } from '$lib/obaSdk';
 
 export async function GET({ params }) {
 	const routeId = params.routeId;
