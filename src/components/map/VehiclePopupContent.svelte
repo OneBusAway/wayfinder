@@ -17,29 +17,25 @@
 >
 	<div class="mb-2 flex items-center">
 		<div
-			class="rounded bg-green-100 px-2 py-1 text-lg font-bold text-brand-accent dark:bg-green-900/30"
+			class="rounded bg-green-100 px-2 py-1 text-lg font-bold text-brand-accent dark:bg-green-900/40 dark:text-green-300"
 		>
 			{nextDestination}
 		</div>
 	</div>
-	<div class="text-sm text-gray-600 dark:text-gray-400">
+	<div class="text-sm text-gray-600 dark:text-gray-300">
 		{#if predicted}
 			<span>{$t('vehicle.number')}</span>
 			<span class="font-semibold text-blue-500 dark:text-blue-400">{vehicleId || $t('NA')}</span> |
 			<span>{$t('vehicle.data_updated')}</span>
 			<span class="font-semibold text-blue-500 dark:text-blue-400">{lastUpdatedText}</span>
 		{:else}
-			<span class="font-semibold text-gray-500 dark:text-gray-400"
-				>{$t('vehicle.no_real_time_data')}</span
-			>
+			<span class="font-semibold text-gray-500 dark:text-gray-400">{$t('vehicle.no_real_time_data')}</span>
 		{/if}
 	</div>
 	<hr class="my-2 dark:border-gray-700" />
 	<div class="text-sm font-bold text-gray-800 dark:text-gray-100">{$t('vehicle.next_stop')}</div>
-	<div class="text-sm text-gray-600 dark:text-gray-400">
-		<strong class="font-semibold text-blue-500 dark:text-blue-400"
-			>{nextStopName || $t('NA')}</strong
-		>
+	<div class="text-sm text-gray-600 dark:text-gray-300">
+		<strong class="font-semibold text-blue-500">{nextStopName || $t('NA')}</strong>
 	</div>
 	<hr class="my-2 dark:border-gray-700" />
 </div>
