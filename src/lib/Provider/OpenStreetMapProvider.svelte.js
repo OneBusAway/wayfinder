@@ -297,13 +297,15 @@ export default class OpenStreetMapProvider {
 
 		this.vehicleMarkers.push(marker);
 
-		marker.vehicleData = {
+		let vehicleData = $state({
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
 			predicted: vehicle.predicted
-		};
+		});
+
+		marker.vehicleData = vehicleData;
 
 		marker.bindPopup(document.createElement('div'));
 
@@ -348,20 +350,13 @@ export default class OpenStreetMapProvider {
 		marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
 		marker.setIcon(updatedIcon);
 
-		let vehicleData = $state({
-			...marker.vehicleData,
+		Object.assign(marker.vehicleData, {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicleStatus.vehicleId,
 			lastUpdateTime: vehicleStatus.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
+			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name,
 			predicted: vehicleStatus.predicted
 		});
-
-		marker.vehicleData = vehicleData;
-
-		if (marker.isPopupOpen() && marker.popupComponent) {
-			marker.popupComponent = vehicleData;
-		}
 	}
 	removeVehicleMarker(marker) {
 		if (marker) {
