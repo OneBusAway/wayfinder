@@ -12,6 +12,8 @@ import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
 
+const polylineAnimationState = new WeakMap();
+
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
@@ -464,11 +466,12 @@ export default class OpenStreetMapProvider {
 		}
 
 		const withArrow = options.withArrow ?? true;
+		const targetOpacity = options.opacity ?? 1;
 
 		const polylineOpts = {
 			color: options.color || COLORS.POLYLINE,
 			weight: options.weight || 4,
-			opacity: options.opacity ?? 1
+			opacity: 0
 		};
 		if (options.dashArray) {
 			polylineOpts.dashArray = options.dashArray;
@@ -477,7 +480,74 @@ export default class OpenStreetMapProvider {
 
 		this.polylines.push(polyline);
 
-		if (!withArrow) return polyline;
+		const state = {
+			fadeInToken: Symbol('fadeInToken'),
+			fadeInRafId: null,
+			fadeDeferredMoveEnd: null
+		};
+		polylineAnimationState.set(polyline, state);
+
+		// Defer fade-in until the route is relevant to what the user sees:
+		// - Already intersects the viewport → start immediately.
+		// - Otherwise wait for the next moveend (e.g. after flyTo / pan / zoom), then start.
+		// startTime is taken when the fade actually begins so the 600ms isn't "burned" while off-screen.
+		const beginFadeIn = () => {
+			const currentState = polylineAnimationState.get(polyline);
+			if (!currentState || !this.map?.hasLayer(polyline)) return;
+
+			const durationMs = 600;
+			const startTime = performance.now();
+			const step = (now) => {
+				const stepState = polylineAnimationState.get(polyline);
+				if (!stepState || !this.map?.hasLayer(polyline)) {
+					if (stepState) {
+						stepState.fadeInRafId = null;
+					}
+					return;
+				}
+
+				const elapsed = now - startTime;
+				const progress = Math.min(elapsed / durationMs, 1);
+
+				if (progress < 1) {
+					const easedProgress = 1 - Math.pow(1 - progress, 3);
+					polyline.setStyle({ opacity: targetOpacity * easedProgress });
+					stepState.fadeInRafId = requestAnimationFrame(step);
+				} else {
+					polyline.setStyle({ opacity: targetOpacity });
+					if (withArrow) {
+						this.addArrowDecorator(polyline);
+					}
+					stepState.fadeInRafId = null;
+				}
+			};
+
+			currentState.fadeInRafId = requestAnimationFrame(step);
+		};
+
+		const polyBounds = polyline.getBounds();
+		const mapBounds = this.map.getBounds();
+		const overlapsViewport = mapBounds.intersects(polyBounds);
+
+		if (overlapsViewport) {
+			beginFadeIn();
+		} else {
+			const onMoveEnd = () => {
+				const moveState = polylineAnimationState.get(polyline);
+				if (moveState) {
+					moveState.fadeDeferredMoveEnd = null;
+				}
+				beginFadeIn();
+			};
+			state.fadeDeferredMoveEnd = onMoveEnd;
+			this.map.once('moveend', onMoveEnd);
+		}
+
+		return polyline;
+	}
+
+	addArrowDecorator(polyline) {
+		if (!polyline || !this.L || !this.map) return null;
 
 		const arrowDecorator = this.L.polylineDecorator(polyline, {
 			patterns: [
@@ -498,17 +568,34 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 
 		polyline.arrowDecorator = arrowDecorator;
+		return arrowDecorator;
+	}
 
-		return polyline;
+	_cleanupPolyline(polyline) {
+		const state = polylineAnimationState.get(polyline);
+
+		if (state?.fadeInRafId != null) {
+			cancelAnimationFrame(state.fadeInRafId);
+			state.fadeInRafId = null;
+		}
+
+		this.map?.off('moveend', state?.fadeDeferredMoveEnd);
+		if (state) {
+			state.fadeDeferredMoveEnd = null;
+		}
+
+		if (polyline?.arrowDecorator) {
+			polyline.arrowDecorator.remove();
+			polyline.arrowDecorator = null;
+		}
+
+		polylineAnimationState.delete(polyline);
 	}
 
 	removePolyline(polyline) {
 		if (!polyline) return;
 
-		if (polyline.arrowDecorator) {
-			polyline.arrowDecorator.remove();
-			polyline.arrowDecorator = null;
-		}
+		this._cleanupPolyline(polyline);
 
 		polyline.remove();
 
@@ -527,10 +614,7 @@ export default class OpenStreetMapProvider {
 
 		this.polylines.forEach((polyline) => {
 			if (polyline) {
-				if (polyline.arrowDecorator) {
-					polyline.arrowDecorator.remove();
-					polyline.arrowDecorator = null;
-				}
+				this._cleanupPolyline(polyline);
 				polyline.remove();
 			}
 		});

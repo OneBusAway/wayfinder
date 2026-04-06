@@ -51,8 +51,14 @@
 		const routeId = moreTripData?.routeId;
 
 		if (shapeId && isMounted) {
+			shapeData = null;
 			const shapeResponse = await fetch(`/api/oba/shape/${shapeId}`);
-			shapeData = await shapeResponse.json();
+			if (shapeResponse.ok) {
+				shapeData = await shapeResponse.json();
+			} else {
+				console.error(`Failed to fetch shape: shapeId=${shapeId}, status=${shapeResponse.status}`);
+			}
+
 			const shapePoints = shapeData?.data?.entry?.points;
 			if (shapePoints && isMounted) {
 				await mapProvider.createPolyline(shapePoints);
@@ -61,7 +67,6 @@
 
 		const stopTimes = tripData?.data?.entry?.schedule?.stopTimes ?? [];
 		const stops = tripData?.data?.references?.stops ?? [];
-		// TODO: implement better way to transition to route shape
 		const location = calculateMidpoint(stops);
 
 		if (location) {
