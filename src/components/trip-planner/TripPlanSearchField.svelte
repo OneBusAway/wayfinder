@@ -12,7 +12,6 @@
 	 * @property {any} onClear
 	 * @property {any} onSelect
 	 */
-
 	/** @type {Props} */
 	let {
 		inputId = 'location-input',
@@ -51,7 +50,7 @@
 			type="button"
 			class="absolute inset-y-0 right-0 flex items-center pr-3"
 			onclick={handleClear}
-			aria-label="Clear"
+			aria-label={$t('search.clear')}
 		>
 			<FontAwesomeIcon icon={faX} class="size-5 text-gray-400" />
 		</button>
@@ -71,7 +70,7 @@
 					class="flex w-full cursor-pointer items-center px-4 py-2 text-left hover:bg-gray-100 dark:text-black"
 					onclick={() => handleSelect(result)}
 				>
-					<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 text-gray-400  " />
+					<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 text-gray-400 " />
 					{result.displayText}
 				</button>
 			{/each}
