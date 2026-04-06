@@ -124,8 +124,11 @@
 		"collapse_all_routes": "सभी मार्ग छुपाएं",
 		"route_schedules": "मार्ग समय सारणी",
 		"no_schedules_available": "चयनित तिथि के लिए कोई समय सारणी उपलब्ध नहीं।",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "स्टॉप आईडी",
-		"direction": "दिशा"
+		"direction": "दिशा",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "उत्तर",

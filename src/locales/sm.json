@@ -124,8 +124,11 @@
 		"collapse_all_routes": "Faʻapuupuu Auala Uma",
 		"route_schedules": "Fuataga o Auala",
 		"no_schedules_available": "E leai ni fuataga o loʻo avanoa mo le aso na filifilia.",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "Numera o le Nofoaga Taofi",
-		"direction": "Itu"
+		"direction": "Itu",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "Matu",

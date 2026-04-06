@@ -124,8 +124,11 @@
 		"collapse_all_routes": "收合所有路線",
 		"route_schedules": "路線時刻表",
 		"no_schedules_available": "所選日期沒有班次。",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "站牌編號",
-		"direction": "方向"
+		"direction": "方向",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "北",

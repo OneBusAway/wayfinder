@@ -7,6 +7,9 @@
 	role="status"
 	aria-live="polite"
 	class="flex h-full items-center justify-center bg-neutral-800 bg-gradient-to-br from-zinc-300 to-zinc-700 dark:from-zinc-500"
+	role="status"
+	aria-live="polite"
+	aria-label={$t('loading_page')}
 >
 	<div class="flex items-center font-semibold text-white">
 		<svg
@@ -14,6 +17,7 @@
 			xmlns="http://www.w3.org/2000/svg"
 			fill="none"
 			viewBox="0 0 24 24"
+			aria-hidden="true"
 		>
 			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
 			></circle>

@@ -124,8 +124,11 @@
 		"collapse_all_routes": "ሁሉንም ሰብስብ",
 		"route_schedules": "የመንገድ ጊዜ ሰንጠረዦች",
 		"no_schedules_available": "ምንም ጊዜ ሰንጠረዦች ለተመረጠው ቀን አልተገኙም።",
+		"no_departures_after_time": "No departures found for {date} after {time}",
 		"stop_id": "የማቆሚያ መታወቂያ",
-		"direction": "አቅጣጫ"
+		"direction": "አቅጣጫ",
+		"date_label": "Date",
+		"time_label": "Time"
 	},
 	"direction": {
 		"N": "ሰሜን",

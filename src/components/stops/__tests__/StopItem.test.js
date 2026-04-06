@@ -60,7 +60,7 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		await user.click(button);
 
 		expect(handleStopItemClick).toHaveBeenCalledWith(mockStop);
@@ -77,8 +77,8 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
-		expect(button).toHaveAttribute('type', 'button');
+		const button = screen.getAllByRole('button')[0];
+		expect(button).toHaveAttribute('role', 'button');
 		expect(button).toHaveClass('stop-item');
 		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
 		expect(button).toHaveClass('border-b', 'border-gray-200');
@@ -96,7 +96,7 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		expect(button).toHaveClass('dark:border-[#313135]');
 		expect(button).toHaveClass('dark:bg-[#1c1c1c]');
 		expect(button).toHaveClass('dark:hover:bg-[#363636]');
@@ -142,20 +142,16 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 
-		// Focus the button
 		button.focus();
 		expect(button).toHaveFocus();
 
-		// Activate with Enter key
 		await user.keyboard('{Enter}');
 		expect(handleStopItemClick).toHaveBeenCalledWith(mockStop);
 
-		// Reset the mock
 		handleStopItemClick.mockClear();
 
-		// Activate with Space key
 		await user.keyboard(' ');
 		expect(handleStopItemClick).toHaveBeenCalledWith(mockStop);
 	});
@@ -170,8 +166,9 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
-		expect(button).toHaveAttribute('type', 'button');
+		const button = screen.getAllByRole('button')[0];
+		expect(button).toHaveAttribute('role', 'button');
+		expect(button).toHaveAttribute('tabindex', '0');
 		expect(button).toBeInTheDocument();
 	});
 
@@ -193,7 +190,7 @@ describe('StopItem', () => {
 			});
 		}).not.toThrow();
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		expect(button).toBeInTheDocument();
 		expect(screen.getByText('12345')).toBeInTheDocument();
 	});
@@ -216,7 +213,7 @@ describe('StopItem', () => {
 			});
 		}).not.toThrow();
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		expect(button).toBeInTheDocument();
 	});
 
@@ -234,7 +231,7 @@ describe('StopItem', () => {
 		expect(screen.getByText('75403')).toBeInTheDocument();
 	});
 
-	test('uses stop without routes fixture correctly', () => {
+	test('handles stop without routes fixture correctly', () => {
 		const handleStopItemClick = vi.fn();
 
 		render(StopItem, {
@@ -246,5 +243,66 @@ describe('StopItem', () => {
 
 		expect(screen.getByText('Test Stop Without Routes')).toBeInTheDocument();
 		expect(screen.getByText('75404')).toBeInTheDocument();
+	});
+
+	test('renders favorite button inside stop item', () => {
+		const handleStopItemClick = vi.fn();
+
+		render(StopItem, {
+			props: {
+				stop: mockStop,
+				handleStopItemClick
+			}
+		});
+
+		const buttons = screen.getAllByRole('button');
+		expect(buttons).toHaveLength(2);
+
+		const mainButton = buttons[0];
+		const favoriteButton = buttons[1];
+
+		expect(mainButton).toHaveClass('stop-item');
+		expect(favoriteButton).toHaveClass('favorite-btn');
+	});
+
+	test('favorite button has correct aria-label', () => {
+		const handleStopItemClick = vi.fn();
+
+		render(StopItem, {
+			props: {
+				stop: mockStop,
+				handleStopItemClick
+			}
+		});
+
+		const buttons = screen.getAllByRole('button');
+		const favoriteButton = buttons.find(btn => {
+			const label = btn.getAttribute('aria-label');
+			return label?.includes('to favorites') || label?.includes('from favorites');
+		});
+		expect(favoriteButton).toBeInTheDocument();
+	});
+
+	test('favorite button click does not trigger stop click handler', async () => {
+		const user = userEvent.setup();
+		const handleStopItemClick = vi.fn();
+
+		render(StopItem, {
+			props: {
+				stop: mockStop,
+				handleStopItemClick
+			}
+		});
+
+		// Find favorite button by checking for 'to favorites' in aria-label
+		const buttons = screen.getAllByRole('button');
+		const favoriteButton = buttons.find(btn => {
+			const label = btn.getAttribute('aria-label');
+			return label?.includes('to favorites');
+		});
+
+		await user.click(favoriteButton);
+
+		expect(handleStopItemClick).not.toHaveBeenCalled();
 	});
 });

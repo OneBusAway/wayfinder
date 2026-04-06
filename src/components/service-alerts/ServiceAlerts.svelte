@@ -80,6 +80,7 @@
 						class="p-1 text-gray-500 hover:text-gray-700 disabled:opacity-50 dark:text-gray-400 dark:hover:text-gray-200"
 						onclick={() => goToPage(currentPage - 1)}
 						disabled={currentPage === 1}
+						aria-label="Previous page"
 					>
 						<FontAwesomeIcon icon={faChevronLeft} class="h-4 w-4" />
 					</button>
@@ -91,6 +92,7 @@
 						class="p-1 text-gray-500 hover:text-gray-700 disabled:opacity-50 dark:text-gray-400 dark:hover:text-gray-200"
 						onclick={() => goToPage(currentPage + 1)}
 						disabled={currentPage === totalPages}
+						aria-label="Next page"
 					>
 						<FontAwesomeIcon icon={faChevronRightPagination} class="h-4 w-4" />
 					</button>
