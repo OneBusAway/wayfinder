@@ -18,6 +18,6 @@
 	let { handleUpdateRouteMap, tripSelected, stop, closePane } = $props();
 </script>
 
-<ModalPane {closePane} title={stop.name}>
+<ModalPane {closePane} title={stop.name} favoriteId={stop.id} favoriteType="stop">
 	<StopPane {tripSelected} {handleUpdateRouteMap} {stop} />
 </ModalPane>

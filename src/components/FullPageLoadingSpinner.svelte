@@ -3,6 +3,9 @@
 </script>
 
 <div
+	role="status"
+	aria-live="polite"
+	aria-label={$t('loading_page')}
 	aria-label={$t('loading')}
 	role="status"
 	aria-live="polite"
@@ -10,6 +13,7 @@
 >
 	<div class="flex items-center font-semibold text-white">
 		<svg
+			aria-hidden="true"
 			class="-ml-1 mr-3 h-5 w-5 animate-spin"
 			xmlns="http://www.w3.org/2000/svg"
 			fill="none"

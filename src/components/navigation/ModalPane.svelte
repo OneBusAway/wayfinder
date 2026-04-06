@@ -3,14 +3,9 @@
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faX } from '@fortawesome/free-solid-svg-icons';
 	import { keybinding } from '$lib/keybinding';
-	/**
-	 * @typedef {Object} Props
-	 * @property {string} [title]
-	 * @property {import('svelte').Snippet} [children]
-	 */
+	import FavoriteButton from '$components/favorites/FavoriteButton.svelte';
 
-	/** @type {Props} */
-	let { title = '', children, closePane } = $props();
+	let { title = '', favoriteId, favoriteType = 'stop', children, closePane } = $props();
 </script>
 
 <div
@@ -21,6 +16,9 @@
 	<div class="flex h-full flex-col">
 		<div class="flex py-1">
 			<div class="text-normal flex-1 self-center font-semibold">{title}</div>
+			{#if favoriteId}
+				<FavoriteButton id={favoriteId} type={favoriteType} />
+			{/if}
 			<div>
 				<button
 					type="button"
@@ -38,7 +36,6 @@
 			<div class="absolute inset-0 overflow-y-auto">
 				{@render children?.()}
 				<div class="mb-4">
-					<!-- this empty footer shows a user that the content in the pane hasn't been cut off. -->
 					&nbsp;
 				</div>
 			</div>

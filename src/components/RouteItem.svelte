@@ -1,6 +1,7 @@
 <script>
 	import { removeAgencyPrefix } from '$lib/utils';
 	import { adjustColorForDarkMode } from '$lib/colorUtils';
+	import FavoriteButton from '$components/favorites/FavoriteButton.svelte';
 
 	let { handleModalRouteClick, route } = $props();
 
@@ -26,9 +27,10 @@
 	onclick={() => handleModalRouteClick(route)}
 >
 	<div
-		class="text-lg font-semibold text-[var(--route-color-light)] dark:text-[var(--route-color-dark)]"
+		class="flex-1 text-lg font-semibold text-[var(--route-color-light)] dark:text-[var(--route-color-dark)]"
 		style="--route-color-light: {lightModeColor}; --route-color-dark: {darkModeColor}"
 	>
 		{getDisplayRouteName(route)}
 	</div>
+	<FavoriteButton id={route.id} type="route" ariaLabel={`Add ${getDisplayRouteName(route)} to favorites`} />
 </button>

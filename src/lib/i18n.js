@@ -90,8 +90,21 @@ export function getInitialLocale() {
 		}
 	}
 
-	// Fallback to browser language (getLocaleFromNavigator handles fallback via fallbackLocale)
-	return getLocaleFromNavigator();
+	// Fallback to browser language, normalized to registered locales
+	const browserLocale = getLocaleFromNavigator();
+
+	// Check if exact match exists
+	if (languages.find((l) => l.code === browserLocale)) {
+		return browserLocale;
+	}
+
+	// Fall back to just the language part (e.g. 'en-US' → 'en')
+	const lang = browserLocale?.split('-')[0];
+	if (languages.find((l) => l.code === lang)) {
+		return lang;
+	}
+
+	return 'en';
 }
 
 init({
