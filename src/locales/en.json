@@ -60,7 +60,14 @@
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",
+		"favorites": "Favorites",
 		"plan_trip": "Plan a Trip"
+	},
+	"favorites": {
+		"add": "Add to favorites",
+		"remove": "Remove from favorites",
+		"empty": "No favorites yet. Tap the star icon on any stop to save it here.",
+		"clear_all": "Clear all favorites"
 	},
 	"search": {
 		"placeholder": "Search for stops, routes, and places",

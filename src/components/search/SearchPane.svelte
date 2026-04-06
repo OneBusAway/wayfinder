@@ -10,6 +10,7 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { env } from '$env/dynamic/public';
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
+	import FavoritesList from '$components/favorites/FavoritesList.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
 	import { removeAgencyPrefix } from '$lib/utils';
@@ -322,6 +323,31 @@
 					{$t('search.for_a_list_of_available_routes')}</span
 				>
 			</div>
+		</TabItem>
+
+		<TabItem
+			open={activeTab === 'favorites'}
+			title={$t('tabs.favorites')}
+			on:click={() => {
+				handleTabSwitch();
+				activeTab = 'favorites';
+			}}
+		>
+			<FavoritesList
+				onStopClick={(item) => {
+					const stop = {
+						id: item.entityId,
+						name: item.name,
+						direction: item.direction,
+						lat: item.coords?.lat,
+						lon: item.coords?.lng
+					};
+					handleStopClick(stop);
+				}}
+				onRouteClick={(item) => {
+					handleRouteClick({ id: item.entityId, name: item.name });
+				}}
+			/>
 		</TabItem>
 
 		{#if env.PUBLIC_OTP_SERVER_URL}

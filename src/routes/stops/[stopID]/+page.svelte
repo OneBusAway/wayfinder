@@ -43,6 +43,6 @@
 </svelte:head>
 
 <StandalonePage>
-	<StopPageHeader stopName={stop.name} stopId={stop.id} stopDirection={stop.direction} />
+	<StopPageHeader stopName={stop.name} stopId={stop.id} stopDirection={stop.direction} stopLat={stop.lat} stopLon={stop.lon} />
 	<StopPane {stop} bind:arrivalsAndDeparturesResponse />
 </StandalonePage>
