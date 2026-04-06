@@ -51,7 +51,7 @@
 			type="button"
 			class="absolute inset-y-0 right-0 flex items-center pr-3"
 			onclick={handleClear}
-			aria-label="Clear"
+			aria-label={$t('trip-planner.clear')}
 		>
 			<FontAwesomeIcon icon={faX} class="size-5 text-gray-400" />
 		</button>

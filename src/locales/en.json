@@ -52,6 +52,7 @@
 		"unit_metric": "Metric (km, m)",
 		"unit_imperial": "Imperial (mi, ft)",
 		"swap_locations": "Swap From and To locations",
+		"clear": "Clear",
 		"error_code": "Error code",
 		"remove_recent_trip": "Remove recent trip",
 		"recent_trip": "Use recent trip from {from} to {to}",
@@ -175,6 +176,9 @@
 		"hide": "Hide",
 		"open_alert": "Open service alert details: {summary}",
 		"alert_modal": "Service alert details dialog"
+	},
+	"survey": {
+		"required_question": "Required question"
 	},
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
