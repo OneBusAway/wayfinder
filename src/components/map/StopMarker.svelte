@@ -4,9 +4,19 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} stop
-	 * @property {any} onClick
-	 * @property {any} icon
+	 * @property {(
+	 *   import('onebusaway-sdk/resources/stop').StopRetrieveResponse & {
+	 *     data: import('onebusaway-sdk/resources/stop').StopRetrieveResponse.Data & {
+	 *       entry: import('onebusaway-sdk/resources/stop').StopRetrieveResponse.Data.Entry & {
+	 *         routes: (import('onebusaway-sdk/resources/shared').References.Route & {
+	 *           code?: string
+	 *         })[]
+	 *       }
+	 *     }
+	 *   }
+	 * )} stop
+	 * @property {() => void} onClick
+	 * @property {import('@fortawesome/fontawesome-svg-core').IconDefinition} icon
 	 * @property {boolean} [isHighlighted]
 	 * @property {boolean} [showRoutesLabel]
 	 */

@@ -19,8 +19,10 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} stop
-	 * @property {any} [arrivalsAndDeparturesResponse]
+	 * @property {import('onebusaway-sdk/resources/stop').StopRetrieveResponse} stop
+	 * @property {import('onebusaway-sdk/resources/arrival-and-departure').ArrivalAndDepartureListResponse} [arrivalsAndDeparturesResponse]
+	 * @property {((event: {detail: any}) => void) | null} [handleUpdateRouteMap]
+	 * @property {((event: {detail: any}) => void) | null} [tripSelected]
 	 */
 
 	/** @type {Props} */

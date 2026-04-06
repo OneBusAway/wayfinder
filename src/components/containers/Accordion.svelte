@@ -10,13 +10,12 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} [items] - Props to track all possible item IDs
+	 * @property {string[]} [items] - Props to track all possible item IDs
 	 * @property {import('svelte').Snippet} [children]
 	 */
 
 	/** @type {Props} */
 	let { items = $bindable([]), children } = $props();
-
 	// Methods to open/close all items
 	export const openAll = (animate = true) => {
 		skipAnimation.set(!animate);
