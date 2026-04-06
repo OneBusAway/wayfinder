@@ -454,6 +454,26 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 	}
 
+	animatePolylineOpacity(polyline, targetOpacity = 1, durationMs = 350) {
+		if (!browser || !this.map || !polyline) return;
+		if (typeof requestAnimationFrame !== 'function') return;
+
+		const startTime = performance.now();
+		const tick = (now) => {
+			// Stop animation if polyline was removed/detached.
+			if (!this.map || !this.map.hasLayer(polyline)) return;
+
+			const progress = Math.min((now - startTime) / durationMs, 1);
+			polyline.setStyle({ opacity: targetOpacity * progress });
+
+			if (progress < 1) {
+				requestAnimationFrame(tick);
+			}
+		};
+
+		requestAnimationFrame(tick);
+	}
+
 	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
 
@@ -470,6 +490,11 @@ export default class OpenStreetMapProvider {
 			weight: options.weight || 4,
 			opacity: options.opacity ?? 1
 		};
+		const animate = options.animate ?? false;
+		const targetOpacity = polylineOpts.opacity;
+		if (animate) {
+			polylineOpts.opacity = 0;
+		}
 		if (options.dashArray) {
 			polylineOpts.dashArray = options.dashArray;
 		}
@@ -498,6 +523,10 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 
 		polyline.arrowDecorator = arrowDecorator;
+
+		if (animate) {
+			this.animatePolylineOpacity(polyline, targetOpacity);
+		}
 
 		return polyline;
 	}
