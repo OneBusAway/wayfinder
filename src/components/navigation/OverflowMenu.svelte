@@ -1,4 +1,5 @@
 <script>
+	import { t } from 'svelte-i18n';
 	let { links = [], onClose } = $props();
 	let menuRef = $state(null);
 
@@ -30,7 +31,7 @@
 				onclick={onClose}
 				class="block px-4 py-2 text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700"
 			>
-				{key}
+				{$t(key)}
 			</a>
 		{/each}
 	</div>
