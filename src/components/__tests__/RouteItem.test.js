@@ -124,7 +124,7 @@ describe('RouteItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		await user.click(button);
 
 		expect(handleModalRouteClick).toHaveBeenCalledWith(mockRouteWithShortAndLong);
@@ -141,13 +141,13 @@ describe('RouteItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		expect(button).toHaveAttribute('type', 'button');
-		expect(button).toHaveClass('route-item');
-		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
-		expect(button).toHaveClass('border-b', 'border-gray-200', 'bg-[#f9f9f9]');
-		expect(button).toHaveClass('p-4', 'text-left');
-		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-none');
+		expect(button.parentElement).toHaveClass('route-item');
+		expect(button.parentElement).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
+		expect(button.parentElement).toHaveClass('border-b', 'border-gray-200', 'bg-[#f9f9f9]');
+		expect(button).toHaveClass('flex-1', 'p-4', 'text-left');
+		expect(button.parentElement).toHaveClass('hover:bg-[#e9e9e9]');
 	});
 
 	test('route name has proper styling classes', () => {
@@ -193,20 +193,16 @@ describe('RouteItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 
-		// Focus the button
 		button.focus();
 		expect(button).toHaveFocus();
 
-		// Activate with Enter key
 		await user.keyboard('{Enter}');
 		expect(handleModalRouteClick).toHaveBeenCalledWith(mockRouteWithShortAndLong);
 
-		// Reset the mock
 		handleModalRouteClick.mockClear();
 
-		// Activate with Space key
 		await user.keyboard(' ');
 		expect(handleModalRouteClick).toHaveBeenCalledWith(mockRouteWithShortAndLong);
 	});
@@ -304,13 +300,11 @@ describe('RouteItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 
-		// Button should be focusable and have proper role
 		expect(button).toHaveAttribute('type', 'button');
 		expect(button).not.toHaveAttribute('aria-hidden', 'true');
 
-		// Should be accessible to screen readers
 		expect(button).toBeVisible();
 		expect(button).not.toHaveAttribute('tabindex', '-1');
 	});
@@ -325,10 +319,9 @@ describe('RouteItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		const accessibleText = button.textContent;
 
-		// Should contain route information that's meaningful to screen readers
 		expect(accessibleText).toContain('1 Line');
 		expect(accessibleText).toContain('Seattle - University of Washington');
 	});
@@ -349,8 +342,7 @@ describe('RouteItem', () => {
 			}
 		});
 
-		// Should render without crashing
-		expect(screen.getByRole('button')).toBeInTheDocument();
+		expect(screen.getAllByRole('button')[0]).toBeInTheDocument();
 		expect(
 			screen.getByText(/VeryLongRouteNameThatCouldPotentiallyBreakLayout/)
 		).toBeInTheDocument();
@@ -367,13 +359,11 @@ describe('RouteItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 
-		// Should be able to receive focus
 		await user.tab();
 		expect(button).toHaveFocus();
 
-		// Should be able to lose focus
 		await user.tab();
 		expect(button).not.toHaveFocus();
 	});
@@ -389,16 +379,14 @@ describe('RouteItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 
-		// Test mouse click
 		await user.click(button);
 		expect(handleModalRouteClick).toHaveBeenCalledTimes(1);
 		expect(handleModalRouteClick).toHaveBeenCalledWith(mockRouteWithShortAndLong);
 
 		handleModalRouteClick.mockClear();
 
-		// Test Enter key
 		button.focus();
 		await user.keyboard('{Enter}');
 		expect(handleModalRouteClick).toHaveBeenCalledTimes(1);
@@ -406,7 +394,6 @@ describe('RouteItem', () => {
 
 		handleModalRouteClick.mockClear();
 
-		// Test Space key
 		await user.keyboard(' ');
 		expect(handleModalRouteClick).toHaveBeenCalledTimes(1);
 		expect(handleModalRouteClick).toHaveBeenCalledWith(mockRouteWithShortAndLong);
@@ -497,5 +484,61 @@ describe('RouteItem', () => {
 		expect(lightColor).toBe('#1a1a1a');
 		expect(darkColor).toBeDefined();
 		expect(darkColor).not.toBe(lightColor);
+	});
+
+	test('renders favorite button inside route item', () => {
+		const handleModalRouteClick = vi.fn();
+
+		render(RouteItem, {
+			props: {
+				route: mockRouteWithShortAndLong,
+				handleModalRouteClick
+			}
+		});
+
+		const buttons = screen.getAllByRole('button');
+		expect(buttons).toHaveLength(2);
+
+		const mainButton = buttons[0];
+		const favoriteButton = buttons[1];
+
+		expect(mainButton.closest('.route-item')).toBeInTheDocument();
+		expect(favoriteButton).toHaveClass('favorite-btn');
+	});
+
+	test('favorite button has correct aria-label', () => {
+		const handleModalRouteClick = vi.fn();
+
+		render(RouteItem, {
+			props: {
+				route: mockRouteWithShortAndLong,
+				handleModalRouteClick
+			}
+		});
+
+		const favoriteButton = screen.getByLabelText(
+			/Add 44 - Ballard - University District to favorites/i
+		);
+		expect(favoriteButton).toBeInTheDocument();
+	});
+
+	test('favorite button click does not trigger route click handler', async () => {
+		const user = userEvent.setup();
+		const handleModalRouteClick = vi.fn();
+
+		render(RouteItem, {
+			props: {
+				route: mockRouteWithShortAndLong,
+				handleModalRouteClick
+			}
+		});
+
+		const favoriteButton = screen.getByRole('button', {
+			name: /Add 44 - Ballard - University District to favorites/i
+		});
+
+		await user.click(favoriteButton);
+
+		expect(handleModalRouteClick).not.toHaveBeenCalled();
 	});
 });

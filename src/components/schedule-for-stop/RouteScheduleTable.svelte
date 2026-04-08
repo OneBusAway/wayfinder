@@ -3,24 +3,34 @@
 	import { convert24HourTo12Hour } from '$lib/dateTimeFormat';
 
 	let { schedule } = $props();
+	let hoveredTime = $state(null);
 
 	let scheduleData = $derived(renderScheduleTable(schedule));
 
 	function renderScheduleTable(schedule) {
 		const stopTimes = Object.entries(schedule.stopTimes);
-
 		const amTimes = stopTimes.filter(([hour]) => +hour < 12);
 		const pmTimes = stopTimes.filter(([hour]) => +hour >= 12);
-
-		return {
-			amTimes,
-			pmTimes
-		};
+		return { amTimes, pmTimes };
 	}
 
 	function extractMinutes(arrivalTime) {
-		return arrivalTime.replace(/[AP]M/, '').split(':')[1];
+		return arrivalTime.split(':')[1].replace(/[^0-9]/g, '');
 	}
+
+	function getTooltip(stopTime) {
+		if (!stopTime.isShortLine || !stopTime.stopHeadsign) return null;
+		return $t('schedule_for_stop.ends_at_short_line', {
+			values: {
+				destination: stopTime.stopHeadsign,
+				mainHeadsign: schedule.mainHeadsign
+			}
+		});
+	}
+
+	let hasAnyShortLine = $derived(
+		Object.values(schedule.stopTimes).some(times => times.some(t => t.isShortLine))
+	);
 </script>
 
 <div class="overflow-x-auto dark:bg-black">
@@ -29,20 +39,17 @@
 	>
 		<thead class="bg-gray-100 text-gray-800 dark:bg-gray-900">
 			<tr>
-				<th class="cursor-pointer px-6 py-3 text-left dark:text-white"
-					>{$isLoading ? '' : $t('schedule_for_stop.hour')}</th
-				>
-				<th class="cursor-pointer px-6 py-3 text-left dark:text-white"
-					>{$isLoading ? '' : $t('schedule_for_stop.minutes')}</th
-				>
+				<th class="cursor-pointer px-6 py-3 text-left dark:text-white">
+					{$isLoading ? '' : $t('schedule_for_stop.hour')}
+				</th>
+				<th class="cursor-pointer px-6 py-3 text-left dark:text-white">
+					{$isLoading ? '' : $t('schedule_for_stop.minutes')}
+				</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr class="bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-600">
-				<td
-					colspan="2"
-					class="px-6 py-3 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">AM</td
-				>
+				<td colspan="2" class="px-6 py-3 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">AM</td>
 			</tr>
 			{#if scheduleData.amTimes.length === 0}
 				<tr>
@@ -55,18 +62,40 @@
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-900">
 						<td
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
-							title="Full Time: {hour}:{extractMinutes(times[0].arrivalTime)}"
 						>
 							{convert24HourTo12Hour(hour)}
 							<span class="text-sm text-gray-600 dark:text-gray-100">AM</span>
 						</td>
-						<td
-							class="flex items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white"
-						>
+						<td class="relative flex flex-wrap items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white">
 							{#each times as stopTime, index (index)}
-								<span class="rounded bg-gray-50 px-2 dark:bg-gray-800">
-									{extractMinutes(stopTime.arrivalTime)}
-								</span>
+								{#if stopTime.isShortLine}
+									<span
+										class="relative cursor-help rounded bg-amber-100 px-2 text-amber-900 dark:bg-amber-900 dark:text-amber-100"
+										role="button"
+										tabindex="0"
+										on:mouseenter={() => (hoveredTime = `${hour}_${index}`)}
+										on:mouseleave={() => (hoveredTime = null)}
+										on:click={() => (hoveredTime = hoveredTime === `${hour}_${index}` ? null : `${hour}_${index}`)}
+										on:keydown={(e) => e.key === 'Enter' || e.key === ' '
+											? (hoveredTime = hoveredTime === `${hour}_${index}` ? null : `${hour}_${index}`)
+											: null}
+									>
+											{extractMinutes(stopTime.arrivalTime)}<sup class="text-amber-600 dark:text-amber-300">†</sup>
+										{#if hoveredTime === `${hour}_${index}`}
+											<div
+												class="absolute bottom-full left-0 z-50 mb-2 whitespace-nowrap rounded bg-gray-900 px-3 py-1 text-xs text-white shadow-lg dark:bg-gray-700"
+											>
+												{getTooltip(stopTime)}
+												<div class="absolute top-full left-2 h-0 w-0 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"
+												></div>
+											</div>
+										{/if}
+									</span>
+								{:else}
+									<span class="rounded bg-gray-50 px-2 dark:bg-gray-800">
+										{extractMinutes(stopTime.arrivalTime)}
+									</span>
+								{/if}
 							{/each}
 						</td>
 					</tr>
@@ -74,10 +103,7 @@
 			{/if}
 
 			<tr class="bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-900">
-				<td
-					colspan="2"
-					class="px-6 py-3 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">PM</td
-				>
+				<td colspan="2" class="px-6 py-3 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">PM</td>
 			</tr>
 			{#if scheduleData.pmTimes.length === 0}
 				<tr>
@@ -90,18 +116,40 @@
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
 						<td
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
-							title="Full Time: {hour}:{extractMinutes(times[0].arrivalTime)}"
 						>
 							{convert24HourTo12Hour(hour)}
 							<span class="text-sm text-gray-600 dark:text-gray-100">PM</span>
 						</td>
-						<td
-							class="flex items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white"
-						>
+						<td class="relative flex flex-wrap items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white">
 							{#each times as stopTime, index (index)}
-								<span class="rounded bg-gray-50 px-2 dark:bg-gray-800">
-									{extractMinutes(stopTime.arrivalTime)}
-								</span>
+								{#if stopTime.isShortLine}
+									<span
+										class="relative cursor-help rounded bg-amber-100 px-2 text-amber-900 dark:bg-amber-900 dark:text-amber-100"
+										role="button"
+										tabindex="0"
+										on:mouseenter={() => (hoveredTime = `${hour}_${index}`)}
+										on:mouseleave={() => (hoveredTime = null)}
+										on:click={() => (hoveredTime = hoveredTime === `${hour}_${index}` ? null : `${hour}_${index}`)}
+										on:keydown={(e) => e.key === 'Enter' || e.key === ' '
+											? (hoveredTime = hoveredTime === `${hour}_${index}` ? null : `${hour}_${index}`)
+											: null}
+									>
+										{extractMinutes(stopTime.arrivalTime)}<sup class="text-amber-600 dark:text-amber-300">†</sup>
+										{#if hoveredTime === `${hour}_${index}`}
+											<div
+												class="absolute bottom-full left-0 z-50 mb-2 whitespace-nowrap rounded bg-gray-900 px-3 py-1 text-xs text-white shadow-lg dark:bg-gray-700"
+											>
+												{getTooltip(stopTime)}
+												<div class="absolute top-full left-2 h-0 w-0 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"
+												></div>
+											</div>
+										{/if}
+									</span>
+								{:else}
+									<span class="rounded bg-gray-50 px-2 dark:bg-gray-800">
+										{extractMinutes(stopTime.arrivalTime)}
+									</span>
+								{/if}
 							{/each}
 						</td>
 					</tr>
@@ -109,4 +157,13 @@
 			{/if}
 		</tbody>
 	</table>
+
+	{#if hasAnyShortLine}
+		<div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+			<span class="inline-block rounded bg-amber-100 px-1 text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+				<sup class="text-amber-600 dark:text-amber-300">†</sup>
+			</span>
+			{$isLoading ? '' : $t('schedule_for_stop.short_line_legend')}
+		</div>
+	{/if}
 </div>

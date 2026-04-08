@@ -77,7 +77,7 @@ describe('ViewAllRoutesModal', () => {
 		// Should display routes
 		expect(screen.getByPlaceholderText('Search for routes')).toBeInTheDocument(); // Search input
 		expect(
-			screen.getAllByRole('button').filter((btn) => btn.className.includes('route-item'))
+			document.querySelectorAll('.route-item')
 		).toHaveLength(mockRoutesListData.length);
 	});
 
@@ -104,7 +104,7 @@ describe('ViewAllRoutesModal', () => {
 		expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch routes:', 'Failed to fetch routes');
 		const routeButtons = screen
 			.queryAllByRole('button')
-			.filter((btn) => btn.className.includes('route-item'));
+			.filter((btn) => !!btn.closest('.route-item'));
 		expect(routeButtons).toHaveLength(0);
 
 		consoleSpy.mockRestore();
@@ -158,7 +158,7 @@ describe('ViewAllRoutesModal', () => {
 		await waitFor(() => {
 			const routeItems = screen
 				.getAllByRole('button')
-				.filter((btn) => btn.className.includes('route-item') && btn.textContent.includes('44'));
+				.filter((btn) => !!btn.closest('.route-item') && btn.textContent.includes('44'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -218,7 +218,7 @@ describe('ViewAllRoutesModal', () => {
 		await waitFor(() => {
 			const routeItems = screen
 				.getAllByRole('button')
-				.filter((btn) => btn.className.includes('route-item'));
+				.filter((btn) => !!btn.closest('.route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -249,7 +249,7 @@ describe('ViewAllRoutesModal', () => {
 		await waitFor(() => {
 			const routeItems = screen
 				.getAllByRole('button')
-				.filter((btn) => btn.className.includes('route-item'));
+				.filter((btn) => !!btn.closest('.route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -280,7 +280,7 @@ describe('ViewAllRoutesModal', () => {
 		await waitFor(() => {
 			const routeItems = screen
 				.getAllByRole('button')
-				.filter((btn) => btn.className.includes('route-item'));
+				.filter((btn) => !!btn.closest('.route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -311,7 +311,7 @@ describe('ViewAllRoutesModal', () => {
 		await waitFor(() => {
 			const routeItems = screen
 				.getAllByRole('button')
-				.filter((btn) => btn.className.includes('route-item'));
+				.filter((btn) => !!btn.closest('.route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});
@@ -342,7 +342,7 @@ describe('ViewAllRoutesModal', () => {
 		await waitFor(() => {
 			const filteredItems = screen
 				.getAllByRole('button')
-				.filter((btn) => btn.className.includes('route-item'));
+				.filter((btn) => !!btn.closest('.route-item'));
 			expect(filteredItems.length).toBeLessThan(mockRoutesListData.length);
 		});
 
@@ -351,9 +351,7 @@ describe('ViewAllRoutesModal', () => {
 
 		// Should show all routes again
 		await waitFor(() => {
-			const allItems = screen
-				.getAllByRole('button')
-				.filter((btn) => btn.className.includes('route-item'));
+                        const allItems = document.querySelectorAll('.route-item');
 			expect(allItems).toHaveLength(mockRoutesListData.length);
 		});
 	});
@@ -380,7 +378,7 @@ describe('ViewAllRoutesModal', () => {
 		// Click on a route
 		const routeButtons = screen
 			.getAllByRole('button')
-			.filter((btn) => btn.className.includes('route-item'));
+			.filter((btn) => !!btn.closest('.route-item'));
 		if (routeButtons.length > 0) {
 			await user.click(routeButtons[0]);
 
@@ -499,7 +497,7 @@ describe('ViewAllRoutesModal', () => {
 		await user.tab();
 		const routeButtons = screen
 			.getAllByRole('button')
-			.filter((btn) => btn.className.includes('route-item'));
+			.filter((btn) => !!btn.closest('.route-item'));
 		if (routeButtons.length > 0) {
 			expect(routeButtons[0]).toHaveFocus();
 		}
@@ -547,7 +545,8 @@ describe('ViewAllRoutesModal', () => {
 		// Should display all different route types
 		const routeItems = screen
 			.getAllByRole('button')
-			.filter((btn) => btn.className.includes('route-item'));
+			.filter((btn) => !!btn.closest('.route-item'))
+			.filter((btn, idx, arr) => !arr.slice(0, idx).some(b => b.closest('.route-item') === btn.closest('.route-item')));
 		expect(routeItems).toHaveLength(mockRoutesListData.length);
 	});
 
@@ -635,7 +634,7 @@ describe('ViewAllRoutesModal', () => {
 		await waitFor(() => {
 			const routeItems = screen
 				.getAllByRole('button')
-				.filter((btn) => btn.className.includes('route-item'));
+				.filter((btn) => !!btn.closest('.route-item'));
 			expect(routeItems.length).toBeGreaterThan(0);
 		});
 	});

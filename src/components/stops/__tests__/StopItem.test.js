@@ -60,7 +60,7 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		await user.click(button);
 
 		expect(handleStopItemClick).toHaveBeenCalledWith(mockStop);
@@ -77,13 +77,15 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		expect(button).toHaveAttribute('type', 'button');
-		expect(button).toHaveClass('stop-item');
-		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
-		expect(button).toHaveClass('border-b', 'border-gray-200');
-		expect(button).toHaveClass('bg-[#f9f9f9]', 'p-4', 'text-left');
-		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-none');
+		// Check the outer div instead
+		const container = button.closest('.stop-item');
+		expect(container).toHaveClass('stop-item');
+		expect(container).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
+		expect(container).toHaveClass('border-b', 'border-gray-200');
+		expect(container).toHaveClass('bg-[#f9f9f9]');
+		expect(container).toHaveClass('hover:bg-[#e9e9e9]');
 	});
 
 	test('has proper dark mode classes', () => {
@@ -96,10 +98,11 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
-		expect(button).toHaveClass('dark:border-[#313135]');
-		expect(button).toHaveClass('dark:bg-[#1c1c1c]');
-		expect(button).toHaveClass('dark:hover:bg-[#363636]');
+		const button = screen.getAllByRole('button')[0];
+		const container = button.closest('.stop-item');
+		expect(container).toHaveClass('dark:border-[#313135]');
+		expect(container).toHaveClass('dark:bg-[#1c1c1c]');
+		expect(container).toHaveClass('dark:hover:bg-[#363636]');
 	});
 
 	test('stop name has proper styling classes', () => {
@@ -142,20 +145,16 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 
-		// Focus the button
 		button.focus();
 		expect(button).toHaveFocus();
 
-		// Activate with Enter key
 		await user.keyboard('{Enter}');
 		expect(handleStopItemClick).toHaveBeenCalledWith(mockStop);
 
-		// Reset the mock
 		handleStopItemClick.mockClear();
 
-		// Activate with Space key
 		await user.keyboard(' ');
 		expect(handleStopItemClick).toHaveBeenCalledWith(mockStop);
 	});
@@ -170,7 +169,7 @@ describe('StopItem', () => {
 			}
 		});
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		expect(button).toHaveAttribute('type', 'button');
 		expect(button).toBeInTheDocument();
 	});
@@ -193,7 +192,7 @@ describe('StopItem', () => {
 			});
 		}).not.toThrow();
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		expect(button).toBeInTheDocument();
 		expect(screen.getByText('12345')).toBeInTheDocument();
 	});
@@ -216,7 +215,7 @@ describe('StopItem', () => {
 			});
 		}).not.toThrow();
 
-		const button = screen.getByRole('button');
+		const button = screen.getAllByRole('button')[0];
 		expect(button).toBeInTheDocument();
 	});
 
@@ -234,7 +233,7 @@ describe('StopItem', () => {
 		expect(screen.getByText('75403')).toBeInTheDocument();
 	});
 
-	test('uses stop without routes fixture correctly', () => {
+	test('handles stop without routes fixture correctly', () => {
 		const handleStopItemClick = vi.fn();
 
 		render(StopItem, {
@@ -246,5 +245,62 @@ describe('StopItem', () => {
 
 		expect(screen.getByText('Test Stop Without Routes')).toBeInTheDocument();
 		expect(screen.getByText('75404')).toBeInTheDocument();
+	});
+
+	test('renders favorite button inside stop item', () => {
+		const handleStopItemClick = vi.fn();
+
+		render(StopItem, {
+			props: {
+				stop: mockStop,
+				handleStopItemClick
+			}
+		});
+
+		const buttons = screen.getAllByRole('button');
+		expect(buttons).toHaveLength(2);
+
+		const mainButton = buttons[0];
+		const favoriteButton = buttons[1];
+
+		// stop-item is now on the outer div wrapper
+		expect(mainButton.closest('.stop-item')).toBeInTheDocument();
+		expect(favoriteButton).toHaveClass('favorite-btn');
+	});
+
+	test('favorite button has correct aria-label', () => {
+		const handleStopItemClick = vi.fn();
+
+		render(StopItem, {
+			props: {
+				stop: mockStop,
+				handleStopItemClick
+			}
+		});
+
+		const favoriteButton = screen.getByLabelText(
+			/Add Pine St & 3rd Ave to favorites/i
+		);
+		expect(favoriteButton).toBeInTheDocument();
+	});
+
+	test('favorite button click does not trigger stop click handler', async () => {
+		const user = userEvent.setup();
+		const handleStopItemClick = vi.fn();
+
+		render(StopItem, {
+			props: {
+				stop: mockStop,
+				handleStopItemClick
+			}
+		});
+
+		const favoriteButton = screen.getByRole('button', {
+			name: /Add Pine St & 3rd Ave to favorites/i
+		});
+
+		await user.click(favoriteButton);
+
+		expect(handleStopItemClick).not.toHaveBeenCalled();
 	});
 });
