@@ -1,27 +1,5 @@
 import { describe, it, expect } from 'vitest';
-
-/**
- * Test helper to simulate the groupStopTimesByHour function
- * This tests the short-line detection logic
- */
-function groupStopTimesByHour(stopTimes, mainHeadsign) {
-	const grouped = {};
-	for (let stopTime of stopTimes) {
-		const date = new Date(stopTime.arrivalTime);
-		const hour = date.getHours();
-		if (!grouped[hour]) grouped[hour] = [];
-		
-		// Detect short-line: if stopHeadsign differs from main headsign, it's a short-line
-		const isShortLine = !!(stopTime.stopHeadsign && stopTime.stopHeadsign !== mainHeadsign);
-		
-		grouped[hour].push({
-			arrivalTime: stopTime.arrivalTime,
-			stopHeadsign: stopTime.stopHeadsign,
-			isShortLine: isShortLine
-		});
-	}
-	return grouped;
-}
+import { groupStopTimesByHour } from '$lib/scheduleUtils.js';
 
 describe('Schedule short-line detection', () => {
 	it('should identify short-line trips with different stopHeadsign', () => {

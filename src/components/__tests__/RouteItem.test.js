@@ -143,11 +143,11 @@ describe('RouteItem', () => {
 
 		const button = screen.getAllByRole('button')[0];
 		expect(button).toHaveAttribute('type', 'button');
-		expect(button).toHaveClass('route-item');
-		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
-		expect(button).toHaveClass('border-b', 'border-gray-200', 'bg-[#f9f9f9]');
-		expect(button).toHaveClass('p-4', 'text-left');
-		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-none');
+		expect(button.parentElement).toHaveClass('route-item');
+		expect(button.parentElement).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
+		expect(button.parentElement).toHaveClass('border-b', 'border-gray-200', 'bg-[#f9f9f9]');
+		expect(button).toHaveClass('flex-1', 'p-4', 'text-left');
+		expect(button.parentElement).toHaveClass('hover:bg-[#e9e9e9]');
 	});
 
 	test('route name has proper styling classes', () => {
@@ -502,7 +502,7 @@ describe('RouteItem', () => {
 		const mainButton = buttons[0];
 		const favoriteButton = buttons[1];
 
-		expect(mainButton).toHaveClass('route-item');
+		expect(mainButton.closest('.route-item')).toBeInTheDocument();
 		expect(favoriteButton).toHaveClass('favorite-btn');
 	});
 

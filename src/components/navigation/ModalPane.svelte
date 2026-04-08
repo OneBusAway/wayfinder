@@ -5,7 +5,9 @@
 	import { keybinding } from '$lib/keybinding';
 	import FavoriteButton from '$components/favorites/FavoriteButton.svelte';
 
-	let { title = '', favoriteId, favoriteType = 'stop', children, closePane } = $props();
+	let { title = '', favoriteId, favoriteType = 'stop', favoriteAriaLabel, children, closePane } = $props();
+
+	let resolvedAriaLabel = $derived(favoriteAriaLabel ?? `Add ${title} to favorites`);
 </script>
 
 <div
@@ -17,7 +19,7 @@
 		<div class="flex py-1">
 			<div class="text-normal flex-1 self-center font-semibold">{title}</div>
 			{#if favoriteId}
-				<FavoriteButton id={favoriteId} type={favoriteType} />
+				<FavoriteButton id={favoriteId} type={favoriteType} ariaLabel={resolvedAriaLabel} />
 			{/if}
 			<div>
 				<button

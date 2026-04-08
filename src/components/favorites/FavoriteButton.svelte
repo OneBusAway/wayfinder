@@ -6,6 +6,12 @@
 
 	let isFavorited = $state(false);
 
+	let dynamicAriaLabel = $derived(
+		isFavorited
+			? ariaLabel.replace(/^Add /, 'Remove ') + ' (favorited)'
+			: ariaLabel
+	);
+
 	onMount(() => {
 		const unsubscribe = favorites.subscribe((favs) => {
 			isFavorited = favs.some((fav) => fav.id === id && fav.type === type);
@@ -22,7 +28,7 @@
 <button
 	type="button"
 	onclick={handleToggle}
-	aria-label={ariaLabel}
+	aria-label={dynamicAriaLabel}
 	class="favorite-btn inline-flex items-center justify-center rounded p-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
 	title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
 >

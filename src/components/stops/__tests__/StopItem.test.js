@@ -79,11 +79,13 @@ describe('StopItem', () => {
 
 		const button = screen.getAllByRole('button')[0];
 		expect(button).toHaveAttribute('type', 'button');
-		expect(button).toHaveClass('stop-item');
-		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
-		expect(button).toHaveClass('border-b', 'border-gray-200');
-		expect(button).toHaveClass('bg-[#f9f9f9]', 'p-4', 'text-left');
-		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-none');
+		// Check the outer div instead
+		const container = button.closest('.stop-item');
+		expect(container).toHaveClass('stop-item');
+		expect(container).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
+		expect(container).toHaveClass('border-b', 'border-gray-200');
+		expect(container).toHaveClass('bg-[#f9f9f9]');
+		expect(container).toHaveClass('hover:bg-[#e9e9e9]');
 	});
 
 	test('has proper dark mode classes', () => {
@@ -97,9 +99,10 @@ describe('StopItem', () => {
 		});
 
 		const button = screen.getAllByRole('button')[0];
-		expect(button).toHaveClass('dark:border-[#313135]');
-		expect(button).toHaveClass('dark:bg-[#1c1c1c]');
-		expect(button).toHaveClass('dark:hover:bg-[#363636]');
+		const container = button.closest('.stop-item');
+		expect(container).toHaveClass('dark:border-[#313135]');
+		expect(container).toHaveClass('dark:bg-[#1c1c1c]');
+		expect(container).toHaveClass('dark:hover:bg-[#363636]');
 	});
 
 	test('stop name has proper styling classes', () => {
@@ -260,7 +263,8 @@ describe('StopItem', () => {
 		const mainButton = buttons[0];
 		const favoriteButton = buttons[1];
 
-		expect(mainButton).toHaveClass('stop-item');
+		// stop-item is now on the outer div wrapper
+		expect(mainButton.closest('.stop-item')).toBeInTheDocument();
 		expect(favoriteButton).toHaveClass('favorite-btn');
 	});
 

@@ -18,7 +18,12 @@
 
 	function getTooltip(stopTime) {
 		if (!stopTime.isShortLine || !stopTime.stopHeadsign) return null;
-		return `Ends at ${stopTime.stopHeadsign} — does not continue to ${schedule.mainHeadsign}`;
+		return $t('schedule_for_stop.ends_at_short_line', {
+			values: {
+				destination: stopTime.stopHeadsign,
+				mainHeadsign: schedule.mainHeadsign
+			}
+		});
 	}
 
 	let hasAnyShortLine = $derived(
@@ -64,8 +69,14 @@
 								{#if stopTime.isShortLine}
 									<span
 										class="relative cursor-help rounded bg-amber-100 px-2 text-amber-900 dark:bg-amber-900 dark:text-amber-100"
+										role="button"
+										tabindex="0"
 										on:mouseenter={() => (hoveredTime = `${hour}_${index}`)}
 										on:mouseleave={() => (hoveredTime = null)}
+										on:click={() => (hoveredTime = hoveredTime === `${hour}_${index}` ? null : `${hour}_${index}`)}
+										on:keydown={(e) => e.key === 'Enter' || e.key === ' '
+											? (hoveredTime = hoveredTime === `${hour}_${index}` ? null : `${hour}_${index}`)
+											: null}
 									>
 											{extractMinutes(stopTime.arrivalTime)}<sup class="text-amber-600 dark:text-amber-300">†</sup>
 										{#if hoveredTime === `${hour}_${index}`}
@@ -112,8 +123,14 @@
 								{#if stopTime.isShortLine}
 									<span
 										class="relative cursor-help rounded bg-amber-100 px-2 text-amber-900 dark:bg-amber-900 dark:text-amber-100"
+										role="button"
+										tabindex="0"
 										on:mouseenter={() => (hoveredTime = `${hour}_${index}`)}
 										on:mouseleave={() => (hoveredTime = null)}
+										on:click={() => (hoveredTime = hoveredTime === `${hour}_${index}` ? null : `${hour}_${index}`)}
+										on:keydown={(e) => e.key === 'Enter' || e.key === ' '
+											? (hoveredTime = hoveredTime === `${hour}_${index}` ? null : `${hour}_${index}`)
+											: null}
 									>
 										{extractMinutes(stopTime.arrivalTime)}<sup class="text-amber-600 dark:text-amber-300">†</sup>
 										{#if hoveredTime === `${hour}_${index}`}
@@ -142,9 +159,9 @@
 	{#if hasAnyShortLine}
 		<div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
 			<span class="inline-block rounded bg-amber-100 px-1 text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-				12<sup class="text-amber-600 dark:text-amber-300">†</sup>
+				<sup class="text-amber-600 dark:text-amber-300">†</sup>
 			</span>
-			Ends before final destination — tap/hover for details
+			{$isLoading ? '' : $t('schedule_for_stop.short_line_legend')}
 		</div>
 	{/if}
 </div>

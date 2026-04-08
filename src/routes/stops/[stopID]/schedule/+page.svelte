@@ -4,6 +4,7 @@
 	import StopPageHeader from '$components/stops/StopPageHeader.svelte';
 	import StandalonePage from '$components/StandalonePage.svelte';
 	import { msToTimeString } from '$lib/dateTimeFormat.js';
+	import { groupStopTimesByHour } from '$lib/scheduleUtils.js';
 	import Accordion from '$components/containers/Accordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import { Datepicker } from 'flowbite-svelte';
@@ -92,22 +93,6 @@
 	function getRouteName(routeId, tripHeadsign) {
 		const route = routeReference.get(routeId);
 		return `${route.shortName ?? route.longName} - ${tripHeadsign}`;
-	}
-
-	function groupStopTimesByHour(stopTimes, mainHeadsign) {
-		const grouped = {};
-		for (let stopTime of stopTimes) {
-			const date = new Date(stopTime.arrivalTime);
-			const hour = date.getHours();
-			if (!grouped[hour]) grouped[hour] = [];
-			grouped[hour].push({
-				arrivalTime: msToTimeString(stopTime.arrivalTime),
-				timestamp: stopTime.arrivalTime,
-				stopHeadsign: stopTime.stopHeadsign ?? null,
-				isShortLine: !!(stopTime.stopHeadsign && stopTime.stopHeadsign !== mainHeadsign)
-			});
-		}
-		return grouped;
 	}
 
 	function toggleAllRoutes() {

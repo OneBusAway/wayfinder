@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
 
 const STORAGE_KEY = 'wayfinder_favorites';
@@ -79,11 +79,8 @@ function createFavoritesStore() {
 		},
 
 		isFavorite: (id, type = 'stop') => {
-			let result = false;
-			subscribe((favorites) => {
-				result = favorites.some((fav) => fav.id === id && fav.type === type);
-			})();
-			return result;
+			const favorites = get({ subscribe });
+			return favorites.some((fav) => fav.id === id && fav.type === type);
 		},
 
 		clearAll: () => {
