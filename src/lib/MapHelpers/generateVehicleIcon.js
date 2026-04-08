@@ -23,26 +23,27 @@ function getDirectionFromOrientation(orientation) {
 }
 
 function createVehicleIconSvg(orientation, color = '#007BFF', routeType = RouteType.BUS) {
-	const direction = getDirectionFromOrientation(toDirection(orientation));
-	const angle = DIRECTIONS.find((d) => d.icon === direction).angle;
-
-	const arrowPath = `
+	const resolvedDirection = toDirection(orientation);
+	let direction = null;
+	let angle = null;
+	
+	if (resolvedDirection !== null) {
+		direction = getDirectionFromOrientation(resolvedDirection);
+		angle = DIRECTIONS.find((d) => d.icon === direction).angle;
+	}
+	
+	const arrowPath = direction ? `
     <line x1="0" y1="0" x2="0" y2="-15" stroke-width="2" transform="rotate(${angle})"/>
-    <polygon points="0,-25 5,-15 -5, -15" stroke="white" stroke-width="1" transform="rotate(${angle})"/>
-`;
-
+    <polygon points="0,-25 5,-15 -5,-15" stroke="white" stroke-width="1" transform="rotate(${angle})"/>
+` : '';
+	
 	const vehicleSvg = generateRouteTypeSvgForDisplay(routeType);
 
 	return `
         <svg width="${iconWidth}" height="${iconHeight}" viewBox="-28 -28 56 56" xmlns="http://www.w3.org/2000/svg">
             <g stroke="${color}" fill="${color}">
-                <!-- Directional arrow -->
                 ${arrowPath}
-
-                <!-- Circle background -->
                 <circle cx="0" cy="0" r="13" stroke-width="2" fill="white"/>
-
-                <!-- vehicle icon inside the circle -->
                 ${vehicleSvg}
             </g>
         </svg>`;
