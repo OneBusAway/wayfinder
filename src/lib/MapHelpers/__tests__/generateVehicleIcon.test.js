@@ -48,14 +48,14 @@ describe('createVehicleIconSvg', () => {
 		expect(svg).toContain('rotate(0)');
 	});
 
-	it('should include arrow pointing north when orientation is 0', () => {
+	it('should include arrow pointing east when orientation is 0 (OBA 0° = east)', () => {
 		const svg = createVehicleIconSvg(0);
 		expect(svg).toContain('<line');
 		expect(svg).toContain('<polygon');
 		expect(svg).toContain('rotate(90)');
 	});
 
-	it('should include arrow pointing south when orientation is 180', () => {
+	it('should include arrow pointing west when orientation is 180 (OBA 180° = west)', () => {
 		const svg = createVehicleIconSvg(180);
 		expect(svg).toContain('<line');
 		expect(svg).toContain('<polygon');
