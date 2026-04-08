@@ -341,7 +341,7 @@ describe('skipSurvey', () => {
 
 		skipSurvey(survey);
 
-		expect(localStorage.getItem('survey_123_skipped_timestamp')).toBeDefined();
+		expect(localStorage.getItem('survey_123_skipped_timestamp')).not.toBeNull();
 		expect(localStorage.getItem('survey_123_skipped')).toBeNull();
 	});
 
@@ -354,7 +354,7 @@ describe('skipSurvey', () => {
 
 		skipSurvey(survey);
 
-		expect(localStorage.getItem('survey_456_skipped')).toBeDefined();
+		expect(localStorage.getItem('survey_456_skipped')).not.toBeNull();
 		expect(localStorage.getItem('survey_456_skipped_timestamp')).toBeNull();
 	});
 
@@ -371,6 +371,6 @@ describe('skipSurvey', () => {
 		skipSurvey(survey);
 
 		expect(localStorage.getItem('survey_789_skipped')).toBeNull();
-		expect(localStorage.getItem('survey_789_skipped_timestamp')).toBeDefined();
+		expect(localStorage.getItem('survey_789_skipped_timestamp')).not.toBeNull();
 	});
 });
