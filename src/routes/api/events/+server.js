@@ -1,12 +1,27 @@
-import { PlausibleAnalytics } from '$lib/Analytics/PlausibleAnalytics.js';
+import { env as dynamicEnv } from '$env/dynamic/public';
+import { createAdapter } from '$lib/Analytics/createAdapter.js';
 
-// Singleton: env values are read dynamically on each call via SvelteKit's env proxy
-const analytics = new PlausibleAnalytics();
-
-export async function POST({ request }) {
+export async function POST({ request, getClientAddress }) {
+	let envelope;
 	try {
-		const event = await request.json();
-		const data = await analytics.forwardEvent(event);
+		envelope = await request.json();
+	} catch (error) {
+		return new Response(JSON.stringify({ error: error.message || 'Invalid JSON' }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		});
+	}
+
+	try {
+		const adapter = createAdapter(dynamicEnv);
+		const ctx = {
+			userAgent: request.headers.get('user-agent') ?? '',
+			clientIp:
+				(typeof getClientAddress === 'function' && getClientAddress()) ||
+				request.headers.get('x-forwarded-for') ||
+				''
+		};
+		const data = await adapter.forwardEvent(envelope, ctx);
 		return new Response(JSON.stringify(data), {
 			status: 200,
 			headers: { 'Content-Type': 'application/json' }
