@@ -117,14 +117,29 @@ describe('Analytics envelope construction', () => {
 		expect(global.fetch).not.toHaveBeenCalled();
 	});
 
-	it('throws when /api/events responds non-OK', async () => {
+	it('swallows and logs (does not throw) when /api/events responds non-OK', async () => {
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: false,
 			statusText: 'Server Error',
 			text: async () => 'boom'
 		});
-		await expect(new Analytics().reportPageView('/test')).rejects.toThrow(
-			'Error sending event: Server Error. boom'
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const result = await new Analytics().reportPageView('/test');
+		expect(result).toBeUndefined();
+		expect(errorSpy).toHaveBeenCalledWith(
+			'Analytics error:',
+			expect.objectContaining({ message: 'Error sending event: Server Error. boom' })
+		);
+	});
+
+	it('swallows and logs (does not throw) when fetch rejects', async () => {
+		global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const result = await new Analytics().reportPageView('/test');
+		expect(result).toBeUndefined();
+		expect(errorSpy).toHaveBeenCalledWith(
+			'Analytics error:',
+			expect.objectContaining({ message: 'Network failure' })
 		);
 	});
 

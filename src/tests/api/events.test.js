@@ -145,6 +145,16 @@ describe('POST /api/events', () => {
 		expect(data).toEqual({ error: 'Network failure' });
 	});
 
+	it('returns 504 when the adapter aborts due to upstream timeout', async () => {
+		global.fetch = vi
+			.fn()
+			.mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+		const response = await POST(buildEvent());
+		const data = await response.json();
+		expect(response.status).toBe(504);
+		expect(data).toEqual({ error: 'aborted' });
+	});
+
 	it('falls back to x-forwarded-for header when getClientAddress is unavailable', async () => {
 		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'umami';
 		mockEnv.PUBLIC_ANALYTICS_API_HOST = 'https://umami.example.com';

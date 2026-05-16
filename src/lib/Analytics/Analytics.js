@@ -65,17 +65,23 @@ export class Analytics {
 			}
 		}
 
-		const response = await fetch('/api/events', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body
-		});
+		// Call sites are fire-and-forget; swallow + log so analytics failures
+		// never surface as unhandled promise rejections to the caller.
+		try {
+			const response = await fetch('/api/events', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body
+			});
 
-		if (!response.ok) {
-			const errorText = await response.text();
-			throw new Error(`Error sending event: ${response.statusText}. ${errorText}`);
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(`Error sending event: ${response.statusText}. ${errorText}`);
+			}
+			return response.json();
+		} catch (error) {
+			console.error('Analytics error:', error);
 		}
-		return response.json();
 	}
 
 	async reportPageView(pageURL, props = {}) {
