@@ -144,4 +144,35 @@ describe('POST /api/events', () => {
 		expect(response.status).toBe(500);
 		expect(data).toEqual({ error: 'Network failure' });
 	});
+
+	it('falls back to x-forwarded-for header when getClientAddress is unavailable', async () => {
+		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'umami';
+		mockEnv.PUBLIC_ANALYTICS_API_HOST = 'https://umami.example.com';
+		mockEnv.PUBLIC_ANALYTICS_WEBSITE_ID = 'web-id-1';
+		global.fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			status: 200,
+			text: async () => JSON.stringify({ cache: 'c' })
+		});
+
+		const request = new Request('http://localhost/api/events', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-forwarded-for': '203.0.113.7'
+			},
+			body: baseEnvelope
+		});
+		const response = await POST({ request });
+
+		expect(response.status).toBe(200);
+		expect(global.fetch).toHaveBeenCalledWith(
+			'https://umami.example.com/api/send',
+			expect.objectContaining({
+				headers: expect.objectContaining({
+					'X-Forwarded-For': '203.0.113.7'
+				})
+			})
+		);
+	});
 });

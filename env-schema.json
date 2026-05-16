@@ -175,7 +175,7 @@
 		"required": false,
 		"type": "string",
 		"allowEmpty": true,
-		"description": "Site identifier sent to the analytics backend. For Plausible: the site domain registered in your Plausible account. For Umami: the literal hostname sent as payload.hostname."
+		"description": "Site identifier sent to the analytics backend. For Plausible: the site domain registered in your Plausible account (must match the Plausible site key). For Umami: the literal hostname sent as payload.hostname for filtering — typically the deployed origin (e.g. wayfinder.example.com)."
 	},
 	"PUBLIC_ANALYTICS_API_HOST": {
 		"required": false,
