@@ -175,18 +175,26 @@
 		"required": false,
 		"type": "string",
 		"allowEmpty": true,
-		"description": "Domain for analytics tracking"
-	},
-	"PUBLIC_ANALYTICS_ENABLED": {
-		"required": false,
-		"type": "boolean",
-		"description": "Whether analytics tracking is enabled"
+		"description": "Site identifier sent to the analytics backend. For Plausible: the site domain registered in your Plausible account. For Umami: the literal hostname sent as payload.hostname."
 	},
 	"PUBLIC_ANALYTICS_API_HOST": {
 		"required": false,
 		"type": "url",
 		"allowEmpty": true,
 		"description": "API host URL for analytics events"
+	},
+	"PUBLIC_ANALYTICS_PROVIDER": {
+		"required": false,
+		"type": "enum",
+		"enum": ["none", "plausible", "umami"],
+		"allowEmpty": true,
+		"description": "Which analytics backend to use. 'none' (or empty) disables analytics entirely."
+	},
+	"PUBLIC_ANALYTICS_WEBSITE_ID": {
+		"required": false,
+		"type": "string",
+		"allowEmpty": true,
+		"description": "Website ID for the analytics provider. Required at runtime when PUBLIC_ANALYTICS_PROVIDER='umami'; ignored otherwise."
 	},
 	"PUBLIC_LANGUAGE_SWITCHER_ENABLED": {
 		"required": false,
