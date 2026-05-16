@@ -67,7 +67,7 @@ Source: <https://docs.umami.is/docs/api/sending-stats>
 
 Three layers under `src/lib/Analytics/`:
 
-```
+```text
 src/lib/Analytics/
 ├── index.js              # default export: Analytics singleton
 ├── Analytics.js          # facade — high-level methods, builds envelope, POSTs /api/events

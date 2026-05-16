@@ -1,3 +1,5 @@
+const UPSTREAM_TIMEOUT_MS = 5000;
+
 export class PlausibleAdapter {
 	constructor(env) {
 		this.env = env;
@@ -36,17 +38,26 @@ export class PlausibleAdapter {
 		if (requestContext.userAgent) headers['User-Agent'] = requestContext.userAgent;
 		if (requestContext.clientIp) headers['X-Forwarded-For'] = requestContext.clientIp;
 
-		const res = await fetch(this.getEventUrl(), {
-			method: 'POST',
-			headers,
-			body: JSON.stringify({
-				domain: this.env.PUBLIC_ANALYTICS_DOMAIN,
-				name,
-				url,
-				referrer,
-				props
-			})
-		});
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+
+		let res;
+		try {
+			res = await fetch(this.getEventUrl(), {
+				method: 'POST',
+				headers,
+				body: JSON.stringify({
+					domain: this.env.PUBLIC_ANALYTICS_DOMAIN,
+					name,
+					url,
+					referrer,
+					props
+				}),
+				signal: controller.signal
+			});
+		} finally {
+			clearTimeout(timeoutId);
+		}
 
 		if (!res.ok) {
 			const err = new Error(`Error sending event: ${res.statusText}`);

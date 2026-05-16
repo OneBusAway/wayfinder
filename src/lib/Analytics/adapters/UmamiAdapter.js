@@ -1,3 +1,5 @@
+const UPSTREAM_TIMEOUT_MS = 5000;
+
 export class UmamiAdapter {
 	constructor(env) {
 		this.env = env;
@@ -68,11 +70,20 @@ export class UmamiAdapter {
 			headers['X-Forwarded-For'] = requestContext.clientIp;
 		}
 
-		const res = await fetch(this.getEventUrl(), {
-			method: 'POST',
-			headers,
-			body: JSON.stringify(body)
-		});
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+
+		let res;
+		try {
+			res = await fetch(this.getEventUrl(), {
+				method: 'POST',
+				headers,
+				body: JSON.stringify(body),
+				signal: controller.signal
+			});
+		} finally {
+			clearTimeout(timeoutId);
+		}
 
 		if (!res.ok) {
 			const err = new Error(`Error sending event: ${res.statusText}`);

@@ -175,4 +175,19 @@ describe('PlausibleAdapter.forwardEvent', () => {
 			'Network failure'
 		);
 	});
+
+	it('passes an AbortSignal to fetch so the request can time out', async () => {
+		await new PlausibleAdapter(fullEnv).forwardEvent(envelope, ctx);
+		const [, init] = global.fetch.mock.calls[0];
+		expect(init.signal).toBeInstanceOf(AbortSignal);
+	});
+
+	it('propagates AbortError when the upstream times out', async () => {
+		global.fetch = vi
+			.fn()
+			.mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+		await expect(new PlausibleAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow(
+			'aborted'
+		);
+	});
 });
