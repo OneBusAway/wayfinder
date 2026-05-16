@@ -73,29 +73,28 @@ export class UmamiAdapter {
 		const controller = new AbortController();
 		const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
 
-		let res;
 		try {
-			res = await fetch(this.getEventUrl(), {
+			const res = await fetch(this.getEventUrl(), {
 				method: 'POST',
 				headers,
 				body: JSON.stringify(body),
 				signal: controller.signal
 			});
+
+			if (!res.ok) {
+				const err = new Error(`Error sending event: ${res.statusText}`);
+				err.upstreamStatus = res.status;
+				throw err;
+			}
+
+			const text = await res.text();
+			try {
+				return JSON.parse(text);
+			} catch {
+				return { status: text };
+			}
 		} finally {
 			clearTimeout(timeoutId);
-		}
-
-		if (!res.ok) {
-			const err = new Error(`Error sending event: ${res.statusText}`);
-			err.upstreamStatus = res.status;
-			throw err;
-		}
-
-		const text = await res.text();
-		try {
-			return JSON.parse(text);
-		} catch {
-			return { status: text };
 		}
 	}
 }
