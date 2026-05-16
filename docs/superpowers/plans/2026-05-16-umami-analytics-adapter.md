@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-05-16-umami-analytics-adapter-design.md`
 
+**Architecture review:** Incorporates Critical fixes C1–C3 and Important fixes I1–I9 from software-architect review. Open design boundaries documented in spec.
+
 ---
 
 ## File map
@@ -17,10 +19,11 @@
 **New source files** (all under `src/lib/Analytics/`):
 - `adapters/NoopAdapter.js` — disabled stub
 - `adapters/PlausibleAdapter.js` — Plausible payload + forward
-- `adapters/UmamiAdapter.js` — Umami payload + forward
+- `adapters/UmamiAdapter.js` — Umami payload + forward (with `X-Forwarded-For` + `User-Agent`)
 - `createAdapter.js` — factory: env → adapter
-- `Analytics.js` — facade class (`reportPageView` etc.)
+- `Analytics.js` — facade class (`reportPageView` etc.) with `sendBeacon` fallback on unload
 - `index.js` — default-exports the singleton
+- `types.js` — JSDoc typedefs for `AnalyticsEnvelope` and `RequestContext`
 
 **New test files** (all under `src/tests/lib/Analytics/`):
 - `adapters/NoopAdapter.test.js`
@@ -30,16 +33,19 @@
 - `Analytics.test.js`
 
 **Renamed:**
-- `src/lib/Analytics/plausibleUtils.js` → `src/lib/Analytics/analyticsUtils.js` (function `analyticsDistanceToStop` unchanged)
+- `src/lib/Analytics/plausibleUtils.js` → `src/lib/Analytics/analyticsUtils.js`
 
 **Modified:**
-- `src/routes/api/events/+server.js` — use factory + pass `{ userAgent }`
-- `src/tests/api/events.test.js` — cover both adapters + provider switching
+- `src/routes/api/events/+server.js` — use factory + pass `{ userAgent, clientIp }`, 400 on JSON parse error
+- `src/tests/api/events.test.js` — cover both adapters + provider switching + parse error
 - `src/routes/+layout.svelte`, `src/routes/+page.svelte`, `src/routes/stops/[stopID]/+page.svelte` — change import to `$lib/Analytics`
 - `src/components/search/SearchField.svelte`, `src/components/stops/StopPane.svelte` — same import change
+- `src/components/search/__tests__/SearchField.test.js` — mock `$lib/Analytics` instead of legacy path
+- `src/components/search/__tests__/SearchPane.test.js` — same
+- `src/components/stops/__tests__/StopPane.test.js` — same
 - `env-schema.json` — drop `PUBLIC_ANALYTICS_ENABLED`, add `PUBLIC_ANALYTICS_PROVIDER` + `PUBLIC_ANALYTICS_WEBSITE_ID`
 - `.env.example` — same change
-- `vitest-setup.js` — default mock `PUBLIC_ANALYTICS_PROVIDER='none'`, drop `PUBLIC_ANALYTICS_ENABLED`
+- `vitest-setup.js` — default mock `PUBLIC_ANALYTICS_PROVIDER='none'`
 
 **Deleted (after migration):**
 - `src/lib/Analytics/PlausibleAnalytics.js`
@@ -49,28 +55,7 @@
 
 ## Test data conventions
 
-Every adapter accepts an `env` object in its constructor. Tests pass plain objects rather than mocking `$env/dynamic/public`. The shared example env for Plausible tests:
-
-```js
-const plausibleEnv = {
-  PUBLIC_ANALYTICS_PROVIDER: 'plausible',
-  PUBLIC_ANALYTICS_DOMAIN: 'example.com',
-  PUBLIC_ANALYTICS_API_HOST: 'https://plausible.example.com'
-};
-```
-
-For Umami:
-
-```js
-const umamiEnv = {
-  PUBLIC_ANALYTICS_PROVIDER: 'umami',
-  PUBLIC_ANALYTICS_DOMAIN: 'example.com',
-  PUBLIC_ANALYTICS_API_HOST: 'https://umami.example.com',
-  PUBLIC_ANALYTICS_WEBSITE_ID: '79eab5f4-0c4d-492b-9b60-ecf018859f03'
-};
-```
-
-Standard envelope used across forwardEvent tests:
+Every adapter accepts an `env` object in its constructor. Tests pass plain objects rather than mocking `$env/dynamic/public`. Shared envelope and ctx fixtures:
 
 ```js
 const envelope = {
@@ -83,8 +68,14 @@ const envelope = {
   props: { id: '1_00' }
 };
 
-const ctx = { userAgent: 'TestAgent/1.0' };
+const ctx = { userAgent: 'TestAgent/1.0', clientIp: '203.0.113.42' };
 ```
+
+---
+
+## Task order rationale
+
+Env/test-setup (Task 7) is moved before the facade (Task 8) so we never run in an intermediate state where some test files mock new env names while `vitest-setup.js` still has old ones. Component-test mocks (Task 11) are updated *after* `$lib/Analytics` exists (Task 8) and *before* component imports switch (Task 12).
 
 ---
 
@@ -112,7 +103,7 @@ describe('NoopAdapter', () => {
 		const adapter = new NoopAdapter();
 		const result = await adapter.forwardEvent(
 			{ name: 'pageview', url: '/' },
-			{ userAgent: 'X' }
+			{ userAgent: 'X', clientIp: '' }
 		);
 		expect(result).toEqual({ status: 'analytics disabled' });
 	});
@@ -143,7 +134,7 @@ export class NoopAdapter {
 - [ ] **Step 4: Run tests and confirm they pass**
 
 Run: `npm run test -- src/tests/lib/Analytics/adapters/NoopAdapter.test.js`
-Expected: PASS — 2/2 tests green.
+Expected: PASS — 2/2 green.
 
 - [ ] **Step 5: Commit**
 
@@ -155,13 +146,15 @@ git commit -m "Add NoopAdapter for disabled analytics"
 
 ---
 
-## Task 2: UmamiAdapter — isEnabled gate
+## Task 2: UmamiAdapter — isEnabled and config-warning at construction
 
 **Files:**
 - Create: `src/lib/Analytics/adapters/UmamiAdapter.js`
 - Test: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
 
-- [ ] **Step 1: Write the failing tests for isEnabled**
+This task implements `isEnabled()` *and* the I2 fix: an adapter logs a single console.warn at construction when the selected provider's config is incomplete. The facade keeps a simple `provider !== 'none'` check; the adapter is responsible for warning operators about misconfiguration.
+
+- [ ] **Step 1: Write the failing tests**
 
 Create `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`:
 
@@ -185,7 +178,7 @@ const envelope = {
 	props: { id: '1_00' }
 };
 
-const ctx = { userAgent: 'TestAgent/1.0' };
+const ctx = { userAgent: 'TestAgent/1.0', clientIp: '203.0.113.42' };
 
 describe('UmamiAdapter.isEnabled', () => {
 	it('returns true when domain, api host, and website id are all set', () => {
@@ -193,18 +186,57 @@ describe('UmamiAdapter.isEnabled', () => {
 	});
 
 	it('returns false when website id is missing', () => {
-		const env = { ...fullEnv, PUBLIC_ANALYTICS_WEBSITE_ID: '' };
-		expect(new UmamiAdapter(env).isEnabled()).toBe(false);
+		expect(
+			new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_WEBSITE_ID: '' }).isEnabled()
+		).toBe(false);
 	});
 
 	it('returns false when api host is missing', () => {
-		const env = { ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' };
-		expect(new UmamiAdapter(env).isEnabled()).toBe(false);
+		expect(
+			new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' }).isEnabled()
+		).toBe(false);
 	});
 
 	it('returns false when domain is missing', () => {
-		const env = { ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' };
-		expect(new UmamiAdapter(env).isEnabled()).toBe(false);
+		expect(
+			new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' }).isEnabled()
+		).toBe(false);
+	});
+});
+
+describe('UmamiAdapter construction-time config warning', () => {
+	let warnSpy;
+	beforeEach(() => {
+		warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+	});
+	afterEach(() => {
+		warnSpy.mockRestore();
+	});
+
+	it('does not warn when fully configured', () => {
+		new UmamiAdapter(fullEnv);
+		expect(warnSpy).not.toHaveBeenCalled();
+	});
+
+	it('warns once when website id is missing', () => {
+		new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_WEBSITE_ID: '' });
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('UmamiAdapter: missing PUBLIC_ANALYTICS_WEBSITE_ID')
+		);
+	});
+
+	it('warns when api host is missing', () => {
+		new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' });
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('UmamiAdapter: missing PUBLIC_ANALYTICS_API_HOST')
+		);
+	});
+
+	it('warns when domain is missing', () => {
+		new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' });
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('UmamiAdapter: missing PUBLIC_ANALYTICS_DOMAIN')
+		);
 	});
 });
 ```
@@ -214,7 +246,7 @@ describe('UmamiAdapter.isEnabled', () => {
 Run: `npm run test -- src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Create UmamiAdapter with isEnabled only**
+- [ ] **Step 3: Create UmamiAdapter with isEnabled + warn-on-construct**
 
 Create `src/lib/Analytics/adapters/UmamiAdapter.js`:
 
@@ -222,6 +254,17 @@ Create `src/lib/Analytics/adapters/UmamiAdapter.js`:
 export class UmamiAdapter {
 	constructor(env) {
 		this.env = env;
+		this.warnIfMisconfigured();
+	}
+
+	warnIfMisconfigured() {
+		const missing = [];
+		if (!this.env.PUBLIC_ANALYTICS_DOMAIN) missing.push('PUBLIC_ANALYTICS_DOMAIN');
+		if (!this.env.PUBLIC_ANALYTICS_API_HOST) missing.push('PUBLIC_ANALYTICS_API_HOST');
+		if (!this.env.PUBLIC_ANALYTICS_WEBSITE_ID) missing.push('PUBLIC_ANALYTICS_WEBSITE_ID');
+		for (const key of missing) {
+			console.warn(`UmamiAdapter: missing ${key} — events will not be sent`);
+		}
 	}
 
 	isEnabled() {
@@ -241,23 +284,25 @@ export class UmamiAdapter {
 - [ ] **Step 4: Run tests and confirm they pass**
 
 Run: `npm run test -- src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
-Expected: PASS — 4/4 tests green (forwardEvent has no tests yet).
+Expected: PASS — 8/8 (4 isEnabled + 4 warning) green.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/lib/Analytics/adapters/UmamiAdapter.js \
         src/tests/lib/Analytics/adapters/UmamiAdapter.test.js
-git commit -m "Add UmamiAdapter isEnabled config gate"
+git commit -m "Add UmamiAdapter isEnabled gate with construction-time config warning"
 ```
 
 ---
 
-## Task 3: UmamiAdapter — forwardEvent happy path
+## Task 3: UmamiAdapter — forwardEvent happy path (with X-Forwarded-For)
 
 **Files:**
 - Modify: `src/lib/Analytics/adapters/UmamiAdapter.js`
-- Test: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
+- Modify: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
+
+Implements forwardEvent including the I5 fix: forward `X-Forwarded-For` to Umami so visitor uniqueness works behind our server-side proxy. I7 fix: adapter destructures envelope with defaults so missing fields produce empty strings rather than `undefined`.
 
 - [ ] **Step 1: Add the failing tests**
 
@@ -270,6 +315,7 @@ describe('UmamiAdapter.forwardEvent (happy path)', () => {
 			ok: true,
 			text: async () => JSON.stringify({ cache: 'abc', sessionId: 's', visitId: 'v' })
 		});
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
 	});
 
 	afterEach(() => {
@@ -310,6 +356,21 @@ describe('UmamiAdapter.forwardEvent (happy path)', () => {
 		expect(init.headers['User-Agent']).toBe('TestAgent/1.0');
 	});
 
+	it('forwards X-Forwarded-For when clientIp is present', async () => {
+		await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
+		const [, init] = global.fetch.mock.calls[0];
+		expect(init.headers['X-Forwarded-For']).toBe('203.0.113.42');
+	});
+
+	it('omits X-Forwarded-For when clientIp is empty', async () => {
+		await new UmamiAdapter(fullEnv).forwardEvent(envelope, {
+			userAgent: 'UA',
+			clientIp: ''
+		});
+		const [, init] = global.fetch.mock.calls[0];
+		expect(init.headers['X-Forwarded-For']).toBeUndefined();
+	});
+
 	it('sets Content-Type: application/json', async () => {
 		await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
 		const [, init] = global.fetch.mock.calls[0];
@@ -322,6 +383,18 @@ describe('UmamiAdapter.forwardEvent (happy path)', () => {
 		const [, init] = global.fetch.mock.calls[0];
 		const body = JSON.parse(init.body);
 		expect(body.payload.hostname).toBe('configured.example.com');
+	});
+
+	it('defaults missing optional envelope fields to empty strings', async () => {
+		const sparse = { name: 'click', url: '/x' };
+		await new UmamiAdapter(fullEnv).forwardEvent(sparse, ctx);
+		const [, init] = global.fetch.mock.calls[0];
+		const body = JSON.parse(init.body);
+		expect(body.payload.referrer).toBe('');
+		expect(body.payload.title).toBe('');
+		expect(body.payload.language).toBe('');
+		expect(body.payload.screen).toBe('');
+		expect(body.payload.data).toEqual({});
 	});
 
 	it('returns parsed JSON response', async () => {
@@ -340,7 +413,7 @@ describe('UmamiAdapter.forwardEvent (happy path)', () => {
 - [ ] **Step 2: Run tests and confirm they fail**
 
 Run: `npm run test -- src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
-Expected: FAIL — happy-path tests all fail because `forwardEvent` throws "not implemented".
+Expected: FAIL — happy-path tests fail because `forwardEvent` throws "not implemented".
 
 - [ ] **Step 3: Implement forwardEvent happy path**
 
@@ -350,6 +423,17 @@ Replace `src/lib/Analytics/adapters/UmamiAdapter.js` with:
 export class UmamiAdapter {
 	constructor(env) {
 		this.env = env;
+		this.warnIfMisconfigured();
+	}
+
+	warnIfMisconfigured() {
+		const missing = [];
+		if (!this.env.PUBLIC_ANALYTICS_DOMAIN) missing.push('PUBLIC_ANALYTICS_DOMAIN');
+		if (!this.env.PUBLIC_ANALYTICS_API_HOST) missing.push('PUBLIC_ANALYTICS_API_HOST');
+		if (!this.env.PUBLIC_ANALYTICS_WEBSITE_ID) missing.push('PUBLIC_ANALYTICS_WEBSITE_ID');
+		for (const key of missing) {
+			console.warn(`UmamiAdapter: missing ${key} — events will not be sent`);
+		}
 	}
 
 	isEnabled() {
@@ -365,27 +449,42 @@ export class UmamiAdapter {
 	}
 
 	async forwardEvent(envelope, requestContext) {
+		const {
+			name,
+			url,
+			referrer = '',
+			title = '',
+			language = '',
+			screen = '',
+			props = {}
+		} = envelope;
+
 		const body = {
 			type: 'event',
 			payload: {
 				website: this.env.PUBLIC_ANALYTICS_WEBSITE_ID,
 				hostname: this.env.PUBLIC_ANALYTICS_DOMAIN,
-				language: envelope.language,
-				screen: envelope.screen,
-				url: envelope.url,
-				referrer: envelope.referrer,
-				title: envelope.title,
-				name: envelope.name,
-				data: envelope.props
+				language,
+				screen,
+				url,
+				referrer,
+				title,
+				name,
+				data: props
 			}
 		};
 
+		const headers = {
+			'Content-Type': 'application/json',
+			'User-Agent': requestContext.userAgent
+		};
+		if (requestContext.clientIp) {
+			headers['X-Forwarded-For'] = requestContext.clientIp;
+		}
+
 		const res = await fetch(this.getEventUrl(), {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'User-Agent': requestContext.userAgent
-			},
+			headers,
 			body: JSON.stringify(body)
 		});
 
@@ -402,23 +501,23 @@ export class UmamiAdapter {
 - [ ] **Step 4: Run tests and confirm they pass**
 
 Run: `npm run test -- src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
-Expected: PASS — 11/11 tests green.
+Expected: PASS — Task 2 tests still green, Task 3 tests green (18 total).
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/lib/Analytics/adapters/UmamiAdapter.js \
         src/tests/lib/Analytics/adapters/UmamiAdapter.test.js
-git commit -m "Implement UmamiAdapter forwardEvent happy path"
+git commit -m "Implement UmamiAdapter forwardEvent with X-Forwarded-For"
 ```
 
 ---
 
-## Task 4: UmamiAdapter — disabled, validation, User-Agent fallback, errors
+## Task 4: UmamiAdapter — disabled, validation, UA fallback, errors
 
 **Files:**
 - Modify: `src/lib/Analytics/adapters/UmamiAdapter.js`
-- Test: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
+- Modify: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
 
 - [ ] **Step 1: Add the failing tests**
 
@@ -428,6 +527,7 @@ Append to `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`:
 describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 	beforeEach(() => {
 		global.fetch = vi.fn();
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
 	});
 	afterEach(() => {
 		vi.restoreAllMocks();
@@ -454,7 +554,7 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 
 	it('falls back to Wayfinder/1.0 User-Agent when context omits it', async () => {
 		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{}' });
-		await new UmamiAdapter(fullEnv).forwardEvent(envelope, { userAgent: '' });
+		await new UmamiAdapter(fullEnv).forwardEvent(envelope, { userAgent: '', clientIp: '' });
 		const [, init] = global.fetch.mock.calls[0];
 		expect(init.headers['User-Agent']).toBe('Wayfinder/1.0');
 	});
@@ -486,7 +586,7 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 - [ ] **Step 2: Run tests and confirm they fail**
 
 Run: `npm run test -- src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
-Expected: FAIL — disabled / validation / fallback / error tests all fail.
+Expected: FAIL — disabled / validation / UA fallback / error tests fail.
 
 - [ ] **Step 3: Implement the edge cases**
 
@@ -496,6 +596,17 @@ Replace `src/lib/Analytics/adapters/UmamiAdapter.js` with:
 export class UmamiAdapter {
 	constructor(env) {
 		this.env = env;
+		this.warnIfMisconfigured();
+	}
+
+	warnIfMisconfigured() {
+		const missing = [];
+		if (!this.env.PUBLIC_ANALYTICS_DOMAIN) missing.push('PUBLIC_ANALYTICS_DOMAIN');
+		if (!this.env.PUBLIC_ANALYTICS_API_HOST) missing.push('PUBLIC_ANALYTICS_API_HOST');
+		if (!this.env.PUBLIC_ANALYTICS_WEBSITE_ID) missing.push('PUBLIC_ANALYTICS_WEBSITE_ID');
+		for (const key of missing) {
+			console.warn(`UmamiAdapter: missing ${key} — events will not be sent`);
+		}
 	}
 
 	isEnabled() {
@@ -515,7 +626,17 @@ export class UmamiAdapter {
 			return { status: 'analytics disabled' };
 		}
 
-		if (!envelope.name || !envelope.url) {
+		const {
+			name,
+			url,
+			referrer = '',
+			title = '',
+			language = '',
+			screen = '',
+			props = {}
+		} = envelope;
+
+		if (!name || !url) {
 			throw new Error('forwardEvent requires name and url');
 		}
 
@@ -524,22 +645,27 @@ export class UmamiAdapter {
 			payload: {
 				website: this.env.PUBLIC_ANALYTICS_WEBSITE_ID,
 				hostname: this.env.PUBLIC_ANALYTICS_DOMAIN,
-				language: envelope.language,
-				screen: envelope.screen,
-				url: envelope.url,
-				referrer: envelope.referrer,
-				title: envelope.title,
-				name: envelope.name,
-				data: envelope.props
+				language,
+				screen,
+				url,
+				referrer,
+				title,
+				name,
+				data: props
 			}
 		};
 
+		const headers = {
+			'Content-Type': 'application/json',
+			'User-Agent': requestContext.userAgent || 'Wayfinder/1.0'
+		};
+		if (requestContext.clientIp) {
+			headers['X-Forwarded-For'] = requestContext.clientIp;
+		}
+
 		const res = await fetch(this.getEventUrl(), {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'User-Agent': requestContext.userAgent || 'Wayfinder/1.0'
-			},
+			headers,
 			body: JSON.stringify(body)
 		});
 
@@ -562,7 +688,7 @@ export class UmamiAdapter {
 - [ ] **Step 4: Run tests and confirm they pass**
 
 Run: `npm run test -- src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
-Expected: PASS — all UmamiAdapter tests green (17 total).
+Expected: PASS — all UmamiAdapter tests green (24 total).
 
 - [ ] **Step 5: Commit**
 
@@ -579,6 +705,8 @@ git commit -m "Round out UmamiAdapter: disabled/validation/UA fallback/errors"
 **Files:**
 - Create: `src/lib/Analytics/adapters/PlausibleAdapter.js`
 - Test: `src/tests/lib/Analytics/adapters/PlausibleAdapter.test.js`
+
+Mirrors current `PlausibleAnalytics.forwardEvent`. Adds the same construction-time config warning (I2) and envelope destructure-with-defaults (I7) as UmamiAdapter, and forwards `X-Forwarded-For` (I5 — Plausible also supports it).
 
 - [ ] **Step 1: Write the full failing test file**
 
@@ -600,9 +728,17 @@ const envelope = {
 	props: { id: '1_00' }
 };
 
-const ctx = { userAgent: 'TestAgent/1.0' };
+const ctx = { userAgent: 'TestAgent/1.0', clientIp: '203.0.113.42' };
 
 describe('PlausibleAdapter.isEnabled', () => {
+	let warnSpy;
+	beforeEach(() => {
+		warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+	});
+	afterEach(() => {
+		warnSpy.mockRestore();
+	});
+
 	it('returns true when domain and api host are set', () => {
 		expect(new PlausibleAdapter(fullEnv).isEnabled()).toBe(true);
 	});
@@ -620,12 +756,42 @@ describe('PlausibleAdapter.isEnabled', () => {
 	});
 });
 
+describe('PlausibleAdapter construction-time config warning', () => {
+	let warnSpy;
+	beforeEach(() => {
+		warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+	});
+	afterEach(() => {
+		warnSpy.mockRestore();
+	});
+
+	it('does not warn when fully configured', () => {
+		new PlausibleAdapter(fullEnv);
+		expect(warnSpy).not.toHaveBeenCalled();
+	});
+
+	it('warns when domain is missing', () => {
+		new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' });
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('PlausibleAdapter: missing PUBLIC_ANALYTICS_DOMAIN')
+		);
+	});
+
+	it('warns when api host is missing', () => {
+		new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' });
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining('PlausibleAdapter: missing PUBLIC_ANALYTICS_API_HOST')
+		);
+	});
+});
+
 describe('PlausibleAdapter.forwardEvent', () => {
 	beforeEach(() => {
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: true,
 			text: async () => JSON.stringify({ status: 'ok' })
 		});
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
 	});
 
 	afterEach(() => {
@@ -672,10 +838,24 @@ describe('PlausibleAdapter.forwardEvent', () => {
 		});
 	});
 
-	it('ignores requestContext (Plausible derives UA from headers)', async () => {
+	it('forwards X-Forwarded-For when clientIp present', async () => {
 		await new PlausibleAdapter(fullEnv).forwardEvent(envelope, ctx);
 		const [, init] = global.fetch.mock.calls[0];
-		expect(init.headers['User-Agent']).toBeUndefined();
+		expect(init.headers['X-Forwarded-For']).toBe('203.0.113.42');
+	});
+
+	it('forwards User-Agent header when present', async () => {
+		await new PlausibleAdapter(fullEnv).forwardEvent(envelope, ctx);
+		const [, init] = global.fetch.mock.calls[0];
+		expect(init.headers['User-Agent']).toBe('TestAgent/1.0');
+	});
+
+	it('defaults missing optional envelope fields to empty / empty-object', async () => {
+		await new PlausibleAdapter(fullEnv).forwardEvent({ name: 'click', url: '/x' }, ctx);
+		const [, init] = global.fetch.mock.calls[0];
+		const body = JSON.parse(init.body);
+		expect(body.referrer).toBe('');
+		expect(body.props).toEqual({});
 	});
 
 	it('returns parsed JSON response', async () => {
@@ -726,6 +906,16 @@ Create `src/lib/Analytics/adapters/PlausibleAdapter.js`:
 export class PlausibleAdapter {
 	constructor(env) {
 		this.env = env;
+		this.warnIfMisconfigured();
+	}
+
+	warnIfMisconfigured() {
+		const missing = [];
+		if (!this.env.PUBLIC_ANALYTICS_DOMAIN) missing.push('PUBLIC_ANALYTICS_DOMAIN');
+		if (!this.env.PUBLIC_ANALYTICS_API_HOST) missing.push('PUBLIC_ANALYTICS_API_HOST');
+		for (const key of missing) {
+			console.warn(`PlausibleAdapter: missing ${key} — events will not be sent`);
+		}
 	}
 
 	isEnabled() {
@@ -736,24 +926,30 @@ export class PlausibleAdapter {
 		return `${this.env.PUBLIC_ANALYTICS_API_HOST}/api/event`;
 	}
 
-	async forwardEvent(envelope) {
+	async forwardEvent(envelope, requestContext) {
 		if (!this.isEnabled()) {
 			return { status: 'analytics disabled' };
 		}
 
-		if (!envelope.name || !envelope.url) {
+		const { name, url, referrer = '', props = {} } = envelope;
+
+		if (!name || !url) {
 			throw new Error('forwardEvent requires name and url');
 		}
 
+		const headers = { 'Content-Type': 'application/json' };
+		if (requestContext.userAgent) headers['User-Agent'] = requestContext.userAgent;
+		if (requestContext.clientIp) headers['X-Forwarded-For'] = requestContext.clientIp;
+
 		const res = await fetch(this.getEventUrl(), {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers,
 			body: JSON.stringify({
 				domain: this.env.PUBLIC_ANALYTICS_DOMAIN,
-				name: envelope.name,
-				url: envelope.url,
-				referrer: envelope.referrer,
-				props: envelope.props
+				name,
+				url,
+				referrer,
+				props
 			})
 		});
 
@@ -776,14 +972,14 @@ export class PlausibleAdapter {
 - [ ] **Step 4: Run tests and confirm they pass**
 
 Run: `npm run test -- src/tests/lib/Analytics/adapters/PlausibleAdapter.test.js`
-Expected: PASS — 13/13 tests green.
+Expected: PASS — all PlausibleAdapter tests green.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/lib/Analytics/adapters/PlausibleAdapter.js \
         src/tests/lib/Analytics/adapters/PlausibleAdapter.test.js
-git commit -m "Add PlausibleAdapter mirroring current PlausibleAnalytics"
+git commit -m "Add PlausibleAdapter with X-Forwarded-For and config warning"
 ```
 
 ---
@@ -799,19 +995,30 @@ git commit -m "Add PlausibleAdapter mirroring current PlausibleAnalytics"
 Create `src/tests/lib/Analytics/createAdapter.test.js`:
 
 ```js
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createAdapter } from '$lib/Analytics/createAdapter.js';
 import { NoopAdapter } from '$lib/Analytics/adapters/NoopAdapter.js';
 import { PlausibleAdapter } from '$lib/Analytics/adapters/PlausibleAdapter.js';
 import { UmamiAdapter } from '$lib/Analytics/adapters/UmamiAdapter.js';
 
 describe('createAdapter', () => {
+	beforeEach(() => {
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+	});
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	it('returns NoopAdapter when PUBLIC_ANALYTICS_PROVIDER is "none"', () => {
 		expect(createAdapter({ PUBLIC_ANALYTICS_PROVIDER: 'none' })).toBeInstanceOf(NoopAdapter);
 	});
 
 	it('returns NoopAdapter when provider is unset', () => {
 		expect(createAdapter({})).toBeInstanceOf(NoopAdapter);
+	});
+
+	it('returns NoopAdapter when provider is empty string', () => {
+		expect(createAdapter({ PUBLIC_ANALYTICS_PROVIDER: '' })).toBeInstanceOf(NoopAdapter);
 	});
 
 	it('returns NoopAdapter for unknown provider values', () => {
@@ -868,24 +1075,128 @@ export function createAdapter(env) {
 - [ ] **Step 4: Run tests and confirm they pass**
 
 Run: `npm run test -- src/tests/lib/Analytics/createAdapter.test.js`
-Expected: PASS — 6/6 tests green.
+Expected: PASS — 7/7 green.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/lib/Analytics/createAdapter.js \
         src/tests/lib/Analytics/createAdapter.test.js
-git commit -m "Add createAdapter factory that dispatches by PUBLIC_ANALYTICS_PROVIDER"
+git commit -m "Add createAdapter factory dispatching by PUBLIC_ANALYTICS_PROVIDER"
 ```
 
 ---
 
-## Task 7: Analytics facade — isEnabled and base structure
+## Task 7: Update env-schema, .env.example, vitest-setup
 
 **Files:**
+- Modify: `env-schema.json`
+- Modify: `.env.example`
+- Modify: `vitest-setup.js`
+
+I8 fix: this task runs *before* the Analytics facade so the new mock default (`PUBLIC_ANALYTICS_PROVIDER: 'none'`) is in place when the facade test arrives. C2 fix: enum gets `allowEmpty: true` so operators with `PUBLIC_ANALYTICS_PROVIDER=""` don't fail validation. I1 fix: the description for `PUBLIC_ANALYTICS_DOMAIN` is updated to document its per-provider meaning.
+
+- [ ] **Step 1: Update `env-schema.json`**
+
+In `env-schema.json`:
+
+- Delete the `"PUBLIC_ANALYTICS_ENABLED": { ... }` block.
+- Replace the existing `PUBLIC_ANALYTICS_DOMAIN` description with: `"Site identifier sent to the analytics backend. For Plausible: the site domain registered in your Plausible account. For Umami: the literal hostname sent as payload.hostname."`
+- After the `PUBLIC_ANALYTICS_API_HOST` block, insert:
+
+```json
+"PUBLIC_ANALYTICS_PROVIDER": {
+    "required": false,
+    "type": "enum",
+    "enum": ["none", "plausible", "umami"],
+    "allowEmpty": true,
+    "description": "Which analytics backend to use. 'none' (or empty) disables analytics entirely."
+},
+"PUBLIC_ANALYTICS_WEBSITE_ID": {
+    "required": false,
+    "type": "string",
+    "allowEmpty": true,
+    "description": "Website ID for the analytics provider. Required at runtime when PUBLIC_ANALYTICS_PROVIDER='umami'; ignored otherwise."
+},
+```
+
+- [ ] **Step 2: Update `.env.example`**
+
+In `.env.example`, replace the analytics block:
+
+```bash
+# Analytics
+PUBLIC_ANALYTICS_DOMAIN=""
+PUBLIC_ANALYTICS_ENABLED=true
+PUBLIC_ANALYTICS_API_HOST=""
+```
+
+with:
+
+```bash
+# Analytics
+# PUBLIC_ANALYTICS_PROVIDER selects the backend: "none" (disabled), "plausible", or "umami".
+# This replaces the old PUBLIC_ANALYTICS_ENABLED boolean — set provider to "none" to disable.
+PUBLIC_ANALYTICS_PROVIDER="none"
+PUBLIC_ANALYTICS_DOMAIN=""
+PUBLIC_ANALYTICS_API_HOST=""
+# Required only when PUBLIC_ANALYTICS_PROVIDER="umami":
+PUBLIC_ANALYTICS_WEBSITE_ID=""
+```
+
+- [ ] **Step 3: Update `vitest-setup.js`**
+
+In `vitest-setup.js`, replace the `$env/dynamic/public` mock block:
+
+```js
+vi.mock('$env/dynamic/public', () => ({
+	env: {
+		PUBLIC_ANALYTICS_DOMAIN: '',
+		PUBLIC_ANALYTICS_ENABLED: 'false',
+		PUBLIC_ANALYTICS_API_HOST: ''
+	}
+}));
+```
+
+with:
+
+```js
+vi.mock('$env/dynamic/public', () => ({
+	env: {
+		PUBLIC_ANALYTICS_PROVIDER: 'none',
+		PUBLIC_ANALYTICS_DOMAIN: '',
+		PUBLIC_ANALYTICS_API_HOST: '',
+		PUBLIC_ANALYTICS_WEBSITE_ID: ''
+	}
+}));
+```
+
+- [ ] **Step 4: Run validate-env and full test suite**
+
+Run: `npm run validate-env`
+Expected: PASS, with a warning if local `.env` still has `PUBLIC_ANALYTICS_ENABLED` (that's fine — the validator just notes "unknown variable").
+
+Run: `npm run test`
+Expected: PASS. The legacy `PlausibleAnalytics.test.js` declares its own `vi.mock` for env, so it isn't affected by the setup-file change. Component tests that don't override env now see `PUBLIC_ANALYTICS_PROVIDER: 'none'` (still disabled, no functional change).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add env-schema.json .env.example vitest-setup.js
+git commit -m "Replace PUBLIC_ANALYTICS_ENABLED with PUBLIC_ANALYTICS_PROVIDER"
+```
+
+---
+
+## Task 8: Analytics facade — base, isEnabled, typedefs
+
+**Files:**
+- Create: `src/lib/Analytics/types.js` (JSDoc only; no runtime code)
 - Create: `src/lib/Analytics/Analytics.js`
 - Create: `src/lib/Analytics/index.js`
 - Test: `src/tests/lib/Analytics/Analytics.test.js`
+
+I7 fix: add a `types.js` file with JSDoc typedefs so the envelope shape is documented in one place.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -929,6 +1240,10 @@ describe('Analytics (constructor + isEnabled)', () => {
 		expect(new Analytics({ PUBLIC_ANALYTICS_PROVIDER: 'none' }).isEnabled()).toBe(false);
 	});
 
+	it('isEnabled() returns false when provider is empty string', () => {
+		expect(new Analytics({ PUBLIC_ANALYTICS_PROVIDER: '' }).isEnabled()).toBe(false);
+	});
+
 	it('isEnabled() returns false when provider is undefined', () => {
 		expect(new Analytics({}).isEnabled()).toBe(false);
 	});
@@ -944,7 +1259,32 @@ describe('Analytics (constructor + isEnabled)', () => {
 Run: `npm run test -- src/tests/lib/Analytics/Analytics.test.js`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement the base Analytics class**
+- [ ] **Step 3: Create the typedefs file**
+
+Create `src/lib/Analytics/types.js`:
+
+```js
+/**
+ * @typedef {Object} AnalyticsEnvelope
+ * @property {string} name      Event name (e.g. "pageview", "search", "click").
+ * @property {string} url       Path on the site (e.g. "/", "/stop").
+ * @property {string} [referrer]
+ * @property {string} [title]
+ * @property {string} [language]
+ * @property {string} [screen]  Format "WIDTHxHEIGHT".
+ * @property {Object} [props]   Event-specific properties.
+ */
+
+/**
+ * @typedef {Object} RequestContext
+ * @property {string} userAgent  Forwarded from the originating browser.
+ * @property {string} clientIp   Forwarded from the originating browser (X-Forwarded-For).
+ */
+
+export {};
+```
+
+- [ ] **Step 4: Implement the base Analytics class**
 
 Create `src/lib/Analytics/Analytics.js`:
 
@@ -974,27 +1314,30 @@ export default analytics;
 export { Analytics };
 ```
 
-- [ ] **Step 4: Run tests and confirm they pass**
+- [ ] **Step 5: Run tests and confirm they pass**
 
 Run: `npm run test -- src/tests/lib/Analytics/Analytics.test.js`
-Expected: PASS — 5/5 tests green.
+Expected: PASS — 6/6 green.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add src/lib/Analytics/Analytics.js \
+git add src/lib/Analytics/types.js \
+        src/lib/Analytics/Analytics.js \
         src/lib/Analytics/index.js \
         src/tests/lib/Analytics/Analytics.test.js
-git commit -m "Add Analytics facade with provider-aware isEnabled"
+git commit -m "Add Analytics facade with provider-aware isEnabled and typedefs"
 ```
 
 ---
 
-## Task 8: Analytics facade — envelope + POST to /api/events
+## Task 9: Analytics facade — envelope, report methods, sendBeacon
 
 **Files:**
 - Modify: `src/lib/Analytics/Analytics.js`
 - Modify: `src/tests/lib/Analytics/Analytics.test.js`
+
+I4 fix: when `document.visibilityState === 'hidden'`, use `navigator.sendBeacon` instead of `fetch` so events fired during page-unload aren't cancelled. I7 fix: facade validates envelope has `name` + `url` before sending (single source of truth).
 
 - [ ] **Step 1: Add the failing tests**
 
@@ -1034,13 +1377,16 @@ describe('Analytics envelope construction', () => {
 	});
 
 	it('envelope includes browser context (referrer, title, language, screen)', async () => {
-		// jsdom defaults: language=en-US, title='', referrer=''
-		// screen present via window.screen
 		Object.defineProperty(window, 'screen', {
 			value: { width: 1920, height: 1080 },
-			writable: true
+			writable: true,
+			configurable: true
 		});
-		Object.defineProperty(document, 'title', { value: 'Test Title', writable: true });
+		Object.defineProperty(document, 'title', {
+			value: 'Test Title',
+			writable: true,
+			configurable: true
+		});
 
 		await new Analytics().reportPageView('/test');
 		const [, init] = global.fetch.mock.calls[0];
@@ -1077,6 +1423,19 @@ describe('Analytics envelope construction', () => {
 			'Error sending event: Server Error. boom'
 		);
 	});
+
+	it('falls back to empty strings when window is undefined', async () => {
+		const originalWindow = global.window;
+		// eslint-disable-next-line no-undef
+		delete global.window;
+		try {
+			const analytics = new Analytics();
+			const ctx = analytics.collectBrowserContext();
+			expect(ctx).toEqual({ referrer: '', title: '', language: '', screen: '' });
+		} finally {
+			global.window = originalWindow;
+		}
+	});
 });
 
 describe('Analytics convenience methods', () => {
@@ -1092,7 +1451,7 @@ describe('Analytics convenience methods', () => {
 		vi.restoreAllMocks();
 	});
 
-	it('reportSearchQuery posts search event with /search url and query prop', async () => {
+	it('reportSearchQuery posts search event', async () => {
 		await new Analytics().reportSearchQuery('bus 44');
 		const [, init] = global.fetch.mock.calls[0];
 		const body = JSON.parse(init.body);
@@ -1101,7 +1460,7 @@ describe('Analytics convenience methods', () => {
 		expect(body.props.query).toBe('bus 44');
 	});
 
-	it('reportStopViewed posts pageview with /stop url and id+distance props', async () => {
+	it('reportStopViewed posts pageview with id+distance', async () => {
 		await new Analytics().reportStopViewed('1_100', 'User Distance: 00050-00100m');
 		const [, init] = global.fetch.mock.calls[0];
 		const body = JSON.parse(init.body);
@@ -1113,7 +1472,7 @@ describe('Analytics convenience methods', () => {
 		});
 	});
 
-	it('reportRouteClicked posts click event with /route url and route id', async () => {
+	it('reportRouteClicked posts click with route id', async () => {
 		await new Analytics().reportRouteClicked('544');
 		const [, init] = global.fetch.mock.calls[0];
 		const body = JSON.parse(init.body);
@@ -1122,13 +1481,54 @@ describe('Analytics convenience methods', () => {
 		expect(body.props.id).toBe('544');
 	});
 
-	it('reportArrivalClicked posts click event with /arrivals url and item_id', async () => {
+	it('reportArrivalClicked posts click with item_id', async () => {
 		await new Analytics().reportArrivalClicked('arrival-tap');
 		const [, init] = global.fetch.mock.calls[0];
 		const body = JSON.parse(init.body);
 		expect(body.name).toBe('click');
 		expect(body.url).toBe('/arrivals');
 		expect(body.props.item_id).toBe('arrival-tap');
+	});
+});
+
+describe('Analytics sendBeacon fallback on page unload', () => {
+	let sendBeaconSpy;
+	beforeEach(() => {
+		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'umami';
+		sendBeaconSpy = vi.fn(() => true);
+		Object.defineProperty(global.navigator, 'sendBeacon', {
+			value: sendBeaconSpy,
+			writable: true,
+			configurable: true
+		});
+		Object.defineProperty(document, 'visibilityState', {
+			value: 'hidden',
+			writable: true,
+			configurable: true
+		});
+		global.fetch = vi.fn();
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+		Object.defineProperty(document, 'visibilityState', {
+			value: 'visible',
+			writable: true,
+			configurable: true
+		});
+	});
+
+	it('uses sendBeacon when document is hidden', async () => {
+		await new Analytics().reportArrivalClicked('arrival-tap');
+		expect(sendBeaconSpy).toHaveBeenCalledWith('/api/events', expect.any(Blob));
+		expect(global.fetch).not.toHaveBeenCalled();
+	});
+
+	it('falls back to fetch when sendBeacon returns false', async () => {
+		sendBeaconSpy.mockReturnValue(false);
+		global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
+		await new Analytics().reportArrivalClicked('arrival-tap');
+		expect(global.fetch).toHaveBeenCalled();
 	});
 });
 ```
@@ -1145,6 +1545,11 @@ Replace `src/lib/Analytics/Analytics.js` with:
 ```js
 import { env as dynamicEnv } from '$env/dynamic/public';
 
+/**
+ * Provider-agnostic facade. Builds an AnalyticsEnvelope and POSTs it to /api/events.
+ * Adapter selection happens on the server inside /api/events; the facade only knows
+ * whether analytics is on or off.
+ */
 export class Analytics {
 	constructor(env) {
 		this.env = env || dynamicEnv;
@@ -1172,24 +1577,43 @@ export class Analytics {
 		return { ...this.defaultProperties, ...otherProps };
 	}
 
+	buildEnvelope(pageURL, eventName, props) {
+		return {
+			name: eventName,
+			url: pageURL,
+			...this.collectBrowserContext(),
+			props: this.buildProps(props)
+		};
+	}
+
 	async postEvent(pageURL, eventName, props = {}) {
 		if (!this.isEnabled()) {
-			console.debug('Analytics disabled: skipping event');
 			return;
 		}
 
-		const ctx = this.collectBrowserContext();
-		const envelope = {
-			name: eventName,
-			url: pageURL,
-			...ctx,
-			props: this.buildProps(props)
-		};
+		if (!eventName || !pageURL) {
+			throw new Error('postEvent requires name and url');
+		}
+
+		const envelope = this.buildEnvelope(pageURL, eventName, props);
+		const body = JSON.stringify(envelope);
+
+		if (
+			typeof document !== 'undefined' &&
+			document.visibilityState === 'hidden' &&
+			typeof navigator !== 'undefined' &&
+			typeof navigator.sendBeacon === 'function'
+		) {
+			const blob = new Blob([body], { type: 'application/json' });
+			if (navigator.sendBeacon('/api/events', blob)) {
+				return;
+			}
+		}
 
 		const response = await fetch('/api/events', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(envelope)
+			body
 		});
 
 		if (!response.ok) {
@@ -1224,24 +1648,26 @@ export class Analytics {
 - [ ] **Step 4: Run tests and confirm they pass**
 
 Run: `npm run test -- src/tests/lib/Analytics/Analytics.test.js`
-Expected: PASS — all Analytics facade tests green.
+Expected: PASS — all facade tests green.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add src/lib/Analytics/Analytics.js src/tests/lib/Analytics/Analytics.test.js
-git commit -m "Implement Analytics facade envelope + report methods"
+git commit -m "Implement Analytics facade envelope + report methods + sendBeacon"
 ```
 
 ---
 
-## Task 9: Switch /api/events route to factory
+## Task 10: Switch /api/events route to factory
 
 **Files:**
 - Modify: `src/routes/api/events/+server.js`
 - Modify: `src/tests/api/events.test.js`
 
-- [ ] **Step 1: Update the route test to use the new env shape**
+I6 fix: return 400 for JSON parse failures so ops dashboards can distinguish bad input from upstream errors. I5 fix: extract `clientIp` from `getClientAddress()` (with `X-Forwarded-For` fallback).
+
+- [ ] **Step 1: Update the route test**
 
 Replace `src/tests/api/events.test.js` with:
 
@@ -1273,12 +1699,13 @@ const baseEnvelope = JSON.stringify({
 	props: { id: '1' }
 });
 
-function buildRequest(body = baseEnvelope, headers = {}) {
-	return new Request('http://localhost/api/events', {
+function buildEvent(body = baseEnvelope, headers = {}, clientIp = '198.51.100.10') {
+	const request = new Request('http://localhost/api/events', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', ...headers },
 		body
 	});
+	return { request, getClientAddress: () => clientIp };
 }
 
 describe('POST /api/events', () => {
@@ -1288,11 +1715,12 @@ describe('POST /api/events', () => {
 		mockEnv.PUBLIC_ANALYTICS_API_HOST = 'https://plausible.example.com';
 		mockEnv.PUBLIC_ANALYTICS_WEBSITE_ID = '';
 		vi.restoreAllMocks();
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
 	});
 
 	it('returns analytics disabled when provider is "none"', async () => {
 		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'none';
-		const response = await POST({ request: buildRequest() });
+		const response = await POST(buildEvent());
 		const data = await response.json();
 		expect(response.status).toBe(200);
 		expect(data).toEqual({ status: 'analytics disabled' });
@@ -1300,7 +1728,7 @@ describe('POST /api/events', () => {
 
 	it('returns analytics disabled when Plausible config is incomplete', async () => {
 		mockEnv.PUBLIC_ANALYTICS_DOMAIN = '';
-		const response = await POST({ request: buildRequest() });
+		const response = await POST(buildEvent());
 		const data = await response.json();
 		expect(response.status).toBe(200);
 		expect(data).toEqual({ status: 'analytics disabled' });
@@ -1309,7 +1737,7 @@ describe('POST /api/events', () => {
 	it('returns analytics disabled when Umami config is incomplete', async () => {
 		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'umami';
 		mockEnv.PUBLIC_ANALYTICS_WEBSITE_ID = '';
-		const response = await POST({ request: buildRequest() });
+		const response = await POST(buildEvent());
 		const data = await response.json();
 		expect(response.status).toBe(200);
 		expect(data).toEqual({ status: 'analytics disabled' });
@@ -1322,7 +1750,7 @@ describe('POST /api/events', () => {
 			text: async () => JSON.stringify({ status: 'ok' })
 		});
 
-		const response = await POST({ request: buildRequest() });
+		const response = await POST(buildEvent());
 		const data = await response.json();
 		expect(response.status).toBe(200);
 		expect(data).toEqual({ status: 'ok' });
@@ -1345,9 +1773,9 @@ describe('POST /api/events', () => {
 			text: async () => JSON.stringify({ cache: 'c', sessionId: 's', visitId: 'v' })
 		});
 
-		const response = await POST({
-			request: buildRequest(baseEnvelope, { 'user-agent': 'BrowserUA/2.0' })
-		});
+		const response = await POST(
+			buildEvent(baseEnvelope, { 'user-agent': 'BrowserUA/2.0' }, '198.51.100.99')
+		);
 		const data = await response.json();
 		expect(response.status).toBe(200);
 		expect(data).toMatchObject({ cache: 'c' });
@@ -1355,7 +1783,10 @@ describe('POST /api/events', () => {
 			'https://umami.example.com/api/send',
 			expect.objectContaining({
 				method: 'POST',
-				headers: expect.objectContaining({ 'User-Agent': 'BrowserUA/2.0' }),
+				headers: expect.objectContaining({
+					'User-Agent': 'BrowserUA/2.0',
+					'X-Forwarded-For': '198.51.100.99'
+				}),
 				body: expect.stringContaining('"website":"web-id-1"')
 			})
 		);
@@ -1367,22 +1798,22 @@ describe('POST /api/events', () => {
 			status: 502,
 			statusText: 'Bad Gateway'
 		});
-		const response = await POST({ request: buildRequest() });
+		const response = await POST(buildEvent());
 		const data = await response.json();
 		expect(response.status).toBe(502);
 		expect(data).toEqual({ error: 'Error sending event: Bad Gateway' });
 	});
 
-	it('returns 500 when request body is not valid JSON', async () => {
-		const response = await POST({ request: buildRequest('not json') });
+	it('returns 400 when request body is not valid JSON', async () => {
+		const response = await POST(buildEvent('not json'));
 		const data = await response.json();
-		expect(response.status).toBe(500);
+		expect(response.status).toBe(400);
 		expect(data).toHaveProperty('error');
 	});
 
 	it('returns 500 when fetch throws', async () => {
 		global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
-		const response = await POST({ request: buildRequest() });
+		const response = await POST(buildEvent());
 		const data = await response.json();
 		expect(response.status).toBe(500);
 		expect(data).toEqual({ error: 'Network failure' });
@@ -1393,9 +1824,9 @@ describe('POST /api/events', () => {
 - [ ] **Step 2: Run tests and confirm they fail**
 
 Run: `npm run test -- src/tests/api/events.test.js`
-Expected: FAIL — current `+server.js` still imports `PlausibleAnalytics` and reads the old env vars.
+Expected: FAIL — current `+server.js` still imports `PlausibleAnalytics` and reads old env.
 
-- [ ] **Step 3: Update the route to use the factory**
+- [ ] **Step 3: Update the route**
 
 Replace `src/routes/api/events/+server.js` with:
 
@@ -1403,11 +1834,26 @@ Replace `src/routes/api/events/+server.js` with:
 import { env as dynamicEnv } from '$env/dynamic/public';
 import { createAdapter } from '$lib/Analytics/createAdapter.js';
 
-export async function POST({ request }) {
+export async function POST({ request, getClientAddress }) {
+	let envelope;
 	try {
-		const envelope = await request.json();
+		envelope = await request.json();
+	} catch (error) {
+		return new Response(JSON.stringify({ error: error.message || 'Invalid JSON' }), {
+			status: 400,
+			headers: { 'Content-Type': 'application/json' }
+		});
+	}
+
+	try {
 		const adapter = createAdapter(dynamicEnv);
-		const ctx = { userAgent: request.headers.get('user-agent') ?? '' };
+		const ctx = {
+			userAgent: request.headers.get('user-agent') ?? '',
+			clientIp:
+				(typeof getClientAddress === 'function' && getClientAddress()) ||
+				request.headers.get('x-forwarded-for') ||
+				''
+		};
 		const data = await adapter.forwardEvent(envelope, ctx);
 		return new Response(JSON.stringify(data), {
 			status: 200,
@@ -1431,104 +1877,58 @@ Expected: PASS — all route tests green.
 
 ```bash
 git add src/routes/api/events/+server.js src/tests/api/events.test.js
-git commit -m "Route /api/events through createAdapter factory"
+git commit -m "Route /api/events through createAdapter with clientIp + JSON parse 400"
 ```
 
 ---
 
-## Task 10: Update env schema, .env.example, vitest-setup
+## Task 11: Update component test mocks to new module path
 
 **Files:**
-- Modify: `env-schema.json`
-- Modify: `.env.example`
-- Modify: `vitest-setup.js`
+- Modify: `src/components/search/__tests__/SearchField.test.js`
+- Modify: `src/components/search/__tests__/SearchPane.test.js`
+- Modify: `src/components/stops/__tests__/StopPane.test.js`
 
-- [ ] **Step 1: Update `env-schema.json`**
+C1 fix: these tests currently mock `$lib/Analytics/PlausibleAnalytics`. Once components switch to `$lib/Analytics` (Task 12), those mocks become dead code and assertions silently lose meaning. We update them *before* the component imports change so test coverage stays intact.
 
-Open `env-schema.json`. Remove the entry `"PUBLIC_ANALYTICS_ENABLED": { ... }`. Leave `PUBLIC_ANALYTICS_DOMAIN` and `PUBLIC_ANALYTICS_API_HOST` unchanged. After the `PUBLIC_ANALYTICS_API_HOST` block, insert:
+- [ ] **Step 1: Update `SearchField.test.js`**
 
-```json
-"PUBLIC_ANALYTICS_PROVIDER": {
-    "required": false,
-    "type": "enum",
-    "enum": ["none", "plausible", "umami"],
-    "description": "Which analytics backend to use. 'none' disables analytics entirely."
-},
-"PUBLIC_ANALYTICS_WEBSITE_ID": {
-    "required": false,
-    "type": "string",
-    "allowEmpty": true,
-    "description": "Website ID for the analytics provider. Required when PUBLIC_ANALYTICS_PROVIDER is 'umami'."
-},
-```
+In `src/components/search/__tests__/SearchField.test.js`:
 
-- [ ] **Step 2: Update `.env.example`**
+- Line 7: change `vi.mock('$lib/Analytics/PlausibleAnalytics', () => ({` to `vi.mock('$lib/Analytics', () => ({`.
+- Line 38: change `analytics = (await import('$lib/Analytics/PlausibleAnalytics')).default;` to `analytics = (await import('$lib/Analytics')).default;`.
 
-In `.env.example`, replace the analytics block:
+- [ ] **Step 2: Update `SearchPane.test.js`**
 
-```bash
-# Analytics
-PUBLIC_ANALYTICS_DOMAIN=""
-PUBLIC_ANALYTICS_ENABLED=true
-PUBLIC_ANALYTICS_API_HOST=""
-```
+In `src/components/search/__tests__/SearchPane.test.js`:
 
-with:
+- Line 8: change `vi.mock('$lib/Analytics/PlausibleAnalytics', () => ({` to `vi.mock('$lib/Analytics', () => ({`.
 
-```bash
-# Analytics — set PUBLIC_ANALYTICS_PROVIDER to "none" to disable, or "plausible" / "umami" to enable.
-PUBLIC_ANALYTICS_PROVIDER="none"
-PUBLIC_ANALYTICS_DOMAIN=""
-PUBLIC_ANALYTICS_API_HOST=""
-# Required only when PUBLIC_ANALYTICS_PROVIDER=umami:
-PUBLIC_ANALYTICS_WEBSITE_ID=""
-```
+- [ ] **Step 3: Update `StopPane.test.js`**
 
-- [ ] **Step 3: Update `vitest-setup.js`**
+In `src/components/stops/__tests__/StopPane.test.js`:
 
-In `vitest-setup.js`, replace the `$env/dynamic/public` mock block:
+- Line 100: change `vi.mock('$lib/Analytics/PlausibleAnalytics', () => ({` to `vi.mock('$lib/Analytics', () => ({`.
 
-```js
-vi.mock('$env/dynamic/public', () => ({
-	env: {
-		PUBLIC_ANALYTICS_DOMAIN: '',
-		PUBLIC_ANALYTICS_ENABLED: 'false',
-		PUBLIC_ANALYTICS_API_HOST: ''
-	}
-}));
-```
+- [ ] **Step 4: Run those test files to confirm they still pass**
 
-with:
+Run: `npm run test -- src/components/search/__tests__/SearchField.test.js src/components/search/__tests__/SearchPane.test.js src/components/stops/__tests__/StopPane.test.js`
+Expected: PASS — the mock target changed but the components still import `$lib/Analytics/PlausibleAnalytics`. Vitest's mock registry resolves both paths (the new mock is at `$lib/Analytics` which the components don't import yet), so the mocks are *registered but unused*. Tests should still pass because the components hit the real `PlausibleAnalytics` singleton, which with `PUBLIC_ANALYTICS_PROVIDER=none` (default mock from Task 7) plus the legacy `PUBLIC_ANALYTICS_ENABLED` being absent makes `isEnabled()` return false. Verify analytics-call assertions still pass — if any test asserted `analytics.reportX.toHaveBeenCalledWith(...)`, those assertions now point at the NEW mock object that nothing called, so they'll fail. If that happens, mark the test as expected-to-fail temporarily; Task 12 will make the assertions work again.
 
-```js
-vi.mock('$env/dynamic/public', () => ({
-	env: {
-		PUBLIC_ANALYTICS_PROVIDER: 'none',
-		PUBLIC_ANALYTICS_DOMAIN: '',
-		PUBLIC_ANALYTICS_API_HOST: '',
-		PUBLIC_ANALYTICS_WEBSITE_ID: ''
-	}
-}));
-```
-
-- [ ] **Step 4: Run env validation and full test suite**
-
-Run: `npm run validate-env`
-Expected: PASS (or fail with a clear message if `.env` still has `PUBLIC_ANALYTICS_ENABLED` — that's expected; warn the developer to update their local `.env`).
-
-Run: `npm run test`
-Expected: PASS — all existing tests should still be green. The default mock (`PUBLIC_ANALYTICS_PROVIDER: 'none'`) makes the Analytics facade short-circuit before fetching, so any component tests that exercise analytics-emitting flows continue to no-op.
+If any test fails between Task 11 and Task 12: it's because the test asserts on an analytics mock that components don't import yet. Continue to Task 12 immediately; do not investigate.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add env-schema.json .env.example vitest-setup.js
-git commit -m "Replace PUBLIC_ANALYTICS_ENABLED with PUBLIC_ANALYTICS_PROVIDER"
+git add src/components/search/__tests__/SearchField.test.js \
+        src/components/search/__tests__/SearchPane.test.js \
+        src/components/stops/__tests__/StopPane.test.js
+git commit -m "Point component test mocks at \$lib/Analytics ahead of component import switch"
 ```
 
 ---
 
-## Task 11: Migrate component imports to the facade
+## Task 12: Migrate component imports to the facade
 
 **Files:**
 - Modify: `src/routes/+layout.svelte`
@@ -1610,7 +2010,7 @@ import analytics from '$lib/Analytics';
 - [ ] **Step 6: Run the full test suite**
 
 Run: `npm run test`
-Expected: PASS — all tests green. Component tests should continue to work because the default mocked provider is `'none'`, which makes the facade no-op.
+Expected: PASS — all tests green. Component tests now have their mocks correctly intercepting the new module path.
 
 - [ ] **Step 7: Commit**
 
@@ -1625,20 +2025,27 @@ git commit -m "Switch components from PlausibleAnalytics to Analytics facade"
 
 ---
 
-## Task 12: Rename `plausibleUtils.js` → `analyticsUtils.js`
+## Task 13: Rename `plausibleUtils.js` → `analyticsUtils.js`
 
 **Files:**
 - Rename: `src/lib/Analytics/plausibleUtils.js` → `src/lib/Analytics/analyticsUtils.js`
 - Modify: `src/routes/+page.svelte`
 - Modify: `src/routes/stops/[stopID]/+page.svelte`
 
-- [ ] **Step 1: Rename the file via git mv**
+C3 fix: explicitly grep for `getDistanceCategory` (the second exported function in this file) to catch any consumer outside the file.
+
+- [ ] **Step 1: Confirm no external consumers of `getDistanceCategory`**
+
+Run: `grep -rn "getDistanceCategory" src/ --include="*.js" --include="*.svelte"`
+Expected: only matches inside `src/lib/Analytics/plausibleUtils.js`. If anything else shows up, update that file too in Step 3.
+
+- [ ] **Step 2: Rename the file via git mv**
 
 ```bash
 git mv src/lib/Analytics/plausibleUtils.js src/lib/Analytics/analyticsUtils.js
 ```
 
-- [ ] **Step 2: Update imports in `src/routes/+page.svelte`**
+- [ ] **Step 3: Update imports in `src/routes/+page.svelte`**
 
 Change line 25 from:
 
@@ -1652,7 +2059,7 @@ to:
 import { analyticsDistanceToStop } from '$lib/Analytics/analyticsUtils';
 ```
 
-- [ ] **Step 3: Update imports in `src/routes/stops/[stopID]/+page.svelte`**
+- [ ] **Step 4: Update imports in `src/routes/stops/[stopID]/+page.svelte`**
 
 Change line 11 from:
 
@@ -1666,17 +2073,17 @@ to:
 import { analyticsDistanceToStop } from '$lib/Analytics/analyticsUtils.js';
 ```
 
-- [ ] **Step 4: Sanity-check for any lingering references**
+- [ ] **Step 5: Sanity-check for any lingering references**
 
 Run: `grep -rn "plausibleUtils" src/ 2>/dev/null`
 Expected: no output.
 
-- [ ] **Step 5: Run the full test suite**
+- [ ] **Step 6: Run the full test suite**
 
 Run: `npm run test`
 Expected: PASS — all tests green.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add src/lib/Analytics/analyticsUtils.js \
@@ -1687,7 +2094,7 @@ git commit -m "Rename plausibleUtils → analyticsUtils"
 
 ---
 
-## Task 13: Delete legacy `PlausibleAnalytics` module and tests
+## Task 14: Delete legacy `PlausibleAnalytics` module and tests
 
 **Files:**
 - Delete: `src/lib/Analytics/PlausibleAnalytics.js`
@@ -1696,7 +2103,7 @@ git commit -m "Rename plausibleUtils → analyticsUtils"
 - [ ] **Step 1: Confirm no remaining references**
 
 Run: `grep -rn "PlausibleAnalytics" src/ 2>/dev/null`
-Expected: no output (after Task 11 + 12 there should be none).
+Expected: no output.
 
 - [ ] **Step 2: Delete the files**
 
@@ -1708,12 +2115,12 @@ git rm src/lib/Analytics/PlausibleAnalytics.js \
 - [ ] **Step 3: Run the full test suite**
 
 Run: `npm run test`
-Expected: PASS — coverage now provided by per-adapter tests and the Analytics facade tests.
+Expected: PASS.
 
-- [ ] **Step 4: Run lint and format check**
+- [ ] **Step 4: Run lint**
 
 Run: `npm run lint`
-Expected: PASS — no formatting or lint issues.
+Expected: PASS.
 
 - [ ] **Step 5: Commit**
 
@@ -1723,7 +2130,7 @@ git commit -m "Remove legacy PlausibleAnalytics module"
 
 ---
 
-## Task 14: Manual smoke test against live Umami instance
+## Task 15: Manual smoke test against live Umami instance
 
 **Files:** (no code changes — verification only)
 
@@ -1733,12 +2140,10 @@ Set:
 
 ```bash
 PUBLIC_ANALYTICS_PROVIDER="umami"
-PUBLIC_ANALYTICS_DOMAIN="<your local hostname, e.g. localhost>"
+PUBLIC_ANALYTICS_DOMAIN="localhost"
 PUBLIC_ANALYTICS_API_HOST="https://analytics.sound-transit.onebusawaycloud.com"
 PUBLIC_ANALYTICS_WEBSITE_ID="79eab5f4-0c4d-492b-9b60-ecf018859f03"
 ```
-
-Leave existing OBA / map / region values as-is.
 
 - [ ] **Step 2: Run validate-env**
 
@@ -1748,30 +2153,29 @@ Expected: PASS.
 - [ ] **Step 3: Start dev server**
 
 Run: `npm run dev`
-Expected: server starts without errors. Open the printed URL.
+Expected: server starts. Open the printed URL.
 
-- [ ] **Step 4: Exercise each tracked flow**
+- [ ] **Step 4: Exercise each tracked flow in the browser**
 
-In the browser:
-1. Load the home page (`/`) — should fire a `pageview`.
-2. Type a query in the search field and press enter — should fire a `search` event.
-3. Click a stop pin on the map — should fire a `pageview` for `/stop` with `id` and `distance` props.
-4. Click a route inside the stop pane — should fire a `click` for `/route` with `id`.
-5. Click an arrival/departure row — should fire a `click` for `/arrivals` with `item_id`.
+1. Load `/` — should fire a `pageview`.
+2. Type a search query and press enter — `search` event.
+3. Click a stop pin on the map — `pageview` for `/stop` with `id` and `distance` props.
+4. Click a route inside the stop pane — `click` for `/route` with `id`.
+5. Click an arrival/departure row — `click` for `/arrivals` with `item_id`.
 
-Watch the dev-server's network panel for `POST /api/events` calls returning 200. Watch the browser console for any "Error sending event" messages.
+In the browser's network panel, confirm each `POST /api/events` returns 200 and the payload has the expected shape. No "Error sending event" entries in the console.
 
-- [ ] **Step 5: Verify events in Umami dashboard**
+- [ ] **Step 5: Verify events in the Umami dashboard**
 
-Open `https://analytics.sound-transit.onebusawaycloud.com/` and navigate to the website for ID `79eab5f4-0c4d-492b-9b60-ecf018859f03`. Within ~30 seconds the events emitted in step 4 should appear in the realtime view (or the events tab).
+Open `https://analytics.sound-transit.onebusawaycloud.com/`, navigate to the website for ID `79eab5f4-0c4d-492b-9b60-ecf018859f03`. Confirm the events emitted in step 4 appear in the realtime view within ~30 seconds.
 
-- [ ] **Step 6: Re-test with provider=plausible and provider=none**
+- [ ] **Step 6: Smoke test provider=plausible and provider=none**
 
-Briefly swap `PUBLIC_ANALYTICS_PROVIDER` to `plausible` (with any non-empty `PUBLIC_ANALYTICS_DOMAIN` + `PUBLIC_ANALYTICS_API_HOST` you have available, or a deliberately wrong host) — confirm `POST /api/events` is still attempted. Then set it to `none` and confirm the facade short-circuits (no `POST /api/events` call at all in the network panel).
+Swap `PUBLIC_ANALYTICS_PROVIDER` to `plausible` (any non-empty `PUBLIC_ANALYTICS_DOMAIN`/`PUBLIC_ANALYTICS_API_HOST`) — `POST /api/events` still fires. Set to `none` — no `POST /api/events` calls.
 
-- [ ] **Step 7: Reset `.env` to your normal values**
+- [ ] **Step 7: Reset `.env`**
 
-Restore your usual local `.env` settings.
+Restore your usual local `.env`.
 
 - [ ] **Step 8: Push the branch**
 
@@ -1779,22 +2183,21 @@ Restore your usual local `.env` settings.
 git push -u origin umami-analytics
 ```
 
-No commit needed — manual verification only.
-
 ---
 
-## Self-review notes
+## Coverage map (review-driven changes)
 
-Spec sections vs. tasks:
-- API shapes → Tasks 3, 4, 5 (Umami payload + Plausible payload)
-- Adapter contract → Tasks 1, 2-4, 5 (each adapter has constructor, isEnabled, forwardEvent)
-- Generic envelope → Task 8 (facade builds it)
-- Factory → Task 6
-- Server route → Task 9
-- Env vars (kept, removed, added) → Task 10
-- File-by-file changes → Tasks 1–13
-- TDD red-to-green sequence → mirrored across Tasks 1–9, each via the "write failing test → confirm fail → implement → confirm pass → commit" cycle
-- Open risk: User-Agent fallback → Task 4 test ("falls back to Wayfinder/1.0")
-- Open risk: browser context in tests → Task 8 test asserts `typeof window === 'undefined'` path implicitly via jsdom
+- **C1** — Component-test mock paths: Task 11.
+- **C2** — `PUBLIC_ANALYTICS_PROVIDER` allowEmpty + upgrade docs: Task 7.
+- **C3** — `getDistanceCategory` grep before rename: Task 13.
+- **I1** — Per-provider meaning of `PUBLIC_ANALYTICS_DOMAIN` documented in schema description: Task 7.
+- **I2** — Single source of truth for "enabled"; adapters log construction warnings: Tasks 2 + 5 (warnings) and Task 8 (facade `isEnabled` stays simple).
+- **I3** — Documented as a design boundary in spec (no code change). Plan acknowledges in §"Open design boundaries" of spec.
+- **I4** — `sendBeacon` fallback on `visibilityState === 'hidden'`: Task 9.
+- **I5** — `X-Forwarded-For` to both adapters via `getClientAddress()`: Tasks 3, 5, 10.
+- **I6** — 400 instead of 500 on JSON parse failure: Task 10.
+- **I7** — JSDoc typedefs + envelope destructure-with-defaults: Tasks 3, 5, 8.
+- **I8** — Env/setup updates moved to Task 7 (before facade in Task 8).
+- **I9** — Acknowledged as future work in spec; no implementation in this plan.
 
-No placeholders remain. Method names match across tasks: `forwardEvent`, `isEnabled`, `getEventUrl`, `postEvent`, `reportPageView`, `reportSearchQuery`, `reportStopViewed`, `reportRouteClicked`, `reportArrivalClicked`, `buildProps`, `collectBrowserContext`, `createAdapter`. Env var names consistent: `PUBLIC_ANALYTICS_PROVIDER`, `PUBLIC_ANALYTICS_DOMAIN`, `PUBLIC_ANALYTICS_API_HOST`, `PUBLIC_ANALYTICS_WEBSITE_ID`.
+Method names are consistent throughout: `forwardEvent`, `isEnabled`, `getEventUrl`, `postEvent`, `reportPageView`, `reportSearchQuery`, `reportStopViewed`, `reportRouteClicked`, `reportArrivalClicked`, `buildProps`, `buildEnvelope`, `collectBrowserContext`, `warnIfMisconfigured`, `createAdapter`. Env vars consistent: `PUBLIC_ANALYTICS_PROVIDER`, `PUBLIC_ANALYTICS_DOMAIN`, `PUBLIC_ANALYTICS_API_HOST`, `PUBLIC_ANALYTICS_WEBSITE_ID`.

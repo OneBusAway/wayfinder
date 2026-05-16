@@ -265,3 +265,13 @@ Each numbered step is one red→green cycle. Run `npm run test` between steps. C
 
 - **User-Agent fallback.** If a request reaches `/api/events` without a `User-Agent` (curl, bots), the Umami adapter inserts `Wayfinder/1.0`. Umami will still accept it but the visitor will look like a bot. Acceptable — analytics noise is bounded.
 - **Browser context in tests.** The facade's calls to `navigator.language` / `window.screen` need to work under jsdom (they do) and not throw on SSR. The facade only collects these inside `report*` methods, which are only called from `onMount`/event handlers — never during SSR.
+
+## Open design boundaries
+
+These are deliberate limits of the v1 design, called out so future maintainers can recognize when they're hitting them.
+
+- **Envelope is union-of-providers.** Adding a provider whose payload needs a field the envelope doesn't already carry (e.g. PostHog `distinct_id`, GA4 `client_id`) requires adding the field to `collectBrowserContext()` and the envelope schema in `types.js`. The "one adapter class + one switch case" promise holds only for providers whose data needs are a subset of what's already collected.
+- **`PUBLIC_ANALYTICS_DOMAIN` overload.** This single var means "Plausible site identifier" for Plausible and "literal hostname" for Umami. For most operators these are the same value. If a future provider needs a third interpretation, consider splitting into `PUBLIC_ANALYTICS_SITE_ID` (logical identifier) and `PUBLIC_ANALYTICS_HOSTNAME` (literal host) rather than overloading further.
+- **Provider list duplicated in three places.** The factory switch (`createAdapter.js`), the env-schema enum, and the `.env.example` comment all enumerate `none | plausible | umami`. Acceptable at three providers; refactor to a single registry when adding a fourth.
+- **No offline queue / retry.** Each `report*` call fires an independent fetch; on a flaky connection, failures are logged and lost. The `sendBeacon` fallback handles the unload case but not general network loss. Future work if analytics fidelity becomes important.
+- **No Do-Not-Track / consent gate.** The facade does not honour `navigator.doNotTrack` or any consent banner. Add policy-driven gating before publishing analytics-dependent metrics to end users.
