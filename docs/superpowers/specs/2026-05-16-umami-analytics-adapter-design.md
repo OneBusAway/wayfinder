@@ -17,7 +17,7 @@ Wayfinder currently sends analytics events to Plausible. We want to also support
 
 ## Non-goals
 
-- No back-compat shim for the existing `PUBLIC_ANALYTICS_*` env vars. They are replaced cleanly.
+- No back-compat shim for the removed `PUBLIC_ANALYTICS_ENABLED` boolean. Operators set `PUBLIC_ANALYTICS_PROVIDER=plausible` (or `umami`/`none`) instead.
 - No client-side Umami SDK (no `umami.js` script tag). We keep the existing server-proxy pattern.
 - No new event types or report methods. Surface stays identical at the call sites.
 - No conditional schema validation. Provider-specific vars stay `allowEmpty: true` in `env-schema.json`; the adapter's `isEnabled()` decides whether a provider is configured.
@@ -133,10 +133,10 @@ class Adapter {
 Where `requestContext` carries the things only the SvelteKit server can see:
 
 ```ts
-{ userAgent: string, host: string }
+{ userAgent: string }
 ```
 
-`host` is the value of the `Host` header — used by `UmamiAdapter` as `payload.hostname`.
+`UmamiAdapter` uses `env.PUBLIC_ANALYTICS_DOMAIN` (not the request `Host` header) as `payload.hostname`, so the value is deterministic and survives proxies. `UmamiAdapter` also requires the `User-Agent` header — Umami rejects requests without it — so we forward it via `requestContext.userAgent`.
 
 `forwardEvent` returns the upstream response parsed as JSON if possible; on upstream error, throws an `Error` with an `upstreamStatus` property (matches current behavior so `/api/events/+server.js` can forward the status).
 
@@ -159,17 +159,17 @@ If the selected provider is missing its required vars, the adapter's `isEnabled(
 
 **`NoopAdapter`** — `isEnabled()` returns `false`. `forwardEvent` returns `{ status: 'analytics disabled' }`.
 
-**`PlausibleAdapter`** — same logic as current `PlausibleAnalytics.forwardEvent`, plus env var rename:
-- Reads `PUBLIC_PLAUSIBLE_DOMAIN` and `PUBLIC_PLAUSIBLE_API_HOST`.
+**`PlausibleAdapter`** — same logic as current `PlausibleAnalytics.forwardEvent`:
+- Reads `PUBLIC_ANALYTICS_DOMAIN` and `PUBLIC_ANALYTICS_API_HOST`.
 - `isEnabled()` requires both to be non-empty.
 - Translates envelope → `{ domain, name, url, referrer, props }`.
 
 **`UmamiAdapter`** — new:
-- Reads `PUBLIC_UMAMI_WEBSITE_ID` and `PUBLIC_UMAMI_API_HOST`.
-- `isEnabled()` requires both to be non-empty.
+- Reads `PUBLIC_ANALYTICS_WEBSITE_ID`, `PUBLIC_ANALYTICS_API_HOST`, and `PUBLIC_ANALYTICS_DOMAIN`.
+- `isEnabled()` requires all three to be non-empty.
 - Translates envelope + requestContext → Umami `{ type, payload }`.
-  - `hostname` ← `requestContext.host`
-  - `website` ← `env.PUBLIC_UMAMI_WEBSITE_ID`
+  - `hostname` ← `env.PUBLIC_ANALYTICS_DOMAIN`
+  - `website` ← `env.PUBLIC_ANALYTICS_WEBSITE_ID`
   - `data` ← `envelope.props`
 - POSTs with `User-Agent: requestContext.userAgent` (must be non-empty — if missing, sends a fallback like `Wayfinder/1.0` so Umami doesn't reject).
 
@@ -179,10 +179,7 @@ If the selected provider is missing its required vars, the adapter's `isEnabled(
 export async function POST({ request }) {
   const envelope = await request.json();
   const adapter = createAdapter(dynamicEnv.env);
-  const ctx = {
-    userAgent: request.headers.get('user-agent') ?? '',
-    host: request.headers.get('host') ?? ''
-  };
+  const ctx = { userAgent: request.headers.get('user-agent') ?? '' };
   try {
     const data = await adapter.forwardEvent(envelope, ctx);
     return new Response(JSON.stringify(data), { status: 200, ... });
@@ -199,21 +196,23 @@ export async function POST({ request }) {
 
 ### Removed
 
-- `PUBLIC_ANALYTICS_ENABLED`
-- `PUBLIC_ANALYTICS_DOMAIN`
-- `PUBLIC_ANALYTICS_API_HOST`
+- `PUBLIC_ANALYTICS_ENABLED` — superseded by `PUBLIC_ANALYTICS_PROVIDER` (set to `none` to disable).
+
+### Kept (unchanged)
+
+| Var | Used by | Notes |
+|---|---|---|
+| `PUBLIC_ANALYTICS_DOMAIN` | Plausible, Umami | Plausible: site domain sent as `domain`. Umami: site domain sent as `payload.hostname`. |
+| `PUBLIC_ANALYTICS_API_HOST` | Plausible, Umami | Upstream base URL. Plausible appends `/api/event`; Umami appends `/api/send`. |
 
 ### Added
 
 | Var | Type | Required | Notes |
 |---|---|---|---|
 | `PUBLIC_ANALYTICS_PROVIDER` | enum: `none` \| `plausible` \| `umami` | no (default `none`) | Single switch. Replaces the boolean. |
-| `PUBLIC_PLAUSIBLE_DOMAIN` | string, allowEmpty | no | Required at runtime when provider=plausible. |
-| `PUBLIC_PLAUSIBLE_API_HOST` | url, allowEmpty | no | Required at runtime when provider=plausible. |
-| `PUBLIC_UMAMI_WEBSITE_ID` | string, allowEmpty | no | Required at runtime when provider=umami. |
-| `PUBLIC_UMAMI_API_HOST` | url, allowEmpty | no | Required at runtime when provider=umami. |
+| `PUBLIC_ANALYTICS_WEBSITE_ID` | string, allowEmpty | no | Required at runtime when provider=umami. Ignored by Plausible. |
 
-`.env.example` adds matching commented entries with example values.
+`.env.example` updates: drop `PUBLIC_ANALYTICS_ENABLED`, add `PUBLIC_ANALYTICS_PROVIDER` and `PUBLIC_ANALYTICS_WEBSITE_ID` with commented example values.
 
 ## File-by-file change summary
 
@@ -242,8 +241,8 @@ export async function POST({ request }) {
 - `src/tests/api/events.test.js` — cover both adapters via env mocking
 - `src/routes/+layout.svelte`, `src/routes/+page.svelte`, `src/routes/stops/[stopID]/+page.svelte` — import from `$lib/Analytics`
 - `src/components/search/SearchField.svelte`, `src/components/stops/StopPane.svelte` — same import update
-- `env-schema.json` — remove old vars, add new
-- `.env.example` — remove old, add new
+- `env-schema.json` — drop `PUBLIC_ANALYTICS_ENABLED`; add `PUBLIC_ANALYTICS_PROVIDER` and `PUBLIC_ANALYTICS_WEBSITE_ID`
+- `.env.example` — same change
 - `vitest-setup.js` — mock new env vars (default to `PUBLIC_ANALYTICS_PROVIDER='none'`)
 - `CLAUDE.md` — update env-var section if it references the removed vars
 
@@ -252,18 +251,17 @@ export async function POST({ request }) {
 Each numbered step is one red→green cycle. Run `npm run test` between steps. Commit at each green step so we can bisect if needed.
 
 1. **NoopAdapter** — disabled-by-default, returns `{ status: 'analytics disabled' }`.
-2. **UmamiAdapter** — payload shape, `User-Agent` forwarding, hostname from request context, `isEnabled()` requires website id + api host, error path preserves `upstreamStatus`.
-3. **PlausibleAdapter** — extracted from current `PlausibleAnalytics.forwardEvent`. Reads `PUBLIC_PLAUSIBLE_*`. Same payload as today.
+2. **UmamiAdapter** — payload shape, `User-Agent` forwarding, hostname sourced from `PUBLIC_ANALYTICS_DOMAIN`, `isEnabled()` requires website id + api host + domain, error path preserves `upstreamStatus`.
+3. **PlausibleAdapter** — extracted from current `PlausibleAnalytics.forwardEvent`. Same env vars (`PUBLIC_ANALYTICS_DOMAIN`, `PUBLIC_ANALYTICS_API_HOST`) and same payload as today.
 4. **createAdapter factory** — returns each concrete class for each provider value; defaults to `NoopAdapter`.
 5. **Analytics facade** — builds generic envelope, populates browser context fields when `window` is available, POSTs to `/api/events`, merges `defaultProperties`, short-circuits when provider=none. Cover all five `report*` methods.
-6. **`/api/events` route** — uses factory, passes `{ userAgent, host }`, forwards adapter response, propagates `upstreamStatus`.
-7. **env-schema + .env.example + vitest-setup** — schema additions/removals, default mock value `PUBLIC_ANALYTICS_PROVIDER='none'`.
+6. **`/api/events` route** — uses factory, passes `{ userAgent }`, forwards adapter response, propagates `upstreamStatus`.
+7. **env-schema + .env.example + vitest-setup** — drop `PUBLIC_ANALYTICS_ENABLED`, add `PUBLIC_ANALYTICS_PROVIDER` and `PUBLIC_ANALYTICS_WEBSITE_ID`. Default mock value `PUBLIC_ANALYTICS_PROVIDER='none'`.
 8. **Call-site import migration** — update the five Svelte files. Existing component tests should still pass; if any test references the old module path, fix it here.
 9. **Rename `plausibleUtils.js` → `analyticsUtils.js`** and update imports in `+page.svelte` + `stops/[stopID]/+page.svelte`.
 10. **Manual verification** against `https://analytics.sound-transit.onebusawaycloud.com/`, website id `79eab5f4-0c4d-492b-9b60-ecf018859f03`. Configure `.env`, run `npm run dev`, exercise pageview / search / stop / route / arrival flows, confirm events appear in the Umami dashboard.
 
 ## Open risks
 
-- **`Host` header reliability.** In production behind a proxy, `request.headers.get('host')` reflects the proxy host. SvelteKit's `request.url` uses the same value. If operators run behind a reverse proxy that doesn't forward the original host, `payload.hostname` will be wrong. Acceptable for v1 — document the requirement in `.env.example`.
 - **User-Agent fallback.** If a request reaches `/api/events` without a `User-Agent` (curl, bots), the Umami adapter inserts `Wayfinder/1.0`. Umami will still accept it but the visitor will look like a bot. Acceptable — analytics noise is bounded.
 - **Browser context in tests.** The facade's calls to `navigator.language` / `window.screen` need to work under jsdom (they do) and not throw on SSR. The facade only collects these inside `report*` methods, which are only called from `onMount`/event handlers — never during SSR.
