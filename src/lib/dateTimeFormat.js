@@ -140,13 +140,14 @@ export function formatSecondsFromMidnight(secondsSinceMidnight) {
  * @param {string} [opts.departureTime] - Departure time in 'HH:mm' format
  * @param {string} [opts.departureDate] - Departure date in 'YYYY-MM-DD' format
  * @param {Function} [translator] - Optional translator function for i18n support
+ * @param {string} [timeZone] - IANA timezone (e.g. "America/Los_Angeles") for Today/Tomorrow logic. Defaults to browser's local timezone.
  * @returns {string|null} Formatted departure time string, or null if departureType is 'now'
  *
  * @example
  * formatDepartureDisplay({ departureType: 'departAt', departureTime: '09:00', departureDate: null })  // Returns 'Depart 9:00 AM'
  * formatDepartureDisplay({ departureType: 'arriveBy', departureTime: '17:00', departureDate: '2025-06-15' }, translator)  // Returns 'Arrive 5:00 PM, Today' (assuming today is 2025-06-15)
  */
-export function formatDepartureDisplay(opts, translator = null) {
+export function formatDepartureDisplay(opts, translator = null, timeZone = undefined) {
 	if (opts.departureType === 'now') return null;
 
 	const timeStr = opts.departureTime || '';
@@ -168,7 +169,19 @@ export function formatDepartureDisplay(opts, translator = null) {
 
 		let dateSuffix = '';
 		if (dateStr) {
-			const today = Temporal.Now.plainDateISO();
+			let today;
+			try {
+				today = Temporal.Now.plainDateISO(timeZone);
+			} catch (err) {
+				if (err instanceof RangeError) {
+					console.error(
+						`formatDepartureDisplay: invalid timezone "${timeZone}", falling back to local`
+					);
+					today = Temporal.Now.plainDateISO();
+				} else {
+					throw err;
+				}
+			}
 			const tomorrow = today.add({ days: 1 });
 
 			if (dateStr === today.toJSON()) {

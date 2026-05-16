@@ -119,4 +119,5 @@ See `.env.example` for full list. Key variables:
 - `PUBLIC_OBA_REGION_CENTER_LAT/LNG` - Region center coordinates
 - `PUBLIC_OBA_MAP_PROVIDER` - "osm" or "google"
 - `PUBLIC_OTP_SERVER_URL` - OpenTripPlanner server (optional, for trip planning)
+- `PUBLIC_OBA_TIMEZONE` - IANA timezone for the transit region (e.g. "America/Los_Angeles"), required
 - `PRIVATE_OBA_GEOCODER_PROVIDER` - Geocoding provider (currently "google" only)
