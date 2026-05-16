@@ -17,6 +17,7 @@
 ## File map
 
 **New source files** (all under `src/lib/Analytics/`):
+
 - `adapters/NoopAdapter.js` — disabled stub
 - `adapters/PlausibleAdapter.js` — Plausible payload + forward
 - `adapters/UmamiAdapter.js` — Umami payload + forward (with `X-Forwarded-For` + `User-Agent`)
@@ -26,6 +27,7 @@
 - `types.js` — JSDoc typedefs for `AnalyticsEnvelope` and `RequestContext`
 
 **New test files** (all under `src/tests/lib/Analytics/`):
+
 - `adapters/NoopAdapter.test.js`
 - `adapters/PlausibleAdapter.test.js`
 - `adapters/UmamiAdapter.test.js`
@@ -33,9 +35,11 @@
 - `Analytics.test.js`
 
 **Renamed:**
+
 - `src/lib/Analytics/plausibleUtils.js` → `src/lib/Analytics/analyticsUtils.js`
 
 **Modified:**
+
 - `src/routes/api/events/+server.js` — use factory + pass `{ userAgent, clientIp }`, 400 on JSON parse error
 - `src/tests/api/events.test.js` — cover both adapters + provider switching + parse error
 - `src/routes/+layout.svelte`, `src/routes/+page.svelte`, `src/routes/stops/[stopID]/+page.svelte` — change import to `$lib/Analytics`
@@ -48,6 +52,7 @@
 - `vitest-setup.js` — default mock `PUBLIC_ANALYTICS_PROVIDER='none'`
 
 **Deleted (after migration):**
+
 - `src/lib/Analytics/PlausibleAnalytics.js`
 - `src/tests/lib/PlausibleAnalytics.test.js`
 
@@ -59,13 +64,13 @@ Every adapter accepts an `env` object in its constructor. Tests pass plain objec
 
 ```js
 const envelope = {
-  name: 'pageview',
-  url: '/test',
-  referrer: 'https://referrer.example.com',
-  title: 'Test Page',
-  language: 'en-US',
-  screen: '1920x1080',
-  props: { id: '1_00' }
+	name: 'pageview',
+	url: '/test',
+	referrer: 'https://referrer.example.com',
+	title: 'Test Page',
+	language: 'en-US',
+	screen: '1920x1080',
+	props: { id: '1_00' }
 };
 
 const ctx = { userAgent: 'TestAgent/1.0', clientIp: '203.0.113.42' };
@@ -75,13 +80,14 @@ const ctx = { userAgent: 'TestAgent/1.0', clientIp: '203.0.113.42' };
 
 ## Task order rationale
 
-Env/test-setup (Task 7) is moved before the facade (Task 8) so we never run in an intermediate state where some test files mock new env names while `vitest-setup.js` still has old ones. Component-test mocks (Task 11) are updated *after* `$lib/Analytics` exists (Task 8) and *before* component imports switch (Task 12).
+Env/test-setup (Task 7) is moved before the facade (Task 8) so we never run in an intermediate state where some test files mock new env names while `vitest-setup.js` still has old ones. Component-test mocks (Task 11) are updated _after_ `$lib/Analytics` exists (Task 8) and _before_ component imports switch (Task 12).
 
 ---
 
 ## Task 1: NoopAdapter
 
 **Files:**
+
 - Create: `src/lib/Analytics/adapters/NoopAdapter.js`
 - Test: `src/tests/lib/Analytics/adapters/NoopAdapter.test.js`
 
@@ -149,10 +155,11 @@ git commit -m "Add NoopAdapter for disabled analytics"
 ## Task 2: UmamiAdapter — isEnabled and config-warning at construction
 
 **Files:**
+
 - Create: `src/lib/Analytics/adapters/UmamiAdapter.js`
 - Test: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
 
-This task implements `isEnabled()` *and* the I2 fix: an adapter logs a single console.warn at construction when the selected provider's config is incomplete. The facade keeps a simple `provider !== 'none'` check; the adapter is responsible for warning operators about misconfiguration.
+This task implements `isEnabled()` _and_ the I2 fix: an adapter logs a single console.warn at construction when the selected provider's config is incomplete. The facade keeps a simple `provider !== 'none'` check; the adapter is responsible for warning operators about misconfiguration.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -186,21 +193,17 @@ describe('UmamiAdapter.isEnabled', () => {
 	});
 
 	it('returns false when website id is missing', () => {
-		expect(
-			new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_WEBSITE_ID: '' }).isEnabled()
-		).toBe(false);
+		expect(new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_WEBSITE_ID: '' }).isEnabled()).toBe(
+			false
+		);
 	});
 
 	it('returns false when api host is missing', () => {
-		expect(
-			new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' }).isEnabled()
-		).toBe(false);
+		expect(new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' }).isEnabled()).toBe(false);
 	});
 
 	it('returns false when domain is missing', () => {
-		expect(
-			new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' }).isEnabled()
-		).toBe(false);
+		expect(new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' }).isEnabled()).toBe(false);
 	});
 });
 
@@ -299,6 +302,7 @@ git commit -m "Add UmamiAdapter isEnabled gate with construction-time config war
 ## Task 3: UmamiAdapter — forwardEvent happy path (with X-Forwarded-For)
 
 **Files:**
+
 - Modify: `src/lib/Analytics/adapters/UmamiAdapter.js`
 - Modify: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
 
@@ -516,6 +520,7 @@ git commit -m "Implement UmamiAdapter forwardEvent with X-Forwarded-For"
 ## Task 4: UmamiAdapter — disabled, validation, UA fallback, errors
 
 **Files:**
+
 - Modify: `src/lib/Analytics/adapters/UmamiAdapter.js`
 - Modify: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
 
@@ -541,15 +546,15 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 	});
 
 	it('throws when envelope.name is missing', async () => {
-		await expect(
-			new UmamiAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)
-		).rejects.toThrow('forwardEvent requires name and url');
+		await expect(new UmamiAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)).rejects.toThrow(
+			'forwardEvent requires name and url'
+		);
 	});
 
 	it('throws when envelope.url is missing', async () => {
-		await expect(
-			new UmamiAdapter(fullEnv).forwardEvent({ name: 'pageview' }, ctx)
-		).rejects.toThrow('forwardEvent requires name and url');
+		await expect(new UmamiAdapter(fullEnv).forwardEvent({ name: 'pageview' }, ctx)).rejects.toThrow(
+			'forwardEvent requires name and url'
+		);
 	});
 
 	it('falls back to Wayfinder/1.0 User-Agent when context omits it', async () => {
@@ -576,9 +581,9 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 
 	it('propagates network errors from fetch', async () => {
 		global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
-		await expect(
-			new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)
-		).rejects.toThrow('Network failure');
+		await expect(new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow(
+			'Network failure'
+		);
 	});
 });
 ```
@@ -703,6 +708,7 @@ git commit -m "Round out UmamiAdapter: disabled/validation/UA fallback/errors"
 ## Task 5: PlausibleAdapter
 
 **Files:**
+
 - Create: `src/lib/Analytics/adapters/PlausibleAdapter.js`
 - Test: `src/tests/lib/Analytics/adapters/PlausibleAdapter.test.js`
 
@@ -744,15 +750,15 @@ describe('PlausibleAdapter.isEnabled', () => {
 	});
 
 	it('returns false when domain is missing', () => {
-		expect(
-			new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' }).isEnabled()
-		).toBe(false);
+		expect(new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' }).isEnabled()).toBe(
+			false
+		);
 	});
 
 	it('returns false when api host is missing', () => {
-		expect(
-			new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' }).isEnabled()
-		).toBe(false);
+		expect(new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' }).isEnabled()).toBe(
+			false
+		);
 	});
 });
 
@@ -806,9 +812,9 @@ describe('PlausibleAdapter.forwardEvent', () => {
 	});
 
 	it('throws when name is missing', async () => {
-		await expect(
-			new PlausibleAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)
-		).rejects.toThrow('forwardEvent requires name and url');
+		await expect(new PlausibleAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)).rejects.toThrow(
+			'forwardEvent requires name and url'
+		);
 	});
 
 	it('throws when url is missing', async () => {
@@ -886,9 +892,9 @@ describe('PlausibleAdapter.forwardEvent', () => {
 
 	it('propagates network errors from fetch', async () => {
 		global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
-		await expect(
-			new PlausibleAdapter(fullEnv).forwardEvent(envelope, ctx)
-		).rejects.toThrow('Network failure');
+		await expect(new PlausibleAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow(
+			'Network failure'
+		);
 	});
 });
 ```
@@ -987,6 +993,7 @@ git commit -m "Add PlausibleAdapter with X-Forwarded-For and config warning"
 ## Task 6: createAdapter factory
 
 **Files:**
+
 - Create: `src/lib/Analytics/createAdapter.js`
 - Test: `src/tests/lib/Analytics/createAdapter.test.js`
 
@@ -1090,11 +1097,12 @@ git commit -m "Add createAdapter factory dispatching by PUBLIC_ANALYTICS_PROVIDE
 ## Task 7: Update env-schema, .env.example, vitest-setup
 
 **Files:**
+
 - Modify: `env-schema.json`
 - Modify: `.env.example`
 - Modify: `vitest-setup.js`
 
-I8 fix: this task runs *before* the Analytics facade so the new mock default (`PUBLIC_ANALYTICS_PROVIDER: 'none'`) is in place when the facade test arrives. C2 fix: enum gets `allowEmpty: true` so operators with `PUBLIC_ANALYTICS_PROVIDER=""` don't fail validation. I1 fix: the description for `PUBLIC_ANALYTICS_DOMAIN` is updated to document its per-provider meaning.
+I8 fix: this task runs _before_ the Analytics facade so the new mock default (`PUBLIC_ANALYTICS_PROVIDER: 'none'`) is in place when the facade test arrives. C2 fix: enum gets `allowEmpty: true` so operators with `PUBLIC_ANALYTICS_PROVIDER=""` don't fail validation. I1 fix: the description for `PUBLIC_ANALYTICS_DOMAIN` is updated to document its per-provider meaning.
 
 - [ ] **Step 1: Update `env-schema.json`**
 
@@ -1191,6 +1199,7 @@ git commit -m "Replace PUBLIC_ANALYTICS_ENABLED with PUBLIC_ANALYTICS_PROVIDER"
 ## Task 8: Analytics facade — base, isEnabled, typedefs
 
 **Files:**
+
 - Create: `src/lib/Analytics/types.js` (JSDoc only; no runtime code)
 - Create: `src/lib/Analytics/Analytics.js`
 - Create: `src/lib/Analytics/index.js`
@@ -1334,6 +1343,7 @@ git commit -m "Add Analytics facade with provider-aware isEnabled and typedefs"
 ## Task 9: Analytics facade — envelope, report methods, sendBeacon
 
 **Files:**
+
 - Modify: `src/lib/Analytics/Analytics.js`
 - Modify: `src/tests/lib/Analytics/Analytics.test.js`
 
@@ -1662,6 +1672,7 @@ git commit -m "Implement Analytics facade envelope + report methods + sendBeacon
 ## Task 10: Switch /api/events route to factory
 
 **Files:**
+
 - Modify: `src/routes/api/events/+server.js`
 - Modify: `src/tests/api/events.test.js`
 
@@ -1885,11 +1896,12 @@ git commit -m "Route /api/events through createAdapter with clientIp + JSON pars
 ## Task 11: Update component test mocks to new module path
 
 **Files:**
+
 - Modify: `src/components/search/__tests__/SearchField.test.js`
 - Modify: `src/components/search/__tests__/SearchPane.test.js`
 - Modify: `src/components/stops/__tests__/StopPane.test.js`
 
-C1 fix: these tests currently mock `$lib/Analytics/PlausibleAnalytics`. Once components switch to `$lib/Analytics` (Task 12), those mocks become dead code and assertions silently lose meaning. We update them *before* the component imports change so test coverage stays intact.
+C1 fix: these tests currently mock `$lib/Analytics/PlausibleAnalytics`. Once components switch to `$lib/Analytics` (Task 12), those mocks become dead code and assertions silently lose meaning. We update them _before_ the component imports change so test coverage stays intact.
 
 - [ ] **Step 1: Update `SearchField.test.js`**
 
@@ -1913,7 +1925,7 @@ In `src/components/stops/__tests__/StopPane.test.js`:
 - [ ] **Step 4: Run those test files to confirm they still pass**
 
 Run: `npm run test -- src/components/search/__tests__/SearchField.test.js src/components/search/__tests__/SearchPane.test.js src/components/stops/__tests__/StopPane.test.js`
-Expected: PASS — the mock target changed but the components still import `$lib/Analytics/PlausibleAnalytics`. Vitest's mock registry resolves both paths (the new mock is at `$lib/Analytics` which the components don't import yet), so the mocks are *registered but unused*. Tests should still pass because the components hit the real `PlausibleAnalytics` singleton, which with `PUBLIC_ANALYTICS_PROVIDER=none` (default mock from Task 7) plus the legacy `PUBLIC_ANALYTICS_ENABLED` being absent makes `isEnabled()` return false. Verify analytics-call assertions still pass — if any test asserted `analytics.reportX.toHaveBeenCalledWith(...)`, those assertions now point at the NEW mock object that nothing called, so they'll fail. If that happens, mark the test as expected-to-fail temporarily; Task 12 will make the assertions work again.
+Expected: PASS — the mock target changed but the components still import `$lib/Analytics/PlausibleAnalytics`. Vitest's mock registry resolves both paths (the new mock is at `$lib/Analytics` which the components don't import yet), so the mocks are _registered but unused_. Tests should still pass because the components hit the real `PlausibleAnalytics` singleton, which with `PUBLIC_ANALYTICS_PROVIDER=none` (default mock from Task 7) plus the legacy `PUBLIC_ANALYTICS_ENABLED` being absent makes `isEnabled()` return false. Verify analytics-call assertions still pass — if any test asserted `analytics.reportX.toHaveBeenCalledWith(...)`, those assertions now point at the NEW mock object that nothing called, so they'll fail. If that happens, mark the test as expected-to-fail temporarily; Task 12 will make the assertions work again.
 
 If any test fails between Task 11 and Task 12: it's because the test asserts on an analytics mock that components don't import yet. Continue to Task 12 immediately; do not investigate.
 
@@ -1931,6 +1943,7 @@ git commit -m "Point component test mocks at \$lib/Analytics ahead of component 
 ## Task 12: Migrate component imports to the facade
 
 **Files:**
+
 - Modify: `src/routes/+layout.svelte`
 - Modify: `src/routes/+page.svelte`
 - Modify: `src/routes/stops/[stopID]/+page.svelte`
@@ -2028,6 +2041,7 @@ git commit -m "Switch components from PlausibleAnalytics to Analytics facade"
 ## Task 13: Rename `plausibleUtils.js` → `analyticsUtils.js`
 
 **Files:**
+
 - Rename: `src/lib/Analytics/plausibleUtils.js` → `src/lib/Analytics/analyticsUtils.js`
 - Modify: `src/routes/+page.svelte`
 - Modify: `src/routes/stops/[stopID]/+page.svelte`
@@ -2097,6 +2111,7 @@ git commit -m "Rename plausibleUtils → analyticsUtils"
 ## Task 14: Delete legacy `PlausibleAnalytics` module and tests
 
 **Files:**
+
 - Delete: `src/lib/Analytics/PlausibleAnalytics.js`
 - Delete: `src/tests/lib/PlausibleAnalytics.test.js`
 

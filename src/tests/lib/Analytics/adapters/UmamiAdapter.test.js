@@ -25,21 +25,17 @@ describe('UmamiAdapter.isEnabled', () => {
 	});
 
 	it('returns false when website id is missing', () => {
-		expect(
-			new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_WEBSITE_ID: '' }).isEnabled()
-		).toBe(false);
+		expect(new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_WEBSITE_ID: '' }).isEnabled()).toBe(
+			false
+		);
 	});
 
 	it('returns false when api host is missing', () => {
-		expect(
-			new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' }).isEnabled()
-		).toBe(false);
+		expect(new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' }).isEnabled()).toBe(false);
 	});
 
 	it('returns false when domain is missing', () => {
-		expect(
-			new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' }).isEnabled()
-		).toBe(false);
+		expect(new UmamiAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' }).isEnabled()).toBe(false);
 	});
 });
 
@@ -196,15 +192,15 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 	});
 
 	it('throws when envelope.name is missing', async () => {
-		await expect(
-			new UmamiAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)
-		).rejects.toThrow('forwardEvent requires name and url');
+		await expect(new UmamiAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)).rejects.toThrow(
+			'forwardEvent requires name and url'
+		);
 	});
 
 	it('throws when envelope.url is missing', async () => {
-		await expect(
-			new UmamiAdapter(fullEnv).forwardEvent({ name: 'pageview' }, ctx)
-		).rejects.toThrow('forwardEvent requires name and url');
+		await expect(new UmamiAdapter(fullEnv).forwardEvent({ name: 'pageview' }, ctx)).rejects.toThrow(
+			'forwardEvent requires name and url'
+		);
 	});
 
 	it('falls back to Wayfinder/1.0 User-Agent when context omits it', async () => {
@@ -231,8 +227,8 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 
 	it('propagates network errors from fetch', async () => {
 		global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
-		await expect(
-			new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)
-		).rejects.toThrow('Network failure');
+		await expect(new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow(
+			'Network failure'
+		);
 	});
 });

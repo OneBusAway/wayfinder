@@ -29,15 +29,15 @@ describe('PlausibleAdapter.isEnabled', () => {
 	});
 
 	it('returns false when domain is missing', () => {
-		expect(
-			new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' }).isEnabled()
-		).toBe(false);
+		expect(new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_DOMAIN: '' }).isEnabled()).toBe(
+			false
+		);
 	});
 
 	it('returns false when api host is missing', () => {
-		expect(
-			new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' }).isEnabled()
-		).toBe(false);
+		expect(new PlausibleAdapter({ ...fullEnv, PUBLIC_ANALYTICS_API_HOST: '' }).isEnabled()).toBe(
+			false
+		);
 	});
 });
 
@@ -91,9 +91,9 @@ describe('PlausibleAdapter.forwardEvent', () => {
 	});
 
 	it('throws when name is missing', async () => {
-		await expect(
-			new PlausibleAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)
-		).rejects.toThrow('forwardEvent requires name and url');
+		await expect(new PlausibleAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)).rejects.toThrow(
+			'forwardEvent requires name and url'
+		);
 	});
 
 	it('throws when url is missing', async () => {
@@ -171,8 +171,8 @@ describe('PlausibleAdapter.forwardEvent', () => {
 
 	it('propagates network errors from fetch', async () => {
 		global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
-		await expect(
-			new PlausibleAdapter(fullEnv).forwardEvent(envelope, ctx)
-		).rejects.toThrow('Network failure');
+		await expect(new PlausibleAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow(
+			'Network failure'
+		);
 	});
 });

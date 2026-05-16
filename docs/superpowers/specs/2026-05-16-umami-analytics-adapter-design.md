@@ -30,11 +30,11 @@ These are the on-the-wire payload differences that motivate the adapter pattern.
 
 ```json
 {
-  "domain": "example.com",
-  "name": "pageview",
-  "url": "/",
-  "referrer": "https://example.com",
-  "props": { "id": "1_00" }
+	"domain": "example.com",
+	"name": "pageview",
+	"url": "/",
+	"referrer": "https://example.com",
+	"props": { "id": "1_00" }
 }
 ```
 
@@ -46,18 +46,18 @@ Requires a `User-Agent` header on the request — Umami rejects requests without
 
 ```json
 {
-  "type": "event",
-  "payload": {
-    "website": "79eab5f4-0c4d-492b-9b60-ecf018859f03",
-    "hostname": "wayfinder.example.com",
-    "language": "en-US",
-    "screen": "1920x1080",
-    "url": "/",
-    "referrer": "",
-    "title": "Wayfinder",
-    "name": "pageview",
-    "data": { "id": "1_00" }
-  }
+	"type": "event",
+	"payload": {
+		"website": "79eab5f4-0c4d-492b-9b60-ecf018859f03",
+		"hostname": "wayfinder.example.com",
+		"language": "en-US",
+		"screen": "1920x1080",
+		"url": "/",
+		"referrer": "",
+		"title": "Wayfinder",
+		"name": "pageview",
+		"data": { "id": "1_00" }
+	}
 }
 ```
 
@@ -97,6 +97,7 @@ class Analytics {
 ```
 
 Responsibilities:
+
 - Read `PUBLIC_ANALYTICS_PROVIDER` from env to short-circuit fetch when `none`.
 - Collect browser context per call: `document.title`, `document.referrer`, `navigator.language`, `${window.screen.width}x${window.screen.height}`. Always populated when running in a browser; omitted/empty in non-browser contexts (tests/SSR).
 - Build the **generic envelope** (see below) and POST it to `/api/events`.
@@ -133,7 +134,9 @@ class Adapter {
 Where `requestContext` carries the things only the SvelteKit server can see:
 
 ```ts
-{ userAgent: string }
+{
+	userAgent: string;
+}
 ```
 
 `UmamiAdapter` uses `env.PUBLIC_ANALYTICS_DOMAIN` (not the request `Host` header) as `payload.hostname`, so the value is deterministic and survives proxies. `UmamiAdapter` also requires the `User-Agent` header — Umami rejects requests without it — so we forward it via `requestContext.userAgent`.
@@ -144,12 +147,15 @@ Where `requestContext` carries the things only the SvelteKit server can see:
 
 ```js
 function createAdapter(env) {
-  switch (env.PUBLIC_ANALYTICS_PROVIDER) {
-    case 'plausible': return new PlausibleAdapter(env);
-    case 'umami':     return new UmamiAdapter(env);
-    case 'none':
-    default:          return new NoopAdapter();
-  }
+	switch (env.PUBLIC_ANALYTICS_PROVIDER) {
+		case 'plausible':
+			return new PlausibleAdapter(env);
+		case 'umami':
+			return new UmamiAdapter(env);
+		case 'none':
+		default:
+			return new NoopAdapter();
+	}
 }
 ```
 
@@ -160,11 +166,13 @@ If the selected provider is missing its required vars, the adapter's `isEnabled(
 **`NoopAdapter`** — `isEnabled()` returns `false`. `forwardEvent` returns `{ status: 'analytics disabled' }`.
 
 **`PlausibleAdapter`** — same logic as current `PlausibleAnalytics.forwardEvent`:
+
 - Reads `PUBLIC_ANALYTICS_DOMAIN` and `PUBLIC_ANALYTICS_API_HOST`.
 - `isEnabled()` requires both to be non-empty.
 - Translates envelope → `{ domain, name, url, referrer, props }`.
 
 **`UmamiAdapter`** — new:
+
 - Reads `PUBLIC_ANALYTICS_WEBSITE_ID`, `PUBLIC_ANALYTICS_API_HOST`, and `PUBLIC_ANALYTICS_DOMAIN`.
 - `isEnabled()` requires all three to be non-empty.
 - Translates envelope + requestContext → Umami `{ type, payload }`.
@@ -200,23 +208,24 @@ export async function POST({ request }) {
 
 ### Kept (unchanged)
 
-| Var | Used by | Notes |
-|---|---|---|
-| `PUBLIC_ANALYTICS_DOMAIN` | Plausible, Umami | Plausible: site domain sent as `domain`. Umami: site domain sent as `payload.hostname`. |
-| `PUBLIC_ANALYTICS_API_HOST` | Plausible, Umami | Upstream base URL. Plausible appends `/api/event`; Umami appends `/api/send`. |
+| Var                         | Used by          | Notes                                                                                   |
+| --------------------------- | ---------------- | --------------------------------------------------------------------------------------- |
+| `PUBLIC_ANALYTICS_DOMAIN`   | Plausible, Umami | Plausible: site domain sent as `domain`. Umami: site domain sent as `payload.hostname`. |
+| `PUBLIC_ANALYTICS_API_HOST` | Plausible, Umami | Upstream base URL. Plausible appends `/api/event`; Umami appends `/api/send`.           |
 
 ### Added
 
-| Var | Type | Required | Notes |
-|---|---|---|---|
-| `PUBLIC_ANALYTICS_PROVIDER` | enum: `none` \| `plausible` \| `umami` | no (default `none`) | Single switch. Replaces the boolean. |
-| `PUBLIC_ANALYTICS_WEBSITE_ID` | string, allowEmpty | no | Required at runtime when provider=umami. Ignored by Plausible. |
+| Var                           | Type                                   | Required            | Notes                                                          |
+| ----------------------------- | -------------------------------------- | ------------------- | -------------------------------------------------------------- |
+| `PUBLIC_ANALYTICS_PROVIDER`   | enum: `none` \| `plausible` \| `umami` | no (default `none`) | Single switch. Replaces the boolean.                           |
+| `PUBLIC_ANALYTICS_WEBSITE_ID` | string, allowEmpty                     | no                  | Required at runtime when provider=umami. Ignored by Plausible. |
 
 `.env.example` updates: drop `PUBLIC_ANALYTICS_ENABLED`, add `PUBLIC_ANALYTICS_PROVIDER` and `PUBLIC_ANALYTICS_WEBSITE_ID` with commented example values.
 
 ## File-by-file change summary
 
 **New:**
+
 - `src/lib/Analytics/index.js`
 - `src/lib/Analytics/Analytics.js`
 - `src/lib/Analytics/createAdapter.js`
@@ -230,13 +239,16 @@ export async function POST({ request }) {
 - `src/tests/lib/Analytics/adapters/NoopAdapter.test.js`
 
 **Renamed:**
+
 - `src/lib/Analytics/plausibleUtils.js` → `src/lib/Analytics/analyticsUtils.js` (function name `analyticsDistanceToStop` unchanged)
 
 **Deleted:**
+
 - `src/lib/Analytics/PlausibleAnalytics.js` (logic split into `Analytics.js` + `adapters/PlausibleAdapter.js`)
 - `src/tests/lib/PlausibleAnalytics.test.js` (replaced by the per-adapter and facade tests above)
 
 **Modified:**
+
 - `src/routes/api/events/+server.js` — use factory + pass requestContext
 - `src/tests/api/events.test.js` — cover both adapters via env mocking
 - `src/routes/+layout.svelte`, `src/routes/+page.svelte`, `src/routes/stops/[stopID]/+page.svelte` — import from `$lib/Analytics`

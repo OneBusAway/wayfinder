@@ -130,7 +130,6 @@ describe('Analytics envelope construction', () => {
 
 	it('falls back to empty strings when window is undefined', async () => {
 		const originalWindow = global.window;
-		// eslint-disable-next-line no-undef
 		delete global.window;
 		try {
 			const analytics = new Analytics();
