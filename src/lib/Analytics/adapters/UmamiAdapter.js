@@ -27,6 +27,10 @@ export class UmamiAdapter {
 	}
 
 	async forwardEvent(envelope, requestContext) {
+		if (!this.isEnabled()) {
+			return { status: 'analytics disabled' };
+		}
+
 		const {
 			name,
 			url,
@@ -36,6 +40,10 @@ export class UmamiAdapter {
 			screen = '',
 			props = {}
 		} = envelope;
+
+		if (!name || !url) {
+			throw new Error('forwardEvent requires name and url');
+		}
 
 		const body = {
 			type: 'event',
@@ -54,7 +62,7 @@ export class UmamiAdapter {
 
 		const headers = {
 			'Content-Type': 'application/json',
-			'User-Agent': requestContext.userAgent
+			'User-Agent': requestContext.userAgent || 'Wayfinder/1.0'
 		};
 		if (requestContext.clientIp) {
 			headers['X-Forwarded-For'] = requestContext.clientIp;
@@ -65,6 +73,12 @@ export class UmamiAdapter {
 			headers,
 			body: JSON.stringify(body)
 		});
+
+		if (!res.ok) {
+			const err = new Error(`Error sending event: ${res.statusText}`);
+			err.upstreamStatus = res.status;
+			throw err;
+		}
 
 		const text = await res.text();
 		try {

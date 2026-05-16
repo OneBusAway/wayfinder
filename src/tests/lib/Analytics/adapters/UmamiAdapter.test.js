@@ -178,3 +178,61 @@ describe('UmamiAdapter.forwardEvent (happy path)', () => {
 		expect(result).toEqual({ status: 'ok' });
 	});
 });
+
+describe('UmamiAdapter.forwardEvent (edge cases)', () => {
+	beforeEach(() => {
+		global.fetch = vi.fn();
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+	});
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it('returns disabled status without calling fetch when not enabled', async () => {
+		const env = { ...fullEnv, PUBLIC_ANALYTICS_WEBSITE_ID: '' };
+		const result = await new UmamiAdapter(env).forwardEvent(envelope, ctx);
+		expect(result).toEqual({ status: 'analytics disabled' });
+		expect(global.fetch).not.toHaveBeenCalled();
+	});
+
+	it('throws when envelope.name is missing', async () => {
+		await expect(
+			new UmamiAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)
+		).rejects.toThrow('forwardEvent requires name and url');
+	});
+
+	it('throws when envelope.url is missing', async () => {
+		await expect(
+			new UmamiAdapter(fullEnv).forwardEvent({ name: 'pageview' }, ctx)
+		).rejects.toThrow('forwardEvent requires name and url');
+	});
+
+	it('falls back to Wayfinder/1.0 User-Agent when context omits it', async () => {
+		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{}' });
+		await new UmamiAdapter(fullEnv).forwardEvent(envelope, { userAgent: '', clientIp: '' });
+		const [, init] = global.fetch.mock.calls[0];
+		expect(init.headers['User-Agent']).toBe('Wayfinder/1.0');
+	});
+
+	it('throws Error with upstreamStatus on non-OK response', async () => {
+		global.fetch = vi.fn().mockResolvedValue({
+			ok: false,
+			status: 502,
+			statusText: 'Bad Gateway'
+		});
+		try {
+			await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
+			expect.unreachable('should have thrown');
+		} catch (error) {
+			expect(error.message).toBe('Error sending event: Bad Gateway');
+			expect(error.upstreamStatus).toBe(502);
+		}
+	});
+
+	it('propagates network errors from fetch', async () => {
+		global.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
+		await expect(
+			new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)
+		).rejects.toThrow('Network failure');
+	});
+});
