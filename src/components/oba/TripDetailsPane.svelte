@@ -149,9 +149,9 @@
 				{/each}
 			</div>
 		{:else}
-		<p class="text-black dark:text-white">{$_('trip_details.no_stops')}</p>
+			<p class="text-black dark:text-white">{$_('trip_details.no_stops')}</p>
 		{/if}
 	{:else}
-	<p class="text-black dark:text-white">{$_('trip_details.loading')}</p>
+		<p class="text-black dark:text-white">{$_('trip_details.loading')}</p>
 	{/if}
 </div>
