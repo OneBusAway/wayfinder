@@ -19,9 +19,10 @@ See `.env.example` for an example of the required keys and values.
 
 ### Analytics
 
-- `PUBLIC_ANALYTICS_DOMAIN` - string: (optional).
-- `PUBLIC_ANALYTICS_ENABLED` - boolean: (optional).
-- `PUBLIC_ANALYTICS_API_HOST` - string: (optional).
+- `PUBLIC_ANALYTICS_PROVIDER` - enum (optional): which backend to use. `"none"` (default — disabled), `"plausible"`, or `"umami"`.
+- `PUBLIC_ANALYTICS_DOMAIN` - string (optional): site identifier sent to the backend. For Plausible, this is the site domain registered in the account. For Umami, this is the literal hostname sent as `payload.hostname`.
+- `PUBLIC_ANALYTICS_API_HOST` - string (optional): upstream base URL (Plausible appends `/api/event`; Umami appends `/api/send`).
+- `PUBLIC_ANALYTICS_WEBSITE_ID` - string (optional): required at runtime when `PUBLIC_ANALYTICS_PROVIDER="umami"`; ignored otherwise.
 
 ### Internationalization
 
