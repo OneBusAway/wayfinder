@@ -98,7 +98,7 @@ describe('StopItem', () => {
 
 		const button = screen.getByRole('button');
 		expect(button).toHaveClass('dark:border-[#313135]');
-		expect(button).toHaveClass('dark:bg-neutral-950');
+		expect(button).toHaveClass('dark:bg-[#1c1c1c]');
 		expect(button).toHaveClass('dark:hover:bg-[#363636]');
 	});
 
