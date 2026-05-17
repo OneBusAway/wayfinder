@@ -1,8 +1,8 @@
 {
 	"units": {
-		"meters": "m",
-		"kilometers": "km",
-		"feet": "ft",
+		"meters": "मी",
+		"kilometers": "किमी",
+		"feet": "फीट",
 		"mile": "मील",
 		"miles": "मील"
 	},

@@ -11,6 +11,7 @@ import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/gen
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
+import { PUBLIC_MAPLIBRE_STYLE } from '$env/static/public';
 
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
@@ -22,7 +23,7 @@ export default class OpenStreetMapProvider {
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
-		this.maplibreLayer = 'positron';
+		this.maplibreLayer = PUBLIC_MAPLIBRE_STYLE || 'positron';
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.showStopsRoutesAtZoom = 16;
@@ -49,12 +50,6 @@ export default class OpenStreetMapProvider {
 		this.map = this.L.map(element, { zoomControl: false }).setView([options.lat, options.lng], 14);
 
 		this.L.control.zoom({ position: 'bottomright' }).addTo(this.map);
-
-		// TODO: Make this configurable through env file
-
-		/*
-		 * for more styles https://github.com/teamapps-org/maplibre-gl-styles
-		 */
 		this.maplibreLayer = this.L.maplibreGL({
 			style: `https://tiles.openfreemap.org/styles/${this.maplibreLayer}`,
 			interactive: true,
@@ -297,13 +292,15 @@ export default class OpenStreetMapProvider {
 
 		this.vehicleMarkers.push(marker);
 
-		marker.vehicleData = {
+		let vehicleData = $state({
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicle.vehicleId,
 			lastUpdateTime: vehicle.lastUpdateTime,
 			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
 			predicted: vehicle.predicted
-		};
+		});
+
+		marker.vehicleData = vehicleData;
 
 		marker.bindPopup(document.createElement('div'));
 
@@ -348,20 +345,13 @@ export default class OpenStreetMapProvider {
 		marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
 		marker.setIcon(updatedIcon);
 
-		let vehicleData = $state({
-			...marker.vehicleData,
+		Object.assign(marker.vehicleData, {
 			nextDestination: activeTrip.tripHeadsign,
 			vehicleId: vehicleStatus.vehicleId,
 			lastUpdateTime: vehicleStatus.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
+			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name,
 			predicted: vehicleStatus.predicted
 		});
-
-		marker.vehicleData = vehicleData;
-
-		if (marker.isPopupOpen() && marker.popupComponent) {
-			marker.popupComponent = vehicleData;
-		}
 	}
 	removeVehicleMarker(marker) {
 		if (marker) {

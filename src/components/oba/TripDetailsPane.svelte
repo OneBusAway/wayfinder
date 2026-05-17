@@ -21,6 +21,7 @@
 	let error = $state(null);
 	let interval;
 	let busPosition = $state(0);
+	let abortController = null;
 
 	function calculateBusPosition() {
 		if (tripDetails && tripDetails.status && tripDetails.status.position) {
@@ -39,12 +40,20 @@
 	}
 
 	async function loadTripDetails() {
+		// Cancel the previous request if it exists
+		if (abortController) {
+			abortController.abort();
+		}
+		abortController = new AbortController();
+
 		try {
 			let url = `/api/oba/trip-details/${tripId}?includeTrip=true&includeSchedule=true&includeStatus=true`;
 			if (serviceDate) {
 				url += `&serviceDate=${serviceDate}`;
 			}
-			const response = await fetch(url);
+			const response = await fetch(url, {
+				signal: abortController.signal
+			});
 
 			if (!response.ok) {
 				error = 'Unable to fetch trip details';
@@ -69,8 +78,10 @@
 
 			calculateBusPosition();
 		} catch (err) {
-			console.error('Error fetching trip details:', err);
-			error = 'Error fetching trip details';
+			if (err.name !== 'AbortError') {
+				console.error('Error fetching trip details:', err);
+				error = 'Error fetching trip details';
+			}
 		}
 	}
 
@@ -82,6 +93,10 @@
 	onDestroy(() => {
 		clearInterval(interval);
 		interval = null;
+		if (abortController) {
+			abortController.abort();
+			abortController = null;
+		}
 	});
 </script>
 

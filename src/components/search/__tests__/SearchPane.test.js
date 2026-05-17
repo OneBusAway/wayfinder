@@ -5,7 +5,7 @@ import { createMockStore } from '../../../tests/helpers/test-utils.js';
 import SearchPane from '../SearchPane.svelte';
 
 // Mock dependencies
-vi.mock('$lib/Analytics/PlausibleAnalytics', () => ({
+vi.mock('$lib/Analytics', () => ({
 	default: {
 		reportSearchQuery: vi.fn()
 	}
@@ -17,7 +17,7 @@ vi.mock('$lib/vehicleUtils', () => ({
 }));
 
 vi.mock('$lib/mathUtils', () => ({
-	calculateMidpoint: vi.fn().mockReturnValue({ lat: 47.6062, lng: -122.3321 })
+	calculateMidpoint: vi.fn().mockReturnValue({ lat: 47.6062, lon: -122.3321 })
 }));
 
 vi.mock('$config/routeConfig', () => ({

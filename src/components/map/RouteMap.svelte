@@ -64,7 +64,9 @@
 		// TODO: implement better way to transition to route shape
 		const location = calculateMidpoint(stops);
 
-		mapProvider.flyTo(location.lat, location.lng, 13);
+		if (location) {
+			mapProvider.flyTo(location.lat, location.lon, 13);
+		}
 
 		for (const stopTime of stopTimes) {
 			const stop = stops.find((s) => s.id === stopTime.stopId);

@@ -451,6 +451,40 @@ describe('formatDepartureDisplay', () => {
 		});
 		expect(result).toBe('Depart');
 	});
+
+	it('uses agency timezone for Today/Tomorrow when timeZone is provided', () => {
+		// System time: 2025-06-16T02:00:00Z (UTC date is June 16)
+		// In America/Los_Angeles (PDT, UTC-7): still June 15 at 7 PM
+		vi.setSystemTime(new Date('2025-06-16T02:00:00Z'));
+
+		const result = formatDepartureDisplay(
+			{
+				departureType: 'departAt',
+				departureTime: '19:00',
+				departureDate: '2025-06-15'
+			},
+			null,
+			'America/Los_Angeles'
+		);
+		expect(result).toBe('Depart 7:00 PM, Today');
+	});
+
+	it('shows Tomorrow using agency timezone', () => {
+		// System time: 2025-06-16T02:00:00Z
+		// In America/Los_Angeles (PDT): still June 15 → June 16 is "Tomorrow"
+		vi.setSystemTime(new Date('2025-06-16T02:00:00Z'));
+
+		const result = formatDepartureDisplay(
+			{
+				departureType: 'departAt',
+				departureTime: '09:00',
+				departureDate: '2025-06-16'
+			},
+			null,
+			'America/Los_Angeles'
+		);
+		expect(result).toBe('Depart 9:00 AM, Tomorrow');
+	});
 });
 
 describe('formatLastUpdated', () => {

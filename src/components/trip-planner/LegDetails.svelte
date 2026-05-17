@@ -21,10 +21,16 @@
 	import { formatDistance } from '$lib/distanceUtils';
 	import { effectiveDistanceUnit } from '$stores/tripOptionsStore';
 
-	let { leg, index, expandedSteps, toggleSteps, isLast = false } = $props();
-
+	let {
+		leg,
+		index,
+		expandedSteps,
+		toggleSteps,
+		isLast = false,
+		isInterline = false,
+		nextLegRouteName = ''
+	} = $props();
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
-
 	let isWalking = $derived(leg.mode === 'WALK');
 
 	// Route color properties (from OTP API)
@@ -187,6 +193,15 @@
 					>{$t('trip-planner.duration')}: {Math.round(leg.duration / 60)} {$t('time.minutes')}</span
 				>
 			</div>
+			{#if isInterline}
+				<!-- Interline indicator -->
+				<div class="flex items-center text-sm text-amber-900 dark:text-amber-200">
+					<FontAwesomeIcon icon={faArrowAltCircleRight} class="mr-2 h-3 w-3 text-gray-400" />
+					<span class="font-medium">
+						{$t('trip-planner.stay_on_board', { values: { route: nextLegRouteName } })}
+					</span>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Walking steps toggle -->

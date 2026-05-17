@@ -3,6 +3,7 @@
 	import { msToTimeString } from '$lib/dateTimeFormat';
 	import { env } from '$env/dynamic/public';
 	import { t } from 'svelte-i18n';
+	import { isStaySeatedTransition, getRouteName } from '$lib/tripPlanUtils';
 	let { itinerary, expandedSteps, toggleSteps } = $props();
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
@@ -42,11 +43,16 @@
 <!-- Legs Timeline -->
 <div class="space-y-0">
 	{#each itinerary.legs as leg, index}
+		{@const isInterline = isStaySeatedTransition(itinerary.legs, index)}
+		{@const nextLeg = itinerary.legs[index + 1]}
+		{@const nextLegRouteName = getRouteName(nextLeg)}
 		<LegDetails
 			{leg}
 			{index}
+			{isInterline}
 			{expandedSteps}
 			{toggleSteps}
+			{nextLegRouteName}
 			isLast={index === itinerary.legs.length - 1}
 		/>
 	{/each}

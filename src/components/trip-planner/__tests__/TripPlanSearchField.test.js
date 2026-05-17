@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import TripPlanSearchField from '../TripPlanSearchField.svelte';
 import { renderWithUtils, a11yHelpers } from '../../../tests/helpers/test-utils.js';
-
 // Mock FontAwesome icons
 vi.mock('@fortawesome/svelte-fontawesome', () => ({
 	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
@@ -71,14 +70,14 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, place: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
-			const clearButton = screen.getByLabelText('Clear');
+			const clearButton = screen.getByLabelText('search.clear');
 			expect(clearButton).toBeInTheDocument();
 		});
 
 		it('hides clear button when place is empty', () => {
 			render(TripPlanSearchField, { props: defaultProps });
 
-			const clearButton = screen.queryByLabelText('Clear');
+			const clearButton = screen.queryByLabelText('search.clear');
 			expect(clearButton).not.toBeInTheDocument();
 		});
 
@@ -129,7 +128,7 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, place: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
-			const clearButton = screen.getByLabelText('Clear');
+			const clearButton = screen.getByLabelText('search.clear');
 			await user.click(clearButton);
 
 			expect(mockOnClear).toHaveBeenCalledOnce();
@@ -202,8 +201,8 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, place: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
-			const clearButton = screen.getByLabelText('Clear');
-			expect(clearButton).toHaveAttribute('aria-label', 'Clear');
+			const clearButton = screen.getByLabelText('search.clear');
+			expect(clearButton).toHaveAttribute('aria-label', 'search.clear');
 			expect(clearButton).toHaveAttribute('type', 'button');
 		});
 

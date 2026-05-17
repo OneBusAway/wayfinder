@@ -4,6 +4,8 @@
 
 	let { schedule } = $props();
 
+	let scheduleData = $derived(renderScheduleTable(schedule));
+
 	function renderScheduleTable(schedule) {
 		const stopTimes = Object.entries(schedule.stopTimes);
 
@@ -42,14 +44,14 @@
 					class="px-6 py-3 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">AM</td
 				>
 			</tr>
-			{#if renderScheduleTable(schedule).amTimes.length === 0}
+			{#if scheduleData.amTimes.length === 0}
 				<tr>
 					<td colspan="2" class="border px-6 py-3 text-center text-gray-500 dark:border-gray-700">
 						{$isLoading ? '' : $t('schedule_for_stop.no_am_schedules_available')}
 					</td>
 				</tr>
 			{:else}
-				{#each renderScheduleTable(schedule).amTimes as [hour, times]}
+				{#each scheduleData.amTimes as [hour, times]}
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-900">
 						<td
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
@@ -77,14 +79,14 @@
 					class="px-6 py-3 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">PM</td
 				>
 			</tr>
-			{#if renderScheduleTable(schedule).pmTimes.length === 0}
+			{#if scheduleData.pmTimes.length === 0}
 				<tr>
 					<td colspan="2" class="border px-6 py-3 text-center text-gray-500">
 						{$isLoading ? '' : $t('schedule_for_stop.no_pm_schedules_available')}
 					</td>
 				</tr>
 			{:else}
-				{#each renderScheduleTable(schedule).pmTimes as [hour, times]}
+				{#each scheduleData.pmTimes as [hour, times]}
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
 						<td
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
