@@ -15,10 +15,13 @@
 		DEFAULT_WALK_DISTANCE_METERS
 	} from '$stores/tripOptionsStore';
 	import { formatDepartureDisplay } from '$lib/dateTimeFormat';
+	import { env } from '$env/dynamic/public';
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
 	import { swapTripLocations } from '$lib/tripPlanUtils';
 	import { recentTrips } from '$stores/recentTripsStore';
 	import RecentTripsList from './RecentTripsList.svelte';
+
+	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
 	let { handleTripPlan, mapProvider, clearTripItineraries } = $props();
 
@@ -377,7 +380,7 @@
 	{#if $tripOptions.departureType !== 'now' || $tripOptions.wheelchair || $tripOptions.optimize === 'fewestTransfers' || $tripOptions.maxWalkDistance !== DEFAULT_WALK_DISTANCE_METERS}
 		<div class="mt-4 flex flex-wrap gap-1.5">
 			{#if $tripOptions.departureType !== 'now'}
-				<OptionsPill icon="🕐" label={formatDepartureDisplay($tripOptions, $t)} />
+				<OptionsPill icon="🕐" label={formatDepartureDisplay($tripOptions, $t, regionTz)} />
 			{/if}
 			{#if $tripOptions.wheelchair}
 				<OptionsPill icon="♿" label={$t('trip-planner.wheelchair')} />

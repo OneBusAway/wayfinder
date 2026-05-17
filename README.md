@@ -19,9 +19,10 @@ See `.env.example` for an example of the required keys and values.
 
 ### Analytics
 
-- `PUBLIC_ANALYTICS_DOMAIN` - string: (optional).
-- `PUBLIC_ANALYTICS_ENABLED` - boolean: (optional).
-- `PUBLIC_ANALYTICS_API_HOST` - string: (optional).
+- `PUBLIC_ANALYTICS_PROVIDER` - enum (optional): which backend to use. `"none"` (default — disabled), `"plausible"`, or `"umami"`.
+- `PUBLIC_ANALYTICS_DOMAIN` - string (optional): site identifier sent to the backend. For Plausible, this is the site domain registered in the account. For Umami, this is the literal hostname sent as `payload.hostname`.
+- `PUBLIC_ANALYTICS_API_HOST` - string (optional): upstream base URL (Plausible appends `/api/event`; Umami appends `/api/send`).
+- `PUBLIC_ANALYTICS_WEBSITE_ID` - string (optional): required at runtime when `PUBLIC_ANALYTICS_PROVIDER="umami"`; ignored otherwise.
 
 ### Internationalization
 
@@ -100,6 +101,7 @@ Use these in Tailwind classes: `bg-primary-500`, `text-primary-700`, `border-pri
 ### Trip Planner
 
 - `PUBLIC_OTP_SERVER_URL` - string: (optional) Your OpenTripPlanner 1.x-compatible trip planner server URL.
+- `PUBLIC_OBA_TIMEZONE` - string: (required) IANA timezone for the transit region (e.g. `"America/Los_Angeles"`). Dates and times in the trip planner are expressed in this timezone so they match the transit agency's schedule, regardless of the user's or server's local timezone.
 - `PUBLIC_DISTANCE_UNIT` - string: (optional) Default distance unit for the trip planner. Use "metric" for kilometers/meters or "imperial" for miles/feet. If not set, auto-detects from the user's browser locale (US browsers get imperial, others get metric). Users can override this in Trip Options.
 
 ## URL Parameters

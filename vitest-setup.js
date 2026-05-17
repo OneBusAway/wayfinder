@@ -20,9 +20,10 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 // Test files that need to mutate env values should declare their own vi.mock with a getter pattern.
 vi.mock('$env/dynamic/public', () => ({
 	env: {
+		PUBLIC_ANALYTICS_PROVIDER: 'none',
 		PUBLIC_ANALYTICS_DOMAIN: '',
-		PUBLIC_ANALYTICS_ENABLED: 'false',
-		PUBLIC_ANALYTICS_API_HOST: ''
+		PUBLIC_ANALYTICS_API_HOST: '',
+		PUBLIC_ANALYTICS_WEBSITE_ID: ''
 	}
 }));
 

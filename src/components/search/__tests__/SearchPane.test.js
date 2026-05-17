@@ -5,7 +5,7 @@ import { createMockStore } from '../../../tests/helpers/test-utils.js';
 import SearchPane from '../SearchPane.svelte';
 
 // Mock dependencies
-vi.mock('$lib/Analytics/PlausibleAnalytics', () => ({
+vi.mock('$lib/Analytics', () => ({
 	default: {
 		reportSearchQuery: vi.fn()
 	}

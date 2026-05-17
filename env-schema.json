@@ -127,10 +127,10 @@
 		"description": "Base URL of the OpenTripPlanner server for trip planning"
 	},
 	"PUBLIC_OBA_TIMEZONE": {
-		"required": false,
+		"required": true,
 		"type": "string",
-		"allowEmpty": true,
-		"description": "IANA timezone for the transit region (e.g. 'America/Los_Angeles'). Recommended when the server runs in a different timezone than the transit agency. Falls back to the server's default timezone if not set."
+		"allowEmpty": false,
+		"description": "IANA timezone for the transit region (e.g. 'America/Los_Angeles'). Required so that dates and times in the trip planner are expressed in the transit agency's timezone, regardless of the user's or server's local timezone."
 	},
 	"PUBLIC_DISTANCE_UNIT": {
 		"required": true,
@@ -175,18 +175,26 @@
 		"required": false,
 		"type": "string",
 		"allowEmpty": true,
-		"description": "Domain for analytics tracking"
-	},
-	"PUBLIC_ANALYTICS_ENABLED": {
-		"required": false,
-		"type": "boolean",
-		"description": "Whether analytics tracking is enabled"
+		"description": "Site identifier sent to the analytics backend. For Plausible: the site domain registered in your Plausible account (must match the Plausible site key). For Umami: the literal hostname sent as payload.hostname for filtering — typically the deployed origin (e.g. wayfinder.example.com)."
 	},
 	"PUBLIC_ANALYTICS_API_HOST": {
 		"required": false,
 		"type": "url",
 		"allowEmpty": true,
 		"description": "API host URL for analytics events"
+	},
+	"PUBLIC_ANALYTICS_PROVIDER": {
+		"required": false,
+		"type": "enum",
+		"enum": ["none", "plausible", "umami"],
+		"allowEmpty": true,
+		"description": "Which analytics backend to use. 'none' (or empty) disables analytics entirely."
+	},
+	"PUBLIC_ANALYTICS_WEBSITE_ID": {
+		"required": false,
+		"type": "string",
+		"allowEmpty": true,
+		"description": "Website ID for the analytics provider. Required at runtime when PUBLIC_ANALYTICS_PROVIDER='umami'; ignored otherwise."
 	},
 	"PUBLIC_LANGUAGE_SWITCHER_ENABLED": {
 		"required": false,

@@ -10,8 +10,11 @@
 		UNIT_IMPERIAL
 	} from '$stores/tripOptionsStore';
 	import { getTodayDateForInput, getCurrentTimeForInput } from '$lib/dateTimeInput';
+	import { env } from '$env/dynamic/public';
 
 	let { onClose, onDone } = $props();
+
+	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
 	// Local state for editing (copy from store)
 	let departureType = $state($tripOptions.departureType);
@@ -66,8 +69,8 @@
 		departureType = type;
 		// Set default time/date when switching from 'now'
 		if (type !== 'now' && !departureTime) {
-			departureTime = getCurrentTimeForInput();
-			departureDate = getTodayDateForInput();
+			departureTime = getCurrentTimeForInput(regionTz);
+			departureDate = getTodayDateForInput(regionTz);
 		}
 	}
 </script>
@@ -197,7 +200,7 @@
 						<input
 							type="date"
 							bind:value={departureDate}
-							min={getTodayDateForInput()}
+							min={getTodayDateForInput(regionTz)}
 							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
 						/>
 					</div>
