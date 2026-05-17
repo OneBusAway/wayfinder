@@ -194,5 +194,15 @@
 	"context-menu": {
 		"start_here": "Start Here",
 		"end_here": "End Here"
+	},
+	"errors": {
+		"status_label": "Error {status}",
+		"not_found_title": "Page not found",
+		"not_found_message": "The page you're looking for doesn't exist or may have been moved.",
+		"server_error_title": "Something went wrong",
+		"server_error_message": "We're having trouble loading this page. Please try again in a moment.",
+		"generic_title": "Something went wrong",
+		"generic_message": "An unexpected error occurred. Please try again.",
+		"go_home": "Go to map"
 	}
 }
