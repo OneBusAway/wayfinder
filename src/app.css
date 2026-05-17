@@ -61,6 +61,11 @@
 		@apply dark:bg-brand dark:text-brand-foreground dark:hover:bg-brand;
 	}
 
+	.close-button {
+		@apply rounded px-4 py-2;
+		@apply transition duration-300 ease-in-out hover:bg-neutral-200 dark:hover:bg-neutral-700;
+	}
+
 	.button {
 		@apply rounded-md bg-surface px-3 py-2 text-sm font-semibold text-surface-foreground shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
 	}
