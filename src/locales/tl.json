@@ -127,7 +127,6 @@
 		"stop_id": "ID ng hintuan",
 		"direction": "Direksyon"
 	},
-
 	"direction": {
 		"N": "Hilaga",
 		"NE": "Hilagang-silangan",
@@ -164,5 +163,25 @@
 	"context-menu": {
 		"start_here": "Magsimula dito",
 		"end_here": "Magtapos dito"
+	},
+	"error": {
+		"403": {
+			"title": "Tinanggihan ang access",
+			"description": "Wala kang pahintulot na tingnan ang pahinang ito."
+		},
+		"404": {
+			"title": "Hindi nahanap ang pahina",
+			"description": "Ang pahina na hinahanap mo ay wala o nailipat na."
+		},
+		"500": {
+			"title": "Error sa server",
+			"description": "May nangyaring mali sa aming panig. Pakisubukang muli mamaya."
+		},
+		"generic": {
+			"title": "May nangyaring mali",
+			"description": "Nagkaroon ng hindi inaasahang error."
+		},
+		"go_home": "Pumunta sa home",
+		"go_back": "Bumalik"
 	}
 }

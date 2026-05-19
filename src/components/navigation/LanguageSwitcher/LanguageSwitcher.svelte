@@ -7,6 +7,17 @@
 	let isOpen = $state(false);
 	let menuRef = $state(null);
 
+	// Safe wrapper for $t() to handle cases where i18n locale is not yet initialized
+	// example: during error page hydration. Falls back to the translation key.
+	function safeTranslate(key, options) {
+		try {
+			const tFn = $t;
+			return typeof tFn === 'function' ? tFn(key, options) : key;
+		} catch {
+			return key;
+		}
+	}
+
 	// Format language based on format string
 	// Supported formats: "native", "english", "native-english", "english-native", "code"
 	// If native and english names are the same, avoid redundant display (e.g., "English (English)")
@@ -114,7 +125,7 @@
 		<button
 			type="button"
 			onclick={() => (isOpen = !isOpen)}
-			aria-label={$t('language_switcher.select_language', {
+			aria-label={safeTranslate('language_switcher.select_language', {
 				values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) }
 			})}
 			aria-expanded={isOpen}
@@ -144,7 +155,7 @@
 			>
 				<div
 					role="listbox"
-					aria-label={$t('language_switcher.available_languages')}
+					aria-label={safeTranslate('language_switcher.available_languages')}
 					class="flex flex-col py-1"
 				>
 					{#each languages as lang}
