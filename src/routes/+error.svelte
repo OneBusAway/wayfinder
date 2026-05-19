@@ -1,18 +1,12 @@
 <script>
 	import { page } from '$app/stores';
-	import { _, t } from 'svelte-i18n';
+	import { _ } from 'svelte-i18n';
 
 	const status = $derived($page.status);
 	const errorMessage = $derived($page.error?.message || '');
 
 	const errorKey = $derived(
-		status === 404
-			? '404'
-			: status === 403
-				? '403'
-				: status === 500
-					? '500'
-					: 'generic'
+		status === 404 ? '404' : status === 403 ? '403' : status === 500 ? '500' : 'generic'
 	);
 
 	const iconPaths = {
@@ -111,11 +105,7 @@
 		{/if}
 
 		<div class="flex gap-3">
-			<a
-				href="/"
-				class="button--primary inline-flex items-center gap-2"
-				id="error-go-home"
-			>
+			<a href="/" class="button--primary inline-flex items-center gap-2" id="error-go-home">
 				<svg
 					class="h-4 w-4"
 					fill="none"
@@ -145,11 +135,7 @@
 					stroke-width="2"
 					aria-hidden="true"
 				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						d="M10 19l-7-7m0 0l7-7m-7 7h18"
-					/>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
 				</svg>
 				{goBackText}
 			</button>

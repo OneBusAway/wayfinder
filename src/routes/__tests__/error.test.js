@@ -50,8 +50,7 @@ vi.mock('svelte-i18n', () => {
 	const translations = {
 		en: {
 			'error.404.title': 'Page not found',
-			'error.404.description':
-				"The page you're looking for doesn't exist or has been moved.",
+			'error.404.description': "The page you're looking for doesn't exist or has been moved.",
 			'error.403.title': 'Access denied',
 			'error.403.description': "You don't have permission to view this page.",
 			'error.500.title': 'Server error',
@@ -63,8 +62,7 @@ vi.mock('svelte-i18n', () => {
 		},
 		es: {
 			'error.404.title': 'Página no encontrada',
-			'error.404.description':
-				'La página que buscas no existe o ha sido movida.',
+			'error.404.description': 'La página que buscas no existe o ha sido movida.',
 			'error.go_home': 'Ir al inicio',
 			'error.go_back': 'Volver'
 		}
