@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import ErrorPage from '../../routes/+error.svelte';
+import ErrorPage from '$src/routes/+error.svelte';
 import { locale } from 'svelte-i18n';
 
 // Override the default page store mock to include error state
