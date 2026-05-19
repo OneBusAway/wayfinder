@@ -1,6 +1,15 @@
 <script>
 	import { page } from '$app/stores';
 	import { _ } from 'svelte-i18n';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import {
+		faMap,
+		faBan,
+		faTriangleExclamation,
+		faCircleExclamation,
+		faHome,
+		faArrowLeft
+	} from '@fortawesome/free-solid-svg-icons';
 
 	const status = $derived($page.status);
 	const errorMessage = $derived($page.error?.message || '');
@@ -9,14 +18,14 @@
 		status === 404 ? '404' : status === 403 ? '403' : status === 500 ? '500' : 'generic'
 	);
 
-	const iconPaths = {
-		404: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7',
-		403: 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636',
-		500: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z',
-		generic: 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+	const icons = {
+		404: faMap,
+		403: faBan,
+		500: faTriangleExclamation,
+		generic: faCircleExclamation
 	};
 
-	const iconPath = $derived(iconPaths[errorKey] || iconPaths.generic);
+	const icon = $derived(icons[errorKey] || icons.generic);
 
 	// Hardcoded fallback titles for when i18n isn't initialized yet
 	const fallbackTitles = {
@@ -64,17 +73,8 @@
 	id="error-page"
 >
 	<div class="flex flex-col items-center px-6 py-12 text-center">
-		<div class="mb-6 flex h-20 w-20 items-center justify-center">
-			<svg
-				class="h-12 w-12 text-brand-accent dark:text-brand"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke="currentColor"
-				stroke-width="1.5"
-				aria-hidden="true"
-			>
-				<path stroke-linecap="round" stroke-linejoin="round" d={iconPath} />
-			</svg>
+		<div class="mb-6 flex items-center justify-center">
+			<FontAwesomeIcon {icon} class="text-4xl text-brand-accent dark:text-brand" />
 		</div>
 
 		<p
@@ -106,20 +106,7 @@
 
 		<div class="flex gap-3">
 			<a href="/" class="button--primary inline-flex items-center gap-2" id="error-go-home">
-				<svg
-					class="h-4 w-4"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-					stroke-width="2"
-					aria-hidden="true"
-				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"
-					/>
-				</svg>
+				<FontAwesomeIcon icon={faHome} class="text-sm" />
 				{goHomeText}
 			</a>
 			<button
@@ -127,16 +114,7 @@
 				class="button inline-flex items-center gap-2 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-gray-700"
 				id="error-go-back"
 			>
-				<svg
-					class="h-4 w-4"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke="currentColor"
-					stroke-width="2"
-					aria-hidden="true"
-				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-				</svg>
+				<FontAwesomeIcon icon={faArrowLeft} class="text-sm" />
 				{goBackText}
 			</button>
 		</div>
