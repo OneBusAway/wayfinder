@@ -19,8 +19,8 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} stop
-	 * @property {any} [arrivalsAndDeparturesResponse]
+	 * @property {import('onebusaway-sdk/resources/stop').StopRetrieveResponse.Data.Entry} stop
+	 * @property {import('onebusaway-sdk/resources/arrival-and-departure').ArrivalAndDepartureListResponse | null} [arrivalsAndDeparturesResponse]
 	 */
 
 	/** @type {Props} */
