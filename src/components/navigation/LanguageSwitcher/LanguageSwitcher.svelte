@@ -13,7 +13,8 @@
 		try {
 			const tFn = $t;
 			return typeof tFn === 'function' ? tFn(key, options) : key;
-		} catch {
+		} catch (e) {
+			console.warn(`[i18n fallback] Error translating ${key}:`, e.message);
 			return key;
 		}
 	}

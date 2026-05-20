@@ -27,7 +27,9 @@
 
 	const icon = $derived(icons[errorKey] || icons.generic);
 
-	// Hardcoded fallback titles for when i18n isn't initialized yet
+	// Hardcoded fallback titles for when i18n isn't initialized yet.
+	// NOTE: These English fallbacks duplicate the "error" block in src/locales/en.json.
+	// They must be kept in sync if the English copy changes.
 	const fallbackTitles = {
 		404: 'Page not found',
 		403: 'Access denied',
@@ -51,7 +53,8 @@
 				return result !== key ? result : fallback;
 			}
 			return fallback;
-		} catch {
+		} catch (e) {
+			console.warn(`[i18n fallback] Error translating ${key}:`, e.message);
 			return fallback;
 		}
 	}
@@ -110,7 +113,13 @@
 				{goHomeText}
 			</a>
 			<button
-				onclick={() => history.back()}
+				onclick={() => {
+					if (history.length > 1) {
+						history.back();
+					} else {
+						window.location.href = '/';
+					}
+				}}
 				class="button inline-flex items-center gap-2 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-gray-700"
 				id="error-go-back"
 			>
