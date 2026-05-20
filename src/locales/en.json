@@ -214,5 +214,10 @@
 		},
 		"go_home": "Go home",
 		"go_back": "Go back"
+	},
+	"trip_details": {
+		"route": "Route",
+		"no_stops": "No stop times available for this trip.",
+		"loading": "Loading trip details..."
 	}
 }
