@@ -8,7 +8,7 @@
 	<h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">{stopName}</h3>
 
 	{#if arrivalTime != null}
-		<p class="my-4 flex items-center text-gray-700 dark:text-gray-400">
+		<p class="my-4 flex items-center">
 			<span class="mr-2 rounded-md bg-purple-600 px-2 py-1 text-white">Arrival time</span>
 			<span class="dark:text-gray-100">{formatSecondsFromMidnight(arrivalTime)}</span>
 		</p>
