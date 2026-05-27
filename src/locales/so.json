@@ -163,5 +163,25 @@
 	"context-menu": {
 		"start_here": "Halkan ka bilow",
 		"end_here": "Halkan ku dhamee"
+	},
+	"error": {
+		"403": {
+			"title": "Gelitaanka waa la diiday",
+			"description": "Ma haysatid ogolaansho aad ku aragto boggan."
+		},
+		"404": {
+			"title": "Bogga lama helin",
+			"description": "Bogga aad raadineyso ma jiro ama waa la wareejiyay."
+		},
+		"500": {
+			"title": "Qalad server-ka",
+			"description": "Wax qalad ah baa dhacay dhinaceenna. Fadlan mar kale isku day."
+		},
+		"generic": {
+			"title": "Wax qalad ah baa dhacay",
+			"description": "Qalad aan la filayn baa dhacay."
+		},
+		"go_home": "Aad guriga",
+		"go_back": "Ku noqo"
 	}
 }

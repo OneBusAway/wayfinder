@@ -163,5 +163,25 @@
 	"context-menu": {
 		"start_here": "As'itti eegali",
 		"end_here": "As'itti xumuri"
+	},
+	"error": {
+		"403": {
+			"title": "Hayyamni dhorkame",
+			"description": "Fuula kana ilaaluuf hayyama hin qabdu."
+		},
+		"404": {
+			"title": "Fuulni hin argamne",
+			"description": "Fuulni ati barbaaddu hin jiru yookaan jijjiirame."
+		},
+		"500": {
+			"title": "Dogoggora sarvaraa",
+			"description": "Gama keenyaan wanti tokko dogoggoraan ta'e. Maaloo booda irra deebi'ii yaali."
+		},
+		"generic": {
+			"title": "Wanti tokko dogoggoraan ta'e",
+			"description": "Dogoggorri hin eegamne uumame."
+		},
+		"go_home": "Gara manaatti deebi'i",
+		"go_back": "Duubatti deebi'i"
 	}
 }

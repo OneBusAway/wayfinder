@@ -94,7 +94,7 @@ export function getInitialLocale() {
 	}
 
 	// Fallback to browser language (getLocaleFromNavigator handles fallback via fallbackLocale)
-	return getLocaleFromNavigator();
+	return getLocaleFromNavigator() || 'en';
 }
 
 // Initialize synchronously with the fallback locale, the only dictionary loaded

@@ -163,5 +163,25 @@
 	"context-menu": {
 		"start_here": "Partir d'ici",
 		"end_here": "Arriver ici"
+	},
+	"error": {
+		"403": {
+			"title": "Accès refusé",
+			"description": "Vous n'avez pas la permission de voir cette page."
+		},
+		"404": {
+			"title": "Page non trouvée",
+			"description": "La page que vous recherchez n'existe pas ou a été déplacée."
+		},
+		"500": {
+			"title": "Erreur serveur",
+			"description": "Un problème est survenu de notre côté. Veuillez réessayer plus tard."
+		},
+		"generic": {
+			"title": "Quelque chose a mal tourné",
+			"description": "Une erreur inattendue s'est produite."
+		},
+		"go_home": "Retour à l'accueil",
+		"go_back": "Retour"
 	}
 }

@@ -195,6 +195,26 @@
 		"start_here": "Start Here",
 		"end_here": "End Here"
 	},
+	"error": {
+		"404": {
+			"title": "Page not found",
+			"description": "The page you're looking for doesn't exist or has been moved."
+		},
+		"403": {
+			"title": "Access denied",
+			"description": "You don't have permission to view this page."
+		},
+		"500": {
+			"title": "Server error",
+			"description": "Something went wrong on our end. Please try again later."
+		},
+		"generic": {
+			"title": "Something went wrong",
+			"description": "An unexpected error occurred."
+		},
+		"go_home": "Go home",
+		"go_back": "Go back"
+	},
 	"trip_details": {
 		"route": "Route",
 		"no_stops": "No stop times available for this trip.",
