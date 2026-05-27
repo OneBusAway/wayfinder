@@ -278,7 +278,7 @@ export default class OpenStreetMapProvider {
 
 		const vehicleIconSvg = createVehicleIconSvg(vehicle?.orientation, color, routeType);
 		const customIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" />`,
+			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" alt="" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
 			className: '',
@@ -335,7 +335,7 @@ export default class OpenStreetMapProvider {
 
 		const updatedIconSvg = createVehicleIconSvg(vehicleStatus.orientation, color, routeType);
 		const updatedIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
+			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" alt="" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
 			className: '',
