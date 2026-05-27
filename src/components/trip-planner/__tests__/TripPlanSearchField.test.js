@@ -12,7 +12,8 @@ vi.mock('@fortawesome/svelte-fontawesome', () => ({
 vi.mock('svelte-i18n', () => {
 	const translations = {
 		'trip-planner.search_for_a_place': 'Search for a place',
-		'trip-planner.loading': 'Loading'
+		'trip-planner.loading': 'Loading',
+		'search.clear': 'Clear'
 	};
 
 	return {
@@ -70,14 +71,14 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, place: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
-			const clearButton = screen.getByLabelText('search.clear');
+			const clearButton = screen.getByLabelText('Clear');
 			expect(clearButton).toBeInTheDocument();
 		});
 
 		it('hides clear button when place is empty', () => {
 			render(TripPlanSearchField, { props: defaultProps });
 
-			const clearButton = screen.queryByLabelText('search.clear');
+			const clearButton = screen.queryByLabelText('Clear');
 			expect(clearButton).not.toBeInTheDocument();
 		});
 
@@ -128,7 +129,7 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, place: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
-			const clearButton = screen.getByLabelText('search.clear');
+			const clearButton = screen.getByLabelText('Clear');
 			await user.click(clearButton);
 
 			expect(mockOnClear).toHaveBeenCalledOnce();
@@ -201,8 +202,8 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, place: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
-			const clearButton = screen.getByLabelText('search.clear');
-			expect(clearButton).toHaveAttribute('aria-label', 'search.clear');
+			const clearButton = screen.getByLabelText('Clear');
+			expect(clearButton).toHaveAttribute('aria-label', 'Clear');
 			expect(clearButton).toHaveAttribute('type', 'button');
 		});
 
