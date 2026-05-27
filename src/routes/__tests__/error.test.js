@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import ErrorPage from '$src/routes/+error.svelte';
 import { locale, __setTranslatorMode } from 'svelte-i18n';
@@ -225,6 +225,54 @@ describe('ErrorPage', () => {
 			// Should fall back to 'Page not found', not the raw key 'error.404.title'
 			expect(screen.getByText('Page not found')).toBeInTheDocument();
 			expect(screen.queryByText('error.404.title')).not.toBeInTheDocument();
+		});
+	});
+
+	describe('Go back button behavior', () => {
+		test('calls history.back() when there is browser history (length > 1)', async () => {
+			const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+			const lengthSpy = vi.spyOn(window.history, 'length', 'get').mockReturnValue(5);
+
+			render(ErrorPage);
+			await fireEvent.click(screen.getByRole('button', { name: /Go back/i }));
+
+			expect(backSpy).toHaveBeenCalledOnce();
+
+			backSpy.mockRestore();
+			lengthSpy.mockRestore();
+		});
+
+		test('navigates to / when there is no browser history (length <= 1)', async () => {
+			const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+			const lengthSpy = vi.spyOn(window.history, 'length', 'get').mockReturnValue(1);
+
+			// Stub window.location to capture the href assignment without triggering
+			const originalLocation = window.location;
+			let hrefValue = originalLocation.href;
+			Object.defineProperty(window, 'location', {
+				configurable: true,
+				value: {
+					get href() {
+						return hrefValue;
+					},
+					set href(v) {
+						hrefValue = v;
+					}
+				}
+			});
+
+			render(ErrorPage);
+			await fireEvent.click(screen.getByRole('button', { name: /Go back/i }));
+
+			expect(backSpy).not.toHaveBeenCalled();
+			expect(hrefValue).toBe('/');
+
+			Object.defineProperty(window, 'location', {
+				configurable: true,
+				value: originalLocation
+			});
+			backSpy.mockRestore();
+			lengthSpy.mockRestore();
 		});
 	});
 
