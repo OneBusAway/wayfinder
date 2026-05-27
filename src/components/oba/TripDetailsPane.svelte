@@ -106,7 +106,8 @@
 	{:else if tripDetails}
 		{#if routeInfo}
 			<h2 class="h2">
-				{$_('trip_details.route')} {routeInfo.shortName}
+				{$_('trip_details.route')}
+				{routeInfo.shortName}
 			</h2>
 		{/if}
 		{#if tripDetails.schedule?.stopTimes.length > 0}
