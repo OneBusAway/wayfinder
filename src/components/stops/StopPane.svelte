@@ -181,7 +181,7 @@
 		{#if arrivalsAndDepartures}
 			<div class="space-y-4">
 				<div>
-					<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent bg-opacity-80 p-4">
+					<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent p-4">
 						<h1 class="h1 mb-0 text-white">{stop.name}</h1>
 						<h2 class="h2 mb-0 text-white">
 							{$isLoading ? '' : $t('stop')} #{removeAgencyPrefix(stop.id)}

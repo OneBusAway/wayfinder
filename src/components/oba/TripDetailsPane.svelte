@@ -141,7 +141,7 @@
 							<div class="text-md font-semibold dark:text-white">
 								{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 							</div>
-							<div class="whitespace-nowrap text-sm text-gray-500">
+							<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
 								{formatSecondsFromMidnight(tripStop.arrivalTime)}
 							</div>
 						</div>
