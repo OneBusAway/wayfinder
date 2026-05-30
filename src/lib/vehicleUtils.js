@@ -92,3 +92,13 @@ export function clearVehicleMarkersMap() {
 	vehicleMarkersMap.clear();
 	activeTripMap.clear();
 }
+
+export function buildVehiclePopupData(vehicle, activeTrip, stopsMap) {
+	return {
+		nextDestination: activeTrip.tripHeadsign,
+		vehicleId: vehicle.vehicleId,
+		lastUpdateTime: vehicle.lastUpdateTime,
+		nextStopName: stopsMap.get(vehicle.nextStop)?.name,
+		predicted: vehicle.predicted
+	};
+}
