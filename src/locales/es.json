@@ -179,5 +179,6 @@
 		},
 		"go_home": "Ir al inicio",
 		"go_back": "Volver"
-	}
+	},
+	"skip_to_main_content": "Saltar al contenido principal"
 }
