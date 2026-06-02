@@ -12,6 +12,7 @@ import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
 import { env } from '$env/dynamic/public';
+import { buildVehiclePopupData } from '$lib/vehicleUtils';
 
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
@@ -292,13 +293,7 @@ export default class OpenStreetMapProvider {
 
 		this.vehicleMarkers.push(marker);
 
-		let vehicleData = $state({
-			nextDestination: activeTrip.tripHeadsign,
-			vehicleId: vehicle.vehicleId,
-			lastUpdateTime: vehicle.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
-			predicted: vehicle.predicted
-		});
+		const vehicleData = $state(buildVehiclePopupData(vehicle, activeTrip, this.stopsMap));
 
 		marker.vehicleData = vehicleData;
 
@@ -345,13 +340,10 @@ export default class OpenStreetMapProvider {
 		marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
 		marker.setIcon(updatedIcon);
 
-		Object.assign(marker.vehicleData, {
-			nextDestination: activeTrip.tripHeadsign,
-			vehicleId: vehicleStatus.vehicleId,
-			lastUpdateTime: vehicleStatus.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name,
-			predicted: vehicleStatus.predicted
-		});
+		Object.assign(
+			marker.vehicleData,
+			buildVehiclePopupData(vehicleStatus, activeTrip, this.stopsMap)
+		);
 	}
 	removeVehicleMarker(marker) {
 		if (marker) {
