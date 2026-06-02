@@ -104,11 +104,12 @@
 	{#if error}
 		<p>{error}</p>
 	{:else if tripDetails}
-		<h2 class="h2">
-			{#if routeInfo}
-				{$_('trip_details.route')} {routeInfo.shortName} -
-			{/if}
-		</h2>
+		{#if routeInfo}
+			<h2 class="h2">
+				{$_('trip_details.route')}
+				{routeInfo.shortName}
+			</h2>
+		{/if}
 		{#if tripDetails.schedule?.stopTimes.length > 0}
 			<div class="relative">
 				<div class="absolute bottom-0 left-3.5 top-0 w-[1px] bg-neutral-400"></div>
