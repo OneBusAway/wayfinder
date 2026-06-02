@@ -125,7 +125,7 @@ describe('Header', () => {
 			'justify-between',
 			'border-b',
 			'border-gray-500',
-			'bg-brand/80',
+			'bg-brand-accent/80',
 			'text-brand-foreground',
 			'backdrop-blur-md',
 			'dark:bg-surface-dark',

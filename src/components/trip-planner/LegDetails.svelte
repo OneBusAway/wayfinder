@@ -207,7 +207,7 @@
 		<!-- Walking steps toggle -->
 		{#if isWalking && leg.steps?.length > 0}
 			<button
-				class="mt-3 flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-brand-accent transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+				class="mt-3 flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-brand-accent transition-colors hover:bg-gray-100 dark:text-brand dark:hover:bg-gray-800"
 				onclick={() => toggleSteps(index)}
 			>
 				<FontAwesomeIcon

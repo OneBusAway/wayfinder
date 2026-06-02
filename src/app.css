@@ -21,15 +21,15 @@
 	}
 
 	.tab-container {
-		@apply flex border-b border-gray-300;
+		@apply flex border-b border-gray-300 dark:border-gray-700;
 	}
 
 	.tab-container__item {
-		@apply -mb-px px-4 py-2 font-semibold text-gray-500;
+		@apply -mb-px px-4 py-2 font-semibold text-gray-500 dark:text-gray-400;
 	}
 
 	.tab-container__item--active {
-		@apply border-b-2 border-brand-accent text-brand-accent;
+		@apply border-b-2 border-brand-accent text-brand-accent dark:border-brand dark:text-brand;
 	}
 
 	/* Pill-style itinerary tabs */
