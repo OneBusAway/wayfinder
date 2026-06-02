@@ -183,5 +183,6 @@
 		},
 		"go_home": "Retour à l'accueil",
 		"go_back": "Retour"
-	}
+	},
+	"skip_to_main_content": "Aller au contenu principal"
 }
