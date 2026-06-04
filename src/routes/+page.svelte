@@ -198,6 +198,15 @@
 		mapProvider.clearAllPolylines();
 	}
 
+	function closeTripPlanModal() {
+		if (browser) {
+			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
+		}
+		fromMarker = null;
+		toMarker = null;
+		clearTripItineraries();
+	}
+
 	async function loadAlerts() {
 		try {
 			const response = await fetch('/api/oba/alerts');
@@ -318,10 +327,8 @@
 						{mapProvider}
 						itineraries={tripItineraries}
 						error={tripPlanError}
-						{fromMarker}
-						{toMarker}
 						loading={loadingItineraries}
-						{closePane}
+						closePane={closeTripPlanModal}
 					/>
 				{/if}
 			</div>

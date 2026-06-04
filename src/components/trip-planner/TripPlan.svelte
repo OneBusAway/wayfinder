@@ -17,7 +17,7 @@
 	import { formatDepartureDisplay } from '$lib/dateTimeFormat';
 	import { env } from '$env/dynamic/public';
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
-	import { swapTripLocations } from '$lib/tripPlanUtils';
+	import { swapTripLocations, clearTripPlanPins } from '$lib/tripPlanUtils';
 	import { recentTrips } from '$stores/recentTripsStore';
 	import RecentTripsList from './RecentTripsList.svelte';
 
@@ -241,6 +241,14 @@
 
 	let tabSwitchedHandler;
 	let setTripPlanLocationHandler;
+	let tripPlanModalClosedHandler;
+
+	// Remove the From/To pins when the itineraries modal closes, but keep the form inputs so the user can tweak options and re-plan in one click. The pins are recreated by planTrip() on the next search.
+	function handleTripPlanModalClosed() {
+		const result = clearTripPlanPins({ fromMarker, toMarker, mapProvider });
+		fromMarker = result.fromMarker;
+		toMarker = result.toMarker;
+	}
 
 	function handleSetTripPlanLocation(e) {
 		const { type, lat, lng } = e.detail;
@@ -275,8 +283,10 @@
 				clearInput(false);
 			};
 			setTripPlanLocationHandler = handleSetTripPlanLocation;
+			tripPlanModalClosedHandler = handleTripPlanModalClosed;
 			window.addEventListener('tabSwitched', tabSwitchedHandler);
 			window.addEventListener('setTripPlanLocation', setTripPlanLocationHandler);
+			window.addEventListener('tripPlanModalClosed', tripPlanModalClosedHandler);
 		}
 	});
 
@@ -287,6 +297,9 @@
 			}
 			if (setTripPlanLocationHandler) {
 				window.removeEventListener('setTripPlanLocation', setTripPlanLocationHandler);
+			}
+			if (tripPlanModalClosedHandler) {
+				window.removeEventListener('tripPlanModalClosed', tripPlanModalClosedHandler);
 			}
 		}
 	});
