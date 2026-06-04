@@ -134,12 +134,18 @@
 			fromPlace = '';
 			fromResults = [];
 			selectedFrom = null;
-			mapProvider.removePinMarker(fromMarker);
+			if (fromMarker) {
+				mapProvider.removePinMarker(fromMarker);
+				fromMarker = null;
+			}
 		} else {
 			toPlace = '';
 			toResults = [];
 			selectedTo = null;
-			mapProvider.removePinMarker(toMarker);
+			if (toMarker) {
+				mapProvider.removePinMarker(toMarker);
+				toMarker = null;
+			}
 		}
 		clearTripItineraries();
 	}
@@ -291,6 +297,12 @@
 	});
 
 	onDestroy(() => {
+		// Safety when the plan tab unmounts before tabSwitched runs.
+		if (mapProvider && (fromMarker || toMarker)) {
+			const result = clearTripPlanPins({ fromMarker, toMarker, mapProvider });
+			fromMarker = result.fromMarker;
+			toMarker = result.toMarker;
+		}
 		if (browser) {
 			if (tabSwitchedHandler) {
 				window.removeEventListener('tabSwitched', tabSwitchedHandler);

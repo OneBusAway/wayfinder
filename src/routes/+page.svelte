@@ -242,7 +242,17 @@
 	}
 
 	function handleTabSwitched() {
+		if (browser) {
+			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
+		}
+		fromMarker = null;
+		toMarker = null;
+		tripItineraries = [];
+		tripPlanError = null;
 		currentModal = null;
+		if (mapProvider) {
+			mapProvider.clearAllPolylines();
+		}
 	}
 
 	function handlePlanTripTabClicked() {
