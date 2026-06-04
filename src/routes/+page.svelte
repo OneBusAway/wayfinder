@@ -51,8 +51,6 @@
 	let tripItineraries = $state([]);
 	let tripPlanError = $state(null);
 	let loadingItineraries = false;
-	let fromMarker = $state(null);
-	let toMarker = $state(null);
 	let currentHighlightedStopId = null;
 
 	let currentUserLocation = $state($userLocation);
@@ -202,8 +200,6 @@
 		if (browser) {
 			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
 		}
-		fromMarker = null;
-		toMarker = null;
 		clearTripItineraries();
 	}
 
@@ -226,16 +222,11 @@
 	}
 
 	/**
-	 *
 	 * @param {Object} tripPlanData - The data returned from the trip planning API.
 	 * @param {Object} tripPlanData.data - The trip planning data.
-	 * @param {Object} tripPlanData.fromMarker - The marker for the from location.
-	 * @param {Object} tripPlanData.toMarker - The marker for the to location.
 	 */
 	function handleTripPlan(tripPlanData) {
 		const tripData = tripPlanData.data;
-		fromMarker = tripPlanData.fromMarker;
-		toMarker = tripPlanData.toMarker;
 		tripItineraries = tripData.plan?.itineraries || [];
 		tripPlanError = tripData.error || null;
 		currentModal = Modal.TRIP_PLANNER;
@@ -245,8 +236,6 @@
 		if (browser) {
 			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
 		}
-		fromMarker = null;
-		toMarker = null;
 		tripItineraries = [];
 		tripPlanError = null;
 		currentModal = null;
