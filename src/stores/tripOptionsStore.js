@@ -31,6 +31,9 @@ const defaults = {
 	distanceUnit: null // null = auto-detect, 'metric', or 'imperial'
 };
 
+// Default option values, exported so the options modal can reset its local editing copies to the same source of truth used by the store.
+export const DEFAULT_TRIP_OPTIONS = defaults;
+
 // Re-export for use by components
 export { getWalkDistanceOptions, snapToClosestOption, UNIT_METRIC, UNIT_IMPERIAL };
 

@@ -6,6 +6,7 @@
 		effectiveDistanceUnit,
 		getWalkDistanceOptions,
 		snapToClosestOption,
+		DEFAULT_TRIP_OPTIONS,
 		UNIT_METRIC,
 		UNIT_IMPERIAL
 	} from '$stores/tripOptionsStore';
@@ -72,6 +73,18 @@
 			departureTime = getCurrentTimeForInput(regionTz);
 			departureDate = getTodayDateForInput(regionTz);
 		}
+	}
+
+	// Reset everything back to defaults immediately: clears the store and localStorage
+	function handleReset() {
+		tripOptions.resetAll();
+		departureType = DEFAULT_TRIP_OPTIONS.departureType;
+		departureTime = DEFAULT_TRIP_OPTIONS.departureTime || '';
+		departureDate = DEFAULT_TRIP_OPTIONS.departureDate || '';
+		wheelchair = DEFAULT_TRIP_OPTIONS.wheelchair;
+		optimize = DEFAULT_TRIP_OPTIONS.optimize;
+		maxWalkDistance = DEFAULT_TRIP_OPTIONS.maxWalkDistance;
+		distanceUnit = DEFAULT_TRIP_OPTIONS.distanceUnit;
 	}
 </script>
 
@@ -387,6 +400,17 @@
 						{/if}
 					</button>
 				</div>
+			</div>
+
+			<!-- Reset to defaults -->
+			<div class="mt-4 flex justify-center">
+				<button
+					type="button"
+					onclick={handleReset}
+					class="text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline focus:outline-none dark:text-gray-400 dark:hover:text-gray-200"
+				>
+					{$t('trip-planner.reset_to_defaults')}
+				</button>
 			</div>
 		</div>
 	</div>
