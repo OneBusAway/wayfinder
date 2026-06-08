@@ -36,6 +36,7 @@ describe('tripOptionsStore', () => {
 			departureDate: null,
 			wheelchair: false,
 			optimize: 'fastest',
+			maxWalkDistance: 1609,
 			distanceUnit: null
 		});
 	});

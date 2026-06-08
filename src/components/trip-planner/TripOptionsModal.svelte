@@ -75,9 +75,9 @@
 		}
 	}
 
-	// Reset everything back to defaults immediately: clears the store and localStorage
+	// Reset the local editing copies back to defaults. Like every other control
+	// in this modal, this is draft-only: nothing is persisted until handleDone() runs, so Cancel still discards the reset and keeps the saved preferences
 	function handleReset() {
-		tripOptions.resetAll();
 		departureType = DEFAULT_TRIP_OPTIONS.departureType;
 		departureTime = DEFAULT_TRIP_OPTIONS.departureTime || '';
 		departureDate = DEFAULT_TRIP_OPTIONS.departureDate || '';
@@ -407,7 +407,7 @@
 				<button
 					type="button"
 					onclick={handleReset}
-					class="text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline focus:outline-none dark:text-gray-400 dark:hover:text-gray-200"
+					class="rounded text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-400 dark:hover:text-gray-200"
 				>
 					{$t('trip-planner.reset_to_defaults')}
 				</button>
