@@ -233,15 +233,8 @@
 	}
 
 	function handleTabSwitched() {
-		if (browser) {
-			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
-		}
-		tripItineraries = [];
-		tripPlanError = null;
+		// SearchPane owns trip-plan teardown when leaving the Plan tab (it dispatches tripPlanModalClosed and calls clearTripItineraries). Here we just close any open modal for the generic tab switch.
 		currentModal = null;
-		if (mapProvider) {
-			mapProvider.clearAllPolylines();
-		}
 	}
 
 	function handlePlanTripTabClicked() {

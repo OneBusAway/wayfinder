@@ -221,12 +221,7 @@
 			const data = await fetchTripPlan(selectedFrom, selectedTo);
 
 			if (data) {
-				const tripPlanData = {
-					data,
-					fromMarker,
-					toMarker
-				};
-				handleTripPlan(tripPlanData);
+				handleTripPlan({ data });
 
 				// Save to recent trips
 				try {

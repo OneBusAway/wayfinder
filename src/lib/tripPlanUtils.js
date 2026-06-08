@@ -60,8 +60,10 @@ export function swapTripLocations({
  * @returns {{ fromMarker: null, toMarker: null }} Nulled marker references
  */
 export function clearTripPlanPins({ fromMarker, toMarker, mapProvider }) {
-	if (fromMarker) mapProvider.removePinMarker(fromMarker);
-	if (toMarker) mapProvider.removePinMarker(toMarker);
+	if (mapProvider) {
+		if (fromMarker) mapProvider.removePinMarker(fromMarker);
+		if (toMarker) mapProvider.removePinMarker(toMarker);
+	}
 
 	return { fromMarker: null, toMarker: null };
 }
