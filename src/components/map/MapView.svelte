@@ -19,8 +19,8 @@
 	 * @property {any} [selectedRoute]
 	 * @property {boolean} [showRoute]
 	 * @property {boolean} [showRouteMap]
-	 * @property {any} [mapProvider]
-	 * @property {any} [stop] - Currently selected stop to preserve visual context
+	 * @property {import('$lib/types').MapProvider | null} [mapProvider]
+	 * @property {import('$lib/types').Stop | null} [stop] - Currently selected stop to preserve visual context
 	 * @property {{ lat: number, lng: number } | null} [initialCoords] - Optional initial coordinates from URL params
 	 */
 

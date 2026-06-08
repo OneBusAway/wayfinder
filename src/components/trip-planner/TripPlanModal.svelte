@@ -9,9 +9,9 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} mapProvider
+	 * @property {import('$lib/types').MapProvider} mapProvider
 	 * @property {any} [itineraries]
-	 * @property {any} [error]
+	 * @property {string | null} [error]
 	 * @property {boolean} [loading]
 	 * @property {Function} closePane
 	 */

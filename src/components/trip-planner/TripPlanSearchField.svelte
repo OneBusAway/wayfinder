@@ -8,8 +8,8 @@
 	 * @property {string} [place]
 	 * @property {any} [results]
 	 * @property {boolean} [isLoading]
-	 * @property {any} onInput
-	 * @property {any} onClear
+	 * @property {(value: string) => void} onInput
+	 * @property {() => void} onClear
 	 * @property {any} onSelect
 	 */
 
