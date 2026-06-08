@@ -72,6 +72,50 @@ describe('buildVehiclePopupData', () => {
 			predicted: false
 		});
 	});
+
+	it('extracts fields from the correct sources when vehicle and activeTrip share properties', () => {
+		const vehicle = {
+			vehicleId: 'v-789',
+			lastUpdateTime: 1600000200,
+			predicted: true,
+			tripHeadsign: 'Wrong Destination' // Testing asymmetry
+		};
+		const activeTrip = {
+			tripHeadsign: 'Right Destination',
+			vehicleId: 'wrong-id' // Testing asymmetry
+		};
+		const stopsMap = new Map();
+
+		const result = buildVehiclePopupData(vehicle, activeTrip, stopsMap);
+
+		expect(result).toEqual({
+			nextDestination: 'Right Destination',
+			vehicleId: 'v-789',
+			lastUpdateTime: 1600000200,
+			nextStopName: undefined,
+			predicted: true
+		});
+	});
+
+	it('returns undefined nextDestination safely when activeTrip is undefined', () => {
+		const vehicle = {
+			vehicleId: 'v-999',
+			lastUpdateTime: 1600000300,
+			predicted: false
+		};
+		const activeTrip = undefined;
+		const stopsMap = new Map();
+
+		const result = buildVehiclePopupData(vehicle, activeTrip, stopsMap);
+
+		expect(result).toEqual({
+			nextDestination: undefined,
+			vehicleId: 'v-999',
+			lastUpdateTime: 1600000300,
+			nextStopName: undefined,
+			predicted: false
+		});
+	});
 });
 
 // This suite used to drive the now-deleted single-route `updateVehicleMarkers`
