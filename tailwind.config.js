@@ -1,6 +1,6 @@
 import flowbitePlugin from 'flowbite/plugin';
 import dotenv from 'dotenv';
-import { generatePalette } from './src/lib/colorUtils.js';
+import { generatePalette, darkenColor } from './src/lib/colorUtils.js';
 
 dotenv.config();
 
@@ -17,6 +17,7 @@ export default {
 				brand: process.env.COLOR_BRAND_PRIMARY || '#78aa36',
 				'brand-foreground': process.env.COLOR_BRAND_PRIMARY_FOREGROUND || '#ffffff',
 				'brand-accent': process.env.COLOR_BRAND_ACCENT || '#486621',
+				'brand-accent-dark': darkenColor(process.env.COLOR_BRAND_ACCENT || '#486621', 0.15),
 
 				// Surfaces (panels, page backgrounds, etc.)
 				// the foreground color is the text color that goes on top of the surface
