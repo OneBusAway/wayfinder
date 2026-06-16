@@ -343,7 +343,8 @@ export default class OpenStreetMapProvider {
 			marker,
 			{ lat: current.lat, lng: current.lng },
 			{ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon },
-			(lat, lng) => marker.setLatLng([lat, lng])
+			(lat, lng) => marker.setLatLng([lat, lng]),
+			{ routePaths: this._getRoutePaths() }
 		);
 		marker.setIcon(updatedIcon);
 
@@ -367,6 +368,18 @@ export default class OpenStreetMapProvider {
 			marker.remove();
 		});
 		this.vehicleMarkers = [];
+	}
+
+	/**
+	 * Returns the currently drawn route shapes as plain coordinate arrays, used
+	 * to animate vehicles along the route instead of in a straight line.
+	 * @returns {Array<Array<{lat:number,lng:number}>>}
+	 */
+	_getRoutePaths() {
+		return this.polylines
+			.map((polyline) => polyline.getLatLngs())
+			.filter((points) => Array.isArray(points) && points.length >= 2)
+			.map((points) => points.map((ll) => ({ lat: ll.lat, lng: ll.lng })));
 	}
 
 	addListener(event, callback) {

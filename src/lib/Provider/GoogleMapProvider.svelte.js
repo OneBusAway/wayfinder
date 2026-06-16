@@ -382,7 +382,8 @@ export default class GoogleMapProvider {
 			marker,
 			{ lat: current.lat(), lng: current.lng() },
 			{ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon },
-			(lat, lng) => marker.setPosition({ lat, lng })
+			(lat, lng) => marker.setPosition({ lat, lng }),
+			{ routePaths: this._getRoutePaths() }
 		);
 
 		let color;
@@ -416,6 +417,18 @@ export default class GoogleMapProvider {
 			marker.setMap(null);
 		}
 		this.vehicleMarkers = [];
+	}
+
+	/**
+	 * Returns the currently drawn route shapes as plain coordinate arrays, used
+	 * to animate vehicles along the route instead of in a straight line.
+	 * @returns {Array<Array<{lat:number,lng:number}>>}
+	 */
+	_getRoutePaths() {
+		return this.polylines
+			.map((polyline) => polyline.getPath()?.getArray() ?? [])
+			.filter((points) => points.length >= 2)
+			.map((points) => points.map((ll) => ({ lat: ll.lat(), lng: ll.lng() })));
 	}
 
 	cleanupInfoWindow() {
