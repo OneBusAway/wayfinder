@@ -116,10 +116,13 @@ init({
 if (browser) {
 	const preferredLocale = getInitialLocale();
 	if (preferredLocale && preferredLocale !== FALLBACK_LOCALE) {
-		// locale.set() returns the dictionary-load promise; on failure svelte-i18n
-		// keeps $locale on the fallback, so the app stays usable in English. Catch
-		// so the failure is logged instead of becoming an unhandled rejection.
-		locale.set(preferredLocale).catch((e) => {
+		// locale.set() returns the dictionary-load promise only when the locale has
+		// a pending lazy dictionary to flush; when the resolved dictionary is
+		// already loaded (e.g. an "en-US" preference closest-matching the
+		// synchronously-loaded fallback) it returns undefined. Wrap in
+		// Promise.resolve() so both cases are handled and a load failure is logged
+		// instead of crashing bootstrap or becoming an unhandled rejection.
+		Promise.resolve(locale.set(preferredLocale)).catch((e) => {
 			console.warn(`Unable to load locale "${preferredLocale}":`, e?.message);
 		});
 	}
