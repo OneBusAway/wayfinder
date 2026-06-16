@@ -20,7 +20,9 @@
 	});
 
 	function handleStopItemClick(stop) {
-		mapProvider.flyTo(stop.lat, stop.lon, 18);
+		// Reposition without a zoom animation so the displayed route stays glued
+		// to the basemap instead of flickering during the move (OSM/MapLibre GL).
+		mapProvider.flyTo(stop.lat, stop.lon, 18, { animate: false });
 		mapProvider.openStopMarker(stop);
 	}
 

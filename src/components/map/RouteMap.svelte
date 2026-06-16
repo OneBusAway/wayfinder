@@ -61,11 +61,18 @@
 
 		const stopTimes = tripData?.data?.entry?.schedule?.stopTimes ?? [];
 		const stops = tripData?.data?.references?.stops ?? [];
-		// TODO: implement better way to transition to route shape
-		const location = calculateMidpoint(stops);
 
-		if (location) {
-			mapProvider.flyTo(location.lat, location.lon, 13);
+		// Fit the view to the full route shape so it's always centered and
+		// visible regardless of route length. Fall back to the stops' midpoint
+		// when no polyline could be drawn (e.g. missing shape data). Awaiting the
+		// fit lets the stop markers appear in sync with the route reveal instead
+		// of popping in before the camera has settled.
+		const fitted = await mapProvider.fitToPolylines?.();
+		if (!fitted) {
+			const location = calculateMidpoint(stops);
+			if (location) {
+				mapProvider.flyTo(location.lat, location.lon, 13);
+			}
 		}
 
 		for (const stopTime of stopTimes) {

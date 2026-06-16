@@ -125,16 +125,22 @@
 				orderedStops = stopsForRoute.data.references.stops;
 			}
 
-			const midpoint = calculateMidpoint(orderedStops);
-			if (midpoint) {
-				mapProvider.flyTo(midpoint.lat, midpoint.lon, 12);
+			// Draw the route shapes first so the view can fit their full extent.
+			for (const polylineData of polylinesData) {
+				const polyline = await mapProvider.createPolyline(polylineData.points);
+				polylines.push(polyline);
 			}
 
-			for (const polylineData of polylinesData) {
-				const shape = polylineData.points;
-				let polyline;
-				polyline = mapProvider.createPolyline(shape);
-				polylines.push(polyline);
+			// Fit the view to the full route so it's always centered and visible
+			// regardless of route length. Fall back to the stops' midpoint when no
+			// polyline could be drawn. Awaiting the fit lets the stop markers appear
+			// in sync with the route reveal instead of popping in beforehand.
+			const fitted = await mapProvider.fitToPolylines?.();
+			if (!fitted) {
+				const midpoint = calculateMidpoint(orderedStops);
+				if (midpoint) {
+					mapProvider.flyTo(midpoint.lat, midpoint.lon, 12);
+				}
 			}
 
 			await showStopsOnRoute(orderedStops);

@@ -8,6 +8,7 @@ import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/generateVehicleIcon';
+import { animateMarkerTo, cancelMarkerAnimation } from '$lib/MapHelpers/animateMarker';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
@@ -193,7 +194,7 @@ export default class OpenStreetMapProvider {
 	addStopRouteMarker(stop, stopTime = null) {
 		const customIcon = L.divIcon({
 			html: `<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle"><circle cx="12" cy="12" r="10"/></svg>`,
-			className: '',
+			className: 'route-stop-marker',
 			iconSize: [20, 20],
 			iconAnchor: [10, 10]
 		});
@@ -337,7 +338,13 @@ export default class OpenStreetMapProvider {
 			zIndexOffset: 1000
 		});
 
-		marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
+		const current = marker.getLatLng();
+		animateMarkerTo(
+			marker,
+			{ lat: current.lat, lng: current.lng },
+			{ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon },
+			(lat, lng) => marker.setLatLng([lat, lng])
+		);
 		marker.setIcon(updatedIcon);
 
 		Object.assign(
@@ -347,6 +354,7 @@ export default class OpenStreetMapProvider {
 	}
 	removeVehicleMarker(marker) {
 		if (marker) {
+			cancelMarkerAnimation(marker);
 			marker.remove();
 		}
 	}
@@ -355,6 +363,7 @@ export default class OpenStreetMapProvider {
 		if (!this.map) return;
 
 		this.vehicleMarkers.forEach((marker) => {
+			cancelMarkerAnimation(marker);
 			marker.remove();
 		});
 		this.vehicleMarkers = [];
@@ -529,14 +538,126 @@ export default class OpenStreetMapProvider {
 		this.map.panTo([lat, lng]);
 	}
 
-	flyTo(lat, lng, zoom = 15) {
+	flyTo(lat, lng, zoom = 15, options = {}) {
 		if (!browser || !this.map) return;
-		this.map.flyTo([lat, lng], zoom);
+		// Pass `{ animate: false }` to reposition instantly. An animated zoom
+		// desyncs the MapLibre GL basemap from SVG overlays (e.g. a displayed
+		// route), making the route flicker/float until the move settles.
+		this.map.flyTo([lat, lng], zoom, { animate: options.animate ?? true });
 	}
 
 	setZoom(zoom) {
 		if (!browser || !this.map) return;
 		this.map.setZoom(zoom);
+	}
+
+	/**
+	 * Toggles the visibility of all route polylines (and their arrow
+	 * decorators) without removing them from the tracking array.
+	 * @param {boolean} visible
+	 */
+	_setPolylinesVisible(visible) {
+		this.polylines.forEach((polyline) => {
+			[polyline, polyline.arrowDecorator].forEach((layer) => {
+				if (!layer) return;
+				if (visible) {
+					if (!this.map.hasLayer(layer)) layer.addTo(this.map);
+				} else if (this.map.hasLayer(layer)) {
+					this.map.removeLayer(layer);
+				}
+			});
+		});
+	}
+
+	/**
+	 * Reveals the route polylines with a "draw from start to end" animation
+	 * using the SVG stroke-dashoffset technique. The direction-arrow decorators
+	 * are added once the line has finished drawing.
+	 * @param {number} duration animation length in seconds
+	 */
+	_revealPolylinesWithDraw(duration = 1.2) {
+		this.polylines.forEach((polyline) => {
+			if (!this.map.hasLayer(polyline)) polyline.addTo(this.map);
+
+			const path = polyline._path;
+			const addDecorator = () => {
+				if (polyline.arrowDecorator && !this.map.hasLayer(polyline.arrowDecorator)) {
+					polyline.arrowDecorator.addTo(this.map);
+				}
+			};
+
+			// SVG renderer only: fall back to an instant reveal otherwise.
+			if (!path || typeof path.getTotalLength !== 'function') {
+				addDecorator();
+				return;
+			}
+
+			const length = path.getTotalLength();
+			path.style.transition = 'none';
+			path.style.strokeDasharray = `${length} ${length}`;
+			path.style.strokeDashoffset = `${length}`;
+			// Force a reflow so the starting offset is applied before transitioning.
+			path.getBoundingClientRect();
+			path.style.transition = `stroke-dashoffset ${duration}s ease-in-out`;
+			path.style.strokeDashoffset = '0';
+
+			setTimeout(() => {
+				// Clear the inline styles so the original stroke (e.g. the dashed
+				// pattern used for walking legs) is restored once drawing is done.
+				path.style.transition = '';
+				path.style.strokeDasharray = '';
+				path.style.strokeDashoffset = '';
+				addDecorator();
+			}, duration * 1000);
+		});
+	}
+
+	/**
+	 * Smoothly flies the map view to the bounds of all currently drawn
+	 * polylines so the full route is centered and visible. Returns true when a
+	 * fit was applied.
+	 * @param {{ padding?: [number, number], maxZoom?: number, duration?: number, drawDuration?: number }} [options]
+	 * @returns {boolean | Promise<boolean>} resolves once the route reveal begins
+	 */
+	fitToPolylines(options = {}) {
+		if (!browser || !this.map || this.polylines.length === 0) return false;
+
+		const bounds = this.L.latLngBounds([]);
+		this.polylines.forEach((polyline) => {
+			bounds.extend(polyline.getBounds());
+		});
+
+		if (!bounds.isValid()) return false;
+
+		const duration = options.duration ?? 0.8;
+
+		// The MapLibre GL basemap lags behind Leaflet's coordinate space during
+		// a zoom animation, so the streets slide under the (correctly placed)
+		// SVG route and it appears misaligned. Hide the route while the camera
+		// glides, then draw it once the basemap has settled so it always lands
+		// perfectly aligned.
+		this._setPolylinesVisible(false);
+
+		return new Promise((resolve) => {
+			let revealed = false;
+			const reveal = () => {
+				if (revealed) return;
+				revealed = true;
+				this._revealPolylinesWithDraw(options.drawDuration ?? 1.2);
+				// Resolve as the route starts drawing so callers can reveal stop
+				// markers in sync, rather than before the camera has settled.
+				resolve(true);
+			};
+			this.map.once('moveend', reveal);
+			// Fallback in case the view doesn't change enough to fire `moveend`.
+			setTimeout(reveal, duration * 1000 + 250);
+
+			this.map.flyToBounds(bounds, {
+				padding: options.padding ?? [50, 50],
+				maxZoom: options.maxZoom ?? 16,
+				duration
+			});
+		});
 	}
 
 	enableContextMenu() {

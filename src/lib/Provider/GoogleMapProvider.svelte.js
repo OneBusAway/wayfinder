@@ -7,6 +7,7 @@ import PopupContent from '$components/map/PopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/generateVehicleIcon';
+import { animateMarkerTo, cancelMarkerAnimation } from '$lib/MapHelpers/animateMarker';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
 import { buildVehiclePopupData } from '$lib/vehicleUtils';
@@ -376,7 +377,13 @@ export default class GoogleMapProvider {
 	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType) {
 		if (!this.map || !marker) return;
 
-		marker.setPosition({ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon });
+		const current = marker.getPosition();
+		animateMarkerTo(
+			marker,
+			{ lat: current.lat(), lng: current.lng() },
+			{ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon },
+			(lat, lng) => marker.setPosition({ lat, lng })
+		);
 
 		let color;
 		if (!vehicleStatus.predicted) {
@@ -397,6 +404,7 @@ export default class GoogleMapProvider {
 	}
 
 	removeVehicleMarker(marker) {
+		cancelMarkerAnimation(marker);
 		marker.setMap(null);
 	}
 
@@ -404,6 +412,7 @@ export default class GoogleMapProvider {
 		if (!this.map) return;
 
 		for (const marker of this.vehicleMarkers) {
+			cancelMarkerAnimation(marker);
 			marker.setMap(null);
 		}
 		this.vehicleMarkers = [];
@@ -555,12 +564,48 @@ export default class GoogleMapProvider {
 		this.map.panTo({ lat, lng });
 	}
 
+	// Google Maps repositions instantly here (no zoom animation), so its native
+	// polylines never desync. A trailing `options` arg (used by the OSM
+	// provider) is harmlessly ignored.
 	flyTo(lat, lng, zoom = 15) {
 		this.map.setZoom(zoom);
 		this.map.setCenter({ lat, lng });
 	}
 	setZoom(zoom) {
 		this.map.setZoom(zoom);
+	}
+
+	/**
+	 * Fits the map view to the bounds of all currently drawn polylines so the
+	 * full route is centered and visible. Returns true when a fit was applied.
+	 * @param {{ padding?: number, maxZoom?: number }} [options]
+	 * @returns {boolean | Promise<boolean>} resolves once the view has settled
+	 */
+	fitToPolylines(options = {}) {
+		if (!this.map || this.polylines.length === 0) return false;
+
+		const bounds = new window.google.maps.LatLngBounds();
+		this.polylines.forEach((polyline) => {
+			polyline.getPath().forEach((latLng) => bounds.extend(latLng));
+		});
+
+		if (bounds.isEmpty()) return false;
+
+		const maxZoom = options.maxZoom ?? 16;
+
+		return new Promise((resolve) => {
+			// fitBounds has no maxZoom option on Google Maps, so clamp once the
+			// view settles to avoid zooming in too far on short routes. Resolve
+			// here so callers can reveal stop markers in sync with the fit.
+			window.google.maps.event.addListenerOnce(this.map, 'idle', () => {
+				if (this.map.getZoom() > maxZoom) {
+					this.map.setZoom(maxZoom);
+				}
+				resolve(true);
+			});
+
+			this.map.fitBounds(bounds, options.padding ?? 50);
+		});
 	}
 
 	enableContextMenu() {
