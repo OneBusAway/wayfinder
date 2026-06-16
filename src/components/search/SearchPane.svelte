@@ -126,6 +126,9 @@
 			}
 
 			// Draw the route shapes first so the view can fit their full extent.
+			// Reset the collection so each route click rebuilds it from scratch
+			// rather than accumulating stale references from previous selections.
+			polylines = [];
 			for (const polylineData of polylinesData) {
 				const polyline = await mapProvider.createPolyline(polylineData.points);
 				polylines.push(polyline);
