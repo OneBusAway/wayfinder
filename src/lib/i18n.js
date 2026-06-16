@@ -116,12 +116,10 @@ init({
 if (browser) {
 	const preferredLocale = getInitialLocale();
 	if (preferredLocale && preferredLocale !== FALLBACK_LOCALE) {
-		// locale.set() returns the dictionary-load promise only when the locale has
-		// a pending lazy dictionary to flush; when the resolved dictionary is
-		// already loaded (e.g. an "en-US" preference closest-matching the
-		// synchronously-loaded fallback) it returns undefined. Wrap in
-		// Promise.resolve() so both cases are handled and a load failure is logged
-		// instead of crashing bootstrap or becoming an unhandled rejection.
+		// locale.set() returns undefined (not a promise) when the resolved
+		// dictionary is already loaded — e.g. an "en-US" preference
+		// closest-matching the synchronously-loaded fallback. Wrap in
+		// Promise.resolve() so the .catch() can't throw on that path.
 		Promise.resolve(locale.set(preferredLocale)).catch((e) => {
 			console.warn(`Unable to load locale "${preferredLocale}":`, e?.message);
 		});

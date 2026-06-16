@@ -471,6 +471,12 @@ export default class GoogleMapProvider {
 		});
 	}
 
+	/**
+	 * Creates a polyline from an encoded shape.
+	 * Contract note: this provider throws if `shape` cannot be decoded, whereas
+	 * the OSM provider returns `null` on decode failure. Callers that need a
+	 * uniform contract should guard accordingly.
+	 */
 	async createPolyline(shape, options = {}) {
 		// Backward compat: old callers pass a boolean as the second arg
 		if (typeof options === 'boolean') {
@@ -578,9 +584,10 @@ export default class GoogleMapProvider {
 	}
 
 	// Google Maps repositions instantly here (no zoom animation), so its native
-	// polylines never desync. A trailing `options` arg (used by the OSM
-	// provider) is harmlessly ignored.
-	flyTo(lat, lng, zoom = 15) {
+	// polylines never desync. `_options` mirrors the OSM provider's signature
+	// (e.g. `{ animate }`) but has no effect here.
+	// eslint-disable-next-line no-unused-vars
+	flyTo(lat, lng, zoom = 15, _options = {}) {
 		this.map.setZoom(zoom);
 		this.map.setCenter({ lat, lng });
 	}
@@ -607,15 +614,24 @@ export default class GoogleMapProvider {
 		const maxZoom = options.maxZoom ?? 16;
 
 		return new Promise((resolve) => {
+			let settled = false;
 			// fitBounds has no maxZoom option on Google Maps, so clamp once the
 			// view settles to avoid zooming in too far on short routes. Resolve
 			// here so callers can reveal stop markers in sync with the fit.
-			window.google.maps.event.addListenerOnce(this.map, 'idle', () => {
+			const finish = () => {
+				if (settled) return;
+				settled = true;
 				if (this.map.getZoom() > maxZoom) {
 					this.map.setZoom(maxZoom);
 				}
 				resolve(true);
-			});
+			};
+
+			window.google.maps.event.addListenerOnce(this.map, 'idle', finish);
+			// Safety net: Google Maps does not guarantee an `idle` event when
+			// fitBounds produces no viewport change, so resolve anyway after a
+			// short delay to avoid hanging callers that await this.
+			setTimeout(finish, 1000);
 
 			this.map.fitBounds(bounds, options.padding ?? 50);
 		});

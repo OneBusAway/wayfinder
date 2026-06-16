@@ -32,6 +32,9 @@ export default class OpenStreetMapProvider {
 		this.routeLabelsVisible = false;
 		this.contextMenuPopup = null;
 		this.contextMenuComponent = null;
+		// Incremented on each fitToPolylines() so a superseded route load's
+		// pending reveal can detect it's stale and bail out.
+		this._fitToken = 0;
 	}
 
 	async initMap(element, options) {
@@ -458,6 +461,12 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 	}
 
+	/**
+	 * Creates a polyline from an encoded shape.
+	 * Contract note: this provider returns `null` when not in the browser or the
+	 * shape cannot be decoded, whereas the Google provider throws on decode
+	 * failure. Callers that need a uniform contract should guard accordingly.
+	 */
 	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
 
@@ -509,6 +518,11 @@ export default class OpenStreetMapProvider {
 	removePolyline(polyline) {
 		if (!polyline) return;
 
+		if (polyline._drawTimeoutId) {
+			clearTimeout(polyline._drawTimeoutId);
+			polyline._drawTimeoutId = null;
+		}
+
 		if (polyline.arrowDecorator) {
 			polyline.arrowDecorator.remove();
 			polyline.arrowDecorator = null;
@@ -531,6 +545,10 @@ export default class OpenStreetMapProvider {
 
 		this.polylines.forEach((polyline) => {
 			if (polyline) {
+				if (polyline._drawTimeoutId) {
+					clearTimeout(polyline._drawTimeoutId);
+					polyline._drawTimeoutId = null;
+				}
 				if (polyline.arrowDecorator) {
 					polyline.arrowDecorator.remove();
 					polyline.arrowDecorator = null;
@@ -614,7 +632,10 @@ export default class OpenStreetMapProvider {
 			path.style.transition = `stroke-dashoffset ${duration}s ease-in-out`;
 			path.style.strokeDashoffset = '0';
 
-			setTimeout(() => {
+			polyline._drawTimeoutId = setTimeout(() => {
+				polyline._drawTimeoutId = null;
+				// Bail if the polyline was cleared mid-draw (e.g. rapid route switch).
+				if (!this.map.hasLayer(polyline)) return;
 				// Clear the inline styles so the original stroke (e.g. the dashed
 				// pattern used for walking legs) is restored once drawing is done.
 				path.style.transition = '';
@@ -644,6 +665,10 @@ export default class OpenStreetMapProvider {
 
 		const duration = options.duration ?? 0.8;
 
+		// Tag this load so a superseded reveal (a newer route started before this
+		// one's moveend/fallback fired) can detect it's stale and skip drawing.
+		const token = ++this._fitToken;
+
 		// The MapLibre GL basemap lags behind Leaflet's coordinate space during
 		// a zoom animation, so the streets slide under the (correctly placed)
 		// SVG route and it appears misaligned. Hide the route while the camera
@@ -656,6 +681,11 @@ export default class OpenStreetMapProvider {
 			const reveal = () => {
 				if (revealed) return;
 				revealed = true;
+				// A newer route load has taken over; don't draw its polylines here.
+				if (token !== this._fitToken) {
+					resolve(false);
+					return;
+				}
 				this._revealPolylinesWithDraw(options.drawDuration ?? 1.2);
 				// Resolve as the route starts drawing so callers can reveal stop
 				// markers in sync, rather than before the camera has settled.
