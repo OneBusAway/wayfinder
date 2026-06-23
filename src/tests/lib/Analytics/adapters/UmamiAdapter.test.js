@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { UmamiAdapter, sanitizeData, FALLBACK_USER_AGENT } from '$lib/Analytics/adapters/UmamiAdapter.js';
+import { UmamiAdapter, sanitizeData, FALLBACK_USER_AGENT, isSuccessfulIngest } from '$lib/Analytics/adapters/UmamiAdapter.js';
 
 const fullEnv = {
 	PUBLIC_ANALYTICS_DOMAIN: 'example.com',
@@ -168,10 +168,11 @@ describe('UmamiAdapter.forwardEvent (happy path)', () => {
 		expect(result).toEqual({ cache: 'abc', sessionId: 's', visitId: 'v' });
 	});
 
-	it('returns { status: text } when response is not JSON', async () => {
-		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => 'ok' });
-		const result = await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
-		expect(result).toEqual({ status: 'ok' });
+	it('throws when the response body lacks a success marker', async () => {
+		global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => 'ok' });
+		await expect(new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow(
+			'dropped event'
+		);
 	});
 });
 
@@ -204,7 +205,7 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 	});
 
 	it('falls back to the browser-shaped User-Agent when context omits it', async () => {
-		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{}' });
+		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{"cache":"x"}' });
 		await new UmamiAdapter(fullEnv).forwardEvent(envelope, { userAgent: '', clientIp: '' });
 		const [, init] = global.fetch.mock.calls[0];
 		expect(init.headers['User-Agent']).toBe('Mozilla/5.0 (Wayfinder)');
@@ -241,7 +242,7 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 	});
 
 	it('passes an AbortSignal to fetch so the request can time out', async () => {
-		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{}' });
+		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{"cache":"x"}' });
 		await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
 		const [, init] = global.fetch.mock.calls[0];
 		expect(init.signal).toBeInstanceOf(AbortSignal);
@@ -252,6 +253,19 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 			.fn()
 			.mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }));
 		await expect(new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow('aborted');
+	});
+
+	it('throws with upstreamStatus 502 when Umami drops the event (beep/boop)', async () => {
+		global.fetch = vi
+			.fn()
+			.mockResolvedValue({ ok: true, status: 200, text: async () => '{"beep":"boop"}' });
+		try {
+			await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
+			expect.unreachable('should have thrown');
+		} catch (error) {
+			expect(error.message).toContain('dropped event');
+			expect(error.upstreamStatus).toBe(502);
+		}
 	});
 });
 
@@ -283,5 +297,33 @@ describe('sanitizeData', () => {
 	it('returns an empty object for empty or nullish input', () => {
 		expect(sanitizeData({})).toEqual({});
 		expect(sanitizeData(undefined)).toEqual({});
+	});
+});
+
+describe('isSuccessfulIngest', () => {
+	it('treats a beep/boop body as failure', () => {
+		expect(isSuccessfulIngest('{"beep":"boop"}')).toBe(false);
+	});
+
+	it('treats a body with cache/sessionId/visitId as success', () => {
+		expect(isSuccessfulIngest('{"cache":"c","sessionId":"s","visitId":"v"}')).toBe(true);
+		expect(isSuccessfulIngest('{"sessionId":"s"}')).toBe(true);
+	});
+
+	it('treats an empty body as success', () => {
+		expect(isSuccessfulIngest('')).toBe(true);
+	});
+
+	it('treats a bare {} body as failure', () => {
+		expect(isSuccessfulIngest('{}')).toBe(false);
+	});
+
+	it('treats any other non-empty body without a marker as failure', () => {
+		expect(isSuccessfulIngest('ok')).toBe(false);
+	});
+
+	it('does not throw on a non-JSON body', () => {
+		expect(() => isSuccessfulIngest('<html>error</html>')).not.toThrow();
+		expect(isSuccessfulIngest('<html>error</html>')).toBe(false);
 	});
 });

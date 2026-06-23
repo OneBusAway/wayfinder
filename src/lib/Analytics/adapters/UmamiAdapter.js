@@ -32,6 +32,19 @@ export function sanitizeData(props) {
 	return out;
 }
 
+/**
+ * Classify a Umami /api/send response body. Umami silently drops bot-like requests with
+ * HTTP 200 + {"beep":"boop"}; a real ingest returns cache/sessionId/visitId. Tolerant of
+ * non-JSON bodies (substring checks, never throws).
+ * @param {string} body
+ * @returns {boolean}
+ */
+export function isSuccessfulIngest(body) {
+	if (body === '') return true;
+	if (body.includes('beep')) return false;
+	return body.includes('cache') || body.includes('sessionId') || body.includes('visitId');
+}
+
 export class UmamiAdapter {
 	constructor(env) {
 		this.env = env;
@@ -120,6 +133,11 @@ export class UmamiAdapter {
 			}
 
 			const text = await res.text();
+			if (!isSuccessfulIngest(text)) {
+				const err = new Error('Umami dropped event as bot-like (isbot rejected the User-Agent)');
+				err.upstreamStatus = 502;
+				throw err;
+			}
 			try {
 				return JSON.parse(text);
 			} catch {
