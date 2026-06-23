@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { UmamiAdapter, sanitizeData } from '$lib/Analytics/adapters/UmamiAdapter.js';
+import { UmamiAdapter, sanitizeData, FALLBACK_USER_AGENT } from '$lib/Analytics/adapters/UmamiAdapter.js';
 
 const fullEnv = {
 	PUBLIC_ANALYTICS_DOMAIN: 'example.com',
@@ -203,11 +203,19 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 		);
 	});
 
-	it('falls back to Wayfinder/1.0 User-Agent when context omits it', async () => {
+	it('falls back to the browser-shaped User-Agent when context omits it', async () => {
 		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{}' });
 		await new UmamiAdapter(fullEnv).forwardEvent(envelope, { userAgent: '', clientIp: '' });
 		const [, init] = global.fetch.mock.calls[0];
-		expect(init.headers['User-Agent']).toBe('Wayfinder/1.0');
+		expect(init.headers['User-Agent']).toBe('Mozilla/5.0 (Wayfinder)');
+	});
+
+	it('fallback User-Agent contains no isbot bot tokens', () => {
+		const tokens = ['server', 'bot', 'http', 'crawl', 'scan', 'search', 'spider', 'agent'];
+		const ua = FALLBACK_USER_AGENT.toLowerCase();
+		for (const token of tokens) {
+			expect(ua).not.toContain(token);
+		}
 	});
 
 	it('throws Error with upstreamStatus on non-OK response', async () => {

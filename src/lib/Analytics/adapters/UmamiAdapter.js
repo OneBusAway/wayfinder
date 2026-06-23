@@ -2,6 +2,11 @@ const UPSTREAM_TIMEOUT_MS = 5000;
 
 const MAX_DATA_VALUE_LENGTH = 256;
 
+// Sent when no end-user User-Agent is available. Must survive Umami's isbot filter:
+// no bot token (isbot matches `server`/`bot`/etc. unanchored, case-insensitively) and
+// not a bare `Mozilla/x.x <token>` string (the `(` breaks isbot's anchored pattern).
+export const FALLBACK_USER_AGENT = 'Mozilla/5.0 (Wayfinder)';
+
 /**
  * Coerce arbitrary event props into Umami-safe `data` values: keep strings (truncated),
  * finite numbers, and booleans; drop null/undefined and non-finite numbers; JSON-stringify
@@ -91,7 +96,7 @@ export class UmamiAdapter {
 
 		const headers = {
 			'Content-Type': 'application/json',
-			'User-Agent': requestContext.userAgent || 'Wayfinder/1.0'
+			'User-Agent': requestContext.userAgent || FALLBACK_USER_AGENT
 		};
 		if (requestContext.clientIp) {
 			headers['X-Forwarded-For'] = requestContext.clientIp;
