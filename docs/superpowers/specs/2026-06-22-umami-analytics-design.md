@@ -95,44 +95,80 @@ so they are unit-testable in isolation, mirroring Twilio's standalone
 export function isSuccessfulIngest(body) { /* ... */ }
 ```
 
-Contract (mirrors the Twilio/iOS resolution):
+Contract (verified against Umami source — a real success response is always
+`{cache, sessionId, visitId}`; the bot drop is the only `beep/boop` path):
 
-- A body containing `"beep"` → **failure**.
-- Otherwise **success** when the body is **empty** OR contains one of
+- The check runs against the **response** body only, never the request.
+- A body containing the substring `"beep"` → **failure** (the `{"beep":"boop"}` drop).
+- **Success** when the body is an **empty string** OR contains one of
   `cache` / `sessionId` / `visitId`.
-- Any other non-empty body → **failure** (no success marker).
+- **Any other body → failure**, including a bare `{}` (no success marker). This is
+  deliberate: Umami never returns `{}` on a real success.
 - Parsing is tolerant: a non-JSON body must not throw; fall back to the `"beep"`
   substring check.
 
+> **Test impact (must-fix):** two existing tests mock `text: async () => '{}'`
+> (`UmamiAdapter.test.js` lines 207 and 236 — the fallback-UA and AbortSignal tests).
+> Under this contract `{}` is now a failure, so those mocks must be updated to a
+> success-marker body (e.g. `JSON.stringify({ cache: 'x' })`). The "existing tests
+> stay green" claim holds only with those two mocks updated.
+
 Wiring in `forwardEvent`: after the existing `res.ok` check and `await res.text()`,
-call `isSuccessfulIngest(text)`. On failure, **throw** a descriptive `Error`
-(e.g. `Umami dropped event (bot-like User-Agent or misconfigured website id)`) with
-`upstreamStatus = res.status`. The `/api/events` endpoint already catches this and
-returns the status; the client facade already swallows and logs it — so the
-fire-and-forget guarantee holds while the drop is now visible in server logs instead
-of looking healthy. On success, return the parsed JSON as today.
+call `isSuccessfulIngest(text)`. On failure, **throw** a descriptive `Error` —
+`Umami dropped event as bot-like (isbot rejected the User-Agent)` — with
+**`upstreamStatus = 502`** (a drop is bad upstream behavior; do **not** use
+`res.status`, which is `200` — the endpoint's `error.upstreamStatus || …` mapping
+would then return HTTP 200 and the drop would look healthy at the HTTP layer too).
+With `502`, the `/api/events` endpoint returns 502, the client facade swallows and
+logs it, and the drop is visible in server logs and status. On success, return the
+parsed JSON as today.
 
 #### 2. Browser-shaped User-Agent fallback
 
-Replace the bare `Wayfinder/1.0` fallback with a `Mozilla/5.0`-prefixed,
-browser-shaped constant that survives `isbot` **by construction** (the approach Twilio
-adopted after finding bare product tokens fragile against isbot's anchored pattern):
+Replace the bare `Wayfinder/1.0` fallback with a browser-shaped string **verified
+against the `isbot` package's patterns**:
 
 ```js
-const FALLBACK_USER_AGENT = 'Mozilla/5.0 (Wayfinder) Server/1.0';
+const FALLBACK_USER_AGENT = 'Mozilla/5.0 (Wayfinder)';
 ```
 
 The forwarded real browser UA remains preferred and unchanged; this only affects the
 rare empty-UA case (server-originated requests, `sendBeacon` edge cases, curl).
 
+> **Why not `Mozilla/5.0 (Wayfinder) Server/1.0`** (the obvious first choice): `isbot`
+> tests its patterns **case-insensitively and unanchored**, and `patterns.json`
+> contains the literal token **`server`** — so any UA containing `Server` is
+> bot-flagged and dropped, defeating fix #1. The fallback must contain **no** isbot
+> token (`server`, `bot`, `http`, `crawl`, `scan`, `search`, `spider`, `agent\b`, …)
+> **and** must not be a bare `Mozilla/x.x <token>` string (isbot end-anchors those
+> with `^mozilla/\d\.\d\s[\w.-]+$`). `Mozilla/5.0 (Wayfinder)` satisfies both:
+> `wayfinder` contains no token, and the `(` breaks the anchor (`(` ∉ `[\w.-]`).
+>
+> `isbot` is **not** added as a dependency just for this. Instead a unit test asserts
+> the constant contains none of the high-risk tokens above (a falsifiable
+> regression guard); the live-isbot verification was done during design review.
+
 #### 3. Prop sanitization — `sanitizeData(props)`
 
 ```js
-// Keep string / finite number / boolean. Stringify other types. Drop null/undefined.
-// Truncate strings to MAX_DATA_VALUE_LENGTH (256) to respect Umami's data limits and
-// to bound the free-text `search` query (uncontrolled user input).
 export function sanitizeData(props) { /* ... */ }
 ```
+
+Per-value rules, in order:
+
+1. `null` / `undefined` → **drop the key**.
+2. `boolean` → **keep** as-is.
+3. `string` → **keep**, truncated via `.slice(0, MAX_DATA_VALUE_LENGTH)`.
+4. `number` → **keep only if `Number.isFinite(v)`**; `NaN` / `Infinity` / `-Infinity`
+   are **dropped** (they would otherwise serialize to `null` and confuse the
+   dashboard).
+5. anything else (objects, arrays) → `JSON.stringify(v)`, then truncate as a string.
+
+`MAX_DATA_VALUE_LENGTH = 256` is a **Wayfinder-chosen** bound (not a documented Umami
+API limit) to bound the free-text `search` `query` (uncontrolled user input) and keep
+`data` values small. Flattening nested objects to JSON strings is an intentional
+choice — Umami accepts nested `data` objects, but Wayfinder's events are flat today,
+so stringifying is a safe, predictable default rather than a requirement.
 
 Applied to `payload.data` before the POST. Empty result is sent as `{}` (current
 behavior for missing props is preserved).
@@ -144,8 +180,10 @@ behavior for missing props is preserved).
 - `src/lib/Analytics/adapters/UmamiAdapter.js` — add `isSuccessfulIngest`,
   `sanitizeData`, `FALLBACK_USER_AGENT`; wire all three into `forwardEvent`.
 - `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js` — add the new tests below;
-  **update** the existing fallback-UA test (currently asserts `'Wayfinder/1.0'` at
-  ~line 206) to assert the new browser-shaped string.
+  **update** the existing fallback-UA test (asserts `'Wayfinder/1.0'`, ~line 206) to
+  the new constant; **update the two `text: async () => '{}'` mocks** (lines 207 and
+  236) to a success-marker body so they stay green under the new `isSuccessfulIngest`
+  contract.
 
 No other files change. Env schema, `.env.example`, call sites, and the `/api/events`
 endpoint are all untouched — the endpoint's existing `try/catch` already handles the
@@ -160,20 +198,24 @@ forwarding, hostname sourcing, timeout/abort, and the disabled gate):
   - `{"beep":"boop"}` → failure.
   - body with `cache` / `sessionId` / `visitId` → success.
   - empty body `''` → success.
-  - non-empty body with no success marker and no `beep` → failure.
+  - bare `{}` → **failure** (no success marker).
+  - non-empty body with no marker and no `beep` → failure.
   - non-JSON body (e.g. `'<html>...'`) → does not throw; failure unless it contains a
     marker.
 - **`forwardEvent` beep/boop path:** a 200 response whose body is `{"beep":"boop"}` is
-  treated as a **failure** (throws, `upstreamStatus` set); a 200 with a success body
-  still resolves successfully.
-- **`sanitizeData`:** strings/numbers/booleans kept; objects/arrays stringified;
-  `null`/`undefined` dropped; a >256-char string truncated to 256; verified through a
-  `forwardEvent` call that the emitted `payload.data` is sanitized (e.g. a long
-  `query`).
-- **Fallback UA:** update the existing test — empty `requestContext.userAgent` now
-  yields `Mozilla/5.0 (Wayfinder) Server/1.0`; a present browser UA is still forwarded
-  verbatim.
-- All existing Analytics tests stay green.
+  treated as a **failure** — throws with `upstreamStatus === 502`; a 200 with a success
+  body still resolves successfully.
+- **`sanitizeData`:** strings kept (and >256-char truncated to 256); finite numbers and
+  booleans kept; `NaN` / `Infinity` dropped; `null` / `undefined` dropped; nested
+  object/array `JSON.stringify`-ed; verified through a `forwardEvent` call that the
+  emitted `payload.data` is sanitized (e.g. a long `query`).
+- **Fallback UA:**
+  - the existing test — empty `requestContext.userAgent` now yields
+    `Mozilla/5.0 (Wayfinder)`; a present browser UA is still forwarded verbatim.
+  - a **regression guard** asserting `FALLBACK_USER_AGENT` contains none of the
+    high-risk isbot tokens (`server`, `bot`, `http`, `crawl`, `scan`, `search`,
+    `spider`, `agent`) — falsifiable without adding the `isbot` dependency.
+- All existing Analytics tests stay green (with the two `{}` mocks updated, above).
 
 Run with `npx vitest run` (per repo convention — `npm run test` hangs in non-TTY).
 
