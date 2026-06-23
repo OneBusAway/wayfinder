@@ -91,7 +91,8 @@ so they are unit-testable in isolation, mirroring Twilio's standalone
 ```js
 // A dropped event returns HTTP 200, not an error. Umami replies {"beep":"boop"}
 // (or a body lacking cache/sessionId/visitId) when isbot rejects the request.
-// Tolerant of non-JSON: fall back to a substring check for "beep".
+// Detection is key-based (parse JSON, check top-level keys), not substring, so a
+// marker word in an error message isn't mistaken for success. Never throws.
 export function isSuccessfulIngest(body) {
 	/* ... */
 }
@@ -101,13 +102,15 @@ Contract (verified against Umami source — a real success response is always
 `{cache, sessionId, visitId}`; the bot drop is the only `beep/boop` path):
 
 - The check runs against the **response** body only, never the request.
-- A body containing the substring `"beep"` → **failure** (the `{"beep":"boop"}` drop).
-- **Success** when the body is an **empty string** OR contains one of
-  `cache` / `sessionId` / `visitId`.
+- An **empty string** body → **success** (tolerates an empty/204-style upstream).
+- Otherwise parse the body as JSON. A non-JSON body (e.g. an HTML error page) →
+  **failure**, without throwing.
+- A parsed object with a top-level `beep` key → **failure** (the `{"beep":"boop"}` drop).
+- **Success** when the parsed object has a top-level `cache` / `sessionId` / `visitId`
+  key. Key-based, not substring — `{"error":"missing sessionId"}` is a **failure**,
+  not a false success.
 - **Any other body → failure**, including a bare `{}` (no success marker). This is
   deliberate: Umami never returns `{}` on a real success.
-- Parsing is tolerant: a non-JSON body must not throw; fall back to the `"beep"`
-  substring check.
 
 > **Test impact (must-fix):** two existing tests mock `text: async () => '{}'`
 > (`UmamiAdapter.test.js` lines 207 and 236 — the fallback-UA and AbortSignal tests).

@@ -331,4 +331,10 @@ describe('isSuccessfulIngest', () => {
 		expect(() => isSuccessfulIngest('<html>error</html>')).not.toThrow();
 		expect(isSuccessfulIngest('<html>error</html>')).toBe(false);
 	});
+
+	it('does not treat a marker word in an error message as success', () => {
+		// The marker must be a top-level key, not incidental text in an error body.
+		expect(isSuccessfulIngest('{"error":"missing sessionId"}')).toBe(false);
+		expect(isSuccessfulIngest('{"message":"cache unavailable"}')).toBe(false);
+	});
 });
