@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { UmamiAdapter, sanitizeData, FALLBACK_USER_AGENT, isSuccessfulIngest } from '$lib/Analytics/adapters/UmamiAdapter.js';
+import {
+	UmamiAdapter,
+	sanitizeData,
+	FALLBACK_USER_AGENT,
+	isSuccessfulIngest
+} from '$lib/Analytics/adapters/UmamiAdapter.js';
 
 const fullEnv = {
 	PUBLIC_ANALYTICS_DOMAIN: 'example.com',

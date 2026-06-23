@@ -39,10 +39,12 @@ Tasks are ordered so **all tests are green after every task** (Tasks 1 and 2 don
 ## Task 1: `sanitizeData` — sanitize/truncate event props
 
 **Files:**
+
 - Modify: `src/lib/Analytics/adapters/UmamiAdapter.js`
 - Test: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
 
 **Interfaces:**
+
 - Produces: `export function sanitizeData(props: object): object` — drops `null`/`undefined`; keeps `boolean`; keeps `string` truncated to 256 chars; keeps `number` only when `Number.isFinite`; `JSON.stringify`s everything else then truncates to 256.
 - Consumes: nothing from other tasks.
 
@@ -126,13 +128,13 @@ export function sanitizeData(props) {
 In the same file, in `forwardEvent`, change the payload's `data` line from:
 
 ```js
-			data: props
+data: props;
 ```
 
 to:
 
 ```js
-			data: sanitizeData(props)
+data: sanitizeData(props);
 ```
 
 - [ ] **Step 5: Run the full adapter test file to verify all pass**
@@ -152,10 +154,12 @@ git commit -m "feat(analytics): sanitize and truncate Umami event data (#523)"
 ## Task 2: Browser-shaped fallback User-Agent
 
 **Files:**
+
 - Modify: `src/lib/Analytics/adapters/UmamiAdapter.js`
 - Test: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
 
 **Interfaces:**
+
 - Produces: `export const FALLBACK_USER_AGENT = 'Mozilla/5.0 (Wayfinder)'` — used as the `User-Agent` header when `requestContext.userAgent` is empty. Must contain no isbot token and must not be a bare `Mozilla/x.x <token>` string.
 - Consumes: nothing from other tasks.
 
@@ -169,35 +173,35 @@ Update the import at the top of the test file to include the constant:
 Find the existing test (currently ~line 206):
 
 ```js
-	it('falls back to Wayfinder/1.0 User-Agent when context omits it', async () => {
-		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{}' });
-		await new UmamiAdapter(fullEnv).forwardEvent(envelope, { userAgent: '', clientIp: '' });
-		const [, init] = global.fetch.mock.calls[0];
-		expect(init.headers['User-Agent']).toBe('Wayfinder/1.0');
-	});
+it('falls back to Wayfinder/1.0 User-Agent when context omits it', async () => {
+	global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{}' });
+	await new UmamiAdapter(fullEnv).forwardEvent(envelope, { userAgent: '', clientIp: '' });
+	const [, init] = global.fetch.mock.calls[0];
+	expect(init.headers['User-Agent']).toBe('Wayfinder/1.0');
+});
 ```
 
 Replace it with (note: the mock body stays `'{}'` for now — Task 3 changes the success contract and updates this mock):
 
 ```js
-	it('falls back to the browser-shaped User-Agent when context omits it', async () => {
-		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{}' });
-		await new UmamiAdapter(fullEnv).forwardEvent(envelope, { userAgent: '', clientIp: '' });
-		const [, init] = global.fetch.mock.calls[0];
-		expect(init.headers['User-Agent']).toBe('Mozilla/5.0 (Wayfinder)');
-	});
+it('falls back to the browser-shaped User-Agent when context omits it', async () => {
+	global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{}' });
+	await new UmamiAdapter(fullEnv).forwardEvent(envelope, { userAgent: '', clientIp: '' });
+	const [, init] = global.fetch.mock.calls[0];
+	expect(init.headers['User-Agent']).toBe('Mozilla/5.0 (Wayfinder)');
+});
 ```
 
 Then add a new regression-guard test in the same `describe('UmamiAdapter.forwardEvent (edge cases)')` block:
 
 ```js
-	it('fallback User-Agent contains no isbot bot tokens', () => {
-		const tokens = ['server', 'bot', 'http', 'crawl', 'scan', 'search', 'spider', 'agent'];
-		const ua = FALLBACK_USER_AGENT.toLowerCase();
-		for (const token of tokens) {
-			expect(ua).not.toContain(token);
-		}
-	});
+it('fallback User-Agent contains no isbot bot tokens', () => {
+	const tokens = ['server', 'bot', 'http', 'crawl', 'scan', 'search', 'spider', 'agent'];
+	const ua = FALLBACK_USER_AGENT.toLowerCase();
+	for (const token of tokens) {
+		expect(ua).not.toContain(token);
+	}
+});
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -245,10 +249,12 @@ git commit -m "fix(analytics): use non-bot fallback User-Agent for Umami (#523)"
 ## Task 3: `beep/boop` ingest-failure detection
 
 **Files:**
+
 - Modify: `src/lib/Analytics/adapters/UmamiAdapter.js`
 - Test: `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js`
 
 **Interfaces:**
+
 - Produces: `export function isSuccessfulIngest(body: string): boolean` — `true` for an empty string or a body containing `cache`/`sessionId`/`visitId`; `false` for a body containing `beep` or any other non-empty body.
 - Consumes: `FALLBACK_USER_AGENT` already in the module (Task 2); the `/api/events` endpoint's existing `error.upstreamStatus` mapping (no change needed there).
 
@@ -294,18 +300,18 @@ describe('isSuccessfulIngest', () => {
 Add a `forwardEvent` failure test to the `describe('UmamiAdapter.forwardEvent (edge cases)')` block:
 
 ```js
-	it('throws with upstreamStatus 502 when Umami drops the event (beep/boop)', async () => {
-		global.fetch = vi
-			.fn()
-			.mockResolvedValue({ ok: true, status: 200, text: async () => '{"beep":"boop"}' });
-		try {
-			await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
-			expect.unreachable('should have thrown');
-		} catch (error) {
-			expect(error.message).toContain('dropped event');
-			expect(error.upstreamStatus).toBe(502);
-		}
-	});
+it('throws with upstreamStatus 502 when Umami drops the event (beep/boop)', async () => {
+	global.fetch = vi
+		.fn()
+		.mockResolvedValue({ ok: true, status: 200, text: async () => '{"beep":"boop"}' });
+	try {
+		await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
+		expect.unreachable('should have thrown');
+	} catch (error) {
+		expect(error.message).toContain('dropped event');
+		expect(error.upstreamStatus).toBe(502);
+	}
+});
 ```
 
 Now update the THREE existing tests whose mocked bodies are no longer "success":
@@ -313,34 +319,34 @@ Now update the THREE existing tests whose mocked bodies are no longer "success":
 1. The non-JSON test (currently ~line 171) — a non-marker body is now a failure. Replace:
 
 ```js
-	it('returns { status: text } when response is not JSON', async () => {
-		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => 'ok' });
-		const result = await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
-		expect(result).toEqual({ status: 'ok' });
-	});
+it('returns { status: text } when response is not JSON', async () => {
+	global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => 'ok' });
+	const result = await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
+	expect(result).toEqual({ status: 'ok' });
+});
 ```
 
 with:
 
 ```js
-	it('throws when the response body lacks a success marker', async () => {
-		global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => 'ok' });
-		await expect(new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow(
-			'dropped event'
-		);
-	});
+it('throws when the response body lacks a success marker', async () => {
+	global.fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => 'ok' });
+	await expect(new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow(
+		'dropped event'
+	);
+});
 ```
 
 2. The fallback-UA test (updated in Task 2, ~line 206) — change its mock body from `'{}'` to a success marker so the UA assertion is reached without throwing:
 
 ```js
-		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{"cache":"x"}' });
+global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{"cache":"x"}' });
 ```
 
 3. The AbortSignal test (~line 236) — same mock-body change:
 
 ```js
-		global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{"cache":"x"}' });
+global.fetch = vi.fn().mockResolvedValue({ ok: true, text: async () => '{"cache":"x"}' });
 ```
 
 - [ ] **Step 2: Run the tests to verify they fail**
@@ -372,28 +378,28 @@ export function isSuccessfulIngest(body) {
 In `forwardEvent`, replace the success tail:
 
 ```js
-		const text = await res.text();
-		try {
-			return JSON.parse(text);
-		} catch {
-			return { status: text };
-		}
+const text = await res.text();
+try {
+	return JSON.parse(text);
+} catch {
+	return { status: text };
+}
 ```
 
 with:
 
 ```js
-		const text = await res.text();
-		if (!isSuccessfulIngest(text)) {
-			const err = new Error('Umami dropped event as bot-like (isbot rejected the User-Agent)');
-			err.upstreamStatus = 502;
-			throw err;
-		}
-		try {
-			return JSON.parse(text);
-		} catch {
-			return { status: text };
-		}
+const text = await res.text();
+if (!isSuccessfulIngest(text)) {
+	const err = new Error('Umami dropped event as bot-like (isbot rejected the User-Agent)');
+	err.upstreamStatus = 502;
+	throw err;
+}
+try {
+	return JSON.parse(text);
+} catch {
+	return { status: text };
+}
 ```
 
 - [ ] **Step 5: Run the full adapter test file to verify all pass**

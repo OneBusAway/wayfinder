@@ -33,11 +33,11 @@ test file. No new architecture, no new endpoints, no call-site changes.
 
 ## Decisions (resolved during brainstorming)
 
-| Question | Decision |
-| --- | --- |
+| Question                         | Decision                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Where do `url` / `id` come from? | **Env vars only** (`PUBLIC_ANALYTICS_*`), keeping the existing config. Region-feed discovery is **deferred / out of scope**, matching the sibling [Twilio design](../../../../twilio/docs/superpowers/specs/2026-06-22-umami-analytics-design.md), which made the same call for the same reason: the app does not consume `regions-v3.json` today. |
-| Expand event coverage? | **No.** Ship against the events already wired (pageview, search, stop-viewed, route-clicked, arrival-clicked). Trip-plan / arrivals-refresh events are a possible follow-up. |
-| Keep Plausible? | **Yes.** Untouched. |
+| Expand event coverage?           | **No.** Ship against the events already wired (pageview, search, stop-viewed, route-clicked, arrival-clicked). Trip-plan / arrivals-refresh events are a possible follow-up.                                                                                                                                                                       |
+| Keep Plausible?                  | **Yes.** Untouched.                                                                                                                                                                                                                                                                                                                                |
 
 ### Why env-only (and not region-feed discovery)
 
@@ -56,18 +56,18 @@ multi-region Wayfinder ever materializes.
 
 ```json
 {
-  "type": "event",
-  "payload": {
-    "website": "<PUBLIC_ANALYTICS_WEBSITE_ID>",
-    "hostname": "<PUBLIC_ANALYTICS_DOMAIN>",
-    "language": "en-US",
-    "screen": "1920x1080",
-    "url": "/stop",
-    "referrer": "",
-    "title": "Wayfinder",
-    "name": "pageview",
-    "data": { "id": "1_00" }
-  }
+	"type": "event",
+	"payload": {
+		"website": "<PUBLIC_ANALYTICS_WEBSITE_ID>",
+		"hostname": "<PUBLIC_ANALYTICS_DOMAIN>",
+		"language": "en-US",
+		"screen": "1920x1080",
+		"url": "/stop",
+		"referrer": "",
+		"title": "Wayfinder",
+		"name": "pageview",
+		"data": { "id": "1_00" }
+	}
 }
 ```
 
@@ -92,7 +92,9 @@ so they are unit-testable in isolation, mirroring Twilio's standalone
 // A dropped event returns HTTP 200, not an error. Umami replies {"beep":"boop"}
 // (or a body lacking cache/sessionId/visitId) when isbot rejects the request.
 // Tolerant of non-JSON: fall back to a substring check for "beep".
-export function isSuccessfulIngest(body) { /* ... */ }
+export function isSuccessfulIngest(body) {
+	/* ... */
+}
 ```
 
 Contract (verified against Umami source — a real success response is always
@@ -151,7 +153,9 @@ rare empty-UA case (server-originated requests, `sendBeacon` edge cases, curl).
 #### 3. Prop sanitization — `sanitizeData(props)`
 
 ```js
-export function sanitizeData(props) { /* ... */ }
+export function sanitizeData(props) {
+	/* ... */
+}
 ```
 
 Per-value rules, in order:
@@ -181,8 +185,7 @@ behavior for missing props is preserved).
   `sanitizeData`, `FALLBACK_USER_AGENT`; wire all three into `forwardEvent`.
 - `src/tests/lib/Analytics/adapters/UmamiAdapter.test.js` — add the new tests below;
   **update** the existing fallback-UA test (asserts `'Wayfinder/1.0'`, ~line 206) to
-  the new constant; **update the two `text: async () => '{}'` mocks** (lines 207 and
-  236) to a success-marker body so they stay green under the new `isSuccessfulIngest`
+  the new constant; **update the two `text: async () => '{}'` mocks** (lines 207 and 236) to a success-marker body so they stay green under the new `isSuccessfulIngest`
   contract.
 
 No other files change. Env schema, `.env.example`, call sites, and the `/api/events`
