@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { UmamiAdapter } from '$lib/Analytics/adapters/UmamiAdapter.js';
+import { UmamiAdapter, sanitizeData } from '$lib/Analytics/adapters/UmamiAdapter.js';
 
 const fullEnv = {
 	PUBLIC_ANALYTICS_DOMAIN: 'example.com',
@@ -244,5 +244,36 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 			.fn()
 			.mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }));
 		await expect(new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow('aborted');
+	});
+});
+
+describe('sanitizeData', () => {
+	it('keeps strings, finite numbers, and booleans', () => {
+		expect(sanitizeData({ s: 'hi', n: 42, b: true })).toEqual({ s: 'hi', n: 42, b: true });
+	});
+
+	it('drops null and undefined values', () => {
+		expect(sanitizeData({ a: null, b: undefined, c: 'keep' })).toEqual({ c: 'keep' });
+	});
+
+	it('drops non-finite numbers', () => {
+		expect(sanitizeData({ a: NaN, b: Infinity, c: -Infinity, d: 1 })).toEqual({ d: 1 });
+	});
+
+	it('truncates strings to 256 characters', () => {
+		const long = 'x'.repeat(300);
+		expect(sanitizeData({ q: long }).q).toHaveLength(256);
+	});
+
+	it('JSON-stringifies nested objects and arrays', () => {
+		expect(sanitizeData({ o: { a: 1 }, arr: [1, 2] })).toEqual({
+			o: '{"a":1}',
+			arr: '[1,2]'
+		});
+	});
+
+	it('returns an empty object for empty or nullish input', () => {
+		expect(sanitizeData({})).toEqual({});
+		expect(sanitizeData(undefined)).toEqual({});
 	});
 });

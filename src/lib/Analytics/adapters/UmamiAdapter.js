@@ -1,5 +1,32 @@
 const UPSTREAM_TIMEOUT_MS = 5000;
 
+const MAX_DATA_VALUE_LENGTH = 256;
+
+/**
+ * Coerce arbitrary event props into Umami-safe `data` values: keep strings (truncated),
+ * finite numbers, and booleans; drop null/undefined and non-finite numbers; JSON-stringify
+ * anything else (truncated). Bounds uncontrolled user input (e.g. the free-text search query).
+ * @param {Object} [props]
+ * @returns {Object}
+ */
+export function sanitizeData(props) {
+	const out = {};
+	for (const [key, value] of Object.entries(props ?? {})) {
+		if (value === null || value === undefined) continue;
+		const type = typeof value;
+		if (type === 'boolean') {
+			out[key] = value;
+		} else if (type === 'string') {
+			out[key] = value.slice(0, MAX_DATA_VALUE_LENGTH);
+		} else if (type === 'number') {
+			if (Number.isFinite(value)) out[key] = value;
+		} else {
+			out[key] = JSON.stringify(value).slice(0, MAX_DATA_VALUE_LENGTH);
+		}
+	}
+	return out;
+}
+
 export class UmamiAdapter {
 	constructor(env) {
 		this.env = env;
@@ -58,7 +85,7 @@ export class UmamiAdapter {
 				referrer,
 				title,
 				name,
-				data: props
+				data: sanitizeData(props)
 			}
 		};
 
