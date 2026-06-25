@@ -67,13 +67,15 @@
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg"
 		>
 			{#each results as result}
-				<button
-					class="flex w-full cursor-pointer items-center px-4 py-2 text-left hover:bg-gray-100 dark:text-black"
-					onclick={() => handleSelect(result)}
-				>
-					<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 text-gray-400  " />
-					{result.displayText}
-				</button>
+				<li>
+					<button
+						class="flex w-full cursor-pointer items-center px-4 py-2 text-left hover:bg-gray-100 dark:text-black"
+						onclick={() => handleSelect(result)}
+					>
+						<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 text-gray-400  " />
+						{result.displayText}
+					</button>
+				</li>
 			{/each}
 		</ul>
 	{/if}
