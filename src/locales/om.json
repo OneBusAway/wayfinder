@@ -125,7 +125,8 @@
 		"route_schedules": "Sagantaa Sararaa",
 		"no_schedules_available": "Guyyaa filatameef sagantaan hin jiru.",
 		"stop_id": "Eenyummaa Dhaabbii",
-		"direction": "Kallattii"
+		"direction": "Kallattii",
+		"schedule_table_caption": "Yeroowwan ka'umsaa kan {route}"
 	},
 	"direction": {
 		"N": "Kaaba",

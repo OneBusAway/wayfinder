@@ -125,7 +125,8 @@
 		"route_schedules": "Lịch trình tuyến đường",
 		"no_schedules_available": "Không có lịch trình nào khả dụng cho ngày đã chọn.",
 		"stop_id": "Mã điểm dừng",
-		"direction": "Hướng"
+		"direction": "Hướng",
+		"schedule_table_caption": "Giờ khởi hành cho {route}"
 	},
 	"direction": {
 		"N": "Bắc",

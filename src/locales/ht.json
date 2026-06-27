@@ -125,7 +125,8 @@
 		"route_schedules": "Orè Wout",
 		"no_schedules_available": "Pa gen orè disponib pou dat ou chwazi a.",
 		"stop_id": "ID Arè",
-		"direction": "Direksyon"
+		"direction": "Direksyon",
+		"schedule_table_caption": "Lè depa pou {route}"
 	},
 	"direction": {
 		"N": "Nò",

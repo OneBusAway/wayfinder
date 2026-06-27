@@ -125,7 +125,8 @@
 		"route_schedules": "ਰੂਟ ਸਮਾਂ-ਸਾਰਣੀਆਂ",
 		"no_schedules_available": "ਚੁਣੀ ਗਈ ਤਾਰੀਖ ਲਈ ਕੋਈ ਸਮਾਂ-ਸਾਰਣੀ ਉਪਲਬਧ ਨਹੀਂ।",
 		"stop_id": "ਸਟਾਪ ID",
-		"direction": "ਦਿਸ਼ਾ"
+		"direction": "ਦਿਸ਼ਾ",
+		"schedule_table_caption": "{route} ਲਈ ਰਵਾਨਗੀ ਸਮੇਂ"
 	},
 	"direction": {
 		"N": "ਉੱਤਰ",

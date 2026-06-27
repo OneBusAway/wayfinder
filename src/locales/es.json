@@ -125,7 +125,8 @@
 		"route_schedules": "Horarios de rutas",
 		"no_schedules_available": "No hay horarios disponibles para la fecha seleccionada.",
 		"stop_id": "ID de la parada",
-		"direction": "Dirección"
+		"direction": "Dirección",
+		"schedule_table_caption": "Horarios de salida para {route}"
 	},
 	"direction": {
 		"N": "Norte",

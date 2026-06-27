@@ -125,7 +125,8 @@
 		"route_schedules": "جداول المسارات",
 		"no_schedules_available": "لا توجد جداول متاحة للتاريخ المحدد.",
 		"stop_id": "رقم المحطة",
-		"direction": "الاتجاه"
+		"direction": "الاتجاه",
+		"schedule_table_caption": "أوقات المغادرة لـ {route}"
 	},
 	"direction": {
 		"N": "شمال",

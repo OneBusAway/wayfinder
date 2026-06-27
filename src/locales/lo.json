@@ -125,7 +125,8 @@
 		"route_schedules": "ຕາຕະລາງເສັ້ນທາງ",
 		"no_schedules_available": "ບໍ່ມີຕາຕະລາງສຳລັບວັນທີ່ເລືອກ.",
 		"stop_id": "ລະຫັດປ້າຍ",
-		"direction": "ທິດທາງ"
+		"direction": "ທິດທາງ",
+		"schedule_table_caption": "ເວລາອອກເດີນທາງສຳລັບ {route}"
 	},
 	"direction": {
 		"N": "ເໜືອ",

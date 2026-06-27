@@ -125,7 +125,8 @@
 		"route_schedules": "Mga iskedyul ng ruta",
 		"no_schedules_available": "Walang magagamit na iskedyul para sa napiling petsa.",
 		"stop_id": "ID ng hintuan",
-		"direction": "Direksyon"
+		"direction": "Direksyon",
+		"schedule_table_caption": "Mga oras ng pag-alis para sa {route}"
 	},
 	"direction": {
 		"N": "Hilaga",

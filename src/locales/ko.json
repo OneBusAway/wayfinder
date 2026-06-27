@@ -125,7 +125,8 @@
 		"route_schedules": "노선 시간표",
 		"no_schedules_available": "선택한 날짜의 운행 정보가 없습니다.",
 		"stop_id": "정류장 ID",
-		"direction": "방면"
+		"direction": "방면",
+		"schedule_table_caption": "{route} 출발 시간"
 	},
 	"direction": {
 		"N": "북쪽",
