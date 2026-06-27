@@ -174,6 +174,27 @@ describe('animateMarkerTo', () => {
 		expect(setPosition.mock.calls.at(-1)).toEqual([1, 1]);
 	});
 
+	it('falls back to a straight line when routePaths are supplied but the vehicle is off-route', () => {
+		const route = [
+			{ lat: 0, lng: 0 },
+			{ lat: 0, lng: 1 }
+		];
+		const setPosition = vi.fn();
+
+		// Both endpoints are hundreds of km from the shape, so buildRoutePath bails
+		// (returns null) and animateMarkerTo interpolates a straight diagonal.
+		animateMarkerTo({}, { lat: 5, lng: 5 }, { lat: 7, lng: 7 }, setPosition, {
+			duration: 1000,
+			routePaths: [route]
+		});
+		runFrames([0, 500, 1000]);
+
+		// Straight line from (5,5) to (7,7): lat and lng advance in lockstep.
+		const mid = setPosition.mock.calls[1];
+		expect(mid[0]).toBe(mid[1]);
+		expect(setPosition.mock.calls.at(-1)).toEqual([7, 7]);
+	});
+
 	it('cancels an in-flight animation when called again', () => {
 		const setPosition = vi.fn();
 		const marker = {};

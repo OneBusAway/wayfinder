@@ -379,10 +379,15 @@ export default class OpenStreetMapProvider {
 	 * @returns {Array<Array<{lat:number,lng:number}>>}
 	 */
 	_getRoutePaths() {
-		return this.polylines
-			.map((polyline) => polyline.getLatLngs())
-			.filter((points) => Array.isArray(points) && points.length >= 2)
-			.map((points) => points.map((ll) => ({ lat: ll.lat, lng: ll.lng })));
+		return (
+			this.polylines
+				.map((polyline) => polyline.getLatLngs())
+				// getLatLngs() nests one level for multi-segment polylines; flatten
+				// that single level so a vertex list is always one level deep.
+				.map((points) => (Array.isArray(points) ? points.flat(1) : []))
+				.filter((points) => points.length >= 2)
+				.map((points) => points.map((ll) => ({ lat: ll.lat, lng: ll.lng })))
+		);
 	}
 
 	addListener(event, callback) {
@@ -462,10 +467,14 @@ export default class OpenStreetMapProvider {
 	}
 
 	/**
-	 * Creates a polyline from an encoded shape.
-	 * Contract note: this provider returns `null` when not in the browser or the
-	 * shape cannot be decoded, whereas the Google provider throws on decode
-	 * failure. Callers that need a uniform contract should guard accordingly.
+	 * Creates a polyline from an encoded shape, returning `null` outside the
+	 * browser, before the map is initialized, or when the shape decodes to empty.
+	 *
+	 * Contract note: this method is synchronous (`Polyline|null`), whereas the
+	 * Google provider's createPolyline is async (`Promise<Polyline|null>`)
+	 * because it lazy-loads its geometry library. Both return `null` on decode
+	 * failure; callers that need provider-agnostic behavior should `await` the
+	 * result and guard against `null`.
 	 */
 	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
@@ -651,9 +660,9 @@ export default class OpenStreetMapProvider {
 	 * polylines so the full route is centered and visible. Returns true when a
 	 * fit was applied.
 	 * @param {{ padding?: [number, number], maxZoom?: number, duration?: number, drawDuration?: number }} [options]
-	 * @returns {boolean | Promise<boolean>} resolves once the route reveal begins
+	 * @returns {Promise<boolean>} resolves once the route reveal begins
 	 */
-	fitToPolylines(options = {}) {
+	async fitToPolylines(options = {}) {
 		if (!browser || !this.map || this.polylines.length === 0) return false;
 
 		const bounds = this.L.latLngBounds([]);

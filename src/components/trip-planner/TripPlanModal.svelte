@@ -68,12 +68,14 @@
 			return;
 		}
 
-		itineraries[activeTab].legs.forEach((leg) => {
+		for (const leg of itineraries[activeTab].legs) {
 			const shape = leg.legGeometry.points;
 			const style = getLegPolylineStyle(leg);
-			const polyline = mapProvider.createPolyline(shape, style);
-			currPolylines.push(polyline);
-		});
+			// Await: the Google provider's createPolyline is async and returns
+			// null on decode failure — skip nulls instead of tracking a Promise.
+			const polyline = await mapProvider.createPolyline(shape, style);
+			if (polyline) currPolylines.push(polyline);
+		}
 	}
 
 	/**

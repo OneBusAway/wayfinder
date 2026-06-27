@@ -5,9 +5,10 @@
 export const VEHICLE_ANIMATION_DURATION = 1200;
 
 /**
- * If the start or end fix is farther than this (in metres) from the nearest
- * route shape, the vehicle is treated as off-route and moved in a straight line
- * rather than being snapped to the shape.
+ * If the start or end fix is farther than this (in metres) from the route shape
+ * chosen for this move (the shape minimizing the combined endpoint distance),
+ * the vehicle is treated as off-route and moved in a straight line rather than
+ * being snapped to the shape.
  */
 const OFF_ROUTE_THRESHOLD_M = 150;
 

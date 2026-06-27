@@ -472,10 +472,14 @@ export default class GoogleMapProvider {
 	}
 
 	/**
-	 * Creates a polyline from an encoded shape.
-	 * Contract note: this provider throws if `shape` cannot be decoded, whereas
-	 * the OSM provider returns `null` on decode failure. Callers that need a
-	 * uniform contract should guard accordingly.
+	 * Creates a polyline from an encoded shape, returning `null` when the shape
+	 * can't be decoded (uniform with the OSM provider).
+	 *
+	 * Contract note: this method is async — it returns a `Promise<Polyline|null>`
+	 * because it lazy-loads the Google geometry library — whereas the OSM
+	 * provider's createPolyline is synchronous (`Polyline|null`). Callers that
+	 * need provider-agnostic behavior should `await` the result and guard
+	 * against `null`.
 	 */
 	async createPolyline(shape, options = {}) {
 		// Backward compat: old callers pass a boolean as the second arg
@@ -487,7 +491,17 @@ export default class GoogleMapProvider {
 
 		await window.google.maps.importLibrary('geometry');
 
-		const decodedPath = google.maps.geometry.encoding.decodePath(shape);
+		let decodedPath;
+		try {
+			decodedPath = google.maps.geometry.encoding.decodePath(shape);
+		} catch (error) {
+			console.error('Failed to decode polyline:', error?.message);
+			return null;
+		}
+		if (!decodedPath || decodedPath.length === 0) {
+			console.error('Failed to decode polyline:', shape);
+			return null;
+		}
 		const path = decodedPath.map((point) => ({ lat: point.lat(), lng: point.lng() }));
 
 		const polylineOptions = {
@@ -599,9 +613,9 @@ export default class GoogleMapProvider {
 	 * Fits the map view to the bounds of all currently drawn polylines so the
 	 * full route is centered and visible. Returns true when a fit was applied.
 	 * @param {{ padding?: number, maxZoom?: number }} [options]
-	 * @returns {boolean | Promise<boolean>} resolves once the view has settled
+	 * @returns {Promise<boolean>} resolves once the view has settled
 	 */
-	fitToPolylines(options = {}) {
+	async fitToPolylines(options = {}) {
 		if (!this.map || this.polylines.length === 0) return false;
 
 		const bounds = new window.google.maps.LatLngBounds();
@@ -615,19 +629,23 @@ export default class GoogleMapProvider {
 
 		return new Promise((resolve) => {
 			let settled = false;
+			let idleListener = null;
 			// fitBounds has no maxZoom option on Google Maps, so clamp once the
 			// view settles to avoid zooming in too far on short routes. Resolve
 			// here so callers can reveal stop markers in sync with the fit.
 			const finish = () => {
 				if (settled) return;
 				settled = true;
+				// Drop the idle listener in case we resolved via the timeout
+				// safety net below before `idle` ever fired.
+				if (idleListener) window.google.maps.event.removeListener(idleListener);
 				if (this.map.getZoom() > maxZoom) {
 					this.map.setZoom(maxZoom);
 				}
 				resolve(true);
 			};
 
-			window.google.maps.event.addListenerOnce(this.map, 'idle', finish);
+			idleListener = window.google.maps.event.addListenerOnce(this.map, 'idle', finish);
 			// Safety net: Google Maps does not guarantee an `idle` event when
 			// fitBounds produces no viewport change, so resolve anyway after a
 			// short delay to avoid hanging callers that await this.
