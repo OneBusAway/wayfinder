@@ -193,6 +193,11 @@
 
 	function handleTabSwitch() {
 		if (isContextMenuTrigger) return;
+
+		if (activeTab === 'plan') {
+			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
+			clearTripItineraries();
+		}
 		const event = new CustomEvent('tabSwitched');
 		window.dispatchEvent(event);
 	}

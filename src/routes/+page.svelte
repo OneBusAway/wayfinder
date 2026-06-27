@@ -51,8 +51,6 @@
 	let tripItineraries = $state([]);
 	let tripPlanError = $state(null);
 	let loadingItineraries = false;
-	let fromMarker = $state(null);
-	let toMarker = $state(null);
 	let currentHighlightedStopId = null;
 
 	let currentUserLocation = $state($userLocation);
@@ -198,6 +196,13 @@
 		mapProvider.clearAllPolylines();
 	}
 
+	function closeTripPlanModal() {
+		if (browser) {
+			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
+		}
+		clearTripItineraries();
+	}
+
 	async function loadAlerts() {
 		try {
 			const response = await fetch('/api/oba/alerts');
@@ -217,22 +222,18 @@
 	}
 
 	/**
-	 *
 	 * @param {Object} tripPlanData - The data returned from the trip planning API.
 	 * @param {Object} tripPlanData.data - The trip planning data.
-	 * @param {Object} tripPlanData.fromMarker - The marker for the from location.
-	 * @param {Object} tripPlanData.toMarker - The marker for the to location.
 	 */
 	function handleTripPlan(tripPlanData) {
 		const tripData = tripPlanData.data;
-		fromMarker = tripPlanData.fromMarker;
-		toMarker = tripPlanData.toMarker;
 		tripItineraries = tripData.plan?.itineraries || [];
 		tripPlanError = tripData.error || null;
 		currentModal = Modal.TRIP_PLANNER;
 	}
 
 	function handleTabSwitched() {
+		// SearchPane owns trip-plan teardown when leaving the Plan tab (it dispatches tripPlanModalClosed and calls clearTripItineraries). Here we just close any open modal for the generic tab switch.
 		currentModal = null;
 	}
 
@@ -318,10 +319,8 @@
 						{mapProvider}
 						itineraries={tripItineraries}
 						error={tripPlanError}
-						{fromMarker}
-						{toMarker}
 						loading={loadingItineraries}
-						{closePane}
+						closePane={closeTripPlanModal}
 					/>
 				{/if}
 			</div>
