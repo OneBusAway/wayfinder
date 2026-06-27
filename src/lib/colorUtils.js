@@ -116,6 +116,24 @@ export function generatePalette(baseHex, fallbackHex = '#486621') {
 }
 
 /**
+ * Darkens a color by mixing it with black
+ * @param {string} hexColor - Original hex color (e.g., "#486621")
+ * @param {number} amount - Amount to darken (0-1, where 1 is pure black)
+ * @returns {string} Darkened hex color
+ */
+export function darkenColor(hexColor, amount) {
+	if (!hexColor) return '#000000';
+
+	const rgb = hexToRgb(hexColor);
+	if (!rgb) return '#000000';
+
+	const black = { r: 0, g: 0, b: 0 };
+	const darkened = mixColors(rgb, black, amount);
+
+	return rgbToHex(darkened.r, darkened.g, darkened.b);
+}
+
+/**
  * Lightens a color by mixing it with white
  * Simple and clear implementation for better visibility in dark mode
  * @param {string} hexColor - Original hex color (e.g., "#ff0000")
