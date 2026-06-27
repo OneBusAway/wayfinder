@@ -41,27 +41,31 @@ describe('tripOptionsStore', () => {
 		});
 	});
 
-	it('resetAll restores defaults and clears persisted values', () => {
+	it('setPersisted writes non-default values to localStorage', () => {
 		tripOptions.setPersisted('wheelchair', true);
 		tripOptions.setPersisted('optimize', 'fewestTransfers');
-		tripOptions.setSession('departureType', 'arriveBy');
 
-		let value = getStoreValue(tripOptions);
-		expect(value.wheelchair).toBe(true);
-		expect(value.optimize).toBe('fewestTransfers');
-		expect(value.departureType).toBe('arriveBy');
+		expect(getStoreValue(tripOptions).wheelchair).toBe(true);
+		expect(localStorage.setItem).toHaveBeenCalledWith('tripOptions_wheelchair', 'true');
+		expect(localStorage.setItem).toHaveBeenCalledWith('tripOptions_optimize', 'fewestTransfers');
+	});
 
-		tripOptions.resetAll();
+	it('setPersisted clears the key when the value equals the default', () => {
+		// Setting a value back to its default should remove the key so the user
+		// tracks future default changes instead of being pinned to today's value.
+		tripOptions.setPersisted('wheelchair', false);
+		tripOptions.setPersisted('optimize', 'fastest');
+		tripOptions.setPersisted('maxWalkDistance', DEFAULT_TRIP_OPTIONS.maxWalkDistance);
 
-		value = getStoreValue(tripOptions);
-		expect(value.wheelchair).toBe(false);
-		expect(value.optimize).toBe('fastest');
-		expect(value.departureType).toBe('now');
-
-		// Persisted keys are removed from localStorage
 		expect(localStorage.removeItem).toHaveBeenCalledWith('tripOptions_wheelchair');
 		expect(localStorage.removeItem).toHaveBeenCalledWith('tripOptions_optimize');
 		expect(localStorage.removeItem).toHaveBeenCalledWith('tripOptions_maxWalkDistance');
+		expect(localStorage.setItem).not.toHaveBeenCalled();
+	});
+
+	it('setPersisted clears the key when the value is null (distanceUnit)', () => {
+		tripOptions.setPersisted('distanceUnit', null);
+
 		expect(localStorage.removeItem).toHaveBeenCalledWith('tripOptions_distanceUnit');
 	});
 });

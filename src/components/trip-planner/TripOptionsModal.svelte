@@ -76,7 +76,8 @@
 	}
 
 	// Reset the local editing copies back to defaults. Like every other control
-	// in this modal, this is draft-only: nothing is persisted until handleDone() runs, so Cancel still discards the reset and keeps the saved preferences
+	// in this modal, this is draft-only: nothing is persisted until handleDone()
+	// runs, so Cancel still discards the reset and keeps the saved preferences.
 	function handleReset() {
 		departureType = DEFAULT_TRIP_OPTIONS.departureType;
 		departureTime = DEFAULT_TRIP_OPTIONS.departureTime || '';

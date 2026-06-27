@@ -31,7 +31,10 @@ const defaults = {
 	distanceUnit: null // null = auto-detect, 'metric', or 'imperial'
 };
 
-// Default option values, exported so the options modal can reset its local editing copies to the same source of truth used by the store. Frozen copy so consumers can't mutate the canonical `defaults` object that resetAll() uses.
+// Exported so the options modal can reset its local editing copies to the same
+// source of truth the store uses. The spread already makes this a separate
+// object from `defaults`; Object.freeze additionally stops consumers from
+// mutating this exported snapshot.
 export const DEFAULT_TRIP_OPTIONS = Object.freeze({ ...defaults });
 
 // Re-export for use by components
@@ -91,18 +94,11 @@ function createTripOptionsStore() {
 			}));
 		},
 
-		// Reset all values to defaults
-		resetAll: () => {
-			if (browser) {
-				localStorage.removeItem('tripOptions_wheelchair');
-				localStorage.removeItem('tripOptions_optimize');
-				localStorage.removeItem('tripOptions_maxWalkDistance');
-				localStorage.removeItem('tripOptions_distanceUnit');
-			}
-			set(defaults);
-		},
-
-		// Update a persisted option (saves to localStorage)
+		// Update a persisted option (saves to localStorage).
+		// Writing the default value clears the key instead of storing it, so the
+		// user tracks future changes to the default rather than being pinned to
+		// today's value. This is what makes "Reset to defaults" forward-compatible:
+		// resetting the draft to defaults and committing removes every key.
 		setPersisted: (key, value) => {
 			update((opts) => {
 				const newOpts = { ...opts, [key]: value };
@@ -110,7 +106,7 @@ function createTripOptionsStore() {
 					browser &&
 					['wheelchair', 'optimize', 'maxWalkDistance', 'distanceUnit'].includes(key)
 				) {
-					if (value === null) {
+					if (value === null || value === defaults[key]) {
 						localStorage.removeItem(`tripOptions_${key}`);
 					} else {
 						localStorage.setItem(`tripOptions_${key}`, String(value));
