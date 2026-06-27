@@ -195,12 +195,14 @@
 						<input
 							type="time"
 							bind:value={departureTime}
+							aria-label={$t('trip-planner.departure_time')}
 							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
 						/>
 						<input
 							type="date"
 							bind:value={departureDate}
 							min={getTodayDateForInput(regionTz)}
+							aria-label={$t('trip-planner.departure_date')}
 							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
 						/>
 					</div>
@@ -308,6 +310,7 @@
 						</div>
 						<select
 							bind:value={maxWalkDistance}
+							aria-label={$t('trip-planner.max_walking_distance')}
 							class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 						>
 							{#each walkDistanceOptions as option (option.value)}
