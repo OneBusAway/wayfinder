@@ -32,6 +32,10 @@
 	let query = $state(null);
 	let polylines = [];
 	let currentIntervalId = null;
+	// Bumped on every route click so a slower, superseded load can detect a newer
+	// click took over (after one of its awaits) and bail instead of fighting the
+	// newer route for the camera, stop markers, and vehicle polling.
+	let routeLoadToken = 0;
 	let mapLoaded = $state(false);
 	let isSurveyAnswered = $state(false);
 	let activeTab = $state('stops');
@@ -101,6 +105,7 @@
 	}
 
 	async function handleRouteClick(route) {
+		const loadToken = ++routeLoadToken;
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
 		mapProvider.clearVehicleMarkers();
@@ -108,6 +113,7 @@
 		clearResults();
 		try {
 			const response = await fetch(`/api/oba/stops-for-route/${route.id}`);
+			if (loadToken !== routeLoadToken) return;
 
 			if (!response.ok) {
 				console.error(`Failed to fetch route data: ${response.status}`);
@@ -115,6 +121,8 @@
 			}
 
 			const stopsForRoute = await response.json();
+			if (loadToken !== routeLoadToken) return;
+
 			const stopsMap = new Map(stopsForRoute.data.references.stops.map((stop) => [stop.id, stop]));
 			const polylinesData = stopsForRoute.data.entry.polylines;
 
@@ -125,25 +133,49 @@
 				orderedStops = stopsForRoute.data.references.stops;
 			}
 
-			const midpoint = calculateMidpoint(orderedStops);
-			if (midpoint) {
-				mapProvider.flyTo(midpoint.lat, midpoint.lon, 12);
+			// Draw the route shapes first so the view can fit their full extent.
+			// Reset the collection so each route click rebuilds it from scratch
+			// rather than accumulating stale references from previous selections.
+			polylines = [];
+			for (const polylineData of polylinesData) {
+				const polyline = await mapProvider.createPolyline(polylineData.points);
+				if (loadToken !== routeLoadToken) return;
+				// createPolyline returns null for an undecodable shape (on either
+				// provider); skip it so one bad segment degrades the route instead
+				// of leaving a null hole in the polylines array.
+				if (polyline) polylines.push(polyline);
 			}
 
-			for (const polylineData of polylinesData) {
-				const shape = polylineData.points;
-				let polyline;
-				polyline = mapProvider.createPolyline(shape);
-				polylines.push(polyline);
+			// Fit the view to the full route so it's always centered and visible
+			// regardless of route length. Fall back to the stops' midpoint when no
+			// polyline could be drawn. Awaiting the fit lets the stop markers appear
+			// in sync with the route reveal instead of popping in beforehand.
+			const fitted = await mapProvider.fitToPolylines?.();
+			// A newer route click took over while the camera was settling; leave the
+			// map to that newer load instead of yanking it back to this route.
+			if (loadToken !== routeLoadToken) return;
+			if (!fitted) {
+				const midpoint = calculateMidpoint(orderedStops);
+				if (midpoint) {
+					mapProvider.flyTo(midpoint.lat, midpoint.lon, 12);
+				}
 			}
 
 			await showStopsOnRoute(orderedStops);
+			if (loadToken !== routeLoadToken) return;
 			// Clear any existing interval first to prevent memory leaks
 			if (currentIntervalId) {
 				clearInterval(currentIntervalId);
 				currentIntervalId = null;
 			}
-			currentIntervalId = await fetchAndUpdateVehicles(route.id, mapProvider, route.type);
+			const intervalId = await fetchAndUpdateVehicles(route.id, mapProvider, route.type);
+			if (loadToken !== routeLoadToken) {
+				// Superseded while polling was starting; tear down this stale
+				// interval rather than overwriting the newer load's id.
+				clearInterval(intervalId);
+				return;
+			}
+			currentIntervalId = intervalId;
 
 			const routeData = {
 				route,

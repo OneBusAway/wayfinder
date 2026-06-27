@@ -31,3 +31,18 @@
 	background: #1f2937;
 	color: #f3f4f6;
 }
+
+/* Fade route stop markers in so they appear gently with the route reveal.
+   Only opacity is animated — Leaflet drives the marker position via transform. */
+.route-stop-marker {
+	animation: route-stop-marker-fade-in 0.3s ease-in;
+}
+
+@keyframes route-stop-marker-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
