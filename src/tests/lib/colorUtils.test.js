@@ -49,6 +49,13 @@ describe('colorUtils', () => {
 			expect(hexToRgb('#ff00')).toBeNull(); // 4 digits
 			expect(hexToRgb('#ff00000')).toBeNull(); // 7 digits
 		});
+
+		test('returns null for null, undefined, and non-string input', () => {
+			expect(hexToRgb(null)).toBeNull();
+			expect(hexToRgb(undefined)).toBeNull();
+			expect(hexToRgb(123456)).toBeNull();
+			expect(hexToRgb({})).toBeNull();
+		});
 	});
 
 	describe('rgbToHex', () => {
@@ -329,6 +336,11 @@ describe('colorUtils', () => {
 			const rgb = { r: 0, g: 0, b: 0 };
 			const brightness = getBrightness(rgb);
 			expect(brightness).toBe(0);
+		});
+
+		test('should return 0 for null or undefined input', () => {
+			expect(getBrightness(null)).toBe(0);
+			expect(getBrightness(undefined)).toBe(0);
 		});
 
 		test('should return 255 for pure white', () => {
