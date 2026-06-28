@@ -24,6 +24,7 @@
 	 * @property {any} [mapProvider]
 	 * @property {any} [stop] - Currently selected stop to preserve visual context
 	 * @property {{ lat: number, lng: number } | null} [initialCoords] - Optional initial coordinates from URL params
+	 * @property {boolean} [startInTripPlanMode] - Skip initial stop load when opening a shared trip link
 	 */
 
 	/** @type {Props} */
@@ -37,7 +38,8 @@
 		stop = null,
 		initialCoords = null,
 		activeRoutes = [],
-		routeColors = new Map()
+		routeColors = new Map(),
+		startInTripPlanMode = false
 	} = $props();
 
 	let routeStopIds = $state(new Map());
@@ -72,7 +74,7 @@
 		}
 	});
 
-	let isTripPlanModeActive = $state(false);
+	let isTripPlanModeActive = $state(startInTripPlanMode);
 	let mapInstance = $state(null);
 	let mapElement = $state();
 	let allStops = $state([]);
@@ -86,8 +88,9 @@
 		ROUTE: 'route'
 	};
 
-	let mapMode = $state(Modes.NORMAL);
+	let mapMode = $state(startInTripPlanMode ? Modes.TRIP_PLAN : Modes.NORMAL);
 	let modeChangeTimeout = null;
+	let pendingMarkerBatch = null;
 
 	$effect(() => {
 		let newMode;
@@ -114,13 +117,32 @@
 		}
 	});
 
+	let previousMapMode = startInTripPlanMode ? Modes.TRIP_PLAN : Modes.NORMAL;
+
 	$effect(() => {
 		if (!mapInstance) return;
-		if (mapMode === Modes.NORMAL) {
-			batchAddMarkers(allStops);
+		const mode = mapMode;
+		// Read allStops synchronously so this effect keeps re-rendering markers as
+		// the list grows on subsequent map pans, regardless of which branch runs.
+		const stops = allStops;
+		if (mode === Modes.NORMAL) {
+			// Returning from route/trip mode: the map may have moved far from
+			// where stops were last loaded (e.g. opening a shared trip link
+			// recenters the map), and stop loading is skipped while off NORMAL.
+			// Refresh stops for the current viewport so the area isn't empty.
+			if (previousMapMode !== Modes.NORMAL) {
+				const center = mapInstance.getCenter();
+				const zoomLevel = mapInstance.map.getZoom();
+				loadStopsAndAddMarkers(center.lat, center.lng, false, zoomLevel)
+					.then(() => batchAddMarkers(allStops))
+					.catch((error) => console.error('Error refreshing stops on return to map:', error));
+			} else {
+				batchAddMarkers(stops);
+			}
 		} else {
 			clearAllMarkers();
 		}
+		previousMapMode = mode;
 	});
 
 	function cacheKey(zoomLevel, boundingBox) {
@@ -191,7 +213,11 @@
 			// dot on it or seed the userLocation store (which feeds the analytics
 			// distance-to-stop bucket) with coordinates that aren't the user's.
 
-			await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
+			// Shared trip links enter trip-plan mode immediately; loading region-center
+			// stops here would race with the itinerary and leave stray markers on the map.
+			if (!startInTripPlanMode) {
+				await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
+			}
 
 			const debouncedLoadMarkers = debounce(async () => {
 				if (mapMode !== Modes.NORMAL) {
@@ -237,6 +263,10 @@
 	}
 
 	function clearAllMarkers() {
+		if (pendingMarkerBatch !== null) {
+			cancelAnimationFrame(pendingMarkerBatch);
+			pendingMarkerBatch = null;
+		}
 		if (mapInstance && mapInstance.clearAllStopMarkers) {
 			mapInstance.clearAllStopMarkers();
 		}
@@ -244,21 +274,33 @@
 
 	// Batch operation to add multiple markers efficiently
 	function batchAddMarkers(stops) {
+		if (!mapInstance || mapMode !== Modes.NORMAL) {
+			return;
+		}
+
 		const stopsToAdd = stops.filter((s) => !mapInstance.hasMarker(s.id));
 
 		if (stopsToAdd.length === 0) {
 			return;
 		}
 
-		// Group DOM operations to minimize reflows/repaints
-		requestAnimationFrame(() => {
+		if (pendingMarkerBatch !== null) {
+			cancelAnimationFrame(pendingMarkerBatch);
+		}
+
+		// Group DOM operations to minimize reflows/repaints. Re-check map mode when
+		// the frame runs so a pending batch cannot repaint stops after trip mode clears them.
+		pendingMarkerBatch = requestAnimationFrame(() => {
+			pendingMarkerBatch = null;
+			if (!mapInstance || mapMode !== Modes.NORMAL) {
+				return;
+			}
 			stopsToAdd.forEach((s) => addMarker(s));
 		});
 	}
 
 	function addMarker(s) {
-		if (!mapInstance) {
-			console.error('Map not initialized yet');
+		if (!mapInstance || mapMode !== Modes.NORMAL) {
 			return;
 		}
 
@@ -339,6 +381,11 @@
 
 		if (modeChangeTimeout) {
 			clearTimeout(modeChangeTimeout);
+		}
+
+		if (pendingMarkerBatch !== null) {
+			cancelAnimationFrame(pendingMarkerBatch);
+			pendingMarkerBatch = null;
 		}
 
 		clearAllMarkers();

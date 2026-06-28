@@ -15,6 +15,8 @@
 	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
 	import { removeAgencyPrefix } from '$lib/utils';
 	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
+	import { parseTripParams } from '$lib/urlState';
 
 	let {
 		handleRouteSelected,
@@ -259,9 +261,33 @@
 		isContextMenuTrigger = false;
 	}
 
+	let hasRestoredSharedTrip = false;
+
+	// Restore a trip shared via the URL. Waits for the map so TripPlan can drop
+	// pins, then opens the Plan tab and hands the parsed trip to TripPlan. The
+	// parsed trip is captured up front because planTripTabClicked resets the URL
+	// to "/" (the planned trip rewrites it once the itinerary loads).
+	async function maybeRestoreSharedTrip() {
+		if (hasRestoredSharedTrip || !env.PUBLIC_OTP_SERVER_URL) return;
+
+		const trip = parseTripParams($page.url.searchParams);
+		if (!trip) return;
+
+		hasRestoredSharedTrip = true;
+		activeTab = 'plan';
+		await tick();
+		// Mirror a real Plan tab click so the map hides stop markers and enters
+		// trip-plan mode. Dispatched after tick so MapView's listener is ready.
+		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+		window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: trip }));
+	}
+
 	onMount(() => {
 		unsubscribeMapLoaded = isMapLoaded.subscribe((value) => {
 			mapLoaded = value;
+			if (value && mapProvider) {
+				maybeRestoreSharedTrip();
+			}
 		});
 
 		window.addEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);

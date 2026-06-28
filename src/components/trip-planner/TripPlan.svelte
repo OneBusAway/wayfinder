@@ -20,6 +20,9 @@
 	import { swapTripLocations, clearTripPlanPins } from '$lib/tripPlanUtils';
 	import { recentTrips } from '$stores/recentTripsStore';
 	import RecentTripsList from './RecentTripsList.svelte';
+	import { replaceState } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { applyTripParams, removeTripParams } from '$lib/urlState';
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
@@ -148,6 +151,7 @@
 			}
 		}
 		clearTripItineraries();
+		clearTripUrl();
 	}
 
 	function swapLocations() {
@@ -199,6 +203,22 @@
 		}
 	}
 
+	// Reflect the planned trip in the URL so it can be copied and shared. Uses
+	// replaceState to keep the shareable link current without stacking history.
+	function syncTripUrl() {
+		if (!browser) return;
+		const url = new URL($page.url);
+		applyTripParams(url, { selectedFrom, selectedTo, fromPlace, toPlace });
+		replaceState(url, {});
+	}
+
+	function clearTripUrl() {
+		if (!browser) return;
+		const url = new URL($page.url);
+		removeTripParams(url);
+		replaceState(url, {});
+	}
+
 	async function planTrip() {
 		if (!selectedFrom || !selectedTo) {
 			return;
@@ -222,6 +242,7 @@
 
 			if (data) {
 				handleTripPlan({ data });
+				syncTripUrl();
 
 				// Save to recent trips
 				try {
@@ -277,6 +298,21 @@
 		}
 	}
 
+	// Restore a shared trip from the URL: hydrate the form, drop the pins, and run
+	// the search so the recipient lands on the same itinerary.
+	async function handleLoadSharedTrip(e) {
+		const { selectedFrom: from, selectedTo: to, fromPlace: fp, toPlace: tp } = e.detail;
+		fromPlace = fp;
+		toPlace = tp;
+		selectedFrom = from;
+		selectedTo = to;
+		fromResults = [];
+		toResults = [];
+		await planTrip();
+	}
+
+	let loadSharedTripHandler;
+
 	onMount(() => {
 		if (browser) {
 			tabSwitchedHandler = () => {
@@ -285,9 +321,11 @@
 			};
 			setTripPlanLocationHandler = handleSetTripPlanLocation;
 			tripPlanModalClosedHandler = handleTripPlanModalClosed;
+			loadSharedTripHandler = handleLoadSharedTrip;
 			window.addEventListener('tabSwitched', tabSwitchedHandler);
 			window.addEventListener('setTripPlanLocation', setTripPlanLocationHandler);
 			window.addEventListener('tripPlanModalClosed', tripPlanModalClosedHandler);
+			window.addEventListener('loadSharedTrip', loadSharedTripHandler);
 		}
 	});
 
@@ -307,6 +345,9 @@
 			}
 			if (tripPlanModalClosedHandler) {
 				window.removeEventListener('tripPlanModalClosed', tripPlanModalClosedHandler);
+			}
+			if (loadSharedTripHandler) {
+				window.removeEventListener('loadSharedTrip', loadSharedTripHandler);
 			}
 		}
 	});

@@ -15,6 +15,7 @@
 		mapProvider = $bindable(),
 		stop,
 		initialCoords = null,
+		startInTripPlanMode = false,
 		...restProps
 	} = $props();
 
@@ -30,7 +31,14 @@
 </script>
 
 {#if mapProvider}
-	<MapView {handleStopMarkerSelect} {mapProvider} {stop} {initialCoords} {...restProps} />
+	<MapView
+		{handleStopMarkerSelect}
+		{mapProvider}
+		{stop}
+		{initialCoords}
+		{startInTripPlanMode}
+		{...restProps}
+	/>
 {:else}
 	<FullPageLoadingSpinner />
 {/if}
