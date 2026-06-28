@@ -16,7 +16,7 @@
 	import analytics from '$lib/Analytics/PlausibleAnalytics';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix } from '$lib/utils';
-	import { filterDeparted, makeKey } from '$lib/arrivalDiffing';
+	import { filterDeparted, makeKey } from '$lib/arrivalFiltering';
 	import { fade } from 'svelte/transition';
 
 	/**

@@ -68,4 +68,3 @@ export function filterDeparted(arrivals, now) {
 		return eta >= 0;
 	});
 }
-

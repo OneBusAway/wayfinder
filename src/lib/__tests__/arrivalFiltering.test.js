@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterDeparted, makeKey } from '../arrivalDiffing';
+import { filterDeparted, makeKey } from '../arrivalFiltering';
 
 // Factory function for creating test arrival objects
 function makeArrival({
