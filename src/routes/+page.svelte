@@ -20,9 +20,9 @@
 	import { loadSurveys } from '$lib/Surveys/surveyUtils';
 	import { showSurveyModal } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
-	import analytics from '$lib/Analytics';
+	import analytics from '$lib/Insights';
 	import { userLocation } from '$src/stores/userLocationStore';
-	import { analyticsDistanceToStop } from '$lib/Analytics/analyticsUtils';
+	import { analyticsDistanceToStop } from '$lib/Insights/insightsUtils';
 	import SurveyLauncher from '$components/surveys/SurveyLauncher.svelte';
 	import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';

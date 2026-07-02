@@ -4,7 +4,7 @@ import {
 	sanitizeData,
 	FALLBACK_USER_AGENT,
 	isSuccessfulIngest
-} from '$lib/Analytics/adapters/UmamiAdapter.js';
+} from '$lib/Insights/adapters/UmamiAdapter.js';
 
 const fullEnv = {
 	PUBLIC_ANALYTICS_DOMAIN: 'example.com',

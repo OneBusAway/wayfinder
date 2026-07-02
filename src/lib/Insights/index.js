@@ -1,4 +1,4 @@
-import { Analytics } from './Analytics.js';
+import { Analytics } from './Insights.js';
 
 const analytics = new Analytics();
 export default analytics;

@@ -8,7 +8,7 @@
 	import { isRTL } from '$lib/i18n';
 	import { locale, t } from 'svelte-i18n';
 	import { onMount } from 'svelte';
-	import analytics from '$lib/Analytics';
+	import analytics from '$lib/Insights';
 	import { initSystemTheme } from '$lib/systemTheme.js';
 	import { env } from '$env/dynamic/public';
 
