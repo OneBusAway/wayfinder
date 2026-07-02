@@ -11,7 +11,7 @@ vi.mock('$lib/systemTheme.js', () => ({
 	initSystemTheme: vi.fn()
 }));
 
-vi.mock('$lib/Analytics', () => ({
+vi.mock('$lib/Insights', () => ({
 	default: { reportPageView: vi.fn() }
 }));
 

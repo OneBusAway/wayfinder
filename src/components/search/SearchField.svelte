@@ -1,6 +1,6 @@
 <script>
 	import { t } from 'svelte-i18n';
-	import analytics from '$lib/Analytics';
+	import analytics from '$lib/Insights';
 
 	/**
 	 * @typedef {Object} Props

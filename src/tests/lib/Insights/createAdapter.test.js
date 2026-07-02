@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createAdapter } from '$lib/Analytics/createAdapter.js';
-import { NoopAdapter } from '$lib/Analytics/adapters/NoopAdapter.js';
-import { PlausibleAdapter } from '$lib/Analytics/adapters/PlausibleAdapter.js';
-import { UmamiAdapter } from '$lib/Analytics/adapters/UmamiAdapter.js';
+import { createAdapter } from '$lib/Insights/createAdapter.js';
+import { NoopAdapter } from '$lib/Insights/adapters/NoopAdapter.js';
+import { PlausibleAdapter } from '$lib/Insights/adapters/PlausibleAdapter.js';
+import { UmamiAdapter } from '$lib/Insights/adapters/UmamiAdapter.js';
 
 describe('createAdapter', () => {
 	beforeEach(() => {

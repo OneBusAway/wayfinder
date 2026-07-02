@@ -1,5 +1,5 @@
 import { env as dynamicEnv } from '$env/dynamic/public';
-import { createAdapter } from '$lib/Analytics/createAdapter.js';
+import { createAdapter } from '$lib/Insights/createAdapter.js';
 
 export async function POST({ request, getClientAddress }) {
 	let envelope;

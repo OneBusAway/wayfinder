@@ -13,7 +13,7 @@
 	import { surveyStore, showSurveyModal, markSurveyAnswered } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
 	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
-	import analytics from '$lib/Analytics';
+	import analytics from '$lib/Insights';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix } from '$lib/utils';
 

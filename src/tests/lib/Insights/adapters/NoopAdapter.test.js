@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { NoopAdapter } from '$lib/Analytics/adapters/NoopAdapter.js';
+import { NoopAdapter } from '$lib/Insights/adapters/NoopAdapter.js';
 
 describe('NoopAdapter', () => {
 	it('reports as disabled', () => {
