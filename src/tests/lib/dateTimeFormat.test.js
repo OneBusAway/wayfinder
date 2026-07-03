@@ -542,7 +542,7 @@ describe('formatLastUpdated', () => {
 		expect(result).toBe('1 min 30 segs atrás');
 	});
 
-	it('falls back to singular labels when plural forms are omitted', () => {
+	it('falls back to singular sec label when secs is omitted', () => {
 		const abbreviatedTranslations = {
 			min: 'min',
 			sec: 'sec',
@@ -551,6 +551,17 @@ describe('formatLastUpdated', () => {
 		const timestamp = new Date('2024-01-16T11:59:30Z').valueOf();
 		const result = formatLastUpdated(timestamp, abbreviatedTranslations);
 		expect(result).toBe('30 sec ago');
+	});
+
+	it('falls back to singular min label when mins is omitted', () => {
+		const abbreviatedTranslations = {
+			min: 'min',
+			sec: 'sec',
+			ago: 'ago'
+		};
+		const timestamp = new Date('2024-01-16T11:57:15Z').valueOf();
+		const result = formatLastUpdated(timestamp, abbreviatedTranslations);
+		expect(result).toBe('2 min 45 sec ago');
 	});
 
 	it('uses full-word plural forms when provided', () => {
