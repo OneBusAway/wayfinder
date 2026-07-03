@@ -100,6 +100,38 @@ describe('RecentTripsList', () => {
 		});
 	});
 
+	describe('Accessibility', () => {
+		it('renders the section heading as an h2 (no skipped heading level)', () => {
+			mockStoreValue.current = sampleTrips;
+
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const heading = screen.getByRole('heading', { level: 2, name: 'Recent Searches' });
+			expect(heading).toBeInTheDocument();
+		});
+
+		it('uses a native button for each card with no nested interactive controls', () => {
+			mockStoreValue.current = sampleTrips;
+
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const card = screen.getByText('Capitol Hill').closest('button');
+			expect(card.tagName).toBe('BUTTON');
+			// The delete control must be a sibling, not nested inside the card button.
+			expect(card.querySelector('button')).toBeNull();
+		});
+
+		it('gives the "Clear All" button AA-compliant text color (not gray-400)', () => {
+			mockStoreValue.current = sampleTrips;
+
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const clearAll = screen.getByText('Clear All');
+			expect(clearAll).toHaveClass('text-gray-600');
+			expect(clearAll).not.toHaveClass('text-gray-400');
+		});
+	});
+
 	describe('Interactions', () => {
 		it('calls onSelect with the trip when a card is clicked', async () => {
 			mockStoreValue.current = sampleTrips;
@@ -107,7 +139,7 @@ describe('RecentTripsList', () => {
 
 			render(RecentTripsList, { props: { onSelect: mockOnSelect } });
 
-			const firstCard = screen.getByText('Capitol Hill').closest('[role="button"]');
+			const firstCard = screen.getByText('Capitol Hill').closest('button');
 			await user.click(firstCard);
 
 			expect(mockOnSelect).toHaveBeenCalledTimes(1);
