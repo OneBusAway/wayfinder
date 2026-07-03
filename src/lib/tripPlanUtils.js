@@ -49,6 +49,26 @@ export function swapTripLocations({
 }
 
 /**
+ * Removes the From/To pin markers from the map without touching the form
+ * inputs or selected coordinates. Used when the itineraries modal closes so the
+ * map clears (matching Google/Apple Maps) while the search stays populated for a
+ * quick re-plan. The pins are recreated the next time the user plans a trip.
+ * @param {Object} params
+ * @param {Object|null} params.fromMarker - Origin map marker
+ * @param {Object|null} params.toMarker - Destination map marker
+ * @param {Object} params.mapProvider - Map provider instance
+ * @returns {{ fromMarker: null, toMarker: null }} Nulled marker references
+ */
+export function clearTripPlanPins({ fromMarker, toMarker, mapProvider }) {
+	if (mapProvider) {
+		if (fromMarker) mapProvider.removePinMarker(fromMarker);
+		if (toMarker) mapProvider.removePinMarker(toMarker);
+	}
+
+	return { fromMarker: null, toMarker: null };
+}
+
+/**
  * Determines if there is a stay-seated transition between two legs. That occurs when a
  * passenger stays on the same vehicle and it continues under a different id.
  * @see https://github.com/opentripplanner/OpenTripPlanner/pull/4264

@@ -163,5 +163,26 @@
 	"context-menu": {
 		"start_here": "Kòmanse isit",
 		"end_here": "Fini isit"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Aksè refize",
+			"description": "Ou pa gen pèmisyon pou wè paj sa a."
+		},
+		"404": {
+			"title": "Paj la pa jwenn",
+			"description": "Paj ou ap chèche a pa egziste oswa li te deplase."
+		},
+		"500": {
+			"title": "Erè sèvè",
+			"description": "Yon bagay mal pase nan bò pa nou. Tanpri eseye ankò pita."
+		},
+		"generic": {
+			"title": "Yon bagay mal pase",
+			"description": "Yon erè inatandi rive."
+		},
+		"go_home": "Ale lakay",
+		"go_back": "Tounen"
+	},
+	"skip_to_main_content": "Sote nan kontni prensipal la"
 }

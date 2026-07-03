@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { swapTripLocations } from '$lib/tripPlanUtils';
+import { swapTripLocations, clearTripPlanPins } from '$lib/tripPlanUtils';
 
 describe('tripPlanUtils', () => {
 	describe('swapTripLocations', () => {
@@ -206,6 +206,53 @@ describe('tripPlanUtils', () => {
 			expect(result).toHaveProperty('selectedTo');
 			expect(result).toHaveProperty('fromMarker');
 			expect(result).toHaveProperty('toMarker');
+		});
+	});
+
+	describe('clearTripPlanPins', () => {
+		let mockMapProvider;
+
+		beforeEach(() => {
+			mockMapProvider = {
+				removePinMarker: vi.fn()
+			};
+		});
+
+		it('removes both pins and returns nulled marker references', () => {
+			const fromMarker = { id: 'marker-from' };
+			const toMarker = { id: 'marker-to' };
+
+			const result = clearTripPlanPins({ fromMarker, toMarker, mapProvider: mockMapProvider });
+
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledWith(fromMarker);
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledWith(toMarker);
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledTimes(2);
+			expect(result).toEqual({ fromMarker: null, toMarker: null });
+		});
+
+		it('only removes the markers that exist', () => {
+			const fromMarker = { id: 'marker-from' };
+
+			const result = clearTripPlanPins({
+				fromMarker,
+				toMarker: null,
+				mapProvider: mockMapProvider
+			});
+
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledTimes(1);
+			expect(mockMapProvider.removePinMarker).toHaveBeenCalledWith(fromMarker);
+			expect(result).toEqual({ fromMarker: null, toMarker: null });
+		});
+
+		it('is a no-op when no markers exist', () => {
+			const result = clearTripPlanPins({
+				fromMarker: null,
+				toMarker: null,
+				mapProvider: mockMapProvider
+			});
+
+			expect(mockMapProvider.removePinMarker).not.toHaveBeenCalled();
+			expect(result).toEqual({ fromMarker: null, toMarker: null });
 		});
 	});
 });

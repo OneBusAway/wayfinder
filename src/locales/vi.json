@@ -163,5 +163,26 @@
 	"context-menu": {
 		"start_here": "Bắt đầu từ đây",
 		"end_here": "Kết thúc tại đây"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Truy cập bị từ chối",
+			"description": "Bạn không có quyền xem trang này."
+		},
+		"404": {
+			"title": "Không tìm thấy trang",
+			"description": "Trang bạn đang tìm kiếm không tồn tại hoặc đã được chuyển."
+		},
+		"500": {
+			"title": "Lỗi máy chủ",
+			"description": "Đã xảy ra sự cố ở phía chúng tôi. Vui lòng thử lại sau."
+		},
+		"generic": {
+			"title": "Đã xảy ra sự cố",
+			"description": "Đã xảy ra lỗi không mong muốn."
+		},
+		"go_home": "Về trang chủ",
+		"go_back": "Quay lại"
+	},
+	"skip_to_main_content": "Bỏ qua đến nội dung chính"
 }

@@ -5,7 +5,7 @@ import { createMockStore } from '../../../tests/helpers/test-utils.js';
 import SearchPane from '../SearchPane.svelte';
 
 // Mock dependencies
-vi.mock('$lib/Analytics', () => ({
+vi.mock('$lib/Insights', () => ({
 	default: {
 		reportSearchQuery: vi.fn()
 	}
@@ -84,6 +84,7 @@ describe('SearchPane', () => {
 		// Mock props
 		mockProps = {
 			clearPolylines: vi.fn(),
+			clearTripItineraries: vi.fn(),
 			handleRouteSelected: vi.fn(),
 			handleViewAllRoutes: vi.fn(),
 			handleTripPlan: vi.fn(),
@@ -172,6 +173,26 @@ describe('SearchPane', () => {
 			await user.click(tripTab);
 			expect(global.dispatchEvent).toHaveBeenCalledWith(
 				expect.objectContaining({ type: 'planTripTabClicked' })
+			);
+		});
+
+		test('clears trip plan map state when leaving the plan tab', async () => {
+			const user = userEvent.setup();
+
+			render(SearchPane, { props: mockProps });
+
+			await user.click(screen.getByRole('tab', { name: 'Plan Trip' }));
+			vi.mocked(global.dispatchEvent).mockClear();
+			mockProps.clearTripItineraries.mockClear();
+
+			await user.click(screen.getByRole('tab', { name: 'Stops & Stations' }));
+
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'tripPlanModalClosed' })
+			);
+			expect(mockProps.clearTripItineraries).toHaveBeenCalled();
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'tabSwitched' })
 			);
 		});
 

@@ -97,7 +97,7 @@ vi.mock('$lib/utils/user', () => ({
 	getUserId: vi.fn().mockReturnValue('user-123')
 }));
 
-vi.mock('$lib/Analytics', () => ({
+vi.mock('$lib/Insights', () => ({
 	default: {
 		reportArrivalClicked: vi.fn()
 	}

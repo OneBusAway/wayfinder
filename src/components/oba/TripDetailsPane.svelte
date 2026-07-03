@@ -1,4 +1,5 @@
 <script>
+	import { _ } from 'svelte-i18n';
 	import { onMount, onDestroy } from 'svelte';
 	import { faBus, faLocationDot, faCheck } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
@@ -103,11 +104,12 @@
 	{#if error}
 		<p>{error}</p>
 	{:else if tripDetails}
-		<h2 class="h2">
-			{#if routeInfo}
-				Route {routeInfo.shortName} -
-			{/if}
-		</h2>
+		{#if routeInfo}
+			<h2 class="h2">
+				{$_('trip_details.route')}
+				{routeInfo.shortName}
+			</h2>
+		{/if}
 		{#if tripDetails.schedule?.stopTimes.length > 0}
 			<div class="relative">
 				<div class="absolute bottom-0 left-3.5 top-0 w-[1px] bg-neutral-400"></div>
@@ -140,7 +142,7 @@
 							<div class="text-md font-semibold dark:text-white">
 								{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 							</div>
-							<div class="whitespace-nowrap text-sm text-gray-500">
+							<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
 								{formatSecondsFromMidnight(tripStop.arrivalTime)}
 							</div>
 						</div>
@@ -148,9 +150,9 @@
 				{/each}
 			</div>
 		{:else}
-			<p class="text-black dark:text-white">No stop times available for this trip.</p>
+			<p class="text-black dark:text-white">{$_('trip_details.no_stops')}</p>
 		{/if}
 	{:else}
-		<p class="text-black dark:text-white">Loading trip details...</p>
+		<p class="text-black dark:text-white">{$_('trip_details.loading')}</p>
 	{/if}
 </div>

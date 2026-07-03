@@ -163,5 +163,26 @@
 	"context-menu": {
 		"start_here": "從這裡出發",
 		"end_here": "到這裡結束"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "拒絕存取",
+			"description": "您沒有查看此頁面的權限。"
+		},
+		"404": {
+			"title": "找不到頁面",
+			"description": "您尋找的頁面不存在或已被移動。"
+		},
+		"500": {
+			"title": "伺服器錯誤",
+			"description": "我們這邊出了問題。請稍後再試。"
+		},
+		"generic": {
+			"title": "發生問題",
+			"description": "發生了意外錯誤。"
+		},
+		"go_home": "回首頁",
+		"go_back": "返回"
+	},
+	"skip_to_main_content": "跳至主要內容"
 }

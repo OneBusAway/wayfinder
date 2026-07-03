@@ -4,6 +4,7 @@ import {
 	rgbToHex,
 	mixColors,
 	generatePalette,
+	darkenColor,
 	lightenColor,
 	getBrightness,
 	adjustColorForDarkMode
@@ -47,6 +48,13 @@ describe('colorUtils', () => {
 			expect(hexToRgb('#gg0000')).toBeNull();
 			expect(hexToRgb('#ff00')).toBeNull(); // 4 digits
 			expect(hexToRgb('#ff00000')).toBeNull(); // 7 digits
+		});
+
+		test('returns null for null, undefined, and non-string input', () => {
+			expect(hexToRgb(null)).toBeNull();
+			expect(hexToRgb(undefined)).toBeNull();
+			expect(hexToRgb(123456)).toBeNull();
+			expect(hexToRgb({})).toBeNull();
 		});
 	});
 
@@ -246,6 +254,45 @@ describe('colorUtils', () => {
 		});
 	});
 
+	describe('darkenColor', () => {
+		test('should darken a light color by 50%', () => {
+			const result = darkenColor('#ffffff', 0.5);
+			expect(result).toBe('#808080'); // Mid-gray
+		});
+
+		test('should darken brand-accent by 15% to produce hover token', () => {
+			// #486621 → mix 15% with black → #3d571c
+			const result = darkenColor('#486621', 0.15);
+			expect(result).toBe('#3d571c');
+		});
+
+		test('should return black when mixing 100% with black', () => {
+			const result = darkenColor('#ffffff', 1.0);
+			expect(result).toBe('#000000');
+		});
+
+		test('should not change color when amount is 0', () => {
+			const result = darkenColor('#ff0000', 0);
+			expect(result).toBe('#ff0000');
+		});
+
+		test('should return black for null or undefined input', () => {
+			expect(darkenColor(null, 0.5)).toBe('#000000');
+			expect(darkenColor(undefined, 0.5)).toBe('#000000');
+			expect(darkenColor('', 0.5)).toBe('#000000');
+		});
+
+		test('should return black for invalid hex', () => {
+			expect(darkenColor('not-a-color', 0.5)).toBe('#000000');
+		});
+
+		test('result is always darker than the input', () => {
+			const original = hexToRgb('#486621');
+			const darkened = hexToRgb(darkenColor('#486621', 0.15));
+			expect(getBrightness(darkened)).toBeLessThan(getBrightness(original));
+		});
+	});
+
 	describe('lightenColor', () => {
 		test('should lighten a dark color by 50%', () => {
 			const result = lightenColor('#000000', 0.5);
@@ -289,6 +336,11 @@ describe('colorUtils', () => {
 			const rgb = { r: 0, g: 0, b: 0 };
 			const brightness = getBrightness(rgb);
 			expect(brightness).toBe(0);
+		});
+
+		test('should return 0 for null or undefined input', () => {
+			expect(getBrightness(null)).toBe(0);
+			expect(getBrightness(undefined)).toBe(0);
 		});
 
 		test('should return 255 for pure white', () => {

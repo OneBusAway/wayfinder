@@ -159,5 +159,26 @@
 	"context-menu": {
 		"start_here": "Rozpocznij tutaj",
 		"end_here": "Zakończ tutaj"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Brak dostępu",
+			"description": "Nie masz uprawnień do wyświetlenia tej strony."
+		},
+		"404": {
+			"title": "Strona nie znaleziona",
+			"description": "Strona, której szukasz, nie istnieje lub została przeniesiona."
+		},
+		"500": {
+			"title": "Błąd serwera",
+			"description": "Coś poszło nie tak po naszej stronie. Spróbuj ponownie później."
+		},
+		"generic": {
+			"title": "Coś poszło nie tak",
+			"description": "Wystąpił nieoczekiwany błąd."
+		},
+		"go_home": "Strona główna",
+		"go_back": "Wróć"
+	},
+	"skip_to_main_content": "Przejdź do głównej treści"
 }

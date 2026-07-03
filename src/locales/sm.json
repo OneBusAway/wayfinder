@@ -163,5 +163,26 @@
 	"context-menu": {
 		"start_here": "Amata mai iinei",
 		"end_here": "Fa'ai'u iinei"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Ua teena le avanoa",
+			"description": "E leai sau aia e va'ai ai i lenei itulau."
+		},
+		"404": {
+			"title": "E le'i maua le itulau",
+			"description": "O le itulau o lo'o e su'esu'e mo e le o iai pe ua si'itia."
+		},
+		"500": {
+			"title": "Mea sese a le 'au'aunaga",
+			"description": "Na tupu se mea sese i lo matou itu. Fa'amolemole toe taumafai mulimuli ane."
+		},
+		"generic": {
+			"title": "Na tupu se mea sese",
+			"description": "Na tupu se sese e le'i fa'amoemoeina."
+		},
+		"go_home": "Toe fo'i i le amataga",
+		"go_back": "Toe fo'i i tua"
+	},
+	"skip_to_main_content": "Alu i le mea autu"
 }

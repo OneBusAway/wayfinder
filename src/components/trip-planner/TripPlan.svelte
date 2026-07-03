@@ -17,7 +17,7 @@
 	import { formatDepartureDisplay } from '$lib/dateTimeFormat';
 	import { env } from '$env/dynamic/public';
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
-	import { swapTripLocations } from '$lib/tripPlanUtils';
+	import { swapTripLocations, clearTripPlanPins } from '$lib/tripPlanUtils';
 	import { recentTrips } from '$stores/recentTripsStore';
 	import RecentTripsList from './RecentTripsList.svelte';
 
@@ -134,12 +134,18 @@
 			fromPlace = '';
 			fromResults = [];
 			selectedFrom = null;
-			mapProvider.removePinMarker(fromMarker);
+			if (fromMarker) {
+				mapProvider.removePinMarker(fromMarker);
+				fromMarker = null;
+			}
 		} else {
 			toPlace = '';
 			toResults = [];
 			selectedTo = null;
-			mapProvider.removePinMarker(toMarker);
+			if (toMarker) {
+				mapProvider.removePinMarker(toMarker);
+				toMarker = null;
+			}
 		}
 		clearTripItineraries();
 	}
@@ -215,12 +221,7 @@
 			const data = await fetchTripPlan(selectedFrom, selectedTo);
 
 			if (data) {
-				const tripPlanData = {
-					data,
-					fromMarker,
-					toMarker
-				};
-				handleTripPlan(tripPlanData);
+				handleTripPlan({ data });
 
 				// Save to recent trips
 				try {
@@ -241,6 +242,14 @@
 
 	let tabSwitchedHandler;
 	let setTripPlanLocationHandler;
+	let tripPlanModalClosedHandler;
+
+	// Remove the From/To pins when the itineraries modal closes, but keep the form inputs so the user can tweak options and re-plan in one click. The pins are recreated by planTrip() on the next search.
+	function handleTripPlanModalClosed() {
+		const result = clearTripPlanPins({ fromMarker, toMarker, mapProvider });
+		fromMarker = result.fromMarker;
+		toMarker = result.toMarker;
+	}
 
 	function handleSetTripPlanLocation(e) {
 		const { type, lat, lng } = e.detail;
@@ -275,18 +284,29 @@
 				clearInput(false);
 			};
 			setTripPlanLocationHandler = handleSetTripPlanLocation;
+			tripPlanModalClosedHandler = handleTripPlanModalClosed;
 			window.addEventListener('tabSwitched', tabSwitchedHandler);
 			window.addEventListener('setTripPlanLocation', setTripPlanLocationHandler);
+			window.addEventListener('tripPlanModalClosed', tripPlanModalClosedHandler);
 		}
 	});
 
 	onDestroy(() => {
+		// Safety when the plan tab unmounts before tabSwitched runs.
+		if (mapProvider && (fromMarker || toMarker)) {
+			const result = clearTripPlanPins({ fromMarker, toMarker, mapProvider });
+			fromMarker = result.fromMarker;
+			toMarker = result.toMarker;
+		}
 		if (browser) {
 			if (tabSwitchedHandler) {
 				window.removeEventListener('tabSwitched', tabSwitchedHandler);
 			}
 			if (setTripPlanLocationHandler) {
 				window.removeEventListener('setTripPlanLocation', setTripPlanLocationHandler);
+			}
+			if (tripPlanModalClosedHandler) {
+				window.removeEventListener('tripPlanModalClosed', tripPlanModalClosedHandler);
 			}
 		}
 	});
@@ -418,6 +438,7 @@
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
 					viewBox="0 0 24 24"
+					aria-hidden="true"
 				>
 					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
 					></circle>

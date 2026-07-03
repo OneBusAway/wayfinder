@@ -163,5 +163,26 @@
 	"context-menu": {
 		"start_here": "Começar aqui",
 		"end_here": "Terminar aqui"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Acesso negado",
+			"description": "Você não tem permissão para ver esta página."
+		},
+		"404": {
+			"title": "Página não encontrada",
+			"description": "A página que você procura não existe ou foi movida."
+		},
+		"500": {
+			"title": "Erro do servidor",
+			"description": "Algo deu errado do nosso lado. Tente novamente mais tarde."
+		},
+		"generic": {
+			"title": "Algo deu errado",
+			"description": "Ocorreu um erro inesperado."
+		},
+		"go_home": "Ir para o início",
+		"go_back": "Voltar"
+	},
+	"skip_to_main_content": "Pular para o conteúdo principal"
 }

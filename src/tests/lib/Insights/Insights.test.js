@@ -10,7 +10,7 @@ vi.mock('$env/dynamic/public', () => ({
 	}
 }));
 
-import { Analytics } from '$lib/Analytics/Analytics.js';
+import { Analytics } from '$lib/Insights/Insights.js';
 
 describe('Analytics (constructor + isEnabled)', () => {
 	beforeEach(() => {

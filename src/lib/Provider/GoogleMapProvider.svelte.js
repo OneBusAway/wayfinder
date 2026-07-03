@@ -7,8 +7,10 @@ import PopupContent from '$components/map/PopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/generateVehicleIcon';
+import { animateMarkerTo, cancelMarkerAnimation } from '$lib/MapHelpers/animateMarker';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
+import { buildVehiclePopupData } from '$lib/vehicleUtils';
 
 export default class GoogleMapProvider {
 	constructor(apiKey, handleStopMarkerSelect) {
@@ -190,6 +192,7 @@ export default class GoogleMapProvider {
 		const marker = new google.maps.Marker({
 			position: { lat: stop.lat, lng: stop.lon },
 			map: this.map,
+			title: stop.name,
 			icon: {
 				path: google.maps.SymbolPath.CIRCLE,
 				scale: 5,
@@ -351,18 +354,14 @@ export default class GoogleMapProvider {
 
 		this.vehicleMarkers.push(marker);
 
-		const vehicleData = {
-			nextDestination: activeTrip.tripHeadsign,
-			vehicleId: vehicle.vehicleId,
-			lastUpdateTime: vehicle.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
-			predicted: vehicle.predicted
-		};
+		const vehicleData = $state(buildVehiclePopupData(vehicle, activeTrip, this.stopsMap));
+
+		marker.vehicleData = vehicleData;
 
 		const popupContainer = document.createElement('div');
 		marker.popupComponent = mount(VehiclePopupContent, {
 			target: popupContainer,
-			props: vehicleData
+			props: marker.vehicleData
 		});
 
 		marker.infoWindow = new google.maps.InfoWindow({
@@ -379,7 +378,14 @@ export default class GoogleMapProvider {
 	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType) {
 		if (!this.map || !marker) return;
 
-		marker.setPosition({ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon });
+		const current = marker.getPosition();
+		animateMarkerTo(
+			marker,
+			{ lat: current.lat(), lng: current.lng() },
+			{ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon },
+			(lat, lng) => marker.setPosition({ lat, lng }),
+			{ routePaths: this._getRoutePaths() }
+		);
 
 		let color;
 		if (!vehicleStatus.predicted) {
@@ -393,20 +399,14 @@ export default class GoogleMapProvider {
 			anchor: new google.maps.Point(iconWidth / 2, iconHeight / 2)
 		});
 
-		const updatedData = {
-			nextDestination: activeTrip.tripHeadsign,
-			vehicleId: vehicleStatus.vehicleId,
-			lastUpdateTime: vehicleStatus.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name,
-			predicted: vehicleStatus.predicted
-		};
-
-		if (marker.popupComponent) {
-			marker.popupComponent.$set(updatedData);
-		}
+		Object.assign(
+			marker.vehicleData,
+			buildVehiclePopupData(vehicleStatus, activeTrip, this.stopsMap)
+		);
 	}
 
 	removeVehicleMarker(marker) {
+		cancelMarkerAnimation(marker);
 		marker.setMap(null);
 	}
 
@@ -414,9 +414,22 @@ export default class GoogleMapProvider {
 		if (!this.map) return;
 
 		for (const marker of this.vehicleMarkers) {
+			cancelMarkerAnimation(marker);
 			marker.setMap(null);
 		}
 		this.vehicleMarkers = [];
+	}
+
+	/**
+	 * Returns the currently drawn route shapes as plain coordinate arrays, used
+	 * to animate vehicles along the route instead of in a straight line.
+	 * @returns {Array<Array<{lat:number,lng:number}>>}
+	 */
+	_getRoutePaths() {
+		return this.polylines
+			.map((polyline) => polyline.getPath()?.getArray() ?? [])
+			.filter((points) => points.length >= 2)
+			.map((points) => points.map((ll) => ({ lat: ll.lat(), lng: ll.lng() })));
 	}
 
 	cleanupInfoWindow() {
@@ -459,6 +472,16 @@ export default class GoogleMapProvider {
 		});
 	}
 
+	/**
+	 * Creates a polyline from an encoded shape, returning `null` when the shape
+	 * can't be decoded (uniform with the OSM provider).
+	 *
+	 * Contract note: this method is async — it returns a `Promise<Polyline|null>`
+	 * because it lazy-loads the Google geometry library — whereas the OSM
+	 * provider's createPolyline is synchronous (`Polyline|null`). Callers that
+	 * need provider-agnostic behavior should `await` the result and guard
+	 * against `null`.
+	 */
 	async createPolyline(shape, options = {}) {
 		// Backward compat: old callers pass a boolean as the second arg
 		if (typeof options === 'boolean') {
@@ -469,7 +492,17 @@ export default class GoogleMapProvider {
 
 		await window.google.maps.importLibrary('geometry');
 
-		const decodedPath = google.maps.geometry.encoding.decodePath(shape);
+		let decodedPath;
+		try {
+			decodedPath = google.maps.geometry.encoding.decodePath(shape);
+		} catch (error) {
+			console.error('Failed to decode polyline:', error?.message);
+			return null;
+		}
+		if (!decodedPath || decodedPath.length === 0) {
+			console.error('Failed to decode polyline:', shape);
+			return null;
+		}
 		const path = decodedPath.map((point) => ({ lat: point.lat(), lng: point.lng() }));
 
 		const polylineOptions = {
@@ -565,12 +598,62 @@ export default class GoogleMapProvider {
 		this.map.panTo({ lat, lng });
 	}
 
-	flyTo(lat, lng, zoom = 15) {
+	// Google Maps repositions instantly here (no zoom animation), so its native
+	// polylines never desync. `_options` mirrors the OSM provider's signature
+	// (e.g. `{ animate }`) but has no effect here.
+	// eslint-disable-next-line no-unused-vars
+	flyTo(lat, lng, zoom = 15, _options = {}) {
 		this.map.setZoom(zoom);
 		this.map.setCenter({ lat, lng });
 	}
 	setZoom(zoom) {
 		this.map.setZoom(zoom);
+	}
+
+	/**
+	 * Fits the map view to the bounds of all currently drawn polylines so the
+	 * full route is centered and visible. Returns true when a fit was applied.
+	 * @param {{ padding?: number, maxZoom?: number }} [options]
+	 * @returns {Promise<boolean>} resolves once the view has settled
+	 */
+	async fitToPolylines(options = {}) {
+		if (!this.map || this.polylines.length === 0) return false;
+
+		const bounds = new window.google.maps.LatLngBounds();
+		this.polylines.forEach((polyline) => {
+			polyline.getPath().forEach((latLng) => bounds.extend(latLng));
+		});
+
+		if (bounds.isEmpty()) return false;
+
+		const maxZoom = options.maxZoom ?? 16;
+
+		return new Promise((resolve) => {
+			let settled = false;
+			let idleListener = null;
+			// fitBounds has no maxZoom option on Google Maps, so clamp once the
+			// view settles to avoid zooming in too far on short routes. Resolve
+			// here so callers can reveal stop markers in sync with the fit.
+			const finish = () => {
+				if (settled) return;
+				settled = true;
+				// Drop the idle listener in case we resolved via the timeout
+				// safety net below before `idle` ever fired.
+				if (idleListener) window.google.maps.event.removeListener(idleListener);
+				if (this.map.getZoom() > maxZoom) {
+					this.map.setZoom(maxZoom);
+				}
+				resolve(true);
+			};
+
+			idleListener = window.google.maps.event.addListenerOnce(this.map, 'idle', finish);
+			// Safety net: Google Maps does not guarantee an `idle` event when
+			// fitBounds produces no viewport change, so resolve anyway after a
+			// short delay to avoid hanging callers that await this.
+			setTimeout(finish, 1000);
+
+			this.map.fitBounds(bounds, options.padding ?? 50);
+		});
 	}
 
 	enableContextMenu() {

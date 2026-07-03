@@ -8,9 +8,24 @@ import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/generateVehicleIcon';
+import { animateMarkerTo, cancelMarkerAnimation } from '$lib/MapHelpers/animateMarker';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
+import { env } from '$env/dynamic/public';
+import { buildVehiclePopupData } from '$lib/vehicleUtils';
+import { get } from 'svelte/store';
+import { t } from 'svelte-i18n';
+
+// activeTrip is always truthy here: the sole caller (vehicleUtils.js) guards on
+// it, and buildVehiclePopupData reads activeTrip.tripHeadsign without optional
+// chaining. Keep this contract consistent rather than implying null is expected.
+function getVehicleLabel(activeTrip) {
+	const translate = get(t);
+	return activeTrip.tripHeadsign
+		? translate('vehicle.to_headsign', { values: { headsign: activeTrip.tripHeadsign } })
+		: translate('vehicle.label');
+}
 
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
@@ -22,13 +37,16 @@ export default class OpenStreetMapProvider {
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
-		this.maplibreLayer = 'positron';
+		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || 'positron';
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.showStopsRoutesAtZoom = 16;
 		this.routeLabelsVisible = false;
 		this.contextMenuPopup = null;
 		this.contextMenuComponent = null;
+		// Incremented on each fitToPolylines() so a superseded route load's
+		// pending reveal can detect it's stale and bail out.
+		this._fitToken = 0;
 	}
 
 	async initMap(element, options) {
@@ -49,12 +67,6 @@ export default class OpenStreetMapProvider {
 		this.map = this.L.map(element, { zoomControl: false }).setView([options.lat, options.lng], 14);
 
 		this.L.control.zoom({ position: 'bottomright' }).addTo(this.map);
-
-		// TODO: Make this configurable through env file
-
-		/*
-		 * for more styles https://github.com/teamapps-org/maplibre-gl-styles
-		 */
 		this.maplibreLayer = this.L.maplibreGL({
 			style: `https://tiles.openfreemap.org/styles/${this.maplibreLayer}`,
 			interactive: true,
@@ -118,6 +130,12 @@ export default class OpenStreetMapProvider {
 			iconSize: [40, 40]
 		});
 
+		// keyboard: false is load-bearing. Leaflet's Marker._initIcon stamps
+		// tabindex="0" + role="button" on the wrapper <div> whenever keyboard is
+		// truthy (its default), regardless of interactive. That wrapper holds the
+		// mounted StopMarker, which already has its own real <button> with an
+		// sr-only accessible name — so leaving keyboard on would create nested
+		// interactive controls plus a second, unlabeled, dead tab stop per stop.
 		const marker = this.L.marker([options.position.lat, options.position.lng], {
 			icon: customIcon,
 			interactive: false,
@@ -194,20 +212,47 @@ export default class OpenStreetMapProvider {
 		marker.props.isHighlighted = false;
 	}
 
+	// Leaflet only activates markers on Enter, so we add Space for ARIA button parity.
+	attachKeyboardActivation(el, onActivate) {
+		el.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				e.stopPropagation();
+				onActivate();
+			}
+		});
+	}
+
 	addStopRouteMarker(stop, stopTime = null) {
-		const customIcon = L.divIcon({
-			html: `<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle"><circle cx="12" cy="12" r="10"/></svg>`,
-			className: '',
-			iconSize: [20, 20],
-			iconAnchor: [10, 10]
+		if (!this.map || !this.L) return;
+
+		const customIcon = this.L.divIcon({
+			html: `<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#000000"
+				stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+				style="display:block;margin:auto;" aria-hidden="true">
+				<circle cx="12" cy="12" r="10"/>
+			</svg>`,
+			className: 'route-stop-marker',
+			iconSize: [24, 24],
+			iconAnchor: [12, 12]
 		});
 
-		const marker = L.marker([stop.lat, stop.lon], { icon: customIcon }).addTo(this.map);
+		const marker = this.L.marker([stop.lat, stop.lon], {
+			icon: customIcon,
+			title: stop.name
+		}).addTo(this.map);
+
+		const open = () => this.openStopMarker(stop, stopTime);
+
+		const el = marker.getElement();
+		if (el) {
+			el.setAttribute('aria-label', stop.name);
+			this.attachKeyboardActivation(el, open);
+		}
+
+		marker.on('click', open);
 
 		this.stopsMap.set(stop.id, stop);
-
-		marker.on('click', () => this.openStopMarker(stop, stopTime));
-
 		this.stopMarkers.push(marker);
 	}
 
@@ -283,27 +328,33 @@ export default class OpenStreetMapProvider {
 
 		const vehicleIconSvg = createVehicleIconSvg(vehicle?.orientation, color, routeType);
 		const customIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" />`,
+			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
 			className: '',
 			zIndexOffset: 1000
 		});
 
+		const label = getVehicleLabel(activeTrip);
+
 		const marker = this.L.marker([vehicle.position.lat, vehicle.position.lon], {
 			icon: customIcon,
-			zIndexOffset: 1000
+			zIndexOffset: 1000,
+			title: label
 		}).addTo(this.map);
+
+		const el = marker.getElement();
+		if (el) {
+			el.setAttribute('aria-label', label);
+			// preventDefault inside attachKeyboardActivation is load-bearing here: bindPopup makes Leaflet attach its own _onKeyPress (Enter -> toggle popup) on the keypress event. Suppressing the default keydown stops that synthesized keypress, so our openPopup() doesn't double-fire and flash the popup open-then-closed. stopPropagation does NOT cover this (keydown and keypress are separate events) — do not remove preventDefault.
+			this.attachKeyboardActivation(el, () => marker.openPopup());
+		}
 
 		this.vehicleMarkers.push(marker);
 
-		marker.vehicleData = {
-			nextDestination: activeTrip.tripHeadsign,
-			vehicleId: vehicle.vehicleId,
-			lastUpdateTime: vehicle.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicle.nextStop)?.name,
-			predicted: vehicle.predicted
-		};
+		const vehicleData = $state(buildVehiclePopupData(vehicle, activeTrip, this.stopsMap));
+
+		marker.vehicleData = vehicleData;
 
 		marker.bindPopup(document.createElement('div'));
 
@@ -338,33 +389,40 @@ export default class OpenStreetMapProvider {
 
 		const updatedIconSvg = createVehicleIconSvg(vehicleStatus.orientation, color, routeType);
 		const updatedIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
+			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
 			className: '',
 			zIndexOffset: 1000
 		});
 
-		marker.setLatLng([vehicleStatus.position.lat, vehicleStatus.position.lon]);
+		const current = marker.getLatLng();
+		animateMarkerTo(
+			marker,
+			{ lat: current.lat, lng: current.lng },
+			{ lat: vehicleStatus.position.lat, lng: vehicleStatus.position.lon },
+			(lat, lng) => marker.setLatLng([lat, lng]),
+			{ routePaths: this._getRoutePaths() }
+		);
 		marker.setIcon(updatedIcon);
 
-		let vehicleData = $state({
-			...marker.vehicleData,
-			nextDestination: activeTrip.tripHeadsign,
-			vehicleId: vehicleStatus.vehicleId,
-			lastUpdateTime: vehicleStatus.lastUpdateTime,
-			nextStopName: this.stopsMap.get(vehicleStatus.nextStop)?.name || 'N/A',
-			predicted: vehicleStatus.predicted
-		});
-
-		marker.vehicleData = vehicleData;
-
-		if (marker.isPopupOpen() && marker.popupComponent) {
-			marker.popupComponent = vehicleData;
+		// Leaflet reuses the existing <div> on setIcon and skips re-applying options.title, so refresh both the tooltip and the accessible name when the headsign changes mid-trip; otherwise the hover tooltip goes stale.
+		const updatedLabel = getVehicleLabel(activeTrip);
+		marker.options.title = updatedLabel;
+		const el = marker.getElement();
+		if (el) {
+			el.setAttribute('aria-label', updatedLabel);
+			el.setAttribute('title', updatedLabel);
 		}
+
+		Object.assign(
+			marker.vehicleData,
+			buildVehiclePopupData(vehicleStatus, activeTrip, this.stopsMap)
+		);
 	}
 	removeVehicleMarker(marker) {
 		if (marker) {
+			cancelMarkerAnimation(marker);
 			marker.remove();
 		}
 	}
@@ -373,9 +431,27 @@ export default class OpenStreetMapProvider {
 		if (!this.map) return;
 
 		this.vehicleMarkers.forEach((marker) => {
+			cancelMarkerAnimation(marker);
 			marker.remove();
 		});
 		this.vehicleMarkers = [];
+	}
+
+	/**
+	 * Returns the currently drawn route shapes as plain coordinate arrays, used
+	 * to animate vehicles along the route instead of in a straight line.
+	 * @returns {Array<Array<{lat:number,lng:number}>>}
+	 */
+	_getRoutePaths() {
+		return (
+			this.polylines
+				.map((polyline) => polyline.getLatLngs())
+				// getLatLngs() nests one level for multi-segment polylines; flatten
+				// that single level so a vertex list is always one level deep.
+				.map((points) => (Array.isArray(points) ? points.flat(1) : []))
+				.filter((points) => points.length >= 2)
+				.map((points) => points.map((ll) => ({ lat: ll.lat, lng: ll.lng })))
+		);
 	}
 
 	addListener(event, callback) {
@@ -454,6 +530,16 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 	}
 
+	/**
+	 * Creates a polyline from an encoded shape, returning `null` outside the
+	 * browser, before the map is initialized, or when the shape decodes to empty.
+	 *
+	 * Contract note: this method is synchronous (`Polyline|null`), whereas the
+	 * Google provider's createPolyline is async (`Promise<Polyline|null>`)
+	 * because it lazy-loads its geometry library. Both return `null` on decode
+	 * failure; callers that need provider-agnostic behavior should `await` the
+	 * result and guard against `null`.
+	 */
 	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
 
@@ -505,6 +591,11 @@ export default class OpenStreetMapProvider {
 	removePolyline(polyline) {
 		if (!polyline) return;
 
+		if (polyline._drawTimeoutId) {
+			clearTimeout(polyline._drawTimeoutId);
+			polyline._drawTimeoutId = null;
+		}
+
 		if (polyline.arrowDecorator) {
 			polyline.arrowDecorator.remove();
 			polyline.arrowDecorator = null;
@@ -527,6 +618,10 @@ export default class OpenStreetMapProvider {
 
 		this.polylines.forEach((polyline) => {
 			if (polyline) {
+				if (polyline._drawTimeoutId) {
+					clearTimeout(polyline._drawTimeoutId);
+					polyline._drawTimeoutId = null;
+				}
 				if (polyline.arrowDecorator) {
 					polyline.arrowDecorator.remove();
 					polyline.arrowDecorator = null;
@@ -547,14 +642,138 @@ export default class OpenStreetMapProvider {
 		this.map.panTo([lat, lng]);
 	}
 
-	flyTo(lat, lng, zoom = 15) {
+	flyTo(lat, lng, zoom = 15, options = {}) {
 		if (!browser || !this.map) return;
-		this.map.flyTo([lat, lng], zoom);
+		// Pass `{ animate: false }` to reposition instantly. An animated zoom
+		// desyncs the MapLibre GL basemap from SVG overlays (e.g. a displayed
+		// route), making the route flicker/float until the move settles.
+		this.map.flyTo([lat, lng], zoom, { animate: options.animate ?? true });
 	}
 
 	setZoom(zoom) {
 		if (!browser || !this.map) return;
 		this.map.setZoom(zoom);
+	}
+
+	/**
+	 * Toggles the visibility of all route polylines (and their arrow
+	 * decorators) without removing them from the tracking array.
+	 * @param {boolean} visible
+	 */
+	_setPolylinesVisible(visible) {
+		this.polylines.forEach((polyline) => {
+			[polyline, polyline.arrowDecorator].forEach((layer) => {
+				if (!layer) return;
+				if (visible) {
+					if (!this.map.hasLayer(layer)) layer.addTo(this.map);
+				} else if (this.map.hasLayer(layer)) {
+					this.map.removeLayer(layer);
+				}
+			});
+		});
+	}
+
+	/**
+	 * Reveals the route polylines with a "draw from start to end" animation
+	 * using the SVG stroke-dashoffset technique. The direction-arrow decorators
+	 * are added once the line has finished drawing.
+	 * @param {number} duration animation length in seconds
+	 */
+	_revealPolylinesWithDraw(duration = 1.2) {
+		this.polylines.forEach((polyline) => {
+			if (!this.map.hasLayer(polyline)) polyline.addTo(this.map);
+
+			const path = polyline._path;
+			const addDecorator = () => {
+				if (polyline.arrowDecorator && !this.map.hasLayer(polyline.arrowDecorator)) {
+					polyline.arrowDecorator.addTo(this.map);
+				}
+			};
+
+			// SVG renderer only: fall back to an instant reveal otherwise.
+			if (!path || typeof path.getTotalLength !== 'function') {
+				addDecorator();
+				return;
+			}
+
+			const length = path.getTotalLength();
+			path.style.transition = 'none';
+			path.style.strokeDasharray = `${length} ${length}`;
+			path.style.strokeDashoffset = `${length}`;
+			// Force a reflow so the starting offset is applied before transitioning.
+			path.getBoundingClientRect();
+			path.style.transition = `stroke-dashoffset ${duration}s ease-in-out`;
+			path.style.strokeDashoffset = '0';
+
+			polyline._drawTimeoutId = setTimeout(() => {
+				polyline._drawTimeoutId = null;
+				// Bail if the polyline was cleared mid-draw (e.g. rapid route switch).
+				if (!this.map.hasLayer(polyline)) return;
+				// Clear the inline styles so the original stroke (e.g. the dashed
+				// pattern used for walking legs) is restored once drawing is done.
+				path.style.transition = '';
+				path.style.strokeDasharray = '';
+				path.style.strokeDashoffset = '';
+				addDecorator();
+			}, duration * 1000);
+		});
+	}
+
+	/**
+	 * Smoothly flies the map view to the bounds of all currently drawn
+	 * polylines so the full route is centered and visible. Returns true when a
+	 * fit was applied.
+	 * @param {{ padding?: [number, number], maxZoom?: number, duration?: number, drawDuration?: number }} [options]
+	 * @returns {Promise<boolean>} resolves once the route reveal begins
+	 */
+	async fitToPolylines(options = {}) {
+		if (!browser || !this.map || this.polylines.length === 0) return false;
+
+		const bounds = this.L.latLngBounds([]);
+		this.polylines.forEach((polyline) => {
+			bounds.extend(polyline.getBounds());
+		});
+
+		if (!bounds.isValid()) return false;
+
+		const duration = options.duration ?? 0.8;
+
+		// Tag this load so a superseded reveal (a newer route started before this
+		// one's moveend/fallback fired) can detect it's stale and skip drawing.
+		const token = ++this._fitToken;
+
+		// The MapLibre GL basemap lags behind Leaflet's coordinate space during
+		// a zoom animation, so the streets slide under the (correctly placed)
+		// SVG route and it appears misaligned. Hide the route while the camera
+		// glides, then draw it once the basemap has settled so it always lands
+		// perfectly aligned.
+		this._setPolylinesVisible(false);
+
+		return new Promise((resolve) => {
+			let revealed = false;
+			const reveal = () => {
+				if (revealed) return;
+				revealed = true;
+				// A newer route load has taken over; don't draw its polylines here.
+				if (token !== this._fitToken) {
+					resolve(false);
+					return;
+				}
+				this._revealPolylinesWithDraw(options.drawDuration ?? 1.2);
+				// Resolve as the route starts drawing so callers can reveal stop
+				// markers in sync, rather than before the camera has settled.
+				resolve(true);
+			};
+			this.map.once('moveend', reveal);
+			// Fallback in case the view doesn't change enough to fire `moveend`.
+			setTimeout(reveal, duration * 1000 + 250);
+
+			this.map.flyToBounds(bounds, {
+				padding: options.padding ?? [50, 50],
+				maxZoom: options.maxZoom ?? 16,
+				duration
+			});
+		});
 	}
 
 	enableContextMenu() {

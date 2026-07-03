@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { PlausibleAdapter } from '$lib/Analytics/adapters/PlausibleAdapter.js';
+import { PlausibleAdapter } from '$lib/Insights/adapters/PlausibleAdapter.js';
 
 const fullEnv = {
 	PUBLIC_ANALYTICS_DOMAIN: 'example.com',

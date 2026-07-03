@@ -16,18 +16,20 @@
 	let stopSequence = $derived(arrivalDeparture.stopSequence || 1); // Default to 1 if not provided
 
 	function computeColor(scheduledMins, predictedMins, isPredicted) {
-		// If this is a scheduled (non-real-time) arrival, always show in blue
+		// Each branch returns the 600 shade for light mode (passes WCAG AA on
+		// white) paired with 400 shade in dark mode (passes on gray-800)
+		// The 500 shade fails 4.5:1 in both modes for normal size status text
 		if (!isPredicted) {
-			return 'text-blue-500';
+			return 'text-blue-600 dark:text-blue-400';
 		}
 
 		const delay = predictedMins - scheduledMins;
 		if (delay > 0) {
-			return 'text-violet-600';
+			return 'text-violet-600 dark:text-violet-400';
 		} else if (delay < -1) {
-			return 'text-red-500';
+			return 'text-red-600 dark:text-red-400';
 		} else {
-			return 'text-green-500';
+			return 'text-green-600 dark:text-green-400';
 		}
 	}
 

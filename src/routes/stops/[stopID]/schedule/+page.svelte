@@ -152,7 +152,7 @@
 
 	<div class="flex flex-col">
 		<div class="flex flex-1 flex-col">
-			<h2 class="mb-4 text-2xl font-bold text-gray-800">
+			<h2 class="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">
 				{$isLoading ? '' : $t('schedule_for_stop.route_schedules')}
 			</h2>
 

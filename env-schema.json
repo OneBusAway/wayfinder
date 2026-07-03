@@ -212,5 +212,17 @@
 		"type": "enum",
 		"enum": ["native", "english", "native-english", "english-native", "code"],
 		"description": "Display format for the language switcher dropdown menu"
+	},
+	"PUBLIC_MAPLIBRE_STYLE": {
+		"required": false,
+		"type": "string",
+		"description": "Defines a style for MapLibre map. Defaults to positron if not set"
+	},
+	"METRICS_PORT": {
+		"required": false,
+		"type": "number",
+		"min": 1,
+		"max": 65535,
+		"description": "Port for the internal-only Prometheus /metrics HTTP server (default: 9119)"
 	}
 }

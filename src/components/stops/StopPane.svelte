@@ -13,7 +13,7 @@
 	import { surveyStore, showSurveyModal, markSurveyAnswered } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
 	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
-	import analytics from '$lib/Analytics';
+	import analytics from '$lib/Insights';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix } from '$lib/utils';
 
@@ -181,7 +181,7 @@
 		{#if arrivalsAndDepartures}
 			<div class="space-y-4">
 				<div>
-					<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent bg-opacity-80 p-4">
+					<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent p-4">
 						<h1 class="h1 mb-0 text-white">{stop.name}</h1>
 						<h2 class="h2 mb-0 text-white">
 							{$isLoading ? '' : $t('stop')} #{removeAgencyPrefix(stop.id)}
@@ -196,13 +196,13 @@
 							<div class="mt-auto flex justify-end gap-2">
 								<a
 									href={`/stops/${stop.id}`}
-									class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent"
+									class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
 								>
 									{$isLoading ? '' : $t('stop_details.view_details')}
 								</a>
 								<a
 									href={`/stops/${stop.id}/schedule`}
-									class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent"
+									class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
 								>
 									{$isLoading ? '' : $t('schedule_for_stop.view_schedule')}
 								</a>

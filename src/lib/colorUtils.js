@@ -10,6 +10,7 @@
  * @returns {{r: number, g: number, b: number} | null} RGB object or null if invalid
  */
 export function hexToRgb(hex) {
+	if (!hex || typeof hex !== 'string') return null;
 	hex = hex.replace(/^#/, '');
 	// Expand 3-digit hex to 6-digit
 	if (hex.length === 3) {
@@ -116,6 +117,24 @@ export function generatePalette(baseHex, fallbackHex = '#486621') {
 }
 
 /**
+ * Darkens a color by mixing it with black
+ * @param {string} hexColor - Original hex color (e.g., "#486621")
+ * @param {number} amount - Amount to darken (0-1, where 1 is pure black)
+ * @returns {string} Darkened hex color
+ */
+export function darkenColor(hexColor, amount) {
+	if (!hexColor) return '#000000';
+
+	const rgb = hexToRgb(hexColor);
+	if (!rgb) return '#000000';
+
+	const black = { r: 0, g: 0, b: 0 };
+	const darkened = mixColors(rgb, black, amount);
+
+	return rgbToHex(darkened.r, darkened.g, darkened.b);
+}
+
+/**
  * Lightens a color by mixing it with white
  * Simple and clear implementation for better visibility in dark mode
  * @param {string} hexColor - Original hex color (e.g., "#ff0000")
@@ -141,6 +160,7 @@ export function lightenColor(hexColor, amount) {
  * @returns {number} Brightness value (0-255)
  */
 export function getBrightness(rgb) {
+	if (!rgb) return 0;
 	// Standard luminance formula
 	return 0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b;
 }

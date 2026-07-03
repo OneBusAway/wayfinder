@@ -127,7 +127,6 @@
 		"stop_id": "ID de la parada",
 		"direction": "Dirección"
 	},
-
 	"direction": {
 		"N": "Norte",
 		"NE": "Noreste",
@@ -160,5 +159,26 @@
 	"context-menu": {
 		"start_here": "Comenzar aquí",
 		"end_here": "Terminar aquí"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Acceso denegado",
+			"description": "No tienes permiso para ver esta página."
+		},
+		"404": {
+			"title": "Página no encontrada",
+			"description": "La página que buscas no existe o ha sido movida."
+		},
+		"500": {
+			"title": "Error del servidor",
+			"description": "Algo salió mal de nuestro lado. Inténtalo de nuevo más tarde."
+		},
+		"generic": {
+			"title": "Algo salió mal",
+			"description": "Ocurrió un error inesperado."
+		},
+		"go_home": "Ir al inicio",
+		"go_back": "Volver"
+	},
+	"skip_to_main_content": "Saltar al contenido principal"
 }

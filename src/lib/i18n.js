@@ -14,7 +14,7 @@
  *   Somali (so), Tigrinya (ti), Tagalog (tl), Ukrainian (uk),
  *   Vietnamese (vi), Chinese Simplified (zh-CN), Chinese Traditional (zh-TW)
  */
-import { init, addMessages, register, getLocaleFromNavigator } from 'svelte-i18n';
+import { init, addMessages, register, getLocaleFromNavigator, locale } from 'svelte-i18n';
 import { browser } from '$app/environment';
 
 // Language metadata - single source of truth
@@ -48,7 +48,10 @@ export const languages = [
 
 // English loaded synchronously as the fallback locale
 import english from '../locales/en.json';
-addMessages('en', english);
+
+// Named because init() below must bootstrap on this synchronously-loaded locale.
+const FALLBACK_LOCALE = 'en';
+addMessages(FALLBACK_LOCALE, english);
 
 // Other locales registered with lazy loaders
 register('am', () => import('../locales/am.json').then((m) => m.default));
@@ -91,13 +94,37 @@ export function getInitialLocale() {
 	}
 
 	// Fallback to browser language (getLocaleFromNavigator handles fallback via fallbackLocale)
-	return getLocaleFromNavigator();
+	return getLocaleFromNavigator() || 'en';
 }
 
+// Initialize synchronously with the fallback locale, the only dictionary loaded
+// up front (via addMessages above). Every other locale is lazy-registered, and
+// svelte-i18n defers setting $locale until a lazy dictionary's dynamic import
+// resolves — leaving $locale null in the meantime. Any $t()/$format() call
+// during that window throws "Cannot format a message without first setting the
+// initial locale", crashing hydration for visitors whose initial locale is not
+// English. Bootstrapping on the fallback guarantees $locale is set before
+// anything renders.
 init({
-	fallbackLocale: 'en',
-	initialLocale: getInitialLocale()
+	fallbackLocale: FALLBACK_LOCALE,
+	initialLocale: FALLBACK_LOCALE
 });
+
+// Client-only: switch to the visitor's preferred locale. locale.set() leaves the
+// store at its current value ('en', set synchronously by init above) until the
+// lazy dictionary resolves, so there's no null-locale window.
+if (browser) {
+	const preferredLocale = getInitialLocale();
+	if (preferredLocale && preferredLocale !== FALLBACK_LOCALE) {
+		// locale.set() returns undefined (not a promise) when the resolved
+		// dictionary is already loaded — e.g. an "en-US" preference
+		// closest-matching the synchronously-loaded fallback. Wrap in
+		// Promise.resolve() so the .catch() can't throw on that path.
+		Promise.resolve(locale.set(preferredLocale)).catch((e) => {
+			console.warn(`Unable to load locale "${preferredLocale}":`, e?.message);
+		});
+	}
+}
 
 /**
  * Determines if a given language uses right-to-left (RTL) text direction.

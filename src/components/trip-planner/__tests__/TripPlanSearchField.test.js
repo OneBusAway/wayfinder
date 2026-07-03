@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import TripPlanSearchField from '../TripPlanSearchField.svelte';
 import { renderWithUtils, a11yHelpers } from '../../../tests/helpers/test-utils.js';
-
 // Mock FontAwesome icons
 vi.mock('@fortawesome/svelte-fontawesome', () => ({
 	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
@@ -13,7 +12,8 @@ vi.mock('@fortawesome/svelte-fontawesome', () => ({
 vi.mock('svelte-i18n', () => {
 	const translations = {
 		'trip-planner.search_for_a_place': 'Search for a place',
-		'trip-planner.loading': 'Loading'
+		'trip-planner.loading': 'Loading',
+		'search.clear': 'Clear'
 	};
 
 	return {

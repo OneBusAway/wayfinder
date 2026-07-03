@@ -5,11 +5,13 @@
 
 	let { nextDestination, vehicleId, lastUpdateTime, nextStopName, predicted } = $props();
 
-	const lastUpdatedText = formatLastUpdated(lastUpdateTime, {
-		min: $t('time.min'),
-		sec: $t('time.sec'),
-		ago: $t('time.ago')
-	});
+	const lastUpdatedText = $derived(
+		formatLastUpdated(lastUpdateTime, {
+			min: $t('time.min'),
+			sec: $t('time.sec'),
+			ago: $t('time.ago')
+		})
+	);
 </script>
 
 <div
