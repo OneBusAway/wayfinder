@@ -16,7 +16,7 @@
 	import { removeAgencyPrefix } from '$lib/utils';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
-	import { parseTripParams } from '$lib/urlState';
+	import { parseTripParams, hasTripParams } from '$lib/urlState';
 
 	let {
 		handleRouteSelected,
@@ -266,20 +266,37 @@
 	// Restore a trip shared via the URL. Waits for the map so TripPlan can drop
 	// pins, then opens the Plan tab and hands the parsed trip to TripPlan. The
 	// parsed trip is captured up front because planTripTabClicked resets the URL
-	// to "/" (the planned trip rewrites it once the itinerary loads).
+	// to "/" (the planned trip rewrites it once the itinerary loads). Wrapped in
+	// try/catch since this runs from an isMapLoaded subscription callback with no
+	// caller to report failures to.
 	async function maybeRestoreSharedTrip() {
 		if (hasRestoredSharedTrip || !env.PUBLIC_OTP_SERVER_URL) return;
 
-		const trip = parseTripParams($page.url.searchParams);
-		if (!trip) return;
+		const searchParams = $page.url.searchParams;
+		const trip = parseTripParams(searchParams);
+
+		// "from"/"to" present but unparsable (truncated, corrupted, out of range):
+		// tell the recipient the link didn't work instead of silently falling
+		// back to the default map with no explanation.
+		if (!trip && !hasTripParams(searchParams)) return;
 
 		hasRestoredSharedTrip = true;
-		activeTab = 'plan';
-		await tick();
-		// Mirror a real Plan tab click so the map hides stop markers and enters
-		// trip-plan mode. Dispatched after tick so MapView's listener is ready.
-		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
-		window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: trip }));
+		try {
+			activeTab = 'plan';
+			// tick() also lets the Plan tab mount so TripPlan's loadSharedTrip /
+			// invalidSharedTrip listeners are registered before either is dispatched.
+			await tick();
+			// Mirror a real Plan tab click so the map hides stop markers and enters
+			// trip-plan mode. Dispatched after tick so MapView's listener is ready.
+			window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+			if (trip) {
+				window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: trip }));
+			} else {
+				window.dispatchEvent(new CustomEvent('invalidSharedTrip'));
+			}
+		} catch (error) {
+			console.error('Failed to restore shared trip from URL:', error);
+		}
 	}
 
 	onMount(() => {

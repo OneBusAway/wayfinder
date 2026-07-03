@@ -540,6 +540,10 @@ export default class GoogleMapProvider {
 		return { lat: center.lat(), lng: center.lng() };
 	}
 
+	getZoom() {
+		return this.map.getZoom();
+	}
+
 	addListener(event, callback) {
 		this.map.addListener(event, callback);
 	}

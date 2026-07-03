@@ -4,7 +4,8 @@ import {
 	parseCoord,
 	parseTripParams,
 	applyTripParams,
-	removeTripParams
+	removeTripParams,
+	hasTripParams
 } from '../urlState';
 
 describe('formatCoord', () => {
@@ -42,6 +43,19 @@ describe('parseCoord', () => {
 	it('returns null for out-of-range coordinates', () => {
 		expect(parseCoord('200,0')).toBeNull();
 		expect(parseCoord('0,200')).toBeNull();
+	});
+
+	it('rejects trailing garbage instead of truncating it like parseFloat would', () => {
+		// parseFloat('47.6xyz') === 47.6, which would silently reinterpret a
+		// corrupted-but-in-range link as valid. Number() must reject it outright.
+		expect(parseCoord('47.6xyz,-122.3junk')).toBeNull();
+		expect(parseCoord('47.6,-122.3 ')).toEqual({ lat: 47.6, lng: -122.3 });
+	});
+
+	it('rejects a missing endpoint around the comma', () => {
+		expect(parseCoord(',-117.1')).toBeNull();
+		expect(parseCoord('32.7,')).toBeNull();
+		expect(parseCoord(' , ')).toBeNull();
 	});
 });
 
@@ -87,16 +101,23 @@ describe('applyTripParams', () => {
 		expect(url.searchParams.get('toName')).toBe('Work');
 	});
 
-	it('round-trips through parseTripParams', () => {
+	it('round-trips through parseTripParams, rounding to 5 decimal places on write', () => {
 		const url = new URL('https://example.com/');
-		const trip = {
-			selectedFrom: { lat: 32.71574, lng: -117.16108 },
-			selectedTo: { lat: 32.8, lng: -117.2 },
+		// Deliberately un-rounded (6+ decimal places) input, so this actually
+		// exercises applyTripParams's rounding instead of asserting a
+		// losslessness that only holds for already-rounded coordinates.
+		applyTripParams(url, {
+			selectedFrom: { lat: 32.715739, lng: -117.161084 },
+			selectedTo: { lat: 32.800001, lng: -117.200009 },
 			fromPlace: 'A',
 			toPlace: 'B'
-		};
-		applyTripParams(url, trip);
-		expect(parseTripParams(url.searchParams)).toEqual(trip);
+		});
+		expect(parseTripParams(url.searchParams)).toEqual({
+			selectedFrom: { lat: 32.71574, lng: -117.16108 },
+			selectedTo: { lat: 32.8, lng: -117.20001 },
+			fromPlace: 'A',
+			toPlace: 'B'
+		});
 	});
 
 	it('does not write anything when coordinates are invalid', () => {
@@ -127,5 +148,19 @@ describe('removeTripParams', () => {
 		expect(url.searchParams.has('toName')).toBe(false);
 		expect(url.searchParams.get('lat')).toBe('32');
 		expect(url.searchParams.get('lng')).toBe('-117');
+	});
+});
+
+describe('hasTripParams', () => {
+	it('returns true when from or to is present, even if unparsable', () => {
+		expect(hasTripParams(new URLSearchParams('from=bad&to=32.8,-117.2'))).toBe(true);
+		expect(hasTripParams(new URLSearchParams('from=1,1'))).toBe(true);
+		expect(hasTripParams(new URLSearchParams('to=1,1'))).toBe(true);
+	});
+
+	it('returns false when neither is present', () => {
+		expect(hasTripParams(new URLSearchParams())).toBe(false);
+		expect(hasTripParams(new URLSearchParams('lat=32&lng=-117'))).toBe(false);
+		expect(hasTripParams(null)).toBe(false);
 	});
 });

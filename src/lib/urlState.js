@@ -36,12 +36,32 @@ export function parseCoord(value) {
 	const parts = value.split(',');
 	if (parts.length !== 2) return null;
 
-	const lat = parseFloat(parts[0]);
-	const lng = parseFloat(parts[1]);
+	const [latStr, lngStr] = parts.map((p) => p.trim());
+	if (latStr === '' || lngStr === '') return null;
+
+	// Number() (unlike parseFloat) rejects trailing garbage such as "47.6xyz"
+	// instead of silently truncating it to a plausible-looking coordinate.
+	const lat = Number(latStr);
+	const lng = Number(lngStr);
 
 	if (!isValidLat(lat) || !isValidLng(lng)) return null;
 
 	return { lat, lng };
+}
+
+/**
+ * Returns true when the URL has an attempt at trip params (`from` or `to`
+ * present), regardless of whether they parse successfully. Lets callers
+ * distinguish "no shared trip" from "a shared trip link that didn't parse" so
+ * a broken link can surface feedback instead of silently falling back to the
+ * default map with no explanation.
+ *
+ * @param {URLSearchParams} searchParams
+ * @returns {boolean}
+ */
+export function hasTripParams(searchParams) {
+	if (!searchParams) return false;
+	return searchParams.has('from') || searchParams.has('to');
 }
 
 /**

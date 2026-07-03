@@ -27,7 +27,7 @@
 	import { analyticsDistanceToStop } from '$lib/Insights/insightsUtils';
 	import SurveyLauncher from '$components/surveys/SurveyLauncher.svelte';
 	import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
-	import { parseTripParams } from '$lib/urlState';
+	import { hasTripParams } from '$lib/urlState';
 	import { env } from '$env/dynamic/public';
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
@@ -48,10 +48,10 @@
 				Number(PUBLIC_OBA_REGION_CENTER_LNG)
 			);
 
-	// Shared trip links should enter trip-plan mode before the map loads stops,
-	// so region-center markers are never painted and then stuck on the map.
+	// Any shared-trip URL (valid or broken) should enter trip-plan mode before the
+	// map loads stops, so region-center markers are never painted and then stuck.
 	const startInTripPlanMode =
-		browser && !!env.PUBLIC_OTP_SERVER_URL && !!parseTripParams(initialPage.url.searchParams);
+		browser && !!env.PUBLIC_OTP_SERVER_URL && hasTripParams(initialPage.url.searchParams);
 
 	let currentModal = $state(null);
 	let selectedTrip = $state(null);

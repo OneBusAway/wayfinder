@@ -617,6 +617,11 @@ export default class OpenStreetMapProvider {
 		return { lat: center.lat, lng: center.lng };
 	}
 
+	getZoom() {
+		if (!browser || !this.map) return 0;
+		return this.map.getZoom();
+	}
+
 	removeMarker(marker) {
 		if (!browser || !this.map || !marker) return;
 		this.map.removeLayer(marker);

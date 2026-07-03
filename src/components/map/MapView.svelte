@@ -24,7 +24,8 @@
 	 * @property {any} [mapProvider]
 	 * @property {any} [stop] - Currently selected stop to preserve visual context
 	 * @property {{ lat: number, lng: number } | null} [initialCoords] - Optional initial coordinates from URL params
-	 * @property {boolean} [startInTripPlanMode] - Skip initial stop load when opening a shared trip link
+	 * @property {boolean} [startInTripPlanMode] - Seeds the map's starting mode as trip-plan (not just the initial
+	 *   stop load skip below) so a shared trip link never briefly renders in NORMAL mode before switching.
 	 */
 
 	/** @type {Props} */
@@ -131,8 +132,14 @@
 			// recenters the map), and stop loading is skipped while off NORMAL.
 			// Refresh stops for the current viewport so the area isn't empty.
 			if (previousMapMode !== Modes.NORMAL) {
+				// Re-add whatever stops are already cached immediately (a no-op when
+				// empty, e.g. a shared trip link that skipped the initial load) so
+				// the map isn't left blank for the duration of the refresh below.
+				// The refresh corrects this once the current viewport's stops land.
+				batchAddMarkers(stops);
+
 				const center = mapInstance.getCenter();
-				const zoomLevel = mapInstance.map.getZoom();
+				const zoomLevel = mapInstance.getZoom();
 				loadStopsAndAddMarkers(center.lat, center.lng, false, zoomLevel)
 					.then(() => batchAddMarkers(allStops))
 					.catch((error) => console.error('Error refreshing stops on return to map:', error));
@@ -225,7 +232,7 @@
 				}
 
 				const center = mapInstance.getCenter();
-				const zoomLevel = mapInstance.map.getZoom();
+				const zoomLevel = mapInstance.getZoom();
 				await loadStopsAndAddMarkers(center.lat, center.lng, false, zoomLevel);
 			}, 300);
 
