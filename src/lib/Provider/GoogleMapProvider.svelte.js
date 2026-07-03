@@ -192,6 +192,7 @@ export default class GoogleMapProvider {
 		const marker = new google.maps.Marker({
 			position: { lat: stop.lat, lng: stop.lon },
 			map: this.map,
+			title: stop.name,
 			icon: {
 				path: google.maps.SymbolPath.CIRCLE,
 				scale: 5,

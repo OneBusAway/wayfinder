@@ -14,6 +14,18 @@ import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte
 import { mount, unmount } from 'svelte';
 import { env } from '$env/dynamic/public';
 import { buildVehiclePopupData } from '$lib/vehicleUtils';
+import { get } from 'svelte/store';
+import { t } from 'svelte-i18n';
+
+// activeTrip is always truthy here: the sole caller (vehicleUtils.js) guards on
+// it, and buildVehiclePopupData reads activeTrip.tripHeadsign without optional
+// chaining. Keep this contract consistent rather than implying null is expected.
+function getVehicleLabel(activeTrip) {
+	const translate = get(t);
+	return activeTrip.tripHeadsign
+		? translate('vehicle.to_headsign', { values: { headsign: activeTrip.tripHeadsign } })
+		: translate('vehicle.label');
+}
 
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
@@ -118,6 +130,12 @@ export default class OpenStreetMapProvider {
 			iconSize: [40, 40]
 		});
 
+		// keyboard: false is load-bearing. Leaflet's Marker._initIcon stamps
+		// tabindex="0" + role="button" on the wrapper <div> whenever keyboard is
+		// truthy (its default), regardless of interactive. That wrapper holds the
+		// mounted StopMarker, which already has its own real <button> with an
+		// sr-only accessible name — so leaving keyboard on would create nested
+		// interactive controls plus a second, unlabeled, dead tab stop per stop.
 		const marker = this.L.marker([options.position.lat, options.position.lng], {
 			icon: customIcon,
 			interactive: false,
@@ -194,20 +212,47 @@ export default class OpenStreetMapProvider {
 		marker.props.isHighlighted = false;
 	}
 
+	// Leaflet only activates markers on Enter, so we add Space for ARIA button parity.
+	attachKeyboardActivation(el, onActivate) {
+		el.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				e.stopPropagation();
+				onActivate();
+			}
+		});
+	}
+
 	addStopRouteMarker(stop, stopTime = null) {
-		const customIcon = L.divIcon({
-			html: `<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#000000" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-circle"><circle cx="12" cy="12" r="10"/></svg>`,
+		if (!this.map || !this.L) return;
+
+		const customIcon = this.L.divIcon({
+			html: `<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFFFF" stroke="#000000"
+				stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+				style="display:block;margin:auto;" aria-hidden="true">
+				<circle cx="12" cy="12" r="10"/>
+			</svg>`,
 			className: 'route-stop-marker',
-			iconSize: [20, 20],
-			iconAnchor: [10, 10]
+			iconSize: [24, 24],
+			iconAnchor: [12, 12]
 		});
 
-		const marker = L.marker([stop.lat, stop.lon], { icon: customIcon }).addTo(this.map);
+		const marker = this.L.marker([stop.lat, stop.lon], {
+			icon: customIcon,
+			title: stop.name
+		}).addTo(this.map);
+
+		const open = () => this.openStopMarker(stop, stopTime);
+
+		const el = marker.getElement();
+		if (el) {
+			el.setAttribute('aria-label', stop.name);
+			this.attachKeyboardActivation(el, open);
+		}
+
+		marker.on('click', open);
 
 		this.stopsMap.set(stop.id, stop);
-
-		marker.on('click', () => this.openStopMarker(stop, stopTime));
-
 		this.stopMarkers.push(marker);
 	}
 
@@ -283,17 +328,27 @@ export default class OpenStreetMapProvider {
 
 		const vehicleIconSvg = createVehicleIconSvg(vehicle?.orientation, color, routeType);
 		const customIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" alt="" />`,
+			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
 			className: '',
 			zIndexOffset: 1000
 		});
 
+		const label = getVehicleLabel(activeTrip);
+
 		const marker = this.L.marker([vehicle.position.lat, vehicle.position.lon], {
 			icon: customIcon,
-			zIndexOffset: 1000
+			zIndexOffset: 1000,
+			title: label
 		}).addTo(this.map);
+
+		const el = marker.getElement();
+		if (el) {
+			el.setAttribute('aria-label', label);
+			// preventDefault inside attachKeyboardActivation is load-bearing here: bindPopup makes Leaflet attach its own _onKeyPress (Enter -> toggle popup) on the keypress event. Suppressing the default keydown stops that synthesized keypress, so our openPopup() doesn't double-fire and flash the popup open-then-closed. stopPropagation does NOT cover this (keydown and keypress are separate events) — do not remove preventDefault.
+			this.attachKeyboardActivation(el, () => marker.openPopup());
+		}
 
 		this.vehicleMarkers.push(marker);
 
@@ -334,7 +389,7 @@ export default class OpenStreetMapProvider {
 
 		const updatedIconSvg = createVehicleIconSvg(vehicleStatus.orientation, color, routeType);
 		const updatedIcon = this.L.divIcon({
-			html: `<img src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" alt="" />`,
+			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
 			className: '',
@@ -350,6 +405,15 @@ export default class OpenStreetMapProvider {
 			{ routePaths: this._getRoutePaths() }
 		);
 		marker.setIcon(updatedIcon);
+
+		// Leaflet reuses the existing <div> on setIcon and skips re-applying options.title, so refresh both the tooltip and the accessible name when the headsign changes mid-trip; otherwise the hover tooltip goes stale.
+		const updatedLabel = getVehicleLabel(activeTrip);
+		marker.options.title = updatedLabel;
+		const el = marker.getElement();
+		if (el) {
+			el.setAttribute('aria-label', updatedLabel);
+			el.setAttribute('title', updatedLabel);
+		}
 
 		Object.assign(
 			marker.vehicleData,
