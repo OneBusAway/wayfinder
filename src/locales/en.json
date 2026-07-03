@@ -139,7 +139,9 @@
 		"number": "Vehicle #",
 		"data_updated": "Data updated",
 		"no_real_time_data": "We don't have real-time data for this vehicle now.",
-		"next_stop": "Next stop:"
+		"next_stop": "Next stop:",
+		"label": "Vehicle",
+		"to_headsign": "Vehicle to {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Arrivals and Departures"
