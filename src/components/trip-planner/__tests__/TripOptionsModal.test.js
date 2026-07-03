@@ -8,7 +8,8 @@ import { tripOptions, DEFAULT_TRIP_OPTIONS } from '$stores/tripOptionsStore';
 // localStorage, letting us assert the commit/draft-only persistence behavior.
 vi.mock('$app/environment', () => ({ browser: true }));
 
-// Only the translation layer is mocked; the real tripOptionsStore is used so the test exercises the actual reset wiring (handleReset + DEFAULT_TRIP_OPTIONS)
+// Translation layer and browser env are mocked; the real tripOptionsStore is used
+// so the test exercises the actual reset wiring (handleReset + DEFAULT_TRIP_OPTIONS).
 vi.mock('svelte-i18n', () => {
 	const translations = {
 		'trip-planner.cancel': 'Cancel',
@@ -125,11 +126,17 @@ describe('TripOptionsModal reset', () => {
 	});
 
 	it('Reset then Done commits defaults and clears the persisted keys', async () => {
-		// Seed non-default saved preferences first.
+		// Seed non-default saved preferences, including fields that must be reset
+		// before their localStorage keys are cleared.
 		tripOptions.set({
 			...DEFAULT_TRIP_OPTIONS,
+			departureType: 'departAt',
+			departureTime: '14:30',
+			departureDate: '2026-08-01',
 			wheelchair: true,
-			optimize: 'fewestTransfers'
+			optimize: 'fewestTransfers',
+			maxWalkDistance: 4828,
+			distanceUnit: 'metric'
 		});
 
 		const onDone = vi.fn();
@@ -140,8 +147,11 @@ describe('TripOptionsModal reset', () => {
 
 		expect(onDone).toHaveBeenCalled();
 
-		// Store is back to defaults.
+		// Store is back to defaults, including session-only departure fields.
 		const value = getStoreValue();
+		expect(value.departureType).toBe('now');
+		expect(value.departureTime).toBeNull();
+		expect(value.departureDate).toBeNull();
 		expect(value.wheelchair).toBe(false);
 		expect(value.optimize).toBe('fastest');
 		expect(value.maxWalkDistance).toBe(DEFAULT_TRIP_OPTIONS.maxWalkDistance);
