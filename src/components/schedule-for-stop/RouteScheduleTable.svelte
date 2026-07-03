@@ -24,22 +24,18 @@
 </script>
 
 <!-- A focusable scroll container gives keyboard users an entry point to the
-	scrollable schedule table; role="region" + aria-label provide context. -->
+	scrollable schedule table; role="region" + aria-labelledby name it via the caption. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
 	role="region"
 	tabindex="0"
-	aria-label={$isLoading
-		? undefined
-		: $t('schedule_for_stop.schedule_table_caption', {
-				values: { route: schedule.tripHeadsign }
-			})}
+	aria-labelledby="schedule-table-caption"
 	class="overflow-x-auto dark:bg-black"
 >
 	<table
 		class="mt-4 w-full table-auto rounded-lg border border-gray-200 shadow-lg dark:border-gray-700 dark:bg-black"
 	>
-		<caption class="sr-only">
+		<caption id="schedule-table-caption" class="sr-only">
 			{$isLoading
 				? ''
 				: $t('schedule_for_stop.schedule_table_caption', {
@@ -60,7 +56,7 @@
 			<tr class="bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-600">
 				<th
 					colspan="2"
-					scope="colgroup"
+					scope="rowgroup"
 					class="px-6 py-3 text-left font-semibold text-gray-700 dark:bg-gray-800 dark:text-white"
 					>AM</th
 				>
@@ -93,11 +89,12 @@
 					</tr>
 				{/each}
 			{/if}
-
+		</tbody>
+		<tbody>
 			<tr class="bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-900">
 				<th
 					colspan="2"
-					scope="colgroup"
+					scope="rowgroup"
 					class="px-6 py-3 text-left font-semibold text-gray-700 dark:bg-gray-800 dark:text-white"
 					>PM</th
 				>
