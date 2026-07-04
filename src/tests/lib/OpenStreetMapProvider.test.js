@@ -68,7 +68,8 @@ function makeFakeMarker() {
 		bindPopup: vi.fn().mockReturnThis(),
 		openPopup: vi.fn(),
 		setLatLng: vi.fn(),
-		setIcon: vi.fn()
+		setIcon: vi.fn(),
+		setZIndexOffset: vi.fn()
 	};
 }
 
