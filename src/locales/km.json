@@ -88,7 +88,8 @@
 		"close": "បិទ"
 	},
 	"arrivals_and_departures": "ការមកដល់និងចេញដំណើរ",
-	"no_arrivals_or_departures_in_next_30_minutes": "គ្មានការមកដល់ឬចេញដំណើរក្នុង ៣០ នាទីខាងមុខទេ",
+	"load_more_arrivals": "ផ្ទុកការមកដល់បន្ថែម",
+	"no_arrivals_found_in_next_minutes": "រកមិនឃើញការមកដល់ក្នុង {minutes} នាទីខាងមុខទេ",
 	"stop": "ចំណត",
 	"routes": "ផ្លូវ",
 	"route": "ផ្លូវ",

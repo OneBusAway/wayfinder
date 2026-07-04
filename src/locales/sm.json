@@ -88,7 +88,8 @@
 		"close": "Tapuni"
 	},
 	"arrivals_and_departures": "Taunuʻuga ma alu atu",
-	"no_arrivals_or_departures_in_next_30_minutes": "E leai ni taunuʻuga poʻo ni alu atu i le 30 minute o loʻo sosoo",
+	"load_more_arrivals": "Utaina atili taunuʻuga",
+	"no_arrivals_found_in_next_minutes": "E leai ni taunuʻuga na maua i le {minutes} minute o loʻo sosoo",
 	"stop": "Nofoaga Taofi",
 	"routes": "Auala",
 	"route": "auala",

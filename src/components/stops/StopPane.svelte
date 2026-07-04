@@ -6,7 +6,7 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import SurveyModal from '$components/surveys/SurveyModal.svelte';
 	import ServiceAlerts from '$components/service-alerts/ServiceAlerts.svelte';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
@@ -31,28 +31,46 @@
 		arrivalsAndDeparturesResponse = $bindable(null)
 	} = $props();
 
+	// Time window (in minutes) for upcoming arrivals. Defaults to the OBA
+	// default of 35; each "load more" click widens it, mirroring the Android
+	// app's incrementMinutesAfter() behavior.
+	const DEFAULT_MINUTES_AFTER = 35;
+	const MINUTES_AFTER_INCREMENT = 30;
+
 	let arrivalsAndDepartures = $state();
 	let loading = $state(false);
 	let error = $state();
 	let serviceAlerts = $state([]);
+	let minutesAfter = $state(DEFAULT_MINUTES_AFTER);
+	let loadingMore = $state(false);
+	let noMoreArrivals = $state(false);
 
 	let interval = null;
 	let currentStopSurvey = $state(null);
 	let remainingSurveyQuestions = $state([]);
 
 	let abortController = null;
+	/**
+	 * Fetches arrivals for the stop within the current `minutesAfter` window.
+	 * @returns {Promise<number|null>} the number of arrivals fetched, or `null`
+	 * when the request was aborted or failed (count is then unknown).
+	 */
 	async function loadData(stopID) {
 		// Cancel the previous request if it exists
 		if (abortController) {
 			abortController.abort();
 		}
-		abortController = new AbortController();
+		const controller = new AbortController();
+		abortController = controller;
 
 		loading = true;
 		try {
-			const response = await fetch(`/api/oba/arrivals-and-departures-for-stop/${stopID}`, {
-				signal: abortController.signal
-			});
+			const response = await fetch(
+				`/api/oba/arrivals-and-departures-for-stop/${stopID}?minutesAfter=${minutesAfter}`,
+				{
+					signal: controller.signal
+				}
+			);
 
 			if (!response.ok) {
 				throw new Error('Unable to fetch arrival/departure data');
@@ -63,29 +81,63 @@
 			arrivalsAndDepartures = data.data.entry;
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
 			error = null; // Clear previous errors if successful
+			return arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
 		} catch (err) {
 			if (err.name !== 'AbortError') {
 				error = 'Unable to fetch arrival/departure data';
 			}
+			return null;
 		} finally {
-			loading = false;
+			// Only the most recent request should control the loading flag.
+			if (abortController === controller) {
+				loading = false;
+			}
 		}
 	}
 	function resetDataFetchInterval(stopID) {
 		if (interval) clearInterval(interval);
 
-		loadData(stopID);
+		const promise = loadData(stopID);
 
 		interval = setInterval(() => {
 			loadData(stopID);
 		}, 30000);
+
+		return promise;
+	}
+
+	// Widen the arrivals window and refetch. If the count doesn't grow, surface a
+	// "no more arrivals found" hint (the server has nothing further to show).
+	async function loadMoreArrivals() {
+		const previousCount = arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
+
+		loadingMore = true;
+		noMoreArrivals = false;
+		minutesAfter += MINUTES_AFTER_INCREMENT;
+
+		// Reset the poll timer so a background refresh doesn't abort this request
+		// mid-flight (which would make us wrongly report "no more arrivals").
+		const count = await resetDataFetchInterval(stop.id);
+
+		loadingMore = false;
+		// Only conclude "no more arrivals" from a request that actually completed.
+		if (count !== null) {
+			noMoreArrivals = count === previousCount;
+		}
+		analytics.reportArrivalClicked('Loaded more arrivals');
 	}
 
 	$effect(() => {
-		if (stop?.id) {
+		const stopID = stop?.id;
+		if (!stopID) return;
+
+		// Only re-run when the stop changes; reset the window for the new stop.
+		untrack(() => {
+			minutesAfter = DEFAULT_MINUTES_AFTER;
+			noMoreArrivals = false;
 			clearInterval(interval);
-			resetDataFetchInterval(stop.id);
-		}
+			resetDataFetchInterval(stopID);
+		});
 	});
 
 	onDestroy(() => {
@@ -233,9 +285,27 @@
 					/>
 				{/if}
 
+				{#snippet loadMoreButton(emptyResults = false)}
+					<div class="flex flex-col items-center gap-2">
+						{#if emptyResults || noMoreArrivals}
+							<p class="text-sm text-gray-600 dark:text-gray-400">
+								{$t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
+							</p>
+						{/if}
+						<button
+							type="button"
+							onclick={loadMoreArrivals}
+							disabled={loadingMore}
+							class="inline-flex items-center gap-2 rounded-lg border border-brand-accent bg-brand-accent px-4 py-2 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand disabled:cursor-not-allowed disabled:opacity-60"
+						>
+							{loadingMore ? $t('loading') : $t('load_more_arrivals')}
+						</button>
+					</div>
+				{/snippet}
+
 				{#if arrivalsAndDepartures.arrivalsAndDepartures.length === 0}
-					<div class="flex items-center justify-center">
-						<p>{$isLoading ? '' : $t('no_arrivals_or_departures_in_next_30_minutes')}</p>
+					<div class="flex flex-col items-center justify-center gap-3">
+						{@render loadMoreButton(true)}
 					</div>
 				{:else}
 					{#key arrivalsAndDepartures.stopId}
@@ -256,6 +326,9 @@
 							{/each}
 						</Accordion>
 					{/key}
+					<div class="flex justify-center">
+						{@render loadMoreButton()}
+					</div>
 				{/if}
 			</div>
 		{/if}

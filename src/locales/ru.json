@@ -88,7 +88,8 @@
 		"close": "Закрыть"
 	},
 	"arrivals_and_departures": "Прибытие и отправление",
-	"no_arrivals_or_departures_in_next_30_minutes": "Нет прибытий или отправлений в ближайшие 30 минут",
+	"load_more_arrivals": "Загрузить больше прибытий",
+	"no_arrivals_found_in_next_minutes": "Нет прибытий в ближайшие {minutes} минут",
 	"stop": "Остановка",
 	"routes": "Маршруты",
 	"route": "маршрут",

@@ -88,7 +88,8 @@
 		"close": "关闭"
 	},
 	"arrivals_and_departures": "到站与发车",
-	"no_arrivals_or_departures_in_next_30_minutes": "未来30分钟内无到站或发车信息",
+	"load_more_arrivals": "加载更多到站信息",
+	"no_arrivals_found_in_next_minutes": "未来{minutes}分钟内无到站信息",
 	"stop": "站点",
 	"routes": "线路",
 	"route": "线路",

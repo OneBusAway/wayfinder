@@ -88,7 +88,8 @@
 		"close": "Fèmen"
 	},
 	"arrivals_and_departures": "Arive ak depa",
-	"no_arrivals_or_departures_in_next_30_minutes": "Pa gen arive oswa depa nan 30 minit kap vini yo",
+	"load_more_arrivals": "Chaje plis arive",
+	"no_arrivals_found_in_next_minutes": "Pa gen arive nan {minutes} minit kap vini yo",
 	"stop": "Arè",
 	"routes": "Wout",
 	"route": "wout",

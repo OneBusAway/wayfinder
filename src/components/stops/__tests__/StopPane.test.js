@@ -111,15 +111,21 @@ vi.mock('$components/service-alerts/serviceAlertsHelper', () => ({
 vi.mock('svelte-i18n', () => ({
 	t: {
 		subscribe: vi.fn((fn) => {
-			fn((key) => {
+			fn((key, options) => {
 				const translations = {
 					stop: 'Stop',
 					routes: 'Routes',
 					'schedule_for_stop.view_schedule': 'View Schedule',
-					no_arrivals_or_departures_in_next_30_minutes:
-						'No arrivals or departures in the next 30 minutes'
+					load_more_arrivals: 'Load more arrivals',
+					no_arrivals_found_in_next_minutes: 'No arrivals found in the next {minutes} minutes'
 				};
-				return translations[key] || key;
+				let str = translations[key] || key;
+				if (options?.values) {
+					for (const [name, value] of Object.entries(options.values)) {
+						str = str.replace(`{${name}}`, value);
+					}
+				}
+				return str;
 			});
 			return { unsubscribe: () => {} };
 		})
@@ -245,9 +251,7 @@ describe('StopPane', () => {
 		render(StopPane, { props: defaultProps });
 
 		await waitFor(() => {
-			expect(
-				screen.getByText('No arrivals or departures in the next 30 minutes')
-			).toBeInTheDocument();
+			expect(screen.getByText('No arrivals found in the next 35 minutes')).toBeInTheDocument();
 		});
 	});
 
@@ -353,7 +357,7 @@ describe('StopPane', () => {
 
 		await waitFor(() => {
 			expect(global.fetch).toHaveBeenCalledWith(
-				'/api/oba/arrivals-and-departures-for-stop/1_75403',
+				'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=35',
 				expect.objectContaining({
 					signal: expect.any(AbortSignal)
 				})
