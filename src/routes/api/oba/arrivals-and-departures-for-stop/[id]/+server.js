@@ -11,10 +11,10 @@ export async function GET({ params, url }) {
 	const query = {};
 	const minutesAfter = Number(url.searchParams.get('minutesAfter'));
 	const minutesBefore = Number(url.searchParams.get('minutesBefore'));
-	if (Number.isFinite(minutesAfter) && minutesAfter > 0) {
+	if (Number.isInteger(minutesAfter) && minutesAfter > 0) {
 		query.minutesAfter = minutesAfter;
 	}
-	if (Number.isFinite(minutesBefore) && minutesBefore > 0) {
+	if (Number.isInteger(minutesBefore) && minutesBefore > 0) {
 		query.minutesBefore = minutesBefore;
 	}
 

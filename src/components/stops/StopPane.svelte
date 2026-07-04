@@ -81,7 +81,13 @@
 			arrivalsAndDepartures = data.data.entry;
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
 			error = null; // Clear previous errors if successful
-			return arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
+			const count = arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
+			// A refresh that returns arrivals clears a stale "no more arrivals" hint
+			// (e.g. after a 30s poll surfaces new departures).
+			if (count > 0) {
+				noMoreArrivals = false;
+			}
+			return count;
 		} catch (err) {
 			if (err.name !== 'AbortError') {
 				error = 'Unable to fetch arrival/departure data';
@@ -142,6 +148,8 @@
 
 	onDestroy(() => {
 		if (interval) clearInterval(interval);
+		// Abort any in-flight request so it can't mutate state after unmount.
+		if (abortController) abortController.abort();
 	});
 
 	let routeShortNames = $derived(
