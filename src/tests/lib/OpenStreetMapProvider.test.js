@@ -219,6 +219,18 @@ describe('addVehicleMarker — accessible label', () => {
 		expect(fakeMarker._el.getAttribute('title')).toBe('Vehicle to Downtown');
 		expect(fakeMarker.options.title).toBe('Vehicle to Downtown');
 	});
+
+	// divIcon ignores zIndexOffset, so the stacking order must be updated on the
+	// marker itself to reflect the current highlight state on refresh.
+	test('raises the z-index offset when highlighted on update', () => {
+		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3);
+
+		provider.updateVehicleMarker(fakeMarker, VEHICLE, { tripHeadsign: 'Downtown' }, 3, true);
+		expect(fakeMarker.setZIndexOffset).toHaveBeenLastCalledWith(2000);
+
+		provider.updateVehicleMarker(fakeMarker, VEHICLE, { tripHeadsign: 'Downtown' }, 3, false);
+		expect(fakeMarker.setZIndexOffset).toHaveBeenLastCalledWith(1000);
+	});
 });
 
 describe('addVehicleMarker — keyboard activation', () => {
