@@ -90,7 +90,9 @@
 			}
 
 			if (routeId && isMounted) {
-				currentIntervalId = await fetchAndUpdateVehicles(routeId, mapProvider);
+				// Highlight the vehicle serving the trip the user clicked, while still
+				// showing the other vehicles running this route.
+				currentIntervalId = await fetchAndUpdateVehicles(routeId, mapProvider, undefined, tripId);
 			}
 		} catch (error) {
 			console.error(`Error loading route data for trip ${tripId}:`, error);

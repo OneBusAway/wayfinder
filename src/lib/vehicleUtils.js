@@ -28,7 +28,12 @@ export async function fetchVehicles(routeId) {
 	return data;
 }
 
-export async function updateVehicleMarkers(routeId, mapProvider, routeType) {
+export async function updateVehicleMarkers(
+	routeId,
+	mapProvider,
+	routeType,
+	highlightedTripId = null
+) {
 	const data = await fetchVehicles(routeId);
 
 	const activeTripIds = new Set();
@@ -46,15 +51,28 @@ export async function updateVehicleMarkers(routeId, mapProvider, routeType) {
 		// OBA puts the trip state string on status.status (e.g. SCHEDULED, CANCELED), not on status itself
 		if (activeTrip && activeTrip.routeId === routeId && tripStatus.status?.status !== 'CANCELED') {
 			const vehicleStatus = tripStatus.status;
+			// Highlight the vehicle serving the trip the user clicked on.
+			const isHighlighted = highlightedTripId != null && activeTripId === highlightedTripId;
 
 			activeTripIds.add(activeTripId);
 
 			if (vehicleMarkersMap.has(activeTripId)) {
 				const marker = vehicleMarkersMap.get(activeTripId);
 
-				mapProvider.updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType);
+				mapProvider.updateVehicleMarker(
+					marker,
+					vehicleStatus,
+					activeTrip,
+					routeType,
+					isHighlighted
+				);
 			} else {
-				const marker = mapProvider.addVehicleMarker(vehicleStatus, activeTrip, routeType);
+				const marker = mapProvider.addVehicleMarker(
+					vehicleStatus,
+					activeTrip,
+					routeType,
+					isHighlighted
+				);
 				vehicleMarkersMap.set(activeTripId, marker);
 			}
 		}
@@ -72,16 +90,21 @@ export function removeInactiveMarkers(activeTripIds, mapProvider) {
 	}
 }
 
-export async function fetchAndUpdateVehicles(routeId, mapProvider, routeType) {
+export async function fetchAndUpdateVehicles(
+	routeId,
+	mapProvider,
+	routeType,
+	highlightedTripId = null
+) {
 	try {
-		await updateVehicleMarkers(routeId, mapProvider, routeType);
+		await updateVehicleMarkers(routeId, mapProvider, routeType, highlightedTripId);
 	} catch (error) {
 		console.error('fetchAndUpdateVehicles: initial fetch failed', routeId, error);
 	}
 
 	return setInterval(async () => {
 		try {
-			await updateVehicleMarkers(routeId, mapProvider, routeType);
+			await updateVehicleMarkers(routeId, mapProvider, routeType, highlightedTripId);
 		} catch (error) {
 			console.error('fetchAndUpdateVehicles: polling update failed', routeId, error);
 		}
