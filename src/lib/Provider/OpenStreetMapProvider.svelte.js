@@ -337,8 +337,7 @@ export default class OpenStreetMapProvider {
 			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
-			className: '',
-			zIndexOffset
+			className: ''
 		});
 
 		const label = getVehicleLabel(activeTrip);
@@ -403,8 +402,7 @@ export default class OpenStreetMapProvider {
 			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
-			className: '',
-			zIndexOffset: isHighlighted ? 2000 : 1000
+			className: ''
 		});
 
 		const current = marker.getLatLng();
@@ -416,6 +414,9 @@ export default class OpenStreetMapProvider {
 			{ routePaths: this._getRoutePaths() }
 		);
 		marker.setIcon(updatedIcon);
+		// setIcon doesn't touch stacking order, so update the offset directly to
+		// reflect the current highlight state (divIcon ignores zIndexOffset).
+		marker.setZIndexOffset(isHighlighted ? 2000 : 1000);
 
 		// Leaflet reuses the existing <div> on setIcon and skips re-applying options.title, so refresh both the tooltip and the accessible name when the headsign changes mid-trip; otherwise the hover tooltip goes stale.
 		const updatedLabel = getVehicleLabel(activeTrip);
