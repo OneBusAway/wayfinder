@@ -9,6 +9,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { notifyPartialRouteShape } from '$lib/routeNotifications';
 
 	/**
 	 * @typedef {Object} Props
@@ -79,13 +80,25 @@
 			return;
 		}
 
+		let drawnCount = 0;
+		let legCount = 0;
+
 		for (const leg of itineraries[activeTab].legs) {
-			const shape = leg.legGeometry.points;
+			const shape = leg.legGeometry?.points;
+			if (!shape) continue;
+			legCount++;
 			const style = getLegPolylineStyle(leg);
 			// Await: the Google provider's createPolyline is async and returns
 			// null on decode failure — skip nulls instead of tracking a Promise.
 			const polyline = await mapProvider.createPolyline(shape, style);
-			if (polyline) currPolylines.push(polyline);
+			if (polyline) {
+				currPolylines.push(polyline);
+				drawnCount++;
+			}
+		}
+
+		if (legCount > 0 && drawnCount < legCount) {
+			notifyPartialRouteShape();
 		}
 	}
 

@@ -17,6 +17,7 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { parseTripParams, hasTripParams } from '$lib/urlState';
+	import { notifyRouteLoadFailed, notifyPartialRouteShape } from '$lib/routeNotifications';
 
 	let {
 		handleRouteSelected,
@@ -122,6 +123,7 @@
 
 			if (!response.ok) {
 				console.error(`Failed to fetch route data: ${response.status}`);
+				notifyRouteLoadFailed(() => handleRouteClick(route));
 				return;
 			}
 
@@ -142,6 +144,7 @@
 			// Reset the collection so each route click rebuilds it from scratch
 			// rather than accumulating stale references from previous selections.
 			polylines = [];
+			const segmentCount = polylinesData?.length ?? 0;
 			for (const polylineData of polylinesData) {
 				const polyline = await mapProvider.createPolyline(polylineData.points);
 				if (loadToken !== routeLoadToken) return;
@@ -149,6 +152,12 @@
 				// provider); skip it so one bad segment degrades the route instead
 				// of leaving a null hole in the polylines array.
 				if (polyline) polylines.push(polyline);
+			}
+
+			if (loadToken !== routeLoadToken) return;
+
+			if (segmentCount > 0 && polylines.length < segmentCount) {
+				notifyPartialRouteShape();
 			}
 
 			// Fit the view to the full route so it's always centered and visible
@@ -192,6 +201,9 @@
 			handleRouteSelected(routeData);
 		} catch (error) {
 			console.error('Error fetching route data:', error);
+			if (loadToken === routeLoadToken) {
+				notifyRouteLoadFailed(() => handleRouteClick(route));
+			}
 		}
 	}
 

@@ -3,6 +3,7 @@
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { mapContrastColor } from '$lib/colorUtils';
 	import { onMount, onDestroy } from 'svelte';
+	import { notifyRouteLoadFailed, notifyPartialRouteShape } from '$lib/routeNotifications';
 	let { mapProvider, tripId, currentSelectedStop = null } = $props();
 	let shapeId = null;
 	let tripData = null;
@@ -59,6 +60,9 @@
 			mapProvider.removeStopMarkers();
 
 			const tripResponse = await fetch(`/api/oba/trip-details/${tripId}`);
+			if (!tripResponse.ok) {
+				throw new Error(`Trip details request failed: ${tripResponse.status}`);
+			}
 			tripData = await tripResponse.json();
 
 			const tripReferences = tripData?.data?.references?.trips;
@@ -76,7 +80,10 @@
 				shapeData = await shapeResponse.json();
 				const shapePoints = shapeData?.data?.entry?.points;
 				if (shapePoints && isMounted) {
-					await mapProvider.createPolyline(shapePoints, { color: routeColor });
+					const polyline = await mapProvider.createPolyline(shapePoints, { color: routeColor });
+					if (!polyline) {
+						notifyPartialRouteShape();
+					}
 				}
 			}
 
@@ -122,6 +129,9 @@
 			}
 		} catch (error) {
 			console.error(`Error loading route data for trip ${tripId}:`, error);
+			if (isMounted) {
+				notifyRouteLoadFailed(() => loadRouteData());
+			}
 		}
 	}
 </script>
