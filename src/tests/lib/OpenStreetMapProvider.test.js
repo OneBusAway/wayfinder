@@ -142,6 +142,24 @@ describe('addStopRouteMarker — keyboard activation', () => {
 
 		expect(fakeMarker._el.getAttribute('aria-label')).toBe(STOP.name);
 	});
+
+	test('does not set aria-label when stop name is missing', () => {
+		provider.addStopRouteMarker({ ...STOP, name: undefined });
+
+		expect(fakeMarker._el.hasAttribute('aria-label')).toBe(false);
+	});
+
+	test('warns when marker element is unavailable during accessibility setup', () => {
+		fakeMarker.getElement.mockReturnValue(null);
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+		provider.addStopRouteMarker(STOP);
+
+		expect(warnSpy).toHaveBeenCalledWith(
+			'OpenStreetMapProvider: marker DOM element unavailable during stop route marker accessibility setup'
+		);
+		warnSpy.mockRestore();
+	});
 });
 
 describe('addMarker — primary stop markers', () => {
@@ -259,5 +277,40 @@ describe('addVehicleMarker — keyboard activation', () => {
 		fakeMarker._el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
 
 		expect(fakeMarker.openPopup).not.toHaveBeenCalled();
+	});
+
+	test('warns when vehicle marker element is unavailable during accessibility setup', () => {
+		fakeMarker.getElement.mockReturnValue(null);
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3);
+
+		expect(warnSpy).toHaveBeenCalledWith(
+			'OpenStreetMapProvider: marker DOM element unavailable during vehicle marker accessibility setup'
+		);
+		warnSpy.mockRestore();
+	});
+});
+
+describe('removeVehicleMarker — marker tracking', () => {
+	let provider;
+	let fakeMarker;
+
+	beforeEach(() => {
+		fakeMarker = makeFakeMarker();
+		fakeMarker.remove = vi.fn();
+		provider = new OpenStreetMapProvider(vi.fn());
+		provider.L = makeFakeL(fakeMarker);
+		provider.map = {};
+	});
+
+	test('removes the marker from vehicleMarkers after removal', () => {
+		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3);
+		expect(provider.vehicleMarkers).toHaveLength(1);
+
+		provider.removeVehicleMarker(provider.vehicleMarkers[0]);
+
+		expect(fakeMarker.remove).toHaveBeenCalledOnce();
+		expect(provider.vehicleMarkers).toHaveLength(0);
 	});
 });

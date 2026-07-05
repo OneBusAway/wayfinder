@@ -223,6 +223,31 @@ export default class OpenStreetMapProvider {
 		});
 	}
 
+	/**
+	 * Apply aria-label and keyboard activation to a Leaflet marker element.
+	 * Logs a warning when getElement() returns null so inaccessible markers are
+	 * not silently shipped during teardown or before first render.
+	 *
+	 * @param {import('leaflet').Marker} marker
+	 * @param {{ label?: string, onActivate?: () => void, context: string }} options
+	 */
+	setupMarkerAccessibility(marker, { label, onActivate, context }) {
+		const el = marker.getElement();
+		if (el) {
+			if (label) {
+				el.setAttribute('aria-label', label);
+			}
+			if (onActivate) {
+				this.attachKeyboardActivation(el, onActivate);
+			}
+			return;
+		}
+
+		console.warn(
+			`OpenStreetMapProvider: marker DOM element unavailable during ${context} accessibility setup`
+		);
+	}
+
 	addStopRouteMarker(stop, stopTime = null) {
 		if (!this.map || !this.L) return;
 
@@ -244,11 +269,11 @@ export default class OpenStreetMapProvider {
 
 		const open = () => this.openStopMarker(stop, stopTime);
 
-		const el = marker.getElement();
-		if (el) {
-			el.setAttribute('aria-label', stop.name);
-			this.attachKeyboardActivation(el, open);
-		}
+		this.setupMarkerAccessibility(marker, {
+			label: stop.name || undefined,
+			onActivate: open,
+			context: 'stop route marker'
+		});
 
 		marker.on('click', open);
 
@@ -343,12 +368,12 @@ export default class OpenStreetMapProvider {
 			title: label
 		}).addTo(this.map);
 
-		const el = marker.getElement();
-		if (el) {
-			el.setAttribute('aria-label', label);
-			// preventDefault inside attachKeyboardActivation is load-bearing here: bindPopup makes Leaflet attach its own _onKeyPress (Enter -> toggle popup) on the keypress event. Suppressing the default keydown stops that synthesized keypress, so our openPopup() doesn't double-fire and flash the popup open-then-closed. stopPropagation does NOT cover this (keydown and keypress are separate events) — do not remove preventDefault.
-			this.attachKeyboardActivation(el, () => marker.openPopup());
-		}
+		// preventDefault inside attachKeyboardActivation is load-bearing here: bindPopup makes Leaflet attach its own _onKeyPress (Enter -> toggle popup) on the keypress event. Suppressing the default keydown stops that synthesized keypress, so our openPopup() doesn't double-fire and flash the popup open-then-closed. stopPropagation does NOT cover this (keydown and keypress are separate events) — do not remove preventDefault.
+		this.setupMarkerAccessibility(marker, {
+			label,
+			onActivate: () => marker.openPopup(),
+			context: 'vehicle marker'
+		});
 
 		this.vehicleMarkers.push(marker);
 
@@ -424,6 +449,10 @@ export default class OpenStreetMapProvider {
 		if (marker) {
 			cancelMarkerAnimation(marker);
 			marker.remove();
+			const index = this.vehicleMarkers.indexOf(marker);
+			if (index > -1) {
+				this.vehicleMarkers.splice(index, 1);
+			}
 		}
 	}
 
