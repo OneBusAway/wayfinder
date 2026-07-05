@@ -37,11 +37,7 @@
 				{notification.message}
 				{#if notification.onRetry}
 					{' '}
-					<button
-						type="button"
-						class="font-semibold underline hover:no-underline"
-						onclick={retry}
-					>
+					<button type="button" class="font-semibold underline hover:no-underline" onclick={retry}>
 						{$t('notifications.tap_to_retry')}
 					</button>
 				{/if}
