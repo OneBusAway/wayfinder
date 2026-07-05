@@ -13,6 +13,7 @@ vi.mock('svelte-i18n', () => {
 	const translations = {
 		'trip-planner.remove_recent_trip': 'Remove recent trip',
 		'trip-planner.recent_searches': 'Recent Searches',
+		'trip-planner.recent_trip': 'Recent trip from {from} to {to}',
 		'trip-planner.clear_all': 'Clear All'
 	};
 	return {
@@ -127,7 +128,8 @@ describe('RecentTripsList', () => {
 			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
 			const clearAll = screen.getByText('Clear All');
-			expect(clearAll).toHaveClass('text-gray-600');
+			// gray-600 was the AA fix in #531; pin the regression (gray-400) rather than
+			// the exact shade so an equal-or-better change (e.g. gray-700) still passes.
 			expect(clearAll).not.toHaveClass('text-gray-400');
 		});
 	});
@@ -146,16 +148,38 @@ describe('RecentTripsList', () => {
 			expect(mockOnSelect).toHaveBeenCalledWith(sampleTrips[0]);
 		});
 
+		it('calls onSelect when a card is activated via Enter or Space', async () => {
+			mockStoreValue.current = sampleTrips;
+			const mockOnSelect = vi.fn();
+
+			render(RecentTripsList, { props: { onSelect: mockOnSelect } });
+
+			const firstCard = screen.getByText('Capitol Hill').closest('button');
+			firstCard.focus();
+			await user.keyboard('{Enter}');
+
+			expect(mockOnSelect).toHaveBeenCalledTimes(1);
+			expect(mockOnSelect).toHaveBeenCalledWith(sampleTrips[0]);
+
+			mockOnSelect.mockClear();
+			await user.keyboard(' ');
+
+			expect(mockOnSelect).toHaveBeenCalledTimes(1);
+			expect(mockOnSelect).toHaveBeenCalledWith(sampleTrips[0]);
+		});
+
 		it('calls removeTrip when the delete button is clicked', async () => {
 			mockStoreValue.current = sampleTrips;
+			const mockOnSelect = vi.fn();
 
-			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			render(RecentTripsList, { props: { onSelect: mockOnSelect } });
 
 			const removeButtons = screen.getAllByLabelText('Remove recent trip');
 			await user.click(removeButtons[0]);
 
 			expect(mockRemoveTrip).toHaveBeenCalledTimes(1);
 			expect(mockRemoveTrip).toHaveBeenCalledWith('trip-1');
+			expect(mockOnSelect).not.toHaveBeenCalled();
 		});
 
 		it('calls clearAll when "Clear All" button is clicked', async () => {
