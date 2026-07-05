@@ -54,7 +54,7 @@ describe('buildVehiclePopupData', () => {
 	});
 });
 
-describe('updateVehicleMarkers highlighting', () => {
+describe('updateVehicleMarkers', () => {
 	function makeProvider() {
 		return {
 			addVehicleMarker: vi.fn(() => ({})),
@@ -63,68 +63,137 @@ describe('updateVehicleMarkers highlighting', () => {
 		};
 	}
 
-	function mockFetchTwoVehicles() {
-		const data = {
-			references: {
-				trips: [
-					{ id: 'trip-1', routeId: 'route-1' },
-					{ id: 'trip-2', routeId: 'route-1' }
-				]
-			},
-			list: [
-				{ status: { activeTripId: 'trip-1', status: 'SCHEDULED', orientation: 0 } },
-				{ status: { activeTripId: 'trip-2', status: 'SCHEDULED', orientation: 0 } }
-			]
-		};
+	function mockFetch(data) {
 		global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data }) });
 	}
 
-	beforeEach(() => {
-		clearVehicleMarkersMap();
-		mockFetchTwoVehicles();
-	});
-
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
+	beforeEach(() => clearVehicleMarkersMap());
+	afterEach(() => vi.restoreAllMocks());
 
 	// addVehicleMarker(vehicleStatus, activeTrip, routeType, isHighlighted)
 	const highlightArg = (call) => call[3];
 	const tripOf = (call) => call[1].id;
 
-	it('marks only the matching trip as highlighted', async () => {
-		const provider = makeProvider();
+	describe('highlighting', () => {
+		beforeEach(() => {
+			mockFetch({
+				references: {
+					trips: [
+						{ id: 'trip-1', routeId: 'route-1' },
+						{ id: 'trip-2', routeId: 'route-1' }
+					]
+				},
+				list: [
+					{ status: { activeTripId: 'trip-1', status: 'SCHEDULED', orientation: 0 } },
+					{ status: { activeTripId: 'trip-2', status: 'SCHEDULED', orientation: 0 } }
+				]
+			});
+		});
 
-		await updateVehicleMarkers('route-1', provider, undefined, 'trip-1');
+		it('marks only the matching trip as highlighted', async () => {
+			const provider = makeProvider();
 
-		const calls = provider.addVehicleMarker.mock.calls;
-		expect(highlightArg(calls.find((c) => tripOf(c) === 'trip-1'))).toBe(true);
-		expect(highlightArg(calls.find((c) => tripOf(c) === 'trip-2'))).toBe(false);
+			await updateVehicleMarkers('route-1', provider, undefined, 'trip-1');
+
+			const calls = provider.addVehicleMarker.mock.calls;
+			expect(highlightArg(calls.find((c) => tripOf(c) === 'trip-1'))).toBe(true);
+			expect(highlightArg(calls.find((c) => tripOf(c) === 'trip-2'))).toBe(false);
+		});
+
+		it('highlights no vehicle when highlightedTripId is null', async () => {
+			const provider = makeProvider();
+
+			await updateVehicleMarkers('route-1', provider, undefined, null);
+
+			for (const call of provider.addVehicleMarker.mock.calls) {
+				expect(highlightArg(call)).toBe(false);
+			}
+		});
+
+		it('passes the highlight flag through to updates on subsequent refreshes', async () => {
+			const provider = makeProvider();
+
+			await updateVehicleMarkers('route-1', provider, undefined, 'trip-2');
+			await updateVehicleMarkers('route-1', provider, undefined, 'trip-2');
+
+			const calls = provider.updateVehicleMarker.mock.calls;
+			const trip2 = calls.find((c) => c[2].id === 'trip-2');
+			const trip1 = calls.find((c) => c[2].id === 'trip-1');
+			expect(trip2[4]).toBe(true);
+			expect(trip1[4]).toBe(false);
+		});
 	});
 
-	it('highlights no vehicle when highlightedTripId is null', async () => {
-		const provider = makeProvider();
+	describe('marker keying', () => {
+		it('creates a separate marker per vehicle when two share an activeTripId', async () => {
+			mockFetch({
+				references: { trips: [{ id: 'trip-1', routeId: 'route-1' }] },
+				list: [
+					{
+						status: {
+							activeTripId: 'trip-1',
+							status: 'SCHEDULED',
+							vehicleId: 'veh-A',
+							position: { lat: 47.5233, lon: -122.26822 }
+						}
+					},
+					{
+						status: {
+							activeTripId: 'trip-1',
+							status: 'SCHEDULED',
+							vehicleId: 'veh-B',
+							position: { lat: 47.5221, lon: -122.26445 }
+						}
+					}
+				]
+			});
 
-		await updateVehicleMarkers('route-1', provider, undefined, null);
+			const provider = makeProvider();
+			await updateVehicleMarkers('route-1', provider);
 
-		for (const call of provider.addVehicleMarker.mock.calls) {
-			expect(highlightArg(call)).toBe(false);
-		}
-	});
+			expect(provider.addVehicleMarker).toHaveBeenCalledTimes(2);
+			expect(provider.updateVehicleMarker).not.toHaveBeenCalled();
+		});
 
-	it('passes the highlight flag through to updates on subsequent refreshes', async () => {
-		const provider = makeProvider();
+		it('reuses the same marker for a vehicle across refreshes', async () => {
+			const list = [
+				{
+					status: {
+						activeTripId: 'trip-1',
+						status: 'SCHEDULED',
+						vehicleId: 'veh-A',
+						position: { lat: 47.5, lon: -122.3 }
+					}
+				}
+			];
+			mockFetch({ references: { trips: [{ id: 'trip-1', routeId: 'route-1' }] }, list });
 
-		// First pass creates the markers.
-		await updateVehicleMarkers('route-1', provider, undefined, 'trip-2');
-		// Second pass should update the existing markers, still highlighting trip-2.
-		await updateVehicleMarkers('route-1', provider, undefined, 'trip-2');
+			const provider = makeProvider();
+			await updateVehicleMarkers('route-1', provider);
+			await updateVehicleMarkers('route-1', provider);
 
-		const calls = provider.updateVehicleMarker.mock.calls;
-		// updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType, isHighlighted)
-		const trip2 = calls.find((c) => c[2].id === 'trip-2');
-		const trip1 = calls.find((c) => c[2].id === 'trip-1');
-		expect(trip2[4]).toBe(true);
-		expect(trip1[4]).toBe(false);
+			expect(provider.addVehicleMarker).toHaveBeenCalledTimes(1);
+			expect(provider.updateVehicleMarker).toHaveBeenCalledTimes(1);
+		});
+
+		it('falls back to activeTripId when a status has no vehicleId', async () => {
+			mockFetch({
+				references: { trips: [{ id: 'trip-1', routeId: 'route-1' }] },
+				list: [
+					{
+						status: {
+							activeTripId: 'trip-1',
+							status: 'SCHEDULED',
+							position: { lat: 47.5, lon: -122.3 }
+						}
+					}
+				]
+			});
+
+			const provider = makeProvider();
+			await updateVehicleMarkers('route-1', provider);
+
+			expect(provider.addVehicleMarker).toHaveBeenCalledTimes(1);
+		});
 	});
 });
