@@ -6,6 +6,8 @@
 		effectiveDistanceUnit,
 		getWalkDistanceOptions,
 		snapToClosestOption,
+		resolveWalkDistanceForUnit,
+		canonicalizeWalkDistance,
 		DEFAULT_TRIP_OPTIONS,
 		UNIT_METRIC,
 		UNIT_IMPERIAL
@@ -23,7 +25,9 @@
 	let departureDate = $state($tripOptions.departureDate || '');
 	let wheelchair = $state($tripOptions.wheelchair);
 	let optimize = $state($tripOptions.optimize);
-	let maxWalkDistance = $state($tripOptions.maxWalkDistance);
+	let maxWalkDistance = $state(
+		resolveWalkDistanceForUnit($tripOptions.maxWalkDistance, $effectiveDistanceUnit)
+	);
 	let distanceUnit = $state($tripOptions.distanceUnit); // null = auto, 'metric', or 'imperial'
 
 	// Get the effective unit for display (resolves null to actual unit)
@@ -60,7 +64,10 @@
 		// Update persisted values
 		tripOptions.setPersisted('wheelchair', wheelchair);
 		tripOptions.setPersisted('optimize', optimize);
-		tripOptions.setPersisted('maxWalkDistance', maxWalkDistance);
+		tripOptions.setPersisted(
+			'maxWalkDistance',
+			canonicalizeWalkDistance(maxWalkDistance, displayUnit)
+		);
 		tripOptions.setPersisted('distanceUnit', distanceUnit);
 
 		onDone();
@@ -84,8 +91,11 @@
 		departureDate = DEFAULT_TRIP_OPTIONS.departureDate || '';
 		wheelchair = DEFAULT_TRIP_OPTIONS.wheelchair;
 		optimize = DEFAULT_TRIP_OPTIONS.optimize;
-		maxWalkDistance = DEFAULT_TRIP_OPTIONS.maxWalkDistance;
 		distanceUnit = DEFAULT_TRIP_OPTIONS.distanceUnit;
+		maxWalkDistance = resolveWalkDistanceForUnit(
+			DEFAULT_TRIP_OPTIONS.maxWalkDistance,
+			distanceUnit ?? $effectiveDistanceUnit
+		);
 	}
 </script>
 

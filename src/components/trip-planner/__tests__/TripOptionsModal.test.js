@@ -165,4 +165,21 @@ describe('TripOptionsModal reset', () => {
 		expect(localStorage.removeItem).toHaveBeenCalledWith('tripOptions_distanceUnit');
 		expect(localStorage.setItem).not.toHaveBeenCalled();
 	});
+
+	it('shows a matching metric default in the walk distance select after reset', async () => {
+		const originalNavigator = global.navigator;
+		global.navigator = { language: 'de-DE' };
+
+		try {
+			render(TripOptionsModal, { props: { onClose: vi.fn(), onDone: vi.fn() } });
+
+			const walkSelect = screen.getByRole('combobox');
+			await user.selectOptions(walkSelect, '5000');
+			await user.click(screen.getByText('Reset to defaults'));
+
+			expect(walkSelect).toHaveValue('1500');
+		} finally {
+			global.navigator = originalNavigator;
+		}
+	});
 });
