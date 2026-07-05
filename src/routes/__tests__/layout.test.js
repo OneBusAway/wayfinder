@@ -1,6 +1,35 @@
 import { render } from '@testing-library/svelte';
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import Layout from '$src/routes/+layout.svelte';
+import en from '../../locales/en.json';
+
+// Distinct from en.skip_to_main_content so the render test proves $t() is called
+// rather than a hardcoded English literal that happens to match the locale file.
+const RESOLVED_SKIP_LABEL = 'Resolved skip-to-main label';
+
+vi.mock('svelte-i18n', () => ({
+	t: {
+		subscribe: vi.fn((fn) => {
+			fn((key) => {
+				if (key === 'skip_to_main_content') {
+					return RESOLVED_SKIP_LABEL;
+				}
+				return en[key] ?? key;
+			});
+			return { unsubscribe: () => {} };
+		})
+	},
+	_: vi.fn((key) => en[key] ?? key),
+	addMessages: vi.fn(),
+	init: vi.fn(),
+	getLocaleFromNavigator: vi.fn(() => 'en'),
+	locale: {
+		subscribe: vi.fn((fn) => {
+			fn('en');
+			return () => {};
+		})
+	}
+}));
 
 vi.mock('$lib/i18n', () => ({
 	isRTL: vi.fn(() => false),
@@ -46,13 +75,22 @@ describe('Layout skip-to-content link', () => {
 		expect(main).toHaveAttribute('tabindex', '-1');
 	});
 
-	test('skip link text uses the i18n key, not hardcoded English', () => {
+	test('skip_to_main_content is defined in en locale data', () => {
+		expect(en.skip_to_main_content).toBeTruthy();
+		expect(typeof en.skip_to_main_content).toBe('string');
+		expect(en.skip_to_main_content.trim().length).toBeGreaterThan(0);
+	});
+
+	test('skip link text is resolved via $t(skip_to_main_content)', () => {
 		const { container } = render(Layout);
 
 		const skipLink = container.querySelector('a[href="#main-content"]');
-		// The global svelte-i18n test mock returns the key unchanged.
-		// Hardcoded text would produce "Skip to main content" (spaces).
-		// A properly wired $t() call produces "skip_to_main_content" (the key).
-		expect(skipLink?.textContent?.trim()).toBe('skip_to_main_content');
+		expect(skipLink?.textContent?.trim()).toBe(RESOLVED_SKIP_LABEL);
+		expect(skipLink?.textContent?.trim()).not.toBe('skip_to_main_content');
 	});
 });
+
+// Dark-mode focus styling (dark:focus:*) and verifying focus actually moves to
+// <main> after activating the skip link need a real browser (Tailwind variants
+// do not compute under jsdom; fragment navigation is not implemented). Track in
+// a Playwright a11y test when e2e coverage is added (#502).
