@@ -56,9 +56,9 @@
 	}
 
 	.itinerary-tab--active {
-		@apply bg-brand text-brand-foreground shadow-md;
-		@apply hover:bg-brand;
-		@apply dark:bg-brand dark:text-brand-foreground dark:hover:bg-brand;
+		@apply bg-brand-accent text-white shadow-md;
+		@apply hover:bg-brand-accent-dark;
+		@apply dark:bg-brand-accent dark:text-white dark:hover:bg-brand-accent-dark;
 	}
 
 	.close-button {
@@ -71,7 +71,7 @@
 	}
 
 	.button--primary {
-		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
+		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
 	}
 
 	.rtl {
