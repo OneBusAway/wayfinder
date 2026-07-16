@@ -15,11 +15,14 @@
 	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
 	import analytics from '$lib/Insights';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
-	import { removeAgencyPrefix } from '$lib/utils';
+	import { removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
 
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} stop
+	 * @property {Function} [handleUpdateRouteMap]
+	 * @property {Function} [tripSelected]
+	 * @property {boolean} [showHeroCard] - Render the brand-accent hero card above the arrivals list
 	 * @property {any} [arrivalsAndDeparturesResponse]
 	 */
 
@@ -28,6 +31,7 @@
 		stop,
 		handleUpdateRouteMap = null,
 		tripSelected = null,
+		showHeroCard = true,
 		arrivalsAndDeparturesResponse = $bindable(null)
 	} = $props();
 
@@ -92,15 +96,7 @@
 		if (interval) clearInterval(interval);
 	});
 
-	let routeShortNames = $derived(
-		arrivalsAndDeparturesResponse?.data?.references?.routes
-			? arrivalsAndDeparturesResponse.data.references.routes
-					.filter((r) => stop.routeIds.includes(r.id))
-					// the route id will be always be required so if the shortName is missing, fall back to the id split and get the route id
-					.map((r) => r.shortName || r.id.split('_')[1])
-					.sort()
-			: null
-	);
+	let routeShortNames = $derived(routeShortNamesForStop(arrivalsAndDeparturesResponse, stop));
 
 	function handleAccordionSelectionChanged(event) {
 		const data = event.activeData; // this is the ArrivalDeparture object plumbed into the AccordionItem
@@ -180,36 +176,38 @@
 		{/if}
 		{#if arrivalsAndDepartures}
 			<div class="space-y-4">
-				<div>
-					<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent p-4">
-						<h1 class="h1 mb-0 text-white">{stop.name}</h1>
-						<h2 class="h2 mb-0 text-white">
-							{$isLoading ? '' : $t('stop')} #{removeAgencyPrefix(stop.id)}
-						</h2>
-						{#if routeShortNames && routeShortNames.length > 0}
+				{#if showHeroCard}
+					<div>
+						<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent p-4">
+							<h1 class="h1 mb-0 text-white">{stop.name}</h1>
 							<h2 class="h2 mb-0 text-white">
-								{$isLoading ? '' : $t('routes')}: {routeShortNames.join(', ')}
+								{$isLoading ? '' : $t('stop')} #{removeAgencyPrefix(stop.id)}
 							</h2>
-						{/if}
+							{#if routeShortNames && routeShortNames.length > 0}
+								<h2 class="h2 mb-0 text-white">
+									{$isLoading ? '' : $t('routes')}: {routeShortNames.join(', ')}
+								</h2>
+							{/if}
 
-						{#if tripSelected}
-							<div class="mt-auto flex justify-end gap-2">
-								<a
-									href={`/stops/${stop.id}`}
-									class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
-								>
-									{$isLoading ? '' : $t('stop_details.view_details')}
-								</a>
-								<a
-									href={`/stops/${stop.id}/schedule`}
-									class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
-								>
-									{$isLoading ? '' : $t('schedule_for_stop.view_schedule')}
-								</a>
-							</div>
-						{/if}
+							{#if tripSelected}
+								<div class="mt-auto flex justify-end gap-2">
+									<a
+										href={`/stops/${stop.id}`}
+										class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
+									>
+										{$isLoading ? '' : $t('stop_details.view_details')}
+									</a>
+									<a
+										href={`/stops/${stop.id}/schedule`}
+										class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
+									>
+										{$isLoading ? '' : $t('schedule_for_stop.view_schedule')}
+									</a>
+								</div>
+							{/if}
+						</div>
 					</div>
-				</div>
+				{/if}
 
 				{#if serviceAlerts}
 					<ServiceAlerts bind:serviceAlerts />

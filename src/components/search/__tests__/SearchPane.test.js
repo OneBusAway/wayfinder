@@ -341,4 +341,23 @@ describe('SearchPane', () => {
 			consoleSpy.mockRestore();
 		});
 	});
+
+	describe('collapse button', () => {
+		test('renders a collapse button that calls onCollapse when provided', async () => {
+			const user = userEvent.setup();
+			const onCollapse = vi.fn();
+			render(SearchPane, { props: { ...mockProps, onCollapse } });
+
+			const collapseButton = screen.getByRole('button', { name: 'search.collapse' });
+			await user.click(collapseButton);
+
+			expect(onCollapse).toHaveBeenCalledTimes(1);
+		});
+
+		test('does not render a collapse button when onCollapse is not provided', () => {
+			render(SearchPane, { props: mockProps });
+
+			expect(screen.queryByRole('button', { name: 'search.collapse' })).not.toBeInTheDocument();
+		});
+	});
 });

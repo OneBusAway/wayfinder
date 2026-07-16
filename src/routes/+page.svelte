@@ -9,6 +9,8 @@
 	import AlertsModal from '$components/navigation/AlertsModal.svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import StopModal from '$components/stops/StopModal.svelte';
+	import StopBottomSheet from '$components/stops/StopBottomSheet.svelte';
+	import CollapsedSearchField from '$components/search/CollapsedSearchField.svelte';
 	import TripPlanModal from '$components/trip-planner/TripPlanModal.svelte';
 	import { browser } from '$app/environment';
 	import {
@@ -55,6 +57,17 @@
 
 	let currentUserLocation = $state($userLocation);
 
+	// Below the md breakpoint the stop modal becomes a draggable bottom sheet and
+	// the search pane collapses to a single floating field while a stop is open.
+	// 767.98px (not 767px) avoids a fractional-width dead zone against Tailwind's
+	// md (min-width: 768px) breakpoint, which drives the CSS side of this layout.
+	const mobileMediaQuery = browser ? window.matchMedia('(max-width: 767.98px)') : null;
+	let isMobile = $state(mobileMediaQuery?.matches ?? false);
+	let searchCollapsed = $state(false);
+	let sheetSnap = $state('half');
+	let stopSheetOpen = $derived(isMobile && currentModal === Modal.STOP);
+	let showCollapsedSearch = $derived(stopSheetOpen && searchCollapsed);
+
 	const Modal = {
 		STOP: 'stop',
 		ROUTE: 'route',
@@ -77,6 +90,7 @@
 		}
 		currentModal = Modal.STOP;
 		stop = stopData;
+		searchCollapsed = true;
 		pushState(`/stops/${stop.id}`);
 		loadSurveys(stop, getUserId());
 
@@ -132,6 +146,20 @@
 		showRouteMap = false;
 		currentHighlightedStopId = null;
 		currentModal = null;
+		searchCollapsed = false;
+		// sheetSnap intentionally persists so the next stop's sheet reopens at the
+		// rider's last-used height.
+	}
+
+	function expandSearch() {
+		// Drop the sheet to peek so the re-expanded search pane isn't competing
+		// with it for screen space.
+		searchCollapsed = false;
+		sheetSnap = 'peek';
+	}
+
+	function collapseSearch() {
+		searchCollapsed = true;
 	}
 
 	function tripSelected(event) {
@@ -241,6 +269,10 @@
 		closePane();
 	}
 
+	function handleMobileMediaChange(event) {
+		isMobile = event.matches;
+	}
+
 	onMount(() => {
 		loadAlerts();
 
@@ -251,6 +283,7 @@
 		if (browser) {
 			window.addEventListener('tabSwitched', handleTabSwitched);
 			window.addEventListener('planTripTabClicked', handlePlanTripTabClicked);
+			mobileMediaQuery?.addEventListener('change', handleMobileMediaChange);
 
 			// Clean URL params after coordinates have been captured
 			if (initialCoords) {
@@ -263,6 +296,7 @@
 		if (browser) {
 			window.removeEventListener('tabSwitched', handleTabSwitched);
 			window.removeEventListener('planTripTabClicked', handlePlanTripTabClicked);
+			mobileMediaQuery?.removeEventListener('change', handleMobileMediaChange);
 		}
 		if (currentIntervalId) {
 			clearInterval(currentIntervalId);
@@ -292,15 +326,19 @@
 	<h1 class="sr-only">{PUBLIC_OBA_REGION_NAME}</h1>
 	<div class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 z-40">
 		<div class="mx-2 mt-2 flex h-full flex-col md:mx-4 md:mt-4 md:w-96">
+			{#if showCollapsedSearch}
+				<CollapsedSearchField onclick={expandSearch} />
+			{/if}
 			<SearchPane
 				{mapProvider}
-				cssClasses="pointer-events-auto"
+				cssClasses="pointer-events-auto {showCollapsedSearch ? 'hidden' : ''}"
 				{handleRouteSelected}
 				{handleViewAllRoutes}
 				{clearPolylines}
 				{handleTripPlan}
 				{handleStopMarkerSelect}
 				{clearTripItineraries}
+				onCollapse={stopSheetOpen ? collapseSearch : null}
 			>
 				{#snippet childContent()}
 					<SurveyLauncher />
@@ -308,7 +346,7 @@
 			</SearchPane>
 
 			<div class="mt-2 flex-1 md:mt-4">
-				{#if currentModal === Modal.STOP}
+				{#if currentModal === Modal.STOP && !isMobile}
 					<StopModal {closePane} {tripSelected} {handleUpdateRouteMap} {stop} />
 				{:else if currentModal === Modal.ROUTE}
 					<RouteModal {closePane} {mapProvider} {stops} {selectedRoute} />
@@ -325,6 +363,16 @@
 				{/if}
 			</div>
 		</div>
+
+		{#if stopSheetOpen}
+			<StopBottomSheet
+				{stop}
+				{closePane}
+				{tripSelected}
+				{handleUpdateRouteMap}
+				bind:snap={sheetSnap}
+			/>
+		{/if}
 	</div>
 
 	{#if $showSurveyModal}

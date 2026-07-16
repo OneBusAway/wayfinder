@@ -32,3 +32,27 @@ export function removeAgencyPrefix(idString) {
 	// Return everything after the first underscore
 	return idString.substring(underscoreIndex + 1);
 }
+
+/**
+ * Extracts the sorted route short names served by a stop from an
+ * arrivals-and-departures API response.
+ *
+ * @param {Object} arrivalsAndDeparturesResponse - Response from the arrivals-and-departures-for-stop API
+ * @param {Object} stop - Stop object with a routeIds array
+ * @returns {Array<string>|null} Lexicographically sorted route short names (falling back to the
+ *   route id without its agency prefix), or null when the response has no route references
+ */
+export function routeShortNamesForStop(arrivalsAndDeparturesResponse, stop) {
+	const routes = arrivalsAndDeparturesResponse?.data?.references?.routes;
+	if (!routes) {
+		return null;
+	}
+
+	return (
+		routes
+			.filter((r) => stop.routeIds.includes(r.id))
+			// the route id will always be present, so if the shortName is missing, fall back to the id without its agency prefix
+			.map((r) => r.shortName || removeAgencyPrefix(r.id))
+			.sort()
+	);
+}

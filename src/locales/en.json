@@ -74,7 +74,11 @@
 		"search_for_routes": "Search for routes...",
 		"no_routes_found": "No routes found",
 		"all_routes": "All Routes",
-		"clear": "Clear"
+		"clear": "Clear",
+		"collapse": "Collapse search"
+	},
+	"sheet": {
+		"resize_handle": "Resize panel"
 	},
 	"survey": {
 		"required_question": "Required question"

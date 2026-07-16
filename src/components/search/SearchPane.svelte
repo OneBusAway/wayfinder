@@ -3,7 +3,8 @@
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
-	import { faMapPin, faSignsPost } from '@fortawesome/free-solid-svg-icons';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faMapPin, faSignsPost, faXmark } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
@@ -23,6 +24,7 @@
 		clearTripItineraries,
 		cssClasses = '',
 		mapProvider = null,
+		onCollapse = null,
 		childContent
 	} = $props();
 
@@ -373,6 +375,15 @@
 			>
 				<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
 			</TabItem>
+		{/if}
+
+		{#if onCollapse}
+			<li role="presentation" class="ms-auto self-center">
+				<button type="button" onclick={onCollapse} class="close-button">
+					<FontAwesomeIcon icon={faXmark} class="font-black text-black dark:text-white" />
+					<span class="sr-only">{$t('search.collapse')}</span>
+				</button>
+			</li>
 		{/if}
 	</Tabs>
 </div>
