@@ -147,15 +147,25 @@
 		// the next stop's sheet reopens at the rider's last-used height.
 	}
 
+	let snapBeforeSearchExpand = null;
+
 	function expandSearch() {
 		// Drop the sheet to peek so the re-expanded search pane isn't competing
 		// with it for screen space.
+		snapBeforeSearchExpand = sheetSnap;
 		searchCollapsed = false;
 		sheetSnap = 'peek';
 	}
 
 	function collapseSearch() {
 		searchCollapsed = true;
+		// Give the arrivals their space back — but only if the sheet is still at
+		// the programmatic peek from expandSearch; a height the rider chose in
+		// the meantime is left alone.
+		if (sheetSnap === 'peek' && snapBeforeSearchExpand) {
+			sheetSnap = snapBeforeSearchExpand;
+		}
+		snapBeforeSearchExpand = null;
 	}
 
 	function tripSelected(event) {

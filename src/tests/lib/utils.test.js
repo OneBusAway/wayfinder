@@ -185,4 +185,13 @@ describe('routeShortNamesForStop', () => {
 		expect(routeShortNamesForStop(null, stop)).toBe(null);
 		expect(routeShortNamesForStop({ data: { references: {} } }, stop)).toBe(null);
 	});
+
+	it('returns null when the stop has no routeIds array', () => {
+		const response = {
+			data: { references: { routes: [{ id: '1_100', shortName: '44' }] } }
+		};
+
+		expect(routeShortNamesForStop(response, {})).toBe(null);
+		expect(routeShortNamesForStop(response, null)).toBe(null);
+	});
 });

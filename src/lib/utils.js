@@ -41,10 +41,11 @@ export function removeAgencyPrefix(idString) {
  * @param {Object} stop - Stop object with a routeIds array
  * @returns {Array<string>|null} Lexicographically sorted route short names (falling back to the
  *   route id without its agency prefix), or null when the response has no route references
+ *   or the stop has no routeIds array
  */
 export function routeShortNamesForStop(arrivalsAndDeparturesResponse, stop) {
 	const routes = arrivalsAndDeparturesResponse?.data?.references?.routes;
-	if (!routes) {
+	if (!routes || !Array.isArray(stop?.routeIds)) {
 		return null;
 	}
 
