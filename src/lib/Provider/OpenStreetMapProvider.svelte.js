@@ -40,7 +40,7 @@ export default class OpenStreetMapProvider {
 		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || 'positron';
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
-		this.showStopsRoutesAtZoom = 16;
+		this.showStopsRoutesAtZoom = 17;
 		this.routeLabelsVisible = false;
 		this.contextMenuPopup = null;
 		this.contextMenuComponent = null;

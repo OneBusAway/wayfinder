@@ -223,29 +223,29 @@ describe('Route Labels Feature', () => {
 	});
 
 	describe('Map Provider Zoom Logic', () => {
-		const ZOOM_THRESHOLD = 16;
+		const ZOOM_THRESHOLD = 17;
 
-		test('labels should show at zoom level 16', () => {
-			const zoom = 16;
+		test('labels should show at zoom level 17', () => {
+			const zoom = 17;
 			const shouldShow = zoom >= ZOOM_THRESHOLD;
 			expect(shouldShow).toBe(true);
 		});
 
-		test('labels should show above zoom level 16', () => {
+		test('labels should show above zoom level 17', () => {
 			const zoom = 18;
 			const shouldShow = zoom >= ZOOM_THRESHOLD;
 			expect(shouldShow).toBe(true);
 		});
 
-		test('labels should hide below zoom level 16', () => {
-			const zoom = 15;
+		test('labels should hide below zoom level 17', () => {
+			const zoom = 16;
 			const shouldShow = zoom >= ZOOM_THRESHOLD;
 			expect(shouldShow).toBe(false);
 		});
 
 		test('state tracking prevents unnecessary updates', () => {
 			let routeLabelsVisible = false;
-			const zoom = 17;
+			const zoom = 18;
 			const shouldShow = zoom >= ZOOM_THRESHOLD;
 
 			// First update - state changes
@@ -300,16 +300,16 @@ describe('Route Labels Feature', () => {
 
 	describe('Performance Optimization', () => {
 		test('only updates when zoom crosses threshold boundary', () => {
-			const THRESHOLD = 16;
+			const THRESHOLD = 17;
 
 			// Zoom 14->15: both below, no update needed
 			expect(14 >= THRESHOLD === 15 >= THRESHOLD).toBe(true);
 
-			// Zoom 15->16: crosses boundary, update needed
-			expect(15 >= THRESHOLD === 16 >= THRESHOLD).toBe(false);
+			// Zoom 16->17: crosses boundary, update needed
+			expect(16 >= THRESHOLD === 17 >= THRESHOLD).toBe(false);
 
-			// Zoom 16->17: both above, no update needed
-			expect(16 >= THRESHOLD === 17 >= THRESHOLD).toBe(true);
+			// Zoom 17->18: both above, no update needed
+			expect(17 >= THRESHOLD === 18 >= THRESHOLD).toBe(true);
 		});
 	});
 });

@@ -24,7 +24,7 @@ export default class GoogleMapProvider {
 		this.markersMap = new Map();
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
 		this.polylines = []; // Track all polylines for easy cleanup
-		this.showStopsRoutesAtZoom = 16;
+		this.showStopsRoutesAtZoom = 17;
 		this.routeLabelsVisible = false;
 		this.contextMenuInfoWindow = null;
 		this.contextMenuComponent = null;

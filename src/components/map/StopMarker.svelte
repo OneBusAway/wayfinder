@@ -192,22 +192,43 @@
 		cursor: pointer;
 
 		position: absolute;
-		@apply whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium;
-		background-color: rgba(255, 255, 255, 0.95);
+		@apply text-xs font-semibold;
 		color: #1f2937;
-		@apply border-4 border-gray-300 hover:border-brand focus:border-brand active:border-brand;
-		@apply shadow-lg;
-		@apply transition-colors duration-200 ease-in-out;
+		/* Map-label halo (like iOS): outline the text against the map instead
+		   of drawing a bubble behind it. */
+		text-shadow:
+			0 0 3px rgba(255, 255, 255, 0.95),
+			0 0 3px rgba(255, 255, 255, 0.95),
+			0 1px 2px rgba(255, 255, 255, 0.95),
+			0 -1px 2px rgba(255, 255, 255, 0.95),
+			1px 0 2px rgba(255, 255, 255, 0.95),
+			-1px 0 2px rgba(255, 255, 255, 0.95);
 		pointer-events: auto;
 		z-index: 10;
-		max-width: 200px;
-		backdrop-filter: blur(4px);
+		/* Absolutely-positioned inside the ~32px marker container, so without an
+		   explicit width the label shrink-wraps to min-content and wraps one
+		   token per line. */
+		width: max-content;
+		max-width: 140px;
+		text-align: center;
+		white-space: normal;
+		line-height: 1.3;
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		gap: 0.25rem;
 		outline: none;
-		overflow: hidden;
-		text-overflow: ellipsis;
+	}
+
+	:global(.dark) .routes-label {
+		color: #fff;
+		text-shadow:
+			0 0 3px rgba(0, 0, 0, 0.9),
+			0 0 3px rgba(0, 0, 0, 0.9),
+			0 1px 2px rgba(0, 0, 0, 0.9),
+			0 -1px 2px rgba(0, 0, 0, 0.9),
+			1px 0 2px rgba(0, 0, 0, 0.9),
+			-1px 0 2px rgba(0, 0, 0, 0.9);
 	}
 
 	.routes-label:focus {
@@ -228,37 +249,24 @@
 		transform: translateY(-50%);
 	}
 
-	.routes-label:hover .expand-indicator {
-		@apply text-brand;
-	}
-
 	.routes-label.expanded {
-		@apply font-semibold;
-		@apply border-4 border-brand dark:border-brand;
-		@apply text-gray-800 dark:text-white;
-		white-space: normal;
-		max-width: 250px;
+		max-width: 220px;
 		flex-wrap: wrap;
-		overflow: visible;
-		line-height: 1.4;
 	}
 
 	.label-text {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 		min-width: 0;
-		flex: 1 1 auto;
-	}
-
-	.routes-label.expanded .label-text {
-		white-space: normal;
-		overflow: visible;
+		flex: 0 1 auto;
 	}
 
 	.expand-indicator {
-		@apply ml-1 text-sm font-bold text-gray-500 dark:text-gray-300;
+		@apply text-sm font-bold;
 		transition: color 0.2s ease;
 		flex-shrink: 0;
+	}
+
+	.routes-label:hover .expand-indicator,
+	.routes-label:hover .label-text {
+		@apply text-brand;
 	}
 </style>
