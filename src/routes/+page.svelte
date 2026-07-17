@@ -316,9 +316,9 @@
 	<h1 class="sr-only">{PUBLIC_OBA_REGION_NAME}</h1>
 	<div class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 z-40">
 		<!-- Top spacing is padding (not margin) so h-full keeps the column's bottom
-		     edge — where the sheet anchors — exactly at the viewport bottom. Horizontal
-		     margins live on the search wrapper and on each pane (not the column) so the
-		     bottom sheet in the slot below can run edge-to-edge on mobile. -->
+		     edge — where the sheet anchors — exactly at the viewport bottom. Below md,
+		     horizontal margins live on the search wrapper and on each pane (not the
+		     column) so the bottom sheet in the slot below can run edge-to-edge. -->
 		<div class="flex h-full flex-col pt-2 md:mx-4 md:w-96 md:pt-4">
 			<div class="mx-2 md:mx-0">
 				{#if showCollapsedSearch}

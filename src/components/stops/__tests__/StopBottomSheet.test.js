@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach } from 'vitest';
 import StopBottomSheet from '../StopBottomSheet.svelte';
@@ -69,6 +69,14 @@ describe('StopBottomSheet', () => {
 		render(StopBottomSheet, { props: defaultProps });
 
 		await user.click(screen.getByRole('button', { name: 'sheet.close' }));
+
+		expect(defaultProps.closePane).toHaveBeenCalledTimes(1);
+	});
+
+	test('Escape calls closePane', async () => {
+		render(StopBottomSheet, { props: defaultProps });
+
+		await fireEvent.keyDown(window, { code: 'Escape' });
 
 		expect(defaultProps.closePane).toHaveBeenCalledTimes(1);
 	});

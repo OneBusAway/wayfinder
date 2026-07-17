@@ -207,8 +207,8 @@
 		pointer-events: auto;
 		z-index: 10;
 		/* Absolutely-positioned inside the ~32px marker container, so without an
-		   explicit width the label shrink-wraps to min-content and wraps one
-		   token per line. */
+		   explicit width the label shrink-wraps to the container's width and
+		   wraps after nearly every token. */
 		width: max-content;
 		max-width: 140px;
 		text-align: center;

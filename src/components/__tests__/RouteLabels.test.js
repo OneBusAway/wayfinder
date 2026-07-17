@@ -230,24 +230,6 @@ describe('Route Labels Feature', () => {
 			expect(ZOOM_THRESHOLD).toBe(17);
 		});
 
-		test('labels should show at the threshold zoom level', () => {
-			const zoom = ZOOM_THRESHOLD;
-			const shouldShow = zoom >= ZOOM_THRESHOLD;
-			expect(shouldShow).toBe(true);
-		});
-
-		test('labels should show above the threshold zoom level', () => {
-			const zoom = ZOOM_THRESHOLD + 1;
-			const shouldShow = zoom >= ZOOM_THRESHOLD;
-			expect(shouldShow).toBe(true);
-		});
-
-		test('labels should hide below the threshold zoom level', () => {
-			const zoom = ZOOM_THRESHOLD - 1;
-			const shouldShow = zoom >= ZOOM_THRESHOLD;
-			expect(shouldShow).toBe(false);
-		});
-
 		test('state tracking prevents unnecessary updates', () => {
 			let routeLabelsVisible = false;
 			const zoom = ZOOM_THRESHOLD + 1;
@@ -300,21 +282,6 @@ describe('Route Labels Feature', () => {
 			const route = { id: 'agency_route_49' };
 			const name = String(route.id).split('_').pop();
 			expect(name).toBe('49');
-		});
-	});
-
-	describe('Performance Optimization', () => {
-		test('only updates when zoom crosses threshold boundary', () => {
-			const THRESHOLD = SHOW_ROUTE_LABELS_AT_ZOOM;
-
-			// Both below the threshold: no update needed
-			expect(THRESHOLD - 3 >= THRESHOLD === THRESHOLD - 2 >= THRESHOLD).toBe(true);
-
-			// Crossing the boundary: update needed
-			expect(THRESHOLD - 1 >= THRESHOLD === THRESHOLD >= THRESHOLD).toBe(false);
-
-			// Both above the threshold: no update needed
-			expect(THRESHOLD >= THRESHOLD === THRESHOLD + 1 >= THRESHOLD).toBe(true);
 		});
 	});
 });

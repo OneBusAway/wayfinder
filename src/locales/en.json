@@ -79,7 +79,10 @@
 	},
 	"sheet": {
 		"close": "Close",
-		"resize_handle": "Resize panel"
+		"resize_handle": "Resize panel",
+		"snap_full": "Full height",
+		"snap_half": "Half height",
+		"snap_peek": "Collapsed"
 	},
 	"survey": {
 		"required_question": "Required question"

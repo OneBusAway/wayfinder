@@ -3,7 +3,8 @@
     A draggable bottom sheet anchored to the bottom edge of its nearest positioned
     ancestor, with three snap points (peek / half / full). Content behind it stays
     visible and interactive. Drag the handle row (including the header) to resize;
-    arrow keys on the grab handle step between snap points.
+    on the grab handle, arrow keys step between snap points and Home/End jump to
+    the extremes.
 
     @prop {('peek'|'half'|'full')} snap - Bindable current snap point
     @prop {import('svelte').Snippet} header - Condensed header rendered inside the drag-handle row
@@ -108,7 +109,7 @@
 				aria-valuemin="0"
 				aria-valuemax={SNAP_ORDER.length - 1}
 				aria-valuenow={SNAP_ORDER.indexOf(snap)}
-				aria-valuetext={snap}
+				aria-valuetext={$t(`sheet.snap_${snap}`)}
 				onkeydown={handleKeydown}
 				class="mx-auto mb-2 block h-1 w-10 rounded-full bg-gray-300 dark:bg-gray-600"
 			></div>
