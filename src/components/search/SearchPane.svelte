@@ -3,7 +3,8 @@
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
-	import { faMapPin, faSignsPost } from '@fortawesome/free-solid-svg-icons';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faMapPin, faSignsPost, faX } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
@@ -23,6 +24,8 @@
 		clearTripItineraries,
 		cssClasses = '',
 		mapProvider = null,
+		onCollapse = null,
+		collapsed = false,
 		childContent
 	} = $props();
 
@@ -280,8 +283,11 @@
 	});
 </script>
 
+<!-- Collapsing hides the pane below md only (a floating stand-in field takes its
+     place there); md and up always shows it, so `collapsed` restores this root's
+     own flex display at that breakpoint. -->
 <div
-	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-sm md:w-96 ${cssClasses}`}
+	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-sm md:w-96 ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
 >
 	<Tabs
 		tabStyle="none"
@@ -373,6 +379,17 @@
 			>
 				<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
 			</TabItem>
+		{/if}
+
+		{#if onCollapse}
+			<!-- Collapsing to the floating pill is a sub-md affordance; on wider
+			     viewports the pane always stays open. -->
+			<li role="presentation" class="ms-auto self-center md:hidden">
+				<button type="button" onclick={onCollapse} class="close-button">
+					<FontAwesomeIcon icon={faX} class="font-black text-black dark:text-white" />
+					<span class="sr-only">{$t('search.collapse')}</span>
+				</button>
+			</li>
 		{/if}
 	</Tabs>
 </div>

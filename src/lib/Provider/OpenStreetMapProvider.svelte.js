@@ -1,7 +1,12 @@
 import { browser } from '$app/environment';
 import StopMarker from '$components/map/StopMarker.svelte';
 import { faBus } from '@fortawesome/free-solid-svg-icons';
-import { RouteType, routePriorities, prioritizedRouteTypeForDisplay } from '$config/routeConfig';
+import {
+	RouteType,
+	routePriorities,
+	prioritizedRouteTypeForDisplay,
+	SHOW_ROUTE_LABELS_AT_ZOOM
+} from '$config/routeConfig';
 import './../../assets/styles/leaflet-map.css';
 import PolylineUtil from 'polyline-encoded';
 import { COLORS } from '$lib/colors';
@@ -40,7 +45,7 @@ export default class OpenStreetMapProvider {
 		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || 'positron';
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
-		this.showStopsRoutesAtZoom = 16;
+		this.showStopsRoutesAtZoom = SHOW_ROUTE_LABELS_AT_ZOOM;
 		this.routeLabelsVisible = false;
 		this.contextMenuPopup = null;
 		this.contextMenuComponent = null;

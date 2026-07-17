@@ -1,7 +1,12 @@
 import { loadGoogleMapsLibrary, createMap, nightModeStyles } from '$lib/googleMaps';
 import StopMarker from '$components/map/StopMarker.svelte';
 import { faBus } from '@fortawesome/free-solid-svg-icons';
-import { RouteType, routePriorities, prioritizedRouteTypeForDisplay } from '$config/routeConfig';
+import {
+	RouteType,
+	routePriorities,
+	prioritizedRouteTypeForDisplay,
+	SHOW_ROUTE_LABELS_AT_ZOOM
+} from '$config/routeConfig';
 import { COLORS } from '$lib/colors';
 import PopupContent from '$components/map/PopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
@@ -24,7 +29,7 @@ export default class GoogleMapProvider {
 		this.markersMap = new Map();
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
 		this.polylines = []; // Track all polylines for easy cleanup
-		this.showStopsRoutesAtZoom = 16;
+		this.showStopsRoutesAtZoom = SHOW_ROUTE_LABELS_AT_ZOOM;
 		this.routeLabelsVisible = false;
 		this.contextMenuInfoWindow = null;
 		this.contextMenuComponent = null;

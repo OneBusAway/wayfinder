@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi } from 'vitest';
 import StopMarker from '../map/StopMarker.svelte';
 import { faBus } from '@fortawesome/free-solid-svg-icons';
+import { SHOW_ROUTE_LABELS_AT_ZOOM } from '$config/routeConfig';
 
 describe('Route Labels Feature', () => {
 	const mockStop = {
@@ -223,29 +224,15 @@ describe('Route Labels Feature', () => {
 	});
 
 	describe('Map Provider Zoom Logic', () => {
-		const ZOOM_THRESHOLD = 16;
+		const ZOOM_THRESHOLD = SHOW_ROUTE_LABELS_AT_ZOOM;
 
-		test('labels should show at zoom level 16', () => {
-			const zoom = 16;
-			const shouldShow = zoom >= ZOOM_THRESHOLD;
-			expect(shouldShow).toBe(true);
-		});
-
-		test('labels should show above zoom level 16', () => {
-			const zoom = 18;
-			const shouldShow = zoom >= ZOOM_THRESHOLD;
-			expect(shouldShow).toBe(true);
-		});
-
-		test('labels should hide below zoom level 16', () => {
-			const zoom = 15;
-			const shouldShow = zoom >= ZOOM_THRESHOLD;
-			expect(shouldShow).toBe(false);
+		test('labels only appear near ground level (zoom 17+)', () => {
+			expect(ZOOM_THRESHOLD).toBe(17);
 		});
 
 		test('state tracking prevents unnecessary updates', () => {
 			let routeLabelsVisible = false;
-			const zoom = 17;
+			const zoom = ZOOM_THRESHOLD + 1;
 			const shouldShow = zoom >= ZOOM_THRESHOLD;
 
 			// First update - state changes
@@ -295,21 +282,6 @@ describe('Route Labels Feature', () => {
 			const route = { id: 'agency_route_49' };
 			const name = String(route.id).split('_').pop();
 			expect(name).toBe('49');
-		});
-	});
-
-	describe('Performance Optimization', () => {
-		test('only updates when zoom crosses threshold boundary', () => {
-			const THRESHOLD = 16;
-
-			// Zoom 14->15: both below, no update needed
-			expect(14 >= THRESHOLD === 15 >= THRESHOLD).toBe(true);
-
-			// Zoom 15->16: crosses boundary, update needed
-			expect(15 >= THRESHOLD === 16 >= THRESHOLD).toBe(false);
-
-			// Zoom 16->17: both above, no update needed
-			expect(16 >= THRESHOLD === 17 >= THRESHOLD).toBe(true);
 		});
 	});
 });
