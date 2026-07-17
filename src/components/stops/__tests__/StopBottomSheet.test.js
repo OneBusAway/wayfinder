@@ -68,7 +68,7 @@ describe('StopBottomSheet', () => {
 		const user = userEvent.setup();
 		render(StopBottomSheet, { props: defaultProps });
 
-		await user.click(screen.getByRole('button', { name: 'Close' }));
+		await user.click(screen.getByRole('button', { name: 'sheet.close' }));
 
 		expect(defaultProps.closePane).toHaveBeenCalledTimes(1);
 	});

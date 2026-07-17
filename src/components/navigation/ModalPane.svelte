@@ -14,7 +14,7 @@
 </script>
 
 <div
-	class="modal-pane pointer-events-auto h-full rounded-b-none"
+	class="modal-pane pointer-events-auto mx-2 h-full rounded-b-none md:mx-0"
 	in:fly={{ y: 200, duration: 500 }}
 	out:fly={{ y: 200, duration: 500 }}
 >

@@ -25,6 +25,7 @@
 		cssClasses = '',
 		mapProvider = null,
 		onCollapse = null,
+		collapsed = false,
 		childContent
 	} = $props();
 
@@ -282,8 +283,11 @@
 	});
 </script>
 
+<!-- Collapsing hides the pane below md only (a floating stand-in field takes its
+     place there); md and up always shows it, so `collapsed` restores this root's
+     own flex display at that breakpoint. -->
 <div
-	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-sm md:w-96 ${cssClasses}`}
+	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-sm md:w-96 ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
 >
 	<Tabs
 		tabStyle="none"
@@ -378,7 +382,9 @@
 		{/if}
 
 		{#if onCollapse}
-			<li role="presentation" class="ms-auto self-center">
+			<!-- Collapsing to the floating pill is a sub-md affordance; on wider
+			     viewports the pane always stays open. -->
+			<li role="presentation" class="ms-auto self-center md:hidden">
 				<button type="button" onclick={onCollapse} class="close-button">
 					<FontAwesomeIcon icon={faXmark} class="font-black text-black dark:text-white" />
 					<span class="sr-only">{$t('search.collapse')}</span>

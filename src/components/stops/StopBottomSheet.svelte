@@ -1,8 +1,8 @@
 <!--
     @component
-    The mobile counterpart of StopModal: shows a stop's arrivals and departures in
-    a draggable bottom sheet so the map stays visible behind it. The tall hero card
-    is replaced by a condensed header (stop name, stop number, routes) with circular
+    Shows a stop's arrivals and departures in a draggable bottom sheet so the map
+    stays visible behind it, at every viewport width. The tall hero card is
+    replaced by a condensed header (stop name, stop number, routes) with circular
     View Details / View Schedule / Close actions inside the drag-handle row.
 
     @prop {Object} stop - Stop object containing stop details
@@ -67,7 +67,7 @@
 					class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-sm text-black hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
 				>
 					<FontAwesomeIcon icon={faXmark} />
-					<span class="sr-only">Close</span>
+					<span class="sr-only">{$isLoading ? '' : $t('sheet.close')}</span>
 				</button>
 			</div>
 		</div>

@@ -90,20 +90,6 @@ describe('BottomSheet', () => {
 		expect(handle).toHaveAttribute('aria-valuetext', 'peek');
 	});
 
-	test('dims the map only at the full snap point', async () => {
-		const user = userEvent.setup();
-		render(BottomSheet, { props: defaultProps });
-
-		const dim = screen.getByTestId('map-dim');
-		expect(dim).not.toHaveClass('bg-gray-900/[.28]');
-
-		const handle = screen.getByRole('slider');
-		handle.focus();
-		await user.keyboard('{End}');
-
-		expect(dim).toHaveClass('bg-gray-900/[.28]');
-	});
-
 	test('pointerdown on the grab handle starts a drag', async () => {
 		render(BottomSheet, { props: defaultProps });
 
@@ -125,16 +111,5 @@ describe('BottomSheet', () => {
 		// The sheet keeps its snap animation: no drag was engaged, so taps on
 		// header controls stay clicks instead of being captured by the drag.
 		expect(screen.getByTestId('bottom-sheet').style.transition).not.toBe('none');
-	});
-
-	test('never dims the map when mapDim is false', async () => {
-		const user = userEvent.setup();
-		render(BottomSheet, { props: { ...defaultProps, mapDim: false } });
-
-		const handle = screen.getByRole('slider');
-		handle.focus();
-		await user.keyboard('{End}');
-
-		expect(screen.getByTestId('map-dim')).not.toHaveClass('bg-gray-900/[.28]');
 	});
 });

@@ -18,7 +18,7 @@
 <button
 	type="button"
 	{onclick}
-	class="pointer-events-auto flex w-full items-center gap-2.5 rounded-lg border border-gray-300 bg-white/95 px-3.5 py-2.5 text-sm text-gray-500 shadow-md backdrop-blur-sm dark:border-gray-600 dark:bg-surface-dark/95 dark:text-gray-400"
+	class="pointer-events-auto flex w-full items-center gap-2.5 rounded-lg border border-gray-300 bg-white/95 px-3.5 py-2.5 text-sm text-gray-500 shadow-md backdrop-blur-sm dark:border-gray-600 dark:bg-surface-dark/95 dark:text-gray-400 md:hidden"
 >
 	<FontAwesomeIcon icon={faMagnifyingGlass} class="text-[13px]" />
 	<span class="flex-1 truncate text-left">{$t('search.placeholder')}</span>

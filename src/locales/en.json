@@ -78,6 +78,7 @@
 		"collapse": "Collapse search"
 	},
 	"sheet": {
+		"close": "Close",
 		"resize_handle": "Resize panel"
 	},
 	"survey": {

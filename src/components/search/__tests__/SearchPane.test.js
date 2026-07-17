@@ -359,5 +359,17 @@ describe('SearchPane', () => {
 
 			expect(screen.queryByRole('button', { name: 'search.collapse' })).not.toBeInTheDocument();
 		});
+
+		test('hides the pane below the md breakpoint when collapsed', () => {
+			const { container } = render(SearchPane, { props: { ...mockProps, collapsed: true } });
+
+			expect(container.querySelector('.modal-pane')).toHaveClass('hidden', 'md:flex');
+		});
+
+		test('does not hide the pane when not collapsed', () => {
+			const { container } = render(SearchPane, { props: mockProps });
+
+			expect(container.querySelector('.modal-pane')).not.toHaveClass('hidden');
+		});
 	});
 });
