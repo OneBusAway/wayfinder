@@ -16,7 +16,7 @@
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import StopPane from '$components/stops/StopPane.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faCircleInfo, faCalendarDays, faXmark } from '@fortawesome/free-solid-svg-icons';
+	import { faCircleInfo, faCalendarDays, faX } from '@fortawesome/free-solid-svg-icons';
 	import { keybinding } from '$lib/keybinding';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
@@ -66,7 +66,7 @@
 					use:keybinding={{ code: 'Escape' }}
 					class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-sm text-black hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
 				>
-					<FontAwesomeIcon icon={faXmark} />
+					<FontAwesomeIcon icon={faX} />
 					<span class="sr-only">{$isLoading ? '' : $t('sheet.close')}</span>
 				</button>
 			</div>

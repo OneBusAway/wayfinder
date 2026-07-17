@@ -48,9 +48,11 @@ export function routeShortNamesForStop(arrivalsAndDeparturesResponse, stop) {
 		return null;
 	}
 
+	const stopRouteIds = new Set(stop.routeIds);
+
 	return (
 		routes
-			.filter((r) => stop.routeIds.includes(r.id))
+			.filter((r) => stopRouteIds.has(r.id))
 			// the route id will always be present, so if the shortName is missing, fall back to the id without its agency prefix
 			.map((r) => r.shortName || removeAgencyPrefix(r.id))
 			.sort()

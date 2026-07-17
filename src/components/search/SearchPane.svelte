@@ -4,7 +4,7 @@
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faMapPin, faSignsPost, faXmark } from '@fortawesome/free-solid-svg-icons';
+	import { faMapPin, faSignsPost, faX } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
@@ -386,7 +386,7 @@
 			     viewports the pane always stays open. -->
 			<li role="presentation" class="ms-auto self-center md:hidden">
 				<button type="button" onclick={onCollapse} class="close-button">
-					<FontAwesomeIcon icon={faXmark} class="font-black text-black dark:text-white" />
+					<FontAwesomeIcon icon={faX} class="font-black text-black dark:text-white" />
 					<span class="sr-only">{$t('search.collapse')}</span>
 				</button>
 			</li>

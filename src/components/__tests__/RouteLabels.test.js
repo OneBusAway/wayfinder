@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi } from 'vitest';
 import StopMarker from '../map/StopMarker.svelte';
 import { faBus } from '@fortawesome/free-solid-svg-icons';
+import { SHOW_ROUTE_LABELS_AT_ZOOM } from '$config/routeConfig';
 
 describe('Route Labels Feature', () => {
 	const mockStop = {
@@ -223,29 +224,33 @@ describe('Route Labels Feature', () => {
 	});
 
 	describe('Map Provider Zoom Logic', () => {
-		const ZOOM_THRESHOLD = 17;
+		const ZOOM_THRESHOLD = SHOW_ROUTE_LABELS_AT_ZOOM;
 
-		test('labels should show at zoom level 17', () => {
-			const zoom = 17;
+		test('labels only appear near ground level (zoom 17+)', () => {
+			expect(ZOOM_THRESHOLD).toBe(17);
+		});
+
+		test('labels should show at the threshold zoom level', () => {
+			const zoom = ZOOM_THRESHOLD;
 			const shouldShow = zoom >= ZOOM_THRESHOLD;
 			expect(shouldShow).toBe(true);
 		});
 
-		test('labels should show above zoom level 17', () => {
-			const zoom = 18;
+		test('labels should show above the threshold zoom level', () => {
+			const zoom = ZOOM_THRESHOLD + 1;
 			const shouldShow = zoom >= ZOOM_THRESHOLD;
 			expect(shouldShow).toBe(true);
 		});
 
-		test('labels should hide below zoom level 17', () => {
-			const zoom = 16;
+		test('labels should hide below the threshold zoom level', () => {
+			const zoom = ZOOM_THRESHOLD - 1;
 			const shouldShow = zoom >= ZOOM_THRESHOLD;
 			expect(shouldShow).toBe(false);
 		});
 
 		test('state tracking prevents unnecessary updates', () => {
 			let routeLabelsVisible = false;
-			const zoom = 18;
+			const zoom = ZOOM_THRESHOLD + 1;
 			const shouldShow = zoom >= ZOOM_THRESHOLD;
 
 			// First update - state changes
@@ -300,16 +305,16 @@ describe('Route Labels Feature', () => {
 
 	describe('Performance Optimization', () => {
 		test('only updates when zoom crosses threshold boundary', () => {
-			const THRESHOLD = 17;
+			const THRESHOLD = SHOW_ROUTE_LABELS_AT_ZOOM;
 
-			// Zoom 14->15: both below, no update needed
-			expect(14 >= THRESHOLD === 15 >= THRESHOLD).toBe(true);
+			// Both below the threshold: no update needed
+			expect(THRESHOLD - 3 >= THRESHOLD === THRESHOLD - 2 >= THRESHOLD).toBe(true);
 
-			// Zoom 16->17: crosses boundary, update needed
-			expect(16 >= THRESHOLD === 17 >= THRESHOLD).toBe(false);
+			// Crossing the boundary: update needed
+			expect(THRESHOLD - 1 >= THRESHOLD === THRESHOLD >= THRESHOLD).toBe(false);
 
-			// Zoom 17->18: both above, no update needed
-			expect(17 >= THRESHOLD === 18 >= THRESHOLD).toBe(true);
+			// Both above the threshold: no update needed
+			expect(THRESHOLD >= THRESHOLD === THRESHOLD + 1 >= THRESHOLD).toBe(true);
 		});
 	});
 });

@@ -196,13 +196,14 @@
 		color: #1f2937;
 		/* Map-label halo (like iOS): outline the text against the map instead
 		   of drawing a bubble behind it. */
+		--halo-color: rgba(255, 255, 255, 0.95);
 		text-shadow:
-			0 0 3px rgba(255, 255, 255, 0.95),
-			0 0 3px rgba(255, 255, 255, 0.95),
-			0 1px 2px rgba(255, 255, 255, 0.95),
-			0 -1px 2px rgba(255, 255, 255, 0.95),
-			1px 0 2px rgba(255, 255, 255, 0.95),
-			-1px 0 2px rgba(255, 255, 255, 0.95);
+			0 0 3px var(--halo-color),
+			0 0 3px var(--halo-color),
+			0 1px 2px var(--halo-color),
+			0 -1px 2px var(--halo-color),
+			1px 0 2px var(--halo-color),
+			-1px 0 2px var(--halo-color);
 		pointer-events: auto;
 		z-index: 10;
 		/* Absolutely-positioned inside the ~32px marker container, so without an
@@ -222,13 +223,7 @@
 
 	:global(.dark) .routes-label {
 		color: #fff;
-		text-shadow:
-			0 0 3px rgba(0, 0, 0, 0.9),
-			0 0 3px rgba(0, 0, 0, 0.9),
-			0 1px 2px rgba(0, 0, 0, 0.9),
-			0 -1px 2px rgba(0, 0, 0, 0.9),
-			1px 0 2px rgba(0, 0, 0, 0.9),
-			-1px 0 2px rgba(0, 0, 0, 0.9);
+		--halo-color: rgba(0, 0, 0, 0.9);
 	}
 
 	.routes-label:focus {
@@ -251,12 +246,6 @@
 
 	.routes-label.expanded {
 		max-width: 220px;
-		flex-wrap: wrap;
-	}
-
-	.label-text {
-		min-width: 0;
-		flex: 0 1 auto;
 	}
 
 	.expand-indicator {

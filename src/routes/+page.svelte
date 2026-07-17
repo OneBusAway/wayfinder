@@ -142,9 +142,9 @@
 		showRouteMap = false;
 		currentHighlightedStopId = null;
 		currentModal = null;
-		searchCollapsed = false;
-		// sheetSnap intentionally persists so the next stop's sheet reopens at the
-		// rider's last-used height.
+		// searchCollapsed needs no reset: its consumers are gated on stopSheetOpen,
+		// and opening a stop always sets it. sheetSnap intentionally persists so
+		// the next stop's sheet reopens at the rider's last-used height.
 	}
 
 	function expandSearch() {

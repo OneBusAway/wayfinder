@@ -22,10 +22,10 @@
 	const MIN_DRAG_HEIGHT = 120;
 
 	let containerHeight = $state(0);
-	let dragOrigin = $state(null);
-	let dragHeight = $state(null);
+	// One in-flight gesture: null when idle, { y, startHeight, height } while dragging.
+	let drag = $state(null);
 
-	let dragging = $derived(dragOrigin !== null);
+	let dragging = $derived(drag !== null);
 
 	let snapHeights = $derived({
 		peek: PEEK_HEIGHT,
@@ -33,7 +33,7 @@
 		full: containerHeight
 	});
 
-	let sheetHeight = $derived(dragHeight ?? snapHeights[snap]);
+	let sheetHeight = $derived(drag?.height ?? snapHeights[snap]);
 
 	function nearestSnap(height) {
 		return SNAP_ORDER.reduce((closest, candidate) =>
@@ -49,20 +49,19 @@
 		if (event.target.closest('a, button')) return;
 
 		event.currentTarget.setPointerCapture?.(event.pointerId);
-		dragOrigin = { y: event.clientY, height: sheetHeight };
+		drag = { y: event.clientY, startHeight: sheetHeight, height: sheetHeight };
 	}
 
 	function handlePointerMove(event) {
-		if (!dragOrigin) return;
-		const height = dragOrigin.height + (dragOrigin.y - event.clientY);
-		dragHeight = Math.max(MIN_DRAG_HEIGHT, Math.min(containerHeight, height));
+		if (!drag) return;
+		const height = drag.startHeight + (drag.y - event.clientY);
+		drag.height = Math.max(MIN_DRAG_HEIGHT, Math.min(containerHeight, height));
 	}
 
 	function handlePointerUp() {
-		if (!dragOrigin) return;
+		if (!drag) return;
 		snap = nearestSnap(sheetHeight);
-		dragOrigin = null;
-		dragHeight = null;
+		drag = null;
 	}
 
 	function handleKeydown(event) {
