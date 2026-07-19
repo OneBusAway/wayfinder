@@ -411,8 +411,15 @@ export default class GoogleMapProvider {
 	}
 
 	removeVehicleMarker(marker) {
+		if (!marker) return;
+
 		cancelMarkerAnimation(marker);
 		marker.setMap(null);
+
+		const index = this.vehicleMarkers.indexOf(marker);
+		if (index > -1) {
+			this.vehicleMarkers.splice(index, 1);
+		}
 	}
 
 	clearVehicleMarkers() {
