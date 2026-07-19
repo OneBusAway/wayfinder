@@ -73,8 +73,8 @@ export const apiTimeFormat = new Intl.DateTimeFormat('en-US', {
  * msToTimeString(1705395900000, 'America/New_York', fourDigitTimeFormat)  // Returns '04:05 AM'
  *
  * @param {number} ms - Milliseconds since Unix epoch
- * @param {string} [timeZone] - IANA timezone. Defaults to the local timezone.
- * @param {Intl.DateTimeFormat} [dateTimeFormat] - Intl.DateTimeFormat to use for formatting. Defaults to localTimeFormat.
+ * @param {string} [timeZone=getLocalTimeZone()] - IANA timezone
+ * @param {Intl.DateTimeFormat} [dateTimeFormat=localTimeFormat] - Intl.DateTimeFormat to use for formatting
  * @returns {string} Time in the given format
  */
 export function msToTimeString(
@@ -281,7 +281,7 @@ export function parseDateInput(dateString) {
 /**
  * Format a 24-hour hour to 12-hour format
  *
- * @param {number} hour - Hour in 24-hour format
+ * @param {number|string} hour - Hour in 24-hour format (numeric strings are coerced to numbers)
  * @returns {number|null} Hour in 12-hour format, or null if invalid
  *
  * @example
@@ -289,6 +289,7 @@ export function parseDateInput(dateString) {
  * convert24HourTo12Hour(12)  // Returns 12
  * convert24HourTo12Hour(14)  // Returns 2
  * convert24HourTo12Hour(23)  // Returns 11
+ * convert24HourTo12Hour('14')  // Returns 2
  */
 export function convert24HourTo12Hour(hour) {
 	const hourNum = typeof hour === 'string' ? Number(hour) : hour;
@@ -351,15 +352,17 @@ export function formatDateForOTP(date, timeZone) {
  *
  * @param {number} timestamp - Timestamp in milliseconds since Unix epoch
  * @param {Object} translations - Object containing translation strings for minutes, seconds, and ago
- * @param {string} translations.min - Translation string for minutes
- * @param {string} translations.sec - Translation string for seconds
+ * @param {string} translations.min - Singular translation for minutes
+ * @param {string} [translations.mins] - Plural translation for minutes (falls back to min)
+ * @param {string} translations.sec - Singular translation for seconds
+ * @param {string} [translations.secs] - Plural translation for seconds (falls back to sec)
  * @param {string} translations.ago - Translation string for ago
  * @returns {string} Formatted last updated string
  *
  * @example
  * Note: The actual output of these examples depends on the current time
- * formatLastUpdated(1715894400000, { min: 'min', sec: 'sec', ago: 'ago' })  // Returns '1 min 30 sec ago'
- * formatLastUpdated(1715894400000, { min: 'minute', sec: 'second', ago: 'ago' })  // Returns '1 minute 30 second ago'
+ * formatLastUpdated(1715894400000, { min: 'min', mins: 'mins', sec: 'sec', secs: 'secs', ago: 'ago' })  // Returns '1 min 30 secs ago'
+ * formatLastUpdated(1715894400000, { min: 'minute', mins: 'minutes', sec: 'second', secs: 'seconds', ago: 'ago' })  // Returns '1 minute 30 seconds ago'
  */
 export function formatLastUpdated(timestamp, translations) {
 	if (!Number.isFinite(timestamp)) return 'N/A';
@@ -367,8 +370,10 @@ export function formatLastUpdated(timestamp, translations) {
 	const now = Temporal.Now.instant();
 	const { minutes, seconds } = now.since(date).round({ largestUnit: 'minute' });
 
-	const minutesStr = minutes > 0 ? `${minutes} ${translations.min} ` : '';
-	return `${minutesStr}${seconds} ${translations.sec} ${translations.ago}`;
+	const minutesLabel = minutes === 1 ? translations.min : (translations.mins ?? translations.min);
+	const secondsLabel = seconds === 1 ? translations.sec : (translations.secs ?? translations.sec);
+	const minutesStr = minutes > 0 ? `${minutes} ${minutesLabel} ` : '';
+	return `${minutesStr}${seconds} ${secondsLabel} ${translations.ago}`;
 }
 
 /**

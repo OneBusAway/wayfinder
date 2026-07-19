@@ -490,7 +490,9 @@ describe('formatDepartureDisplay', () => {
 describe('formatLastUpdated', () => {
 	const translations = {
 		min: 'min',
+		mins: 'mins',
 		sec: 'sec',
+		secs: 'secs',
 		ago: 'ago'
 	};
 
@@ -506,19 +508,19 @@ describe('formatLastUpdated', () => {
 	it('formats time less than a minute ago', () => {
 		const timestamp = new Date('2024-01-16T11:59:30Z').valueOf();
 		const result = formatLastUpdated(timestamp, translations);
-		expect(result).toBe('30 sec ago');
+		expect(result).toBe('30 secs ago');
 	});
 
 	it('formats time more than a minute ago', () => {
 		const timestamp = new Date('2024-01-16T11:58:30Z').valueOf();
 		const result = formatLastUpdated(timestamp, translations);
-		expect(result).toBe('1 min 30 sec ago');
+		expect(result).toBe('1 min 30 secs ago');
 	});
 
 	it('formats time multiple minutes ago', () => {
 		const timestamp = new Date('2024-01-16T11:57:15Z').valueOf();
 		const result = formatLastUpdated(timestamp, translations);
-		expect(result).toBe('2 min 45 sec ago');
+		expect(result).toBe('2 mins 45 secs ago');
 	});
 
 	it('handles just-now timestamps', () => {
@@ -530,18 +532,55 @@ describe('formatLastUpdated', () => {
 	it('works with different translation objects', () => {
 		const spanishTranslations = {
 			min: 'min',
+			mins: 'mins',
 			sec: 'seg',
+			secs: 'segs',
 			ago: 'atrás'
 		};
 		const timestamp = new Date('2024-01-16T11:58:30Z').valueOf();
 		const result = formatLastUpdated(timestamp, spanishTranslations);
-		expect(result).toBe('1 min 30 seg atrás');
+		expect(result).toBe('1 min 30 segs atrás');
+	});
+
+	it('falls back to singular sec label when secs is omitted', () => {
+		const abbreviatedTranslations = {
+			min: 'min',
+			sec: 'sec',
+			ago: 'ago'
+		};
+		const timestamp = new Date('2024-01-16T11:59:30Z').valueOf();
+		const result = formatLastUpdated(timestamp, abbreviatedTranslations);
+		expect(result).toBe('30 sec ago');
+	});
+
+	it('falls back to singular min label when mins is omitted', () => {
+		const abbreviatedTranslations = {
+			min: 'min',
+			sec: 'sec',
+			ago: 'ago'
+		};
+		const timestamp = new Date('2024-01-16T11:57:15Z').valueOf();
+		const result = formatLastUpdated(timestamp, abbreviatedTranslations);
+		expect(result).toBe('2 min 45 sec ago');
+	});
+
+	it('uses full-word plural forms when provided', () => {
+		const fullWordTranslations = {
+			min: 'minute',
+			mins: 'minutes',
+			sec: 'second',
+			secs: 'seconds',
+			ago: 'ago'
+		};
+		const timestamp = new Date('2024-01-16T11:59:30Z').valueOf();
+		const result = formatLastUpdated(timestamp, fullWordTranslations);
+		expect(result).toBe('30 seconds ago');
 	});
 
 	it('handles zero seconds case', () => {
 		const timestamp = new Date('2024-01-16T12:00:00Z').valueOf();
 		const result = formatLastUpdated(timestamp, translations);
-		expect(result).toBe('0 sec ago');
+		expect(result).toBe('0 secs ago');
 	});
 
 	// Invalid inputs

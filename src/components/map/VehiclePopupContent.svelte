@@ -8,7 +8,9 @@
 	const lastUpdatedText = $derived(
 		formatLastUpdated(lastUpdateTime, {
 			min: $t('time.min'),
+			mins: $t('time.mins'),
 			sec: $t('time.sec'),
+			secs: $t('time.secs'),
 			ago: $t('time.ago')
 		})
 	);
