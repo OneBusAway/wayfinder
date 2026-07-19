@@ -69,3 +69,25 @@ describe('tripOptionsStore', () => {
 		expect(localStorage.removeItem).toHaveBeenCalledWith('tripOptions_distanceUnit');
 	});
 });
+
+describe('canonicalizeWalkDistance', () => {
+	beforeEach(async () => {
+		vi.resetModules();
+	});
+
+	it('maps a unit-specific default selection back to the canonical default meters', async () => {
+		const { canonicalizeWalkDistance, DEFAULT_TRIP_OPTIONS } = await import(
+			'../../stores/tripOptionsStore.js'
+		);
+
+		expect(canonicalizeWalkDistance(1500, 'metric')).toBe(DEFAULT_TRIP_OPTIONS.maxWalkDistance);
+		expect(canonicalizeWalkDistance(1609, 'imperial')).toBe(DEFAULT_TRIP_OPTIONS.maxWalkDistance);
+	});
+
+	it('preserves non-default selections', async () => {
+		const { canonicalizeWalkDistance } = await import('../../stores/tripOptionsStore.js');
+
+		expect(canonicalizeWalkDistance(800, 'metric')).toBe(800);
+		expect(canonicalizeWalkDistance(3219, 'imperial')).toBe(3219);
+	});
+});

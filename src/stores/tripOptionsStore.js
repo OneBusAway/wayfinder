@@ -5,6 +5,7 @@ import {
 	getWalkDistanceOptions,
 	formatWalkDistanceLabel,
 	snapToClosestOption,
+	resolveWalkDistanceForUnit,
 	UNIT_METRIC,
 	UNIT_IMPERIAL
 } from '$lib/distanceUtils';
@@ -38,7 +39,29 @@ const defaults = {
 export const DEFAULT_TRIP_OPTIONS = Object.freeze({ ...defaults });
 
 // Re-export for use by components
-export { getWalkDistanceOptions, snapToClosestOption, UNIT_METRIC, UNIT_IMPERIAL };
+export {
+	getWalkDistanceOptions,
+	snapToClosestOption,
+	resolveWalkDistanceForUnit,
+	UNIT_METRIC,
+	UNIT_IMPERIAL
+};
+
+/**
+ * When persisting walk distance, map a unit-specific default selection back to the
+ * canonical default meters value so auto-detect regions stay forward-compatible.
+ *
+ * @param {number} meters - Selected distance in meters
+ * @param {string} unit - Effective unit system ('metric' or 'imperial')
+ * @returns {number}
+ */
+export function canonicalizeWalkDistance(meters, unit) {
+	const resolvedDefault = resolveWalkDistanceForUnit(DEFAULT_WALK_DISTANCE_METERS, unit);
+	if (meters === resolvedDefault) {
+		return DEFAULT_WALK_DISTANCE_METERS;
+	}
+	return meters;
+}
 
 // Legacy static options - kept for backwards compatibility
 // New code should use getWalkDistanceOptions(unit) instead

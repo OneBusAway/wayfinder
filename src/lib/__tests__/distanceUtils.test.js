@@ -5,6 +5,7 @@ import {
 	formatDistance,
 	getWalkDistanceOptions,
 	snapToClosestOption,
+	resolveWalkDistanceForUnit,
 	formatWalkDistanceLabel,
 	UNIT_METRIC,
 	UNIT_IMPERIAL
@@ -254,6 +255,17 @@ describe('distanceUtils', () => {
 
 			// Metric 3km (3000m) -> Imperial closest is 2 miles (3219m)
 			expect(snapToClosestOption(3000, UNIT_IMPERIAL)).toBe(3219);
+		});
+	});
+
+	describe('resolveWalkDistanceForUnit', () => {
+		it('returns the value unchanged when it matches an option', () => {
+			expect(resolveWalkDistanceForUnit(1609, UNIT_IMPERIAL)).toBe(1609);
+			expect(resolveWalkDistanceForUnit(1500, UNIT_METRIC)).toBe(1500);
+		});
+
+		it('snaps the canonical default to the closest metric option', () => {
+			expect(resolveWalkDistanceForUnit(1609, UNIT_METRIC)).toBe(1500);
 		});
 	});
 
