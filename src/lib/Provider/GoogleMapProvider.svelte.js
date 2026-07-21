@@ -335,7 +335,7 @@ export default class GoogleMapProvider {
 		}
 	}
 
-	addVehicleMarker(vehicle, activeTrip, routeType) {
+	addVehicleMarker(vehicle, activeTrip, routeType, isHighlighted = false) {
 		if (!this.map) return null;
 
 		let color;
@@ -343,7 +343,12 @@ export default class GoogleMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const vehicleIconSvg = createVehicleIconSvg(vehicle?.orientation, color, routeType);
+		const vehicleIconSvg = createVehicleIconSvg(
+			vehicle?.orientation,
+			color,
+			routeType,
+			isHighlighted
+		);
 		const icon = {
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}`,
 			scaledSize: new google.maps.Size(iconWidth, iconHeight),
@@ -354,7 +359,7 @@ export default class GoogleMapProvider {
 			position: { lat: vehicle.position.lat, lng: vehicle.position.lon },
 			map: this.map,
 			icon: icon,
-			zIndex: 1000
+			zIndex: isHighlighted ? 2000 : 1000
 		});
 
 		this.vehicleMarkers.push(marker);
@@ -380,7 +385,7 @@ export default class GoogleMapProvider {
 		return marker;
 	}
 
-	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType) {
+	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType, isHighlighted = false) {
 		if (!this.map || !marker) return;
 
 		const current = marker.getPosition();
@@ -397,12 +402,18 @@ export default class GoogleMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const updatedIcon = createVehicleIconSvg(vehicleStatus.orientation, color, routeType);
+		const updatedIcon = createVehicleIconSvg(
+			vehicleStatus.orientation,
+			color,
+			routeType,
+			isHighlighted
+		);
 		marker.setIcon({
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIcon)}`,
 			scaledSize: new google.maps.Size(iconWidth, iconHeight),
 			anchor: new google.maps.Point(iconWidth / 2, iconHeight / 2)
 		});
+		marker.setZIndex(isHighlighted ? 2000 : 1000);
 
 		Object.assign(
 			marker.vehicleData,

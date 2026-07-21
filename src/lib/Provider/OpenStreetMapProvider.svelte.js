@@ -348,7 +348,7 @@ export default class OpenStreetMapProvider {
 		marker.remove();
 	}
 
-	addVehicleMarker(vehicle, activeTrip, routeType) {
+	addVehicleMarker(vehicle, activeTrip, routeType, isHighlighted = false) {
 		if (!this.map || !this.L) return null;
 
 		let color;
@@ -356,20 +356,25 @@ export default class OpenStreetMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const vehicleIconSvg = createVehicleIconSvg(vehicle?.orientation, color, routeType);
+		const vehicleIconSvg = createVehicleIconSvg(
+			vehicle?.orientation,
+			color,
+			routeType,
+			isHighlighted
+		);
+		const zIndexOffset = isHighlighted ? 2000 : 1000;
 		const customIcon = this.L.divIcon({
 			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
-			className: '',
-			zIndexOffset: 1000
+			className: ''
 		});
 
 		const label = getVehicleLabel(activeTrip);
 
 		const marker = this.L.marker([vehicle.position.lat, vehicle.position.lon], {
 			icon: customIcon,
-			zIndexOffset: 1000,
+			zIndexOffset,
 			title: label
 		}).addTo(this.map);
 
@@ -409,7 +414,7 @@ export default class OpenStreetMapProvider {
 		return marker;
 	}
 
-	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType) {
+	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType, isHighlighted = false) {
 		if (!this.map || !this.L || !marker) return;
 
 		let color;
@@ -417,13 +422,17 @@ export default class OpenStreetMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const updatedIconSvg = createVehicleIconSvg(vehicleStatus.orientation, color, routeType);
+		const updatedIconSvg = createVehicleIconSvg(
+			vehicleStatus.orientation,
+			color,
+			routeType,
+			isHighlighted
+		);
 		const updatedIcon = this.L.divIcon({
 			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
 			iconSize: [iconWidth, iconHeight],
 			iconAnchor: [iconWidth / 2, iconHeight / 2],
-			className: '',
-			zIndexOffset: 1000
+			className: ''
 		});
 
 		const current = marker.getLatLng();
@@ -435,6 +444,9 @@ export default class OpenStreetMapProvider {
 			{ routePaths: this._getRoutePaths() }
 		);
 		marker.setIcon(updatedIcon);
+		// setIcon doesn't touch stacking order, so update the offset directly to
+		// reflect the current highlight state (divIcon ignores zIndexOffset).
+		marker.setZIndexOffset(isHighlighted ? 2000 : 1000);
 
 		// Leaflet reuses the existing <div> on setIcon and skips re-applying options.title, so refresh both the tooltip and the accessible name when the headsign changes mid-trip; otherwise the hover tooltip goes stale.
 		const updatedLabel = getVehicleLabel(activeTrip);

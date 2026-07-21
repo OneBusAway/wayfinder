@@ -4,6 +4,7 @@
 	import { faBus, faLocationDot, faCheck } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
+	import { resolveVehicleStopIndex } from '$lib/tripDetailsUtils';
 
 	/**
 	 * @typedef {Object} Props
@@ -20,23 +21,16 @@
 	let stopInfo = $state({});
 	let error = $state(null);
 	let interval;
-	let busPosition = $state(0);
+	let busPosition = $state(-1);
 	let abortController = null;
 
+	// Locate the vehicle along the trip using the stop IDs the server reports for
+	// exactly this purpose. `closestStop` is the stop nearest the vehicle's
+	// current position; fall back to `nextStop`. (The previous approach compared
+	// raw lat/lon ranges, which assumed stops were ordered monotonically by
+	// coordinate and so highlighted the wrong stop on most route directions.)
 	function calculateBusPosition() {
-		if (tripDetails && tripDetails.status && tripDetails.status.position) {
-			const { lat, lon } = tripDetails.status.position;
-
-			busPosition = tripDetails.schedule.stopTimes.findIndex((stop, index, array) => {
-				const nextStop = array[index + 1];
-				if (!nextStop) return true;
-				const stopLat = stopInfo[stop.stopId].lat;
-				const stopLon = stopInfo[stop.stopId].lon;
-				const nextStopLat = stopInfo[nextStop.stopId].lat;
-				const nextStopLon = stopInfo[nextStop.stopId].lon;
-				return (lat >= stopLat && lat < nextStopLat) || (lon >= stopLon && lon < nextStopLon);
-			});
-		}
+		busPosition = resolveVehicleStopIndex(tripDetails?.status, tripDetails?.schedule?.stopTimes);
 	}
 
 	async function loadTripDetails() {
