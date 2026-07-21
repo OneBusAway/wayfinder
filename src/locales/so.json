@@ -88,7 +88,8 @@
 		"close": "Xidh"
 	},
 	"arrivals_and_departures": "Imaatinka iyo baxsashada",
-	"no_arrivals_or_departures_in_next_30_minutes": "Ma jiraan soo gaadhis ama bixitaan 30-ka daqiiqo ee soo socda",
+	"load_more_arrivals": "Soo rar imaatinno dheeraad ah",
+	"no_arrivals_found_in_next_minutes": "Lama helin soo gaadhis {minutes} daqiiqo ee soo socda",
 	"stop": "Joogsi",
 	"routes": "Jidadka",
 	"route": "Jidka",

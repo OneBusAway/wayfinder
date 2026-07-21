@@ -88,7 +88,8 @@
 		"close": "ປິດ"
 	},
 	"arrivals_and_departures": "ການມາຮອດ ແລະ ການອອກເດີນທາງ",
-	"no_arrivals_or_departures_in_next_30_minutes": "ບໍ່ມີການມາຮອດ ຫຼື ການອອກເດີນທາງໃນ 30 ນາທີຕໍ່ໄປ",
+	"load_more_arrivals": "ໂຫຼດການມາຮອດເພີ່ມເຕີມ",
+	"no_arrivals_found_in_next_minutes": "ບໍ່ພົບການມາຮອດໃນ {minutes} ນາທີຕໍ່ໄປ",
 	"stop": "ປ້າຍ",
 	"routes": "ເສັ້ນທາງ",
 	"route": "ເສັ້ນທາງ",
