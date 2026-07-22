@@ -67,6 +67,19 @@ describe('updateVehicleMarkers', () => {
 		global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data }) });
 	}
 
+	const TWO_VEHICLE_RESPONSE = {
+		references: {
+			trips: [
+				{ id: 'trip-1', routeId: 'route-1' },
+				{ id: 'trip-2', routeId: 'route-1' }
+			]
+		},
+		list: [
+			{ status: { activeTripId: 'trip-1', status: 'SCHEDULED', orientation: 0 } },
+			{ status: { activeTripId: 'trip-2', status: 'SCHEDULED', orientation: 0 } }
+		]
+	};
+
 	beforeEach(() => clearVehicleMarkersMap());
 	afterEach(() => vi.restoreAllMocks());
 
@@ -198,18 +211,7 @@ describe('updateVehicleMarkers', () => {
 	});
 
 	test('forwards routeColor as the 5th arg to addVehicleMarker', async () => {
-		mockFetch({
-			references: {
-				trips: [
-					{ id: 'trip-1', routeId: 'route-1' },
-					{ id: 'trip-2', routeId: 'route-1' }
-				]
-			},
-			list: [
-				{ status: { activeTripId: 'trip-1', status: 'SCHEDULED', orientation: 0 } },
-				{ status: { activeTripId: 'trip-2', status: 'SCHEDULED', orientation: 0 } }
-			]
-		});
+		mockFetch(TWO_VEHICLE_RESPONSE);
 		const provider = makeProvider();
 
 		await updateVehicleMarkers('route-1', provider, undefined, 'trip-1', '#0a4ea2');
@@ -219,18 +221,7 @@ describe('updateVehicleMarkers', () => {
 	});
 
 	test('forwards routeColor as the 6th arg to updateVehicleMarker', async () => {
-		mockFetch({
-			references: {
-				trips: [
-					{ id: 'trip-1', routeId: 'route-1' },
-					{ id: 'trip-2', routeId: 'route-1' }
-				]
-			},
-			list: [
-				{ status: { activeTripId: 'trip-1', status: 'SCHEDULED', orientation: 0 } },
-				{ status: { activeTripId: 'trip-2', status: 'SCHEDULED', orientation: 0 } }
-			]
-		});
+		mockFetch(TWO_VEHICLE_RESPONSE);
 		// First pass creates markers, second pass updates them.
 		const provider = makeProvider();
 		await updateVehicleMarkers('route-1', provider, undefined, 'trip-1', '#0a4ea2');
