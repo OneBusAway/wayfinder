@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "到站與發車",
 	"load_more_arrivals": "載入更多到站班次",
 	"no_arrivals_found_in_next_minutes": "未來 {minutes} 分鐘內沒有到站班次",
+	"no_more_arrivals_in_next_minutes": "未來{minutes}分鐘內沒有更多到站班次",
 	"stop": "站牌",
 	"routes": "路線",
 	"route": "路線",

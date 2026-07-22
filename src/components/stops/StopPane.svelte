@@ -293,9 +293,13 @@
 
 				{#snippet loadMoreButton(emptyResults = false)}
 					<div class="flex flex-col items-center gap-2">
-						{#if emptyResults || noMoreArrivals}
+						{#if emptyResults}
 							<p class="text-sm text-gray-600 dark:text-gray-400">
 								{$t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
+							</p>
+						{:else if noMoreArrivals}
+							<p class="text-sm text-gray-600 dark:text-gray-400">
+								{$t('no_more_arrivals_in_next_minutes', { values: { minutes: minutesAfter } })}
 							</p>
 						{/if}
 						<button

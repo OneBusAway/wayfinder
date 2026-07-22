@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "መግቢያዎችና መውጫዎች",
 	"load_more_arrivals": "ተጨማሪ መድረሻዎችን ጫን",
 	"no_arrivals_found_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም መድረሻ አልተገኘም",
+	"no_more_arrivals_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም ተጨማሪ መድረሻ የለም",
 	"stop": "ቆሻሻ",
 	"routes": "መንገዶች",
 	"route": "መንገድ",

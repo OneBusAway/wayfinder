@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "도착 및 출발",
 	"load_more_arrivals": "도착 정보 더 보기",
 	"no_arrivals_found_in_next_minutes": "{minutes}분 이내 도착 예정이 없습니다",
+	"no_more_arrivals_in_next_minutes": "앞으로 {minutes}분 이내에 더 이상 도착 예정이 없습니다",
 	"stop": "정류장",
 	"routes": "노선",
 	"route": "노선",

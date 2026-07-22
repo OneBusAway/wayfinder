@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "到着・出発",
 	"load_more_arrivals": "さらに到着を読み込む",
 	"no_arrivals_found_in_next_minutes": "今後{minutes}分以内に到着はありません",
+	"no_more_arrivals_in_next_minutes": "今後{minutes}分以内にこれ以上の到着はありません",
 	"stop": "停留所",
 	"routes": "路線",
 	"route": "路線",

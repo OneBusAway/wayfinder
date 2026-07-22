@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "आगमन और प्रस्थान",
 	"load_more_arrivals": "और आगमन लोड करें",
 	"no_arrivals_found_in_next_minutes": "अगले {minutes} मिनट में कोई आगमन नहीं मिला",
+	"no_more_arrivals_in_next_minutes": "अगले {minutes} मिनट में कोई और आगमन नहीं",
 	"stop": "स्टॉप",
 	"routes": "मार्ग",
 	"route": "मार्ग",

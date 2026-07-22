@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "Arive ak depa",
 	"load_more_arrivals": "Chaje plis arive",
 	"no_arrivals_found_in_next_minutes": "Pa gen arive nan {minutes} minit kap vini yo",
+	"no_more_arrivals_in_next_minutes": "Pa gen plis arive nan {minutes} minit kap vini yo",
 	"stop": "Arè",
 	"routes": "Wout",
 	"route": "wout",
