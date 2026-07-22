@@ -202,3 +202,36 @@ export function adjustColorForDarkMode(hexColor) {
 			return hexColor;
 	}
 }
+
+/**
+ * Resolves an OBA route color into a map-legible hex color.
+ * - Returns null for missing/invalid input so callers keep their own default.
+ * - Dark mode: lightens dark colors (via adjustColorForDarkMode) so they read
+ *   against dark/night map tiles.
+ * - Light mode: darkens very-bright colors (white, pale yellow) so they stay
+ *   visible on the near-white light basemap.
+ *
+ * The 200 brightness threshold is deliberately more conservative than the 180
+ * "bright" cutoff adjustColorForDarkMode uses internally — they are not the
+ * same constant.
+ * @param {string} rawColor - OBA hex, with or without a leading '#'
+ * @param {{ dark?: boolean }} [opts]
+ * @returns {string | null} Normalized, contrast-adjusted '#rrggbb', or null
+ */
+export function mapContrastColor(rawColor, { dark = false } = {}) {
+	const rgb = hexToRgb(rawColor);
+	if (!rgb) return null;
+
+	const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+	if (dark) {
+		return adjustColorForDarkMode(hex);
+	}
+
+	// Light mode: pull pale colors down so they don't vanish on the light basemap.
+	if (getBrightness(rgb) > 200) {
+		return darkenColor(hex, 0.45);
+	}
+
+	return hex;
+}
