@@ -1,4 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('$env/dynamic/public', () => ({
+	env: {}
+}));
+
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon.js';
 
 describe('createVehicleIconSvg', () => {
