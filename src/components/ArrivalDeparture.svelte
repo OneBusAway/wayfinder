@@ -3,7 +3,7 @@
 	import { msToLocalArrivalDepartureTimeString } from '$lib/dateTimeFormat';
 	import RouteBadge from '$components/RouteBadge.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faTowerBroadcast, faClock } from '@fortawesome/free-solid-svg-icons';
+	import { faClock, faRss } from '@fortawesome/free-solid-svg-icons';
 	let {
 		arrivalDeparture,
 		includeArrivalDepartureInStatusLabel = true,
@@ -240,7 +240,7 @@
 		<div class="flex items-start gap-0.5">
 			<span class="text-xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
 			<FontAwesomeIcon
-				icon={arrivalInfo.isPredicted ? faTowerBroadcast : faClock}
+				icon={arrivalInfo.isPredicted ? faRss : faClock}
 				class="text-xs {arrivalInfo.color}"
 			/>
 		</div>
