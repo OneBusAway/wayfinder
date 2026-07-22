@@ -171,6 +171,11 @@
 		"type": "color",
 		"description": "Panel text color (hex)"
 	},
+	"PUBLIC_COLOR_VEHICLE_HIGHLIGHT": {
+		"required": false,
+		"type": "color",
+		"description": "Glow color for the selected/highlighted vehicle marker (hex)"
+	},
 	"PUBLIC_ANALYTICS_DOMAIN": {
 		"required": false,
 		"type": "string",

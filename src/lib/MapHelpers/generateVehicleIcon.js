@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/public';
 import { toDirection } from '$lib/mathUtils';
 import { generateRouteTypeSvgForDisplay, RouteType } from '$config/routeConfig';
 
@@ -23,9 +24,9 @@ function getDirectionFromOrientation(orientation) {
 }
 
 // Soft glow drawn behind the vehicle the user selected (the trip they clicked).
-// TODO: make this configurable via a COLOR_* env var (like the brand colors) so
-// deployments can match it to their theme instead of the hardcoded amber.
-const HIGHLIGHT_GLOW_COLOR = '#FACC15';
+// Configurable via PUBLIC_COLOR_VEHICLE_HIGHLIGHT env var so deployments can
+// match it to their theme instead of the hardcoded amber.
+const HIGHLIGHT_GLOW_COLOR = env.PUBLIC_COLOR_VEHICLE_HIGHLIGHT || '#FACC15';
 
 function createVehicleIconSvg(
 	orientation,
