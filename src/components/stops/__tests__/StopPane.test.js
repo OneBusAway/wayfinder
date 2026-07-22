@@ -115,6 +115,7 @@ vi.mock('svelte-i18n', () => ({
 				const translations = {
 					stop: 'Stop',
 					routes: 'Routes',
+					arrivals_and_departures: 'Arrivals and departures',
 					'schedule_for_stop.view_schedule': 'View Schedule',
 					load_more_arrivals: 'Load more arrivals',
 					no_arrivals_found_in_next_minutes: 'No arrivals found in the next {minutes} minutes'
@@ -267,6 +268,19 @@ describe('StopPane', () => {
 		await waitFor(() => {
 			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
 			expect(screen.getByText('Stop #75403')).toBeInTheDocument();
+		});
+	});
+
+	test('renders the ARRIVALS & DEPARTURES section header when arrivals exist', async () => {
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: { stop: mockStopData } });
+		await waitFor(() => {
+			expect(screen.getByText('Arrivals and departures')).toBeInTheDocument();
 		});
 	});
 
@@ -501,9 +515,10 @@ describe('StopPane', () => {
 			expect(stopNameHeading).toHaveTextContent('Pine St & 3rd Ave');
 
 			const headings = screen.getAllByRole('heading', { level: 2 });
-			expect(headings).toHaveLength(2);
+			expect(headings).toHaveLength(3);
 			expect(headings[0]).toHaveTextContent('Stop #75403');
 			expect(headings[1]).toHaveTextContent('Routes: 10, 11');
+			expect(headings[2]).toHaveTextContent('Arrivals and departures');
 		});
 	});
 
