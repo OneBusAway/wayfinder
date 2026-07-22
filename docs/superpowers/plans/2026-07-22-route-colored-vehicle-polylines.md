@@ -22,10 +22,12 @@
 ### Task 1: `mapContrastColor` legibility helper
 
 **Files:**
+
 - Modify: `src/lib/colorUtils.js` (add export near `adjustColorForDarkMode`, end of file)
 - Test: `src/tests/lib/colorUtils.test.js`
 
 **Interfaces:**
+
 - Consumes: existing `hexToRgb`, `rgbToHex`, `getBrightness`, `darkenColor`, `adjustColorForDarkMode` (all in `colorUtils.js`).
 - Produces: `mapContrastColor(rawColor, { dark = false } = {}) → string | null` — normalized `#rrggbb`, contrast-adjusted; `null` when `rawColor` is missing/invalid.
 
@@ -148,10 +150,12 @@ git commit -m "feat: add mapContrastColor helper for legible route colors on the
 ### Task 2: `polylineArrowColor` arrow helper
 
 **Files:**
+
 - Modify: `src/lib/colorUtils.js` (add `import { COLORS } from './colors.js';` at top; add export)
 - Test: `src/tests/lib/colorUtils.test.js`
 
 **Interfaces:**
+
 - Consumes: existing `darkenColor`; `COLORS.POLYLINE_ARROW_STROKE` from `src/lib/colors.js`.
 - Produces: `polylineArrowColor(lineColor) → string` — a darker shade of `lineColor`, or the default blue arrow color when `lineColor` is falsy.
 
@@ -222,12 +226,15 @@ git commit -m "feat: add polylineArrowColor helper for route-colored map arrows"
 ### Task 3: Thread `routeColor` through vehicleUtils
 
 **Files:**
+
 - Modify: `src/lib/vehicleUtils.js:34-90` (`updateVehicleMarkers`), `:101-120` (`fetchAndUpdateVehicles`)
 - Test: `src/lib/__tests__/vehicleUtils.test.js`
 
 **Interfaces:**
+
 - Consumes: nothing from earlier tasks (pure plumbing).
 - Produces:
+
   - `fetchAndUpdateVehicles(routeId, mapProvider, routeType, highlightedTripId = null, routeColor = undefined)`
   - `updateVehicleMarkers(routeId, mapProvider, routeType, highlightedTripId = null, routeColor = undefined)`
   - forwards `routeColor` as the **5th positional arg** to `mapProvider.addVehicleMarker(vehicleStatus, activeTrip, routeType, isHighlighted, routeColor)` and the **6th positional arg** to `mapProvider.updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType, isHighlighted, routeColor)`.
@@ -277,26 +284,26 @@ export async function updateVehicleMarkers(
 Change the `updateVehicleMarker` call (currently lines ~70-76) to:
 
 ```js
-					mapProvider.updateVehicleMarker(
-						marker,
-						vehicleStatus,
-						activeTrip,
-						routeType,
-						isHighlighted,
-						routeColor
-					);
+mapProvider.updateVehicleMarker(
+	marker,
+	vehicleStatus,
+	activeTrip,
+	routeType,
+	isHighlighted,
+	routeColor
+);
 ```
 
 Change the `addVehicleMarker` call (currently lines ~78-83) to:
 
 ```js
-					const marker = mapProvider.addVehicleMarker(
-						vehicleStatus,
-						activeTrip,
-						routeType,
-						isHighlighted,
-						routeColor
-					);
+const marker = mapProvider.addVehicleMarker(
+	vehicleStatus,
+	activeTrip,
+	routeType,
+	isHighlighted,
+	routeColor
+);
 ```
 
 Update `fetchAndUpdateVehicles` signature and both `updateVehicleMarkers` calls:
@@ -342,11 +349,13 @@ git commit -m "feat: thread routeColor through vehicle marker updates"
 ### Task 4: Apply route color to vehicle icons in both providers
 
 **Files:**
+
 - Modify: `src/lib/Provider/GoogleMapProvider.svelte.js:338` (`addVehicleMarker`), `:388` (`updateVehicleMarker`)
 - Modify: `src/lib/Provider/OpenStreetMapProvider.svelte.js:351` (`addVehicleMarker`), `:417` (`updateVehicleMarker`)
 - Test: `src/tests/lib/GoogleMapProvider.test.js`, `src/tests/lib/OpenStreetMapProvider.test.js`
 
 **Interfaces:**
+
 - Consumes: `routeColor` (5th arg to `addVehicleMarker`, 6th to `updateVehicleMarker`) from Task 3; `createVehicleIconSvg(orientation, color, routeType, highlighted)` (color default `#007BFF` fires only for `undefined`).
 - Produces: both providers pass `routeColor || undefined` as the icon `color` for predicted vehicles; gray override unchanged.
 
@@ -501,7 +510,7 @@ Expected: FAIL — icon called with `undefined` for the predicted/null cases.
 In `src/lib/Provider/OpenStreetMapProvider.svelte.js`, update `addVehicleMarker` (line 351) and `updateVehicleMarker` (line 417) exactly as in the Google provider — append `, routeColor = undefined` to each signature and change each `let color;` to:
 
 ```js
-		let color = routeColor || undefined; // null/'' → createVehicleIconSvg blue default
+let color = routeColor || undefined; // null/'' → createVehicleIconSvg blue default
 ```
 
 (keep the existing `if (!vehicle.predicted) { color = COLORS.VEHICLE_REAL_TIME_OFF; }` / `if (!vehicleStatus.predicted) ...` block directly below unchanged).
@@ -523,10 +532,12 @@ git commit -m "feat: render route color on vehicle icons in both map providers"
 ### Task 5: Route-color the polyline arrows in both providers
 
 **Files:**
+
 - Modify: `src/lib/Provider/GoogleMapProvider.svelte.js:10` (import), `:555-561` (arrow symbol)
 - Modify: `src/lib/Provider/OpenStreetMapProvider.svelte.js:12` (import), `:613-627` (arrow decorator)
 
 **Interfaces:**
+
 - Consumes: `polylineArrowColor(lineColor)` from Task 2; the existing `options.color` param of `createPolyline`.
 - Produces: both providers draw arrows in `polylineArrowColor(options.color)`. Google sets **both** `strokeColor` and `fillColor` (the filled `FORWARD_CLOSED_ARROW` otherwise inherits the un-darkened line color); OSM sets `color` and `fillColor` on the decorator.
 
@@ -545,23 +556,23 @@ import { polylineArrowColor } from '$lib/colorUtils';
 Replace the `arrowSymbol` block (currently lines ~555-561) inside `createPolyline`:
 
 ```js
-		if (withArrow) {
-			const arrowColor = polylineArrowColor(options.color);
-			const arrowSymbol = {
-				path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-				scale: 2,
-				strokeColor: arrowColor,
-				strokeWeight: 3,
-				fillColor: arrowColor,
-				fillOpacity: 1
-			};
+if (withArrow) {
+	const arrowColor = polylineArrowColor(options.color);
+	const arrowSymbol = {
+		path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+		scale: 2,
+		strokeColor: arrowColor,
+		strokeWeight: 3,
+		fillColor: arrowColor,
+		fillOpacity: 1
+	};
 
-			icons.push({
-				icon: arrowSymbol,
-				offset: '100%',
-				repeat: '50px'
-			});
-		}
+	icons.push({
+		icon: arrowSymbol,
+		offset: '100%',
+		repeat: '50px'
+	});
+}
 ```
 
 - [ ] **Step 3: Update OpenStreetMapProvider imports**
@@ -577,24 +588,24 @@ import { polylineArrowColor } from '$lib/colorUtils';
 Replace the `arrowDecorator` `pathOptions` (currently lines ~619-627) inside `createPolyline`:
 
 ```js
-		const arrowColor = polylineArrowColor(options.color);
-		const arrowDecorator = this.L.polylineDecorator(polyline, {
-			patterns: [
-				{
-					offset: 0,
-					repeat: 125,
-					symbol: this.L.Symbol.arrowHead({
-						pixelSize: 12,
-						pathOptions: {
-							color: arrowColor,
-							fill: true,
-							fillColor: arrowColor,
-							fillOpacity: 0.85
-						}
-					})
+const arrowColor = polylineArrowColor(options.color);
+const arrowDecorator = this.L.polylineDecorator(polyline, {
+	patterns: [
+		{
+			offset: 0,
+			repeat: 125,
+			symbol: this.L.Symbol.arrowHead({
+				pixelSize: 12,
+				pathOptions: {
+					color: arrowColor,
+					fill: true,
+					fillColor: arrowColor,
+					fillOpacity: 0.85
 				}
-			]
-		}).addTo(this.map);
+			})
+		}
+	]
+}).addTo(this.map);
 ```
 
 - [ ] **Step 5: Verify existing provider tests still pass**
@@ -614,9 +625,11 @@ git commit -m "feat: darken polyline direction arrows to a shade of the route co
 ### Task 6: Wire route color into RouteMap
 
 **Files:**
+
 - Modify: `src/components/map/RouteMap.svelte:40-100` (`loadRouteData`)
 
 **Interfaces:**
+
 - Consumes: `mapContrastColor` (Task 1); `createPolyline(shape, { color })` (existing); `fetchAndUpdateVehicles(routeId, mapProvider, routeType, highlightedTripId, routeColor)` (Task 3).
 - Produces: the visible feature — polyline and vehicles rendered in the route's contrast-adjusted color.
 
@@ -635,21 +648,21 @@ import { mapContrastColor } from '$lib/colorUtils';
 In `loadRouteData`, after `const routeId = moreTripData?.routeId;` (line 52), add:
 
 ```js
-			const route = tripData?.data?.references?.routes?.find((r) => r.id === routeId);
-			const dark = document.documentElement.classList.contains('dark');
-			const routeColor = mapContrastColor(route?.color, { dark });
+const route = tripData?.data?.references?.routes?.find((r) => r.id === routeId);
+const dark = document.documentElement.classList.contains('dark');
+const routeColor = mapContrastColor(route?.color, { dark });
 ```
 
 Change the `createPolyline` call (line 59) from:
 
 ```js
-					await mapProvider.createPolyline(shapePoints);
+await mapProvider.createPolyline(shapePoints);
 ```
 
 to:
 
 ```js
-					await mapProvider.createPolyline(shapePoints, { color: routeColor });
+await mapProvider.createPolyline(shapePoints, { color: routeColor });
 ```
 
 (`routeColor` may be `null`; the providers fall back to blue via `options.color || COLORS.POLYLINE`.)
@@ -659,31 +672,34 @@ to:
 Change the `fetchAndUpdateVehicles` call (line 95) from:
 
 ```js
-				currentIntervalId = await fetchAndUpdateVehicles(routeId, mapProvider, undefined, tripId);
+currentIntervalId = await fetchAndUpdateVehicles(routeId, mapProvider, undefined, tripId);
 ```
 
 to (coalescing `null → undefined` so the vehicle icon default fires — see Global Constraints):
 
 ```js
-				currentIntervalId = await fetchAndUpdateVehicles(
-					routeId,
-					mapProvider,
-					undefined,
-					tripId,
-					routeColor ?? undefined
-				);
+currentIntervalId = await fetchAndUpdateVehicles(
+	routeId,
+	mapProvider,
+	undefined,
+	tripId,
+	routeColor ?? undefined
+);
 ```
 
 - [ ] **Step 4: Verify — build, lint, and manual check**
 
 Run:
+
 ```bash
 npx vitest run src/tests/lib/colorUtils.test.js src/lib/__tests__/vehicleUtils.test.js src/tests/lib/GoogleMapProvider.test.js src/tests/lib/OpenStreetMapProvider.test.js
 npm run lint
 ```
+
 Expected: all tests PASS; lint clean.
 
 Manual check (`npm run dev`): open a stop, expand an arrival card to show the trip on the map, and confirm:
+
 - the polyline renders in the route's color (not blue) with darker arrows;
 - the live vehicle icon(s) render in the same color;
 - a vehicle with realtime off still renders gray;
@@ -702,6 +718,7 @@ git commit -m "feat: render RouteMap polyline and vehicles in the route color"
 ## Self-Review
 
 **Spec coverage:**
+
 - §1 legibility helper → Task 1. ✅
 - §2 RouteMap resolves route + passes to polyline & vehicles → Task 6. ✅
 - §3 vehicleUtils plumbing → Task 3. ✅

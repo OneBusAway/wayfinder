@@ -210,7 +210,7 @@ describe('updateVehicleMarkers', () => {
 		});
 	});
 
-	test('forwards routeColor as the 5th arg to addVehicleMarker', async () => {
+	it('forwards routeColor as the 5th arg to addVehicleMarker', async () => {
 		mockFetch(TWO_VEHICLE_RESPONSE);
 		const provider = makeProvider();
 
@@ -220,7 +220,7 @@ describe('updateVehicleMarkers', () => {
 		}
 	});
 
-	test('forwards routeColor as the 6th arg to updateVehicleMarker', async () => {
+	it('forwards routeColor as the 6th arg to updateVehicleMarker', async () => {
 		mockFetch(TWO_VEHICLE_RESPONSE);
 		// First pass creates markers, second pass updates them.
 		const provider = makeProvider();

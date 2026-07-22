@@ -31,7 +31,7 @@ In `RouteMap` (the trip-details map, `src/components/map/RouteMap.svelte`):
 
 - The route-overview polyline drawn from `SearchPane` stays blue for now.
 - Trip-planner legs are unchanged (they already pass their own leg colors).
-- Live recolor on a theme *toggle* without a redraw or vehicle poll. This
+- Live recolor on a theme _toggle_ without a redraw or vehicle poll. This
   matches today's behavior — the current blue polyline is drawn once and does
   not recolor when the user flips dark mode; vehicle markers pick up the new
   theme on their next 30s poll.
@@ -53,8 +53,8 @@ In `RouteMap` (the trip-details map, `src/components/map/RouteMap.svelte`):
   `undefined` for real-time vehicles (→ blue default) and only set it to
   `COLORS.VEHICLE_REAL_TIME_OFF` (`#808080`, gray) when `!vehicle.predicted`.
 - `createPolyline(shape, options)` already accepts `{ color, withArrow, weight,
-  opacity, dashArray }` in both providers. The line uses `options.color ||
-  COLORS.POLYLINE`; the **direction arrows** hardcode
+opacity, dashArray }` in both providers. The line uses `options.color ||
+COLORS.POLYLINE`; the **direction arrows** hardcode
   `COLORS.POLYLINE_ARROW_STROKE` / `COLORS.POLYLINE_ARROW_FILL` regardless of
   `options.color`.
 - Route color source of truth: OBA `references.routes[].color` (hex **without**
@@ -96,11 +96,12 @@ Behavior:
    return the normalized color unchanged.
 
    Constant notes:
+
    - `getBrightness` returns 0–255 (luminance). At threshold **200**, only
      near-white/yellow/gold get darkened (white 255, yellow ≈226, gold ≈203),
      while cyan ≈178 and bright green ≈149 pass through — sensible for real
      transit palettes. This is deliberately more conservative than the **180**
-     "bright" cutoff `adjustColorForDarkMode` uses internally; they are *not* the
+     "bright" cutoff `adjustColorForDarkMode` uses internally; they are _not_ the
      same constant.
    - `darkenColor` mixes toward pure black, amount 0–1 (`#ffffff, 0.5 → #808080`).
      At **0.3**, `#ffffff → #b3b3b3` (brightness ≈179) — still a faint gray on
@@ -164,7 +165,7 @@ parameter and use it as the icon's base color, preserving the gray override:
 ```js
 let color = routeColor || undefined; // null/'' → createVehicleIconSvg blue default (C1)
 if (!vehicle.predicted) {
-    color = COLORS.VEHICLE_REAL_TIME_OFF; // realtime-off stays gray
+	color = COLORS.VEHICLE_REAL_TIME_OFF; // realtime-off stays gray
 }
 const vehicleIconSvg = createVehicleIconSvg(vehicle?.orientation, color, routeType, isHighlighted);
 ```
@@ -180,13 +181,13 @@ Provider-specific detail (they differ — match them deliberately):
   `fillColor` (`OpenStreetMapProvider…:619–627`) — set both to the darkened
   shade.
 - **Google** builds a `Symbol` that today sets **only** `strokeColor`
-  (`GoogleMapProvider…:556–561`). `FORWARD_CLOSED_ARROW` is a *filled* shape, and
+  (`GoogleMapProvider…:556–561`). `FORWARD_CLOSED_ARROW` is a _filled_ shape, and
   an unset `fillColor` inherits the host polyline's (non-darkened) line color —
   producing a two-tone arrow that wouldn't match OSM. So set **both**
   `strokeColor` **and** `fillColor` (with `fillOpacity: 1`) to the darkened
   shade on the Google symbol.
 - **Dark mode caveat:** in dark mode the shared `routeColor` is already
-  *lightened* by `adjustColorForDarkMode`, then darkened 25% for the arrow —
+  _lightened_ by `adjustColorForDarkMode`, then darkened 25% for the arrow —
   which can pull a mid-brightness arrow toward low contrast against dark tiles.
   Tune the arrow-darken amount per theme (smaller or skipped in dark mode) if it
   reads poorly.
@@ -203,7 +204,7 @@ Provider-specific detail (they differ — match them deliberately):
   a route color passed to `addVehicleMarker` reaches `createVehicleIconSvg`
   (these tests already mock `createVehicleIconSvg` as a `vi.fn` and assert on its
   args, so this is a direct extension); the gray override still wins for a
-  non-predicted vehicle; **a `null` route color for a *predicted* vehicle still
+  non-predicted vehicle; **a `null` route color for a _predicted_ vehicle still
   yields the blue-default icon (no `null` paint reaches `createVehicleIconSvg`)**
   (C1 regression guard). The `createPolyline`-arrow assertions (line colored,
   arrows darkened, Google `fillColor` set) are **net-new scaffolding** — no
