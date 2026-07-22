@@ -3,6 +3,8 @@
  * Used by tailwind.config.js to dynamically generate the primary color palette
  */
 
+import { COLORS } from './colors.js';
+
 /**
  * Converts a hex color string to RGB object
  * Supports both 3-digit (#fff) and 6-digit (#ffffff) hex formats
@@ -234,4 +236,15 @@ export function mapContrastColor(rawColor, { dark = false } = {}) {
 	}
 
 	return hex;
+}
+
+/**
+ * Color for a polyline's direction arrows. Darkens the line color so the arrows
+ * stay distinct against the line; falls back to the default blue arrow color
+ * when the line has no route color.
+ * @param {string} lineColor - The polyline's resolved color (hex), or falsy
+ * @returns {string} Arrow hex color
+ */
+export function polylineArrowColor(lineColor) {
+	return lineColor ? darkenColor(lineColor, 0.25) : COLORS.POLYLINE_ARROW_STROKE;
 }

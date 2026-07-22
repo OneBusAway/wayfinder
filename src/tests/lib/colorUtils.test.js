@@ -8,7 +8,8 @@ import {
 	lightenColor,
 	getBrightness,
 	adjustColorForDarkMode,
-	mapContrastColor
+	mapContrastColor,
+	polylineArrowColor
 } from '$lib/colorUtils.js';
 
 describe('colorUtils', () => {
@@ -516,6 +517,20 @@ describe('colorUtils', () => {
 		test('lightens a dark color in dark mode so it reads on dark tiles', () => {
 			const out = mapContrastColor('#0a4ea2', { dark: true });
 			expect(getBrightness(hexToRgb(out))).toBeGreaterThan(getBrightness(hexToRgb('#0a4ea2')));
+		});
+	});
+
+	describe('polylineArrowColor', () => {
+		test('returns the default blue arrow color when no line color is given', () => {
+			expect(polylineArrowColor(undefined)).toBe('#21649b'); // COLORS.POLYLINE_ARROW_STROKE
+			expect(polylineArrowColor(null)).toBe('#21649b');
+			expect(polylineArrowColor('')).toBe('#21649b');
+		});
+
+		test('returns a darker shade of the line color', () => {
+			const out = polylineArrowColor('#359ff7');
+			expect(out).not.toBe('#359ff7');
+			expect(getBrightness(hexToRgb(out))).toBeLessThan(getBrightness(hexToRgb('#359ff7')));
 		});
 	});
 });
