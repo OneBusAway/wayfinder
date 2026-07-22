@@ -71,4 +71,21 @@ describe('ArrivalDeparture', () => {
 		const eta = screen.getByText('10m');
 		expect(eta.className).toContain('text-gray-500');
 	});
+
+	// Regression guard for the overflow bug: a long headsign must truncate rather
+	// than push the ETA off the container. The row must fill its flex parent
+	// (w-full) and be shrinkable (min-w-0) so the truncation actually engages.
+	test('fills width and truncates a long headsign so content cannot overflow', () => {
+		render(ArrivalDeparture, {
+			props: { arrivalDeparture: baseArrival({ tripHeadsign: 'Aurora Village Transit Center' }) }
+		});
+		const headsign = screen.getByText('Aurora Village Transit Center');
+		// headsign itself truncates, and its column can shrink below content width
+		expect(headsign.className).toContain('truncate');
+		expect(headsign.parentElement.className).toContain('min-w-0');
+		// the card row fills the available width and is itself shrinkable
+		const row = headsign.closest('div.flex');
+		expect(row.className).toContain('w-full');
+		expect(row.className).toContain('min-w-0');
+	});
 });

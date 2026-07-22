@@ -216,7 +216,7 @@
 	let arrivalInfo = $derived(computeArrivalInfo(currentTime));
 </script>
 
-<div class="flex items-center gap-3">
+<div class="flex w-full min-w-0 items-center gap-3 pr-1">
 	<RouteBadge shortName={routeShortName} color={route?.color} textColor={route?.textColor} />
 
 	<div class="min-w-0 flex-1">

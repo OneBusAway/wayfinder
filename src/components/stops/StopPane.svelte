@@ -330,7 +330,9 @@
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
 								<AccordionItem data={arrival}>
 									{#snippet header()}
-										<span class="block flex-1">
+										<!-- min-w-0 lets this flex child shrink below its content width so the
+										     card's headsign truncates instead of pushing the ETA/chevron off-screen -->
+										<span class="block min-w-0 flex-1">
 											<ArrivalDeparture
 												arrivalDeparture={arrival}
 												route={routeById.get(arrival.routeId)}
