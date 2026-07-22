@@ -19,9 +19,11 @@
 	let stopSequence = $derived(arrivalDeparture.stopSequence || 1); // Default to 1 if not provided
 
 	function computeColor(scheduledMins, predictedMins, isPredicted) {
-		// Each branch returns the 600 shade for light mode (passes WCAG AA on
-		// white) paired with 400 shade in dark mode (passes on gray-800)
-		// The 500 shade fails 4.5:1 in both modes for normal size status text
+		// Each colored branch returns the 600 shade for light mode (passes WCAG AA
+		// on white) paired with the 400 shade in dark mode (passes on gray-800).
+		// The colored 500 shades fail 4.5:1 in both modes for normal-size status
+		// text — the neutral gray-500/400 below is the exception (gray-500 ≈ 4.8:1
+		// on white, gray-400 passes on gray-800), so it's safe here.
 		if (!isPredicted) {
 			// Scheduled (no real-time) arrivals read fully muted, per the mockup.
 			// gray-500 passes WCAG AA on white; gray-400 passes on the dark gray-800 surface.
