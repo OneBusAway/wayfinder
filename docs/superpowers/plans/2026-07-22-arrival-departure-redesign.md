@@ -23,10 +23,12 @@
 ### Task 1: `RouteBadge.svelte` component
 
 **Files:**
+
 - Create: `src/components/RouteBadge.svelte`
 - Test: `src/components/__tests__/RouteBadge.test.js`
 
 **Interfaces:**
+
 - Produces: `RouteBadge` Svelte component with props `{ shortName: string, color?: string, textColor?: string }`. Renders a `<div>` containing `shortName` with inline `style="background-color: <bg>; color: <fg>;"` where `bg = color ? '#'+color : '#374151'` and `fg = textColor ? '#'+textColor : '#ffffff'`.
 
 - [ ] **Step 1: Write the failing test**
@@ -86,7 +88,7 @@ Create `src/components/RouteBadge.svelte`:
 </script>
 
 <div
-	class="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg break-words px-1 text-center text-sm font-bold leading-tight"
+	class="flex h-14 w-16 shrink-0 items-center justify-center break-words rounded-lg px-1 text-center text-sm font-bold leading-tight"
 	style="background-color: {bg}; color: {fg};"
 >
 	{shortName}
@@ -114,11 +116,13 @@ git commit -m "feat: add reusable RouteBadge component"
 ### Task 2: Redesign `ArrivalDeparture.svelte`
 
 **Files:**
+
 - Modify: `src/locales/en.json` (add `time.min_compact`)
 - Modify: `src/components/ArrivalDeparture.svelte` (props, `computeColor`, `computeTimeLabel`, markup, imports)
 - Test: `src/components/__tests__/ArrivalDeparture.test.js` (new)
 
 **Interfaces:**
+
 - Consumes: `RouteBadge` from Task 1.
 - Produces: `ArrivalDeparture` now accepts an added prop `route` (`{ color?: string, textColor?: string } | null`, default `null`). Its `arrivalInfo` derived object keeps its existing fields (`displayTime`, `color`, `statusText`, `timeText`, `isPredicted`, ...). `timeText` is now the compact form (`"19m"`, `"now"`, `"-3m"`). `color` for non-predicted arrivals is now `text-gray-500 dark:text-gray-400`.
 
@@ -236,19 +240,19 @@ In `src/components/ArrivalDeparture.svelte`, replace the top of the `<script>` (
 In `computeColor` (lines 18–34), replace the not-predicted branch:
 
 ```js
-		if (!isPredicted) {
-			return 'text-blue-600 dark:text-blue-400';
-		}
+if (!isPredicted) {
+	return 'text-blue-600 dark:text-blue-400';
+}
 ```
 
 with:
 
 ```js
-		if (!isPredicted) {
-			// Scheduled (no real-time) arrivals read fully muted, per the mockup.
-			// gray-500 passes WCAG AA on white; gray-400 passes on the dark gray-800 surface.
-			return 'text-gray-500 dark:text-gray-400';
-		}
+if (!isPredicted) {
+	// Scheduled (no real-time) arrivals read fully muted, per the mockup.
+	// gray-500 passes WCAG AA on white; gray-400 passes on the dark gray-800 surface.
+	return 'text-gray-500 dark:text-gray-400';
+}
 ```
 
 - [ ] **Step 6: Make `computeTimeLabel` produce the compact form**
@@ -256,13 +260,13 @@ with:
 Replace the whole `computeTimeLabel` function (lines 191–201) with:
 
 ```js
-	function computeTimeLabel(eta) {
-		if (eta === 0) {
-			return $t('time.now');
-		}
-		// Compact minute form (e.g. "19m", "1m", "-3m"). Unit is localizable.
-		return $t('time.min_compact', { values: { n: eta } });
+function computeTimeLabel(eta) {
+	if (eta === 0) {
+		return $t('time.now');
 	}
+	// Compact minute form (e.g. "19m", "1m", "-3m"). Unit is localizable.
+	return $t('time.min_compact', { values: { n: eta } });
+}
 ```
 
 - [ ] **Step 7: Replace the markup**
@@ -318,10 +322,12 @@ git commit -m "feat: redesign ArrivalDeparture card with badge, compact ETA, and
 ### Task 3: `StopPane.svelte` — route-color plumbing + section header
 
 **Files:**
+
 - Modify: `src/components/stops/StopPane.svelte`
 - Test: `src/components/stops/__tests__/StopPane.test.js`
 
 **Interfaces:**
+
 - Consumes: `ArrivalDeparture`'s new `route` prop (Task 2).
 - Produces: renders an "ARRIVALS & DEPARTURES" header (i18n key `arrivals_and_departures`) above the accordion when arrivals exist; passes `route={routeById.get(arrival.routeId)}` to each `ArrivalDeparture`.
 
@@ -330,25 +336,25 @@ git commit -m "feat: redesign ArrivalDeparture card with badge, compact ETA, and
 In `src/components/stops/__tests__/StopPane.test.js`, add `arrivals_and_departures` to the local translations map (inside the `vi.mock('svelte-i18n', ...)` block, the `translations` object near line 113):
 
 ```js
-				const translations = {
-					stop: 'Stop',
-					routes: 'Routes',
-					arrivals_and_departures: 'Arrivals and departures',
-					'schedule_for_stop.view_schedule': 'View Schedule',
-					load_more_arrivals: 'Load more arrivals',
-					no_arrivals_found_in_next_minutes: 'No arrivals found in the next {minutes} minutes'
-				};
+const translations = {
+	stop: 'Stop',
+	routes: 'Routes',
+	arrivals_and_departures: 'Arrivals and departures',
+	'schedule_for_stop.view_schedule': 'View Schedule',
+	load_more_arrivals: 'Load more arrivals',
+	no_arrivals_found_in_next_minutes: 'No arrivals found in the next {minutes} minutes'
+};
 ```
 
 Then add a new test (place it after the existing "renders arrivals" style test, e.g. near line 270):
 
 ```js
-	test('renders the ARRIVALS & DEPARTURES section header when arrivals exist', async () => {
-		render(StopPane, { props: { stop: mockStopData } });
-		await waitFor(() => {
-			expect(screen.getByText('Arrivals and departures')).toBeInTheDocument();
-		});
+test('renders the ARRIVALS & DEPARTURES section header when arrivals exist', async () => {
+	render(StopPane, { props: { stop: mockStopData } });
+	await waitFor(() => {
+		expect(screen.getByText('Arrivals and departures')).toBeInTheDocument();
 	});
+});
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
@@ -361,13 +367,11 @@ Expected: FAIL — "Arrivals and departures" is not in the document yet.
 In `src/components/stops/StopPane.svelte`, just after the `routeShortNames` derived (line 159), add:
 
 ```js
-	// references.routes carries the per-route color/textColor; the arrival objects
-	// only carry routeId, so build a lookup to feed RouteBadge via ArrivalDeparture.
-	let routeById = $derived(
-		new Map(
-			(arrivalsAndDeparturesResponse?.data?.references?.routes ?? []).map((r) => [r.id, r])
-		)
-	);
+// references.routes carries the per-route color/textColor; the arrival objects
+// only carry routeId, so build a lookup to feed RouteBadge via ArrivalDeparture.
+let routeById = $derived(
+	new Map((arrivalsAndDeparturesResponse?.data?.references?.routes ?? []).map((r) => [r.id, r]))
+);
 ```
 
 - [ ] **Step 4: Add the section header and pass the route down**
@@ -429,11 +433,13 @@ git commit -m "feat: add arrivals section header and route colors to StopPane"
 ### Task 4: `TripDetailsPane.svelte` — live-vehicle heading + timeline restyle
 
 **Files:**
+
 - Modify: `src/locales/en.json` (add `trip_details.live_vehicle`)
 - Modify: `src/components/oba/TripDetailsPane.svelte` (heading, markers, imports)
 - Test: `src/components/oba/__tests__/TripDetailsPane.test.js` (new)
 
 **Interfaces:**
+
 - Consumes: nothing new.
 - Produces: heading shows "Live · vehicle {vehicleId}" (icon `faTowerBroadcast`) when `tripDetails.status?.vehicleId` is present; otherwise the existing route heading. Timeline markers: intermediate = empty ring, vehicle position = filled dark square with bus, your stop = filled pin.
 
@@ -531,7 +537,7 @@ Expected: FAIL — current heading renders `trip_details.route C Line`, not the 
 In `src/components/oba/TripDetailsPane.svelte`, change the icon import (line 4) to add the broadcast icon:
 
 ```js
-	import { faBus, faLocationDot, faCheck, faTowerBroadcast } from '@fortawesome/free-solid-svg-icons';
+import { faBus, faLocationDot, faCheck, faTowerBroadcast } from '@fortawesome/free-solid-svg-icons';
 ```
 
 - [ ] **Step 5: Replace the heading**
@@ -539,28 +545,28 @@ In `src/components/oba/TripDetailsPane.svelte`, change the icon import (line 4) 
 Replace the route-heading block (lines 101–106):
 
 ```svelte
-			{#if routeInfo}
-				<h2 class="h2">
-					{$_('trip_details.route')}
-					{routeInfo.shortName}
-				</h2>
-			{/if}
+{#if routeInfo}
+	<h2 class="h2">
+		{$_('trip_details.route')}
+		{routeInfo.shortName}
+	</h2>
+{/if}
 ```
 
 with a live-vehicle heading that falls back to the route heading:
 
 ```svelte
-			{#if tripDetails.status?.vehicleId}
-				<h2 class="h2 flex items-center gap-2">
-					<FontAwesomeIcon icon={faTowerBroadcast} class="text-brand" />
-					{$_('trip_details.live_vehicle', { values: { vehicleId: tripDetails.status.vehicleId } })}
-				</h2>
-			{:else if routeInfo}
-				<h2 class="h2">
-					{$_('trip_details.route')}
-					{routeInfo.shortName}
-				</h2>
-			{/if}
+{#if tripDetails.status?.vehicleId}
+	<h2 class="h2 flex items-center gap-2">
+		<FontAwesomeIcon icon={faTowerBroadcast} class="text-brand" />
+		{$_('trip_details.live_vehicle', { values: { vehicleId: tripDetails.status.vehicleId } })}
+	</h2>
+{:else if routeInfo}
+	<h2 class="h2">
+		{$_('trip_details.route')}
+		{routeInfo.shortName}
+	</h2>
+{/if}
 ```
 
 - [ ] **Step 6: Restyle the timeline markers**
@@ -568,39 +574,39 @@ with a live-vehicle heading that falls back to the route heading:
 Replace the marker `<div>` (lines 113–134, the `relative flex size-8 ...` block and its icon logic) with mockup-style markers — filled dark square + bus at the vehicle position, filled pin at your stop, empty ring otherwise:
 
 ```svelte
-						{#if index === busPosition}
-							<div
-								class="relative flex size-8 items-center justify-center rounded-md bg-neutral-800 dark:bg-neutral-200"
-							>
-								<FontAwesomeIcon icon={faBus} class="text-sm text-white dark:text-neutral-900" />
-								{#if tripStop.stopId === stop.id}
-									<FontAwesomeIcon
-										icon={faCheck}
-										class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
-									/>
-								{/if}
-							</div>
-						{:else if tripStop.stopId === stop.id}
-							<div class="flex size-8 items-center justify-center">
-								<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
-							</div>
-						{:else}
-							<div class="flex size-8 items-center justify-center">
-								<div class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"></div>
-							</div>
-						{/if}
+{#if index === busPosition}
+	<div
+		class="relative flex size-8 items-center justify-center rounded-md bg-neutral-800 dark:bg-neutral-200"
+	>
+		<FontAwesomeIcon icon={faBus} class="text-sm text-white dark:text-neutral-900" />
+		{#if tripStop.stopId === stop.id}
+			<FontAwesomeIcon
+				icon={faCheck}
+				class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
+			/>
+		{/if}
+	</div>
+{:else if tripStop.stopId === stop.id}
+	<div class="flex size-8 items-center justify-center">
+		<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
+	</div>
+{:else}
+	<div class="flex size-8 items-center justify-center">
+		<div class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"></div>
+	</div>
+{/if}
 ```
 
 Then, so the "your stop" row reads as the emphasized destination (mockup bold), update the stop-name `<div>` (line 136) to bold your stop:
 
 ```svelte
-							<div
-								class="text-md dark:text-white"
-								class:font-bold={tripStop.stopId === stop.id}
-								class:font-semibold={tripStop.stopId !== stop.id}
-							>
-								{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
-							</div>
+<div
+	class="text-md dark:text-white"
+	class:font-bold={tripStop.stopId === stop.id}
+	class:font-semibold={tripStop.stopId !== stop.id}
+>
+	{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
+</div>
 ```
 
 - [ ] **Step 7: Run the test to verify it passes**

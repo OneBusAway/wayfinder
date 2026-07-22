@@ -48,14 +48,18 @@ A rounded-square colored badge rendering a route short name.
   build time and would emit no rule, rendering the badge unstyled. Use the same
   pattern as `RouteItem.svelte:29-30`:
   ```svelte
-  let bg = $derived(color ? `#${color}` : '#374151');
-  let fg = $derived(textColor ? `#${textColor}` : '#ffffff');
-  <div class="flex h-14 w-16 items-center justify-center rounded-lg text-center font-bold leading-tight break-words"
-       style="background-color: {bg}; color: {fg};">{shortName}</div>
+  let bg = $derived(color ? `#${color}` : '#374151'); let fg = $derived(textColor ? `#${textColor}`
+  : '#ffffff');
+  <div
+  	class="flex h-14 w-16 items-center justify-center break-words rounded-lg text-center font-bold leading-tight"
+  	style="background-color: {bg}; color: {fg};"
+  >
+  	{shortName}
+  </div>
   ```
 - **Layout:** `rounded-lg`, fixed size (~`w-16 h-14`), centered, bold. `leading-tight`
-  + `break-words` so "C Line" stacks onto two lines and longer `shortName` values
-  degrade gracefully instead of overflowing the box.
+  - `break-words` so "C Line" stacks onto two lines and longer `shortName` values
+    degrade gracefully instead of overflowing the box.
 - **Dark mode:** the badge is a self-colored block with contrasting text, so it
   reads correctly in both light and dark mode without overrides. Raw route colors
   are used as-is (not dark-adjusted like `RouteItem`); rely on the API `textColor`
