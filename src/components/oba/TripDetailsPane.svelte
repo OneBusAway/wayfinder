@@ -120,10 +120,12 @@
 
 				{#each tripDetails.schedule.stopTimes as tripStop, index}
 					<div class="mb-4 flex items-center">
-						{#if index === busPosition}
-							<div
-								class="relative flex size-8 items-center justify-center rounded-md bg-neutral-800 dark:bg-neutral-200"
-							>
+						<div
+							class="relative flex size-8 items-center justify-center {index === busPosition
+								? 'rounded-md bg-neutral-800 dark:bg-neutral-200'
+								: ''}"
+						>
+							{#if index === busPosition}
 								<FontAwesomeIcon icon={faBus} class="text-sm text-white dark:text-neutral-900" />
 								{#if tripStop.stopId === stop.id}
 									<FontAwesomeIcon
@@ -131,23 +133,19 @@
 										class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
 									/>
 								{/if}
-							</div>
-						{:else if tripStop.stopId === stop.id}
-							<div class="flex size-8 items-center justify-center">
+							{:else if tripStop.stopId === stop.id}
 								<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
-							</div>
-						{:else}
-							<div class="flex size-8 items-center justify-center">
+							{:else}
 								<div
 									class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"
 								></div>
-							</div>
-						{/if}
+							{/if}
+						</div>
 						<div class="ml-4 flex w-full items-center justify-between space-x-1">
 							<div
-								class="text-md dark:text-white"
-								class:font-bold={tripStop.stopId === stop.id}
-								class:font-semibold={tripStop.stopId !== stop.id}
+								class="text-md dark:text-white {tripStop.stopId === stop.id
+									? 'font-bold'
+									: 'font-semibold'}"
 							>
 								{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 							</div>

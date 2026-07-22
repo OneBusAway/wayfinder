@@ -225,9 +225,8 @@
 		</p>
 		<p class="truncate text-sm">
 			<span class="text-gray-500 dark:text-gray-400"
-				>{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime)}</span
+				>{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime)} ·</span
 			>
-			<span class="text-gray-500 dark:text-gray-400"> · </span>
 			<span class={arrivalInfo.color}>{arrivalInfo.statusText}</span>
 		</p>
 	</div>
