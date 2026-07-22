@@ -1,5 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import OpenStreetMapProvider from '$lib/Provider/OpenStreetMapProvider.svelte.js';
+import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 
 // Minimal Svelte component stubs — only imported by the module, never called
 // during these unit tests because we mock openStopMarker directly and never
@@ -325,5 +326,37 @@ describe('removeVehicleMarker — marker tracking', () => {
 
 		expect(fakeMarker.remove).toHaveBeenCalledOnce();
 		expect(provider.vehicleMarkers).toHaveLength(0);
+	});
+});
+
+describe('addVehicleMarker — route color', () => {
+	let provider;
+
+	beforeEach(() => {
+		provider = new OpenStreetMapProvider(vi.fn());
+		provider.L = makeFakeL(makeFakeMarker());
+		provider.map = {};
+		createVehicleIconSvg.mockClear();
+	});
+
+	test('passes the route color to the icon for a predicted vehicle', () => {
+		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3, false, '#0a4ea2');
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#0a4ea2', 3, false);
+	});
+
+	test('gray override still wins for a non-predicted vehicle', () => {
+		provider.addVehicleMarker(
+			{ ...VEHICLE, predicted: false },
+			{ tripHeadsign: 'Northgate' },
+			3,
+			false,
+			'#0a4ea2'
+		);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#808080', 3, false);
+	});
+
+	test('null route color falls back to the icon default', () => {
+		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3, false, null);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false);
 	});
 });

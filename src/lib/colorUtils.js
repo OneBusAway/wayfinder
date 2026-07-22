@@ -3,6 +3,8 @@
  * Used by tailwind.config.js to dynamically generate the primary color palette
  */
 
+import { COLORS } from './colors.js';
+
 /**
  * Converts a hex color string to RGB object
  * Supports both 3-digit (#fff) and 6-digit (#ffffff) hex formats
@@ -201,4 +203,48 @@ export function adjustColorForDarkMode(hexColor) {
 		default:
 			return hexColor;
 	}
+}
+
+/**
+ * Resolves an OBA route color into a map-legible hex color.
+ * - Returns null for missing/invalid input so callers keep their own default.
+ * - Dark mode: lightens dark colors (via adjustColorForDarkMode) so they read
+ *   against dark/night map tiles.
+ * - Light mode: darkens very-bright colors (white, pale yellow) so they stay
+ *   visible on the near-white light basemap.
+ *
+ * The 200 brightness threshold is deliberately more conservative than the 180
+ * "bright" cutoff adjustColorForDarkMode uses internally — they are not the
+ * same constant.
+ * @param {string} rawColor - OBA hex, with or without a leading '#'
+ * @param {{ dark?: boolean }} [opts]
+ * @returns {string | null} Normalized, contrast-adjusted '#rrggbb', or null
+ */
+export function mapContrastColor(rawColor, { dark = false } = {}) {
+	const rgb = hexToRgb(rawColor);
+	if (!rgb) return null;
+
+	const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+
+	if (dark) {
+		return adjustColorForDarkMode(hex);
+	}
+
+	// Light mode: pull pale colors down so they don't vanish on the light basemap.
+	if (getBrightness(rgb) > 200) {
+		return darkenColor(hex, 0.45);
+	}
+
+	return hex;
+}
+
+/**
+ * Color for a polyline's direction arrows. Darkens the line color so the arrows
+ * stay distinct against the line; falls back to the default blue arrow color
+ * when the line has no route color.
+ * @param {string} lineColor - The polyline's resolved color (hex), or falsy
+ * @returns {string} Arrow hex color
+ */
+export function polylineArrowColor(lineColor) {
+	return lineColor ? darkenColor(lineColor, 0.25) : COLORS.POLYLINE_ARROW_STROKE;
 }

@@ -8,6 +8,7 @@ import {
 	SHOW_ROUTE_LABELS_AT_ZOOM
 } from '$config/routeConfig';
 import { COLORS } from '$lib/colors';
+import { polylineArrowColor } from '$lib/colorUtils';
 import PopupContent from '$components/map/PopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
@@ -335,10 +336,10 @@ export default class GoogleMapProvider {
 		}
 	}
 
-	addVehicleMarker(vehicle, activeTrip, routeType, isHighlighted = false) {
+	addVehicleMarker(vehicle, activeTrip, routeType, isHighlighted = false, routeColor = undefined) {
 		if (!this.map) return null;
 
-		let color;
+		let color = routeColor || undefined; // null/'' → createVehicleIconSvg blue default
 		if (!vehicle.predicted) {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
@@ -385,7 +386,14 @@ export default class GoogleMapProvider {
 		return marker;
 	}
 
-	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType, isHighlighted = false) {
+	updateVehicleMarker(
+		marker,
+		vehicleStatus,
+		activeTrip,
+		routeType,
+		isHighlighted = false,
+		routeColor = undefined
+	) {
 		if (!this.map || !marker) return;
 
 		const current = marker.getPosition();
@@ -397,7 +405,7 @@ export default class GoogleMapProvider {
 			{ routePaths: this._getRoutePaths() }
 		);
 
-		let color;
+		let color = routeColor || undefined; // null/'' → createVehicleIconSvg blue default
 		if (!vehicleStatus.predicted) {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
@@ -553,11 +561,14 @@ export default class GoogleMapProvider {
 		}
 
 		if (withArrow) {
+			const arrowColor = polylineArrowColor(options.color);
 			const arrowSymbol = {
 				path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
 				scale: 2,
-				strokeColor: COLORS.POLYLINE_ARROW_STROKE,
-				strokeWeight: 3
+				strokeColor: arrowColor,
+				strokeWeight: 3,
+				fillColor: arrowColor,
+				fillOpacity: 1
 			};
 
 			icons.push({

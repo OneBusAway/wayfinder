@@ -1,5 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import GoogleMapProvider from '$lib/Provider/GoogleMapProvider.svelte.js';
+import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 
 vi.mock('$components/map/StopMarker.svelte', () => ({ default: {} }));
 vi.mock('$components/map/PopupContent.svelte', () => ({ default: {} }));
@@ -108,5 +109,49 @@ describe('removeVehicleMarker — marker tracking', () => {
 
 		expect(marker.setMap).toHaveBeenCalledWith(null);
 		expect(provider.vehicleMarkers).toHaveLength(0);
+	});
+});
+
+describe('addVehicleMarker — route color', () => {
+	let provider;
+
+	beforeEach(() => {
+		setupGoogleMaps(makeGoogleMarkerMock());
+		provider = new GoogleMapProvider('test-key', vi.fn());
+		provider.map = {};
+		createVehicleIconSvg.mockClear();
+	});
+
+	test('passes the route color to the icon for a predicted vehicle', () => {
+		provider.addVehicleMarker(
+			{ position: { lat: 47.6, lon: -122.3 }, predicted: true, orientation: 90 },
+			{ tripHeadsign: 'Northgate' },
+			3,
+			false,
+			'#0a4ea2'
+		);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#0a4ea2', 3, false);
+	});
+
+	test('gray override still wins for a non-predicted vehicle', () => {
+		provider.addVehicleMarker(
+			{ position: { lat: 47.6, lon: -122.3 }, predicted: false, orientation: 90 },
+			{ tripHeadsign: 'Northgate' },
+			3,
+			false,
+			'#0a4ea2'
+		);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#808080', 3, false);
+	});
+
+	test('null route color falls back to the icon default (no null paint)', () => {
+		provider.addVehicleMarker(
+			{ position: { lat: 47.6, lon: -122.3 }, predicted: true, orientation: 90 },
+			{ tripHeadsign: 'Northgate' },
+			3,
+			false,
+			null
+		);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false);
 	});
 });

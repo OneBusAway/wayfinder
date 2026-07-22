@@ -35,7 +35,8 @@ export async function updateVehicleMarkers(
 	routeId,
 	mapProvider,
 	routeType,
-	highlightedTripId = null
+	highlightedTripId = null,
+	routeColor = undefined
 ) {
 	const data = await fetchVehicles(routeId);
 
@@ -72,14 +73,16 @@ export async function updateVehicleMarkers(
 					vehicleStatus,
 					activeTrip,
 					routeType,
-					isHighlighted
+					isHighlighted,
+					routeColor
 				);
 			} else {
 				const marker = mapProvider.addVehicleMarker(
 					vehicleStatus,
 					activeTrip,
 					routeType,
-					isHighlighted
+					isHighlighted,
+					routeColor
 				);
 				vehicleMarkersMap.set(markerKey, marker);
 			}
@@ -102,17 +105,18 @@ export async function fetchAndUpdateVehicles(
 	routeId,
 	mapProvider,
 	routeType,
-	highlightedTripId = null
+	highlightedTripId = null,
+	routeColor = undefined
 ) {
 	try {
-		await updateVehicleMarkers(routeId, mapProvider, routeType, highlightedTripId);
+		await updateVehicleMarkers(routeId, mapProvider, routeType, highlightedTripId, routeColor);
 	} catch (error) {
 		console.error('fetchAndUpdateVehicles: initial fetch failed', routeId, error);
 	}
 
 	return setInterval(async () => {
 		try {
-			await updateVehicleMarkers(routeId, mapProvider, routeType, highlightedTripId);
+			await updateVehicleMarkers(routeId, mapProvider, routeType, highlightedTripId, routeColor);
 		} catch (error) {
 			console.error('fetchAndUpdateVehicles: polling update failed', routeId, error);
 		}
