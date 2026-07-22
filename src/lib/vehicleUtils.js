@@ -6,10 +6,13 @@
 const activeTripMap = new Map();
 
 /**
- * @type {Map<activeTripId, marker>}
- * using activeTripId as key instead of vehicleId
+ * @type {Map<vehicleId, marker>}
+ * Keyed by the physical vehicle id. The trips-for-route response can report the
+ * same activeTripId for two different vehicles (e.g. the vehicle actually serving
+ * the trip plus a second one still parked at the base), so keying by trip id
+ * collapsed both into one marker that flipped between their positions on every
+ * refresh. Falls back to activeTripId only when a status has no vehicleId.
  * see (https://developer.onebusaway.org/api/where/elements/trip-status)
- *
  */
 const vehicleMarkersMap = new Map();
 
@@ -36,7 +39,7 @@ export async function updateVehicleMarkers(
 ) {
 	const data = await fetchVehicles(routeId);
 
-	const activeTripIds = new Set();
+	const activeKeys = new Set();
 
 	for (const trip of data.references.trips) {
 		if (!activeTripMap.has(trip.id)) {
@@ -51,13 +54,18 @@ export async function updateVehicleMarkers(
 		// OBA puts the trip state string on status.status (e.g. SCHEDULED, CANCELED), not on status itself
 		if (activeTrip && activeTrip.routeId === routeId && tripStatus.status?.status !== 'CANCELED') {
 			const vehicleStatus = tripStatus.status;
+
 			// Highlight the vehicle serving the trip the user clicked on.
 			const isHighlighted = highlightedTripId != null && activeTripId === highlightedTripId;
 
-			activeTripIds.add(activeTripId);
+			// Key by the physical vehicle so two vehicles sharing an activeTripId
+			// don't collide into one marker that jumps between their positions.
+			const markerKey = vehicleStatus.vehicleId || activeTripId;
 
-			if (vehicleMarkersMap.has(activeTripId)) {
-				const marker = vehicleMarkersMap.get(activeTripId);
+			activeKeys.add(markerKey);
+
+			if (vehicleMarkersMap.has(markerKey)) {
+				const marker = vehicleMarkersMap.get(markerKey);
 
 				mapProvider.updateVehicleMarker(
 					marker,
@@ -73,19 +81,19 @@ export async function updateVehicleMarkers(
 					routeType,
 					isHighlighted
 				);
-				vehicleMarkersMap.set(activeTripId, marker);
+				vehicleMarkersMap.set(markerKey, marker);
 			}
 		}
 	}
 
-	removeInactiveMarkers(activeTripIds, mapProvider);
+	removeInactiveMarkers(activeKeys, mapProvider);
 }
 
-export function removeInactiveMarkers(activeTripIds, mapProvider) {
-	for (const [activeTripId, marker] of vehicleMarkersMap) {
-		if (!activeTripIds.has(activeTripId)) {
+export function removeInactiveMarkers(activeKeys, mapProvider) {
+	for (const [markerKey, marker] of vehicleMarkersMap) {
+		if (!activeKeys.has(markerKey)) {
 			mapProvider.removeVehicleMarker(marker);
-			vehicleMarkersMap.delete(activeTripId);
+			vehicleMarkersMap.delete(markerKey);
 		}
 	}
 }
