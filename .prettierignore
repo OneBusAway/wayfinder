@@ -5,3 +5,5 @@ yarn.lock
 
 # Cursor IDE
 .cursor/
+# Superpowers scratch (git-ignored)
+.superpowers/

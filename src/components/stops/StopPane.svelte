@@ -158,6 +158,12 @@
 
 	let routeShortNames = $derived(routeShortNamesForStop(arrivalsAndDeparturesResponse, stop));
 
+	// references.routes carries the per-route color/textColor; the arrival objects
+	// only carry routeId, so build a lookup to feed RouteBadge via ArrivalDeparture.
+	let routeById = $derived(
+		new Map((arrivalsAndDeparturesResponse?.data?.references?.routes ?? []).map((r) => [r.id, r]))
+	);
+
 	function handleAccordionSelectionChanged(event) {
 		const data = event.activeData; // this is the ArrivalDeparture object plumbed into the AccordionItem
 		const show = !!data;
@@ -314,13 +320,26 @@
 						{@render loadMoreButton(true)}
 					</div>
 				{:else}
+					<h2
+						class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+					>
+						{$isLoading ? '' : $t('arrivals_and_departures')}
+					</h2>
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
-								<AccordionItem data={arrival}>
-									{#snippet header()}
-										<span>
-											<ArrivalDeparture arrivalDeparture={arrival} />
+								<AccordionItem data={arrival} fullBleed hideChevron>
+									{#snippet header(isActive)}
+										<!-- min-w-0 lets this flex child shrink below its content width so the
+										     card's headsign wraps/clamps instead of pushing the ETA off-screen.
+										     ArrivalDeparture renders the chevron itself (stacked under the ETA),
+										     so the built-in AccordionItem chevron is hidden. -->
+										<span class="block min-w-0 flex-1">
+											<ArrivalDeparture
+												arrivalDeparture={arrival}
+												route={routeById.get(arrival.routeId)}
+												expanded={isActive}
+											/>
 										</span>
 									{/snippet}
 									<TripDetailsPane

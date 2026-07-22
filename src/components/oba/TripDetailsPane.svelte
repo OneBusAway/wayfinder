@@ -1,10 +1,15 @@
 <script>
 	import { _ } from 'svelte-i18n';
 	import { onMount, onDestroy } from 'svelte';
-	import { faBus, faLocationDot, faCheck } from '@fortawesome/free-solid-svg-icons';
+	import {
+		faBus,
+		faLocationDot,
+		faCheck,
+		faTowerBroadcast
+	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
-	import { resolveVehicleStopIndex } from '$lib/tripDetailsUtils';
+	import { resolveVehicleStopIndex, computeVisibleStopRange } from '$lib/tripDetailsUtils';
 
 	/**
 	 * @typedef {Object} Props
@@ -23,6 +28,13 @@
 	let interval;
 	let busPosition = $state(-1);
 	let abortController = null;
+
+	// Only show the segment from the vehicle's current position through the
+	// rider's selected stop: stops already passed and stops beyond the rider's
+	// stop are hidden.
+	let visibleRange = $derived(
+		computeVisibleStopRange(tripDetails?.schedule?.stopTimes, busPosition, stop.id)
+	);
 
 	// Locate the vehicle along the trip using the stop IDs the server reports for
 	// exactly this purpose. `closestStop` is the stop nearest the vehicle's
@@ -98,8 +110,13 @@
 	{#if error}
 		<p>{error}</p>
 	{:else if tripDetails}
-		{#if routeInfo}
-			<h2 class="h2">
+		{#if tripDetails.status?.vehicleId}
+			<h2 class="flex items-center gap-2 text-sm font-semibold">
+				<FontAwesomeIcon icon={faTowerBroadcast} class="text-brand" />
+				{$_('trip_details.live_vehicle', { values: { vehicleId: tripDetails.status.vehicleId } })}
+			</h2>
+		{:else if routeInfo}
+			<h2 class="text-sm font-semibold">
 				{$_('trip_details.route')}
 				{routeInfo.shortName}
 			</h2>
@@ -109,38 +126,43 @@
 				<div class="absolute bottom-0 left-3.5 top-0 w-[1px] bg-neutral-400"></div>
 
 				{#each tripDetails.schedule.stopTimes as tripStop, index}
-					<div class="mb-4 flex items-center">
-						<div
-							class="relative flex size-8 items-center justify-center rounded-md border border-neutral-400 bg-white dark:bg-neutral-800"
-						>
-							{#if index === busPosition && tripStop.stopId === stop.id}
-								<FontAwesomeIcon
-									icon={faBus}
-									class="absolute bg-white text-xl text-brand dark:bg-black"
-								/>
-								<!-- Green checkmark to show "bus has arrived to the stop" -->
-								<FontAwesomeIcon
-									icon={faCheck}
-									class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
-								/>
-							{:else if index === busPosition}
-								<FontAwesomeIcon
-									icon={faBus}
-									class="absolute bg-white text-xl text-brand dark:bg-black"
-								/>
-							{:else if tripStop.stopId === stop.id}
-								<FontAwesomeIcon icon={faLocationDot} class="text-md text-brand-accent" />
-							{/if}
-						</div>
-						<div class="ml-4 flex w-full items-center justify-between space-x-1">
-							<div class="text-md font-semibold dark:text-white">
-								{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
+					{#if index >= visibleRange.start && index <= visibleRange.end}
+						<div class="mb-4 flex items-center">
+							<div
+								class="relative flex size-8 items-center justify-center {index === busPosition
+									? 'rounded-md bg-neutral-800 dark:bg-neutral-200'
+									: ''}"
+							>
+								{#if index === busPosition}
+									<FontAwesomeIcon icon={faBus} class="text-sm text-white dark:text-neutral-900" />
+									{#if tripStop.stopId === stop.id}
+										<FontAwesomeIcon
+											icon={faCheck}
+											class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
+										/>
+									{/if}
+								{:else if tripStop.stopId === stop.id}
+									<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
+								{:else}
+									<div
+										class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"
+									></div>
+								{/if}
 							</div>
-							<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-								{formatSecondsFromMidnight(tripStop.arrivalTime)}
+							<div class="ml-4 flex w-full items-center justify-between space-x-1">
+								<div
+									class="text-md dark:text-white {tripStop.stopId === stop.id
+										? 'font-bold'
+										: 'font-semibold'}"
+								>
+									{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
+								</div>
+								<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+									{formatSecondsFromMidnight(tripStop.arrivalTime)}
+								</div>
 							</div>
 						</div>
-					</div>
+					{/if}
 				{/each}
 			</div>
 		{:else}

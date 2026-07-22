@@ -143,7 +143,8 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n}m"
 	},
 	"vehicle": {
 		"number": "Vehicle #",
@@ -231,7 +232,8 @@
 	"trip_details": {
 		"route": "Route",
 		"no_stops": "No stop times available for this trip.",
-		"loading": "Loading trip details..."
+		"loading": "Loading trip details...",
+		"live_vehicle": "Live · vehicle {vehicleId}"
 	},
 	"skip_to_main_content": "Skip to main content"
 }
