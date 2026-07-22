@@ -1,7 +1,12 @@
 <script>
 	import { _ } from 'svelte-i18n';
 	import { onMount, onDestroy } from 'svelte';
-	import { faBus, faLocationDot, faCheck } from '@fortawesome/free-solid-svg-icons';
+	import {
+		faBus,
+		faLocationDot,
+		faCheck,
+		faTowerBroadcast
+	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
 	import { resolveVehicleStopIndex } from '$lib/tripDetailsUtils';
@@ -98,7 +103,12 @@
 	{#if error}
 		<p>{error}</p>
 	{:else if tripDetails}
-		{#if routeInfo}
+		{#if tripDetails.status?.vehicleId}
+			<h2 class="h2 flex items-center gap-2">
+				<FontAwesomeIcon icon={faTowerBroadcast} class="text-brand" />
+				{$_('trip_details.live_vehicle', { values: { vehicleId: tripDetails.status.vehicleId } })}
+			</h2>
+		{:else if routeInfo}
 			<h2 class="h2">
 				{$_('trip_details.route')}
 				{routeInfo.shortName}
@@ -110,30 +120,35 @@
 
 				{#each tripDetails.schedule.stopTimes as tripStop, index}
 					<div class="mb-4 flex items-center">
-						<div
-							class="relative flex size-8 items-center justify-center rounded-md border border-neutral-400 bg-white dark:bg-neutral-800"
-						>
-							{#if index === busPosition && tripStop.stopId === stop.id}
-								<FontAwesomeIcon
-									icon={faBus}
-									class="absolute bg-white text-xl text-brand dark:bg-black"
-								/>
-								<!-- Green checkmark to show "bus has arrived to the stop" -->
-								<FontAwesomeIcon
-									icon={faCheck}
-									class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
-								/>
-							{:else if index === busPosition}
-								<FontAwesomeIcon
-									icon={faBus}
-									class="absolute bg-white text-xl text-brand dark:bg-black"
-								/>
-							{:else if tripStop.stopId === stop.id}
-								<FontAwesomeIcon icon={faLocationDot} class="text-md text-brand-accent" />
-							{/if}
-						</div>
+						{#if index === busPosition}
+							<div
+								class="relative flex size-8 items-center justify-center rounded-md bg-neutral-800 dark:bg-neutral-200"
+							>
+								<FontAwesomeIcon icon={faBus} class="text-sm text-white dark:text-neutral-900" />
+								{#if tripStop.stopId === stop.id}
+									<FontAwesomeIcon
+										icon={faCheck}
+										class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
+									/>
+								{/if}
+							</div>
+						{:else if tripStop.stopId === stop.id}
+							<div class="flex size-8 items-center justify-center">
+								<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
+							</div>
+						{:else}
+							<div class="flex size-8 items-center justify-center">
+								<div
+									class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"
+								></div>
+							</div>
+						{/if}
 						<div class="ml-4 flex w-full items-center justify-between space-x-1">
-							<div class="text-md font-semibold dark:text-white">
+							<div
+								class="text-md dark:text-white"
+								class:font-bold={tripStop.stopId === stop.id}
+								class:font-semibold={tripStop.stopId !== stop.id}
+							>
 								{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 							</div>
 							<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
