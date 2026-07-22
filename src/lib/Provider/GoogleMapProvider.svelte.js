@@ -335,10 +335,10 @@ export default class GoogleMapProvider {
 		}
 	}
 
-	addVehicleMarker(vehicle, activeTrip, routeType, isHighlighted = false) {
+	addVehicleMarker(vehicle, activeTrip, routeType, isHighlighted = false, routeColor = undefined) {
 		if (!this.map) return null;
 
-		let color;
+		let color = routeColor || undefined; // null/'' → createVehicleIconSvg blue default
 		if (!vehicle.predicted) {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
@@ -385,7 +385,14 @@ export default class GoogleMapProvider {
 		return marker;
 	}
 
-	updateVehicleMarker(marker, vehicleStatus, activeTrip, routeType, isHighlighted = false) {
+	updateVehicleMarker(
+		marker,
+		vehicleStatus,
+		activeTrip,
+		routeType,
+		isHighlighted = false,
+		routeColor = undefined
+	) {
 		if (!this.map || !marker) return;
 
 		const current = marker.getPosition();
@@ -397,7 +404,7 @@ export default class GoogleMapProvider {
 			{ routePaths: this._getRoutePaths() }
 		);
 
-		let color;
+		let color = routeColor || undefined; // null/'' → createVehicleIconSvg blue default
 		if (!vehicleStatus.predicted) {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
