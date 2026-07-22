@@ -196,4 +196,48 @@ describe('updateVehicleMarkers', () => {
 			expect(provider.addVehicleMarker).toHaveBeenCalledTimes(1);
 		});
 	});
+
+	test('forwards routeColor as the 5th arg to addVehicleMarker', async () => {
+		mockFetch({
+			references: {
+				trips: [
+					{ id: 'trip-1', routeId: 'route-1' },
+					{ id: 'trip-2', routeId: 'route-1' }
+				]
+			},
+			list: [
+				{ status: { activeTripId: 'trip-1', status: 'SCHEDULED', orientation: 0 } },
+				{ status: { activeTripId: 'trip-2', status: 'SCHEDULED', orientation: 0 } }
+			]
+		});
+		const provider = makeProvider();
+
+		await updateVehicleMarkers('route-1', provider, undefined, 'trip-1', '#0a4ea2');
+		for (const call of provider.addVehicleMarker.mock.calls) {
+			expect(call[4]).toBe('#0a4ea2');
+		}
+	});
+
+	test('forwards routeColor as the 6th arg to updateVehicleMarker', async () => {
+		mockFetch({
+			references: {
+				trips: [
+					{ id: 'trip-1', routeId: 'route-1' },
+					{ id: 'trip-2', routeId: 'route-1' }
+				]
+			},
+			list: [
+				{ status: { activeTripId: 'trip-1', status: 'SCHEDULED', orientation: 0 } },
+				{ status: { activeTripId: 'trip-2', status: 'SCHEDULED', orientation: 0 } }
+			]
+		});
+		// First pass creates markers, second pass updates them.
+		const provider = makeProvider();
+		await updateVehicleMarkers('route-1', provider, undefined, 'trip-1', '#0a4ea2');
+		await updateVehicleMarkers('route-1', provider, undefined, 'trip-1', '#0a4ea2');
+		expect(provider.updateVehicleMarker).toHaveBeenCalled();
+		for (const call of provider.updateVehicleMarker.mock.calls) {
+			expect(call[5]).toBe('#0a4ea2');
+		}
+	});
 });
