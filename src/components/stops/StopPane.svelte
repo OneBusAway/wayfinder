@@ -328,7 +328,7 @@
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
-								<AccordionItem data={arrival}>
+								<AccordionItem data={arrival} fullBleed>
 									{#snippet header()}
 										<!-- min-w-0 lets this flex child shrink below its content width so the
 										     card's headsign truncates instead of pushing the ETA/chevron off-screen -->

@@ -7,10 +7,13 @@
 	 * @property {any} [data]
 	 * @property {import('svelte').Snippet} [header]
 	 * @property {import('svelte').Snippet} [children]
+	 * @property {boolean} [fullBleed] - Extend the header row to the container's
+	 *   edges (negative horizontal margin) while keeping its content padded, so
+	 *   the row background/dividers span full width. Off by default.
 	 */
 
 	/** @type {Props} */
-	let { data = null, header, children } = $props();
+	let { data = null, header, children, fullBleed = false } = $props();
 
 	const id = crypto.randomUUID();
 	const { registerItem } = getContext('accordion');
@@ -21,7 +24,7 @@
 </script>
 
 <div class="relative">
-	<div class="sticky -top-[17px] z-10 bg-white px-4 dark:bg-gray-800">
+	<div class="sticky -top-[17px] z-10 bg-white px-4 dark:bg-gray-800 {fullBleed ? '-mx-4' : ''}">
 		<button
 			type="button"
 			class="flex w-full items-center justify-between py-3 text-left text-base font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"

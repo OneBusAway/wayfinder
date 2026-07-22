@@ -220,7 +220,7 @@
 	<RouteBadge shortName={routeShortName} color={route?.color} textColor={route?.textColor} />
 
 	<div class="min-w-0 flex-1">
-		<p class="truncate text-lg font-semibold text-gray-900 dark:text-white">
+		<p class="line-clamp-2 text-lg font-semibold text-gray-900 dark:text-white">
 			{tripHeadsign}
 		</p>
 		<p class="truncate text-sm">
@@ -232,7 +232,7 @@
 	</div>
 
 	<div class="flex shrink-0 items-start gap-0.5">
-		<span class="text-3xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
+		<span class="text-xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
 		<FontAwesomeIcon
 			icon={arrivalInfo.isPredicted ? faTowerBroadcast : faClock}
 			class="text-xs {arrivalInfo.color}"
