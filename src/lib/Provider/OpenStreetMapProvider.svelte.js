@@ -10,6 +10,7 @@ import {
 import './../../assets/styles/leaflet-map.css';
 import PolylineUtil from 'polyline-encoded';
 import { COLORS } from '$lib/colors';
+import { polylineArrowColor } from '$lib/colorUtils';
 import PopupContent from '$components/map/PopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import { createVehicleIconSvg, iconHeight, iconWidth } from '$lib/MapHelpers/generateVehicleIcon';
@@ -618,6 +619,7 @@ export default class OpenStreetMapProvider {
 
 		if (!withArrow) return polyline;
 
+		const arrowColor = polylineArrowColor(options.color);
 		const arrowDecorator = this.L.polylineDecorator(polyline, {
 			patterns: [
 				{
@@ -626,9 +628,9 @@ export default class OpenStreetMapProvider {
 					symbol: this.L.Symbol.arrowHead({
 						pixelSize: 12,
 						pathOptions: {
-							color: COLORS.POLYLINE_ARROW_STROKE,
+							color: arrowColor,
 							fill: true,
-							fillColor: COLORS.POLYLINE_ARROW_FILL,
+							fillColor: arrowColor,
 							fillOpacity: 0.85
 						}
 					})
