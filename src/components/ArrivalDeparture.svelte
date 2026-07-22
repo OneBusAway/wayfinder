@@ -1,7 +1,10 @@
 <script>
 	import { t } from 'svelte-i18n';
 	import { msToLocalArrivalDepartureTimeString } from '$lib/dateTimeFormat';
-	let { arrivalDeparture, includeArrivalDepartureInStatusLabel = true } = $props();
+	import RouteBadge from '$components/RouteBadge.svelte';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faTowerBroadcast, faClock } from '@fortawesome/free-solid-svg-icons';
+	let { arrivalDeparture, includeArrivalDepartureInStatusLabel = true, route = null } = $props();
 
 	const MS_IN_MINS = 60000;
 
@@ -20,7 +23,9 @@
 		// white) paired with 400 shade in dark mode (passes on gray-800)
 		// The 500 shade fails 4.5:1 in both modes for normal size status text
 		if (!isPredicted) {
-			return 'text-blue-600 dark:text-blue-400';
+			// Scheduled (no real-time) arrivals read fully muted, per the mockup.
+			// gray-500 passes WCAG AA on white; gray-400 passes on the dark gray-800 surface.
+			return 'text-gray-500 dark:text-gray-400';
 		}
 
 		const delay = predictedMins - scheduledMins;
@@ -189,15 +194,11 @@
 	}
 
 	function computeTimeLabel(eta) {
-		if (eta < 0) {
-			return `${eta} ${$t('time.min')}`;
-		} else if (eta === 0) {
+		if (eta === 0) {
 			return $t('time.now');
-		} else if (eta === 1) {
-			return `1 ${$t('time.min')}`;
-		} else {
-			return `${eta} ${$t('time.mins')}`;
 		}
+		// Compact minute form (e.g. "19m", "1m", "-3m"). Unit is localizable.
+		return $t('time.min_compact', { values: { n: eta } });
 	}
 
 	let currentTime = $state(Date.now());
@@ -213,19 +214,27 @@
 	let arrivalInfo = $derived(computeArrivalInfo(currentTime));
 </script>
 
-<div class="flex flex-col gap-1">
-	<p class="text-left text-xl font-semibold text-black dark:text-white">
-		{routeShortName} - {tripHeadsign}
-	</p>
-	<p class="text-left font-semibold text-black dark:text-white">
-		<span class="text-md">{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime)}</span> -
-		<span class={arrivalInfo.color}>
-			{arrivalInfo.statusText}
-		</span>
-	</p>
-</div>
-<div>
-	<p class="text-lg font-semibold {arrivalInfo.color}">
-		{arrivalInfo.timeText}
-	</p>
+<div class="flex items-center gap-3">
+	<RouteBadge shortName={routeShortName} color={route?.color} textColor={route?.textColor} />
+
+	<div class="min-w-0 flex-1">
+		<p class="truncate text-lg font-semibold text-gray-900 dark:text-white">
+			{tripHeadsign}
+		</p>
+		<p class="truncate text-sm">
+			<span class="text-gray-500 dark:text-gray-400"
+				>{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime)}</span
+			>
+			<span class="text-gray-500 dark:text-gray-400"> · </span>
+			<span class={arrivalInfo.color}>{arrivalInfo.statusText}</span>
+		</p>
+	</div>
+
+	<div class="flex shrink-0 items-start gap-0.5">
+		<span class="text-3xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
+		<FontAwesomeIcon
+			icon={arrivalInfo.isPredicted ? faTowerBroadcast : faClock}
+			class="text-xs {arrivalInfo.color}"
+		/>
+	</div>
 </div>

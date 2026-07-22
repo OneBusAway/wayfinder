@@ -143,7 +143,8 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n}m"
 	},
 	"vehicle": {
 		"number": "Vehicle #",

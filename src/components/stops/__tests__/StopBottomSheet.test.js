@@ -95,10 +95,18 @@ describe('StopBottomSheet', () => {
 	test('renders arrivals from the fetched data', async () => {
 		render(StopBottomSheet, { props: defaultProps });
 
+		// ArrivalDeparture now renders the route short name inside a separate
+		// RouteBadge and the headsign in its own element, so assert on each
+		// piece rather than the old concatenated "route - headsign" string.
 		await waitFor(() => {
 			expect(
 				screen.getByText(
-					`${mockArrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures[0].routeShortName} - ${mockArrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures[0].tripHeadsign}`
+					mockArrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures[0].tripHeadsign
+				)
+			).toBeInTheDocument();
+			expect(
+				screen.getByText(
+					mockArrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures[0].routeShortName
 				)
 			).toBeInTheDocument();
 		});

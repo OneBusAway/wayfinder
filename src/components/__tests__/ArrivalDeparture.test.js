@@ -1,0 +1,74 @@
+import { render, screen } from '@testing-library/svelte';
+import { expect, test, describe, vi } from 'vitest';
+
+// Local i18n mock that interpolates {name} values (the global setup mock returns keys).
+// A small dictionary stands in for en.json's format strings so interpolated keys
+// (like time.min_compact -> "{n}m") render real text instead of the raw key.
+vi.mock('svelte-i18n', () => {
+	const messages = {
+		'time.now': 'now',
+		'time.min_compact': '{n}m'
+	};
+	return {
+		t: {
+			subscribe: (fn) => {
+				fn((key, options) => {
+					let str = messages[key] ?? key;
+					if (options?.values) {
+						for (const [name, value] of Object.entries(options.values)) {
+							str = str.replace(`{${name}}`, value);
+						}
+					}
+					return str;
+				});
+				return () => {};
+			}
+		}
+	};
+});
+
+import ArrivalDeparture from '../ArrivalDeparture.svelte';
+
+const MIN = 60000;
+
+function baseArrival(overrides = {}) {
+	return {
+		routeShortName: '10',
+		tripHeadsign: 'Downtown Seattle',
+		stopSequence: 1,
+		predicted: true,
+		scheduledArrivalTime: Date.now() + 10 * MIN,
+		predictedArrivalTime: Date.now() + 10 * MIN,
+		scheduledDepartureTime: Date.now() + 10 * MIN,
+		predictedDepartureTime: Date.now() + 10 * MIN,
+		tripStatus: null,
+		frequency: null,
+		...overrides
+	};
+}
+
+describe('ArrivalDeparture', () => {
+	test('renders the headsign and a route badge with the short name', () => {
+		render(ArrivalDeparture, {
+			props: { arrivalDeparture: baseArrival(), route: { color: 'FF0000', textColor: 'FFFFFF' } }
+		});
+		expect(screen.getByText('Downtown Seattle')).toBeInTheDocument();
+		const badge = screen.getByText('10');
+		expect(badge).toHaveStyle('background-color: #FF0000');
+	});
+
+	test('renders a compact ETA like "10m"', () => {
+		render(ArrivalDeparture, { props: { arrivalDeparture: baseArrival() } });
+		expect(screen.getByText('10m')).toBeInTheDocument();
+	});
+
+	test('uses gray for scheduled (not predicted) arrivals', () => {
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({ predicted: false, predictedArrivalTime: null })
+			}
+		});
+		const eta = screen.getByText('10m');
+		expect(eta.className).toContain('text-gray-500');
+	});
+});
