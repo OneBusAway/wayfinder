@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/svelte';
-import { expect, test, describe, vi } from 'vitest';
+import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 
 // Local i18n mock that interpolates {name} values (the global setup mock returns keys).
 // A small dictionary stands in for en.json's format strings so interpolated keys
@@ -48,6 +48,18 @@ function baseArrival(overrides = {}) {
 }
 
 describe('ArrivalDeparture', () => {
+	// Freeze the clock so baseArrival() and the component derive their ETA from
+	// the same "now" -- otherwise a minute rollover between the two Date.now()
+	// calls could flip an exact assertion (e.g. "10m" -> "9m"). Only Date is
+	// faked; real timers are left alone so async rendering still works.
+	beforeEach(() => {
+		vi.useFakeTimers({ toFake: ['Date'] });
+		vi.setSystemTime(new Date('2026-07-22T12:00:00Z'));
+	});
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
 	test('renders the headsign and a route badge with the short name', () => {
 		render(ArrivalDeparture, {
 			props: { arrivalDeparture: baseArrival(), route: { color: 'FF0000', textColor: 'FFFFFF' } }

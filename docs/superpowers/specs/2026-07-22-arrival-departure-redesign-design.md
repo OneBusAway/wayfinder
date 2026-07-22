@@ -69,7 +69,7 @@ A rounded-square colored badge rendering a route short name.
 
 New full-width flex row (the accordion renders its chevron immediately after):
 
-```
+```text
 [RouteBadge] | headsign (bold) + "time · status" | big ETA + live/clock icon
 ```
 

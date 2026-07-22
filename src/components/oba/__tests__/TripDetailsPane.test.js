@@ -58,13 +58,19 @@ describe('TripDetailsPane', () => {
 	afterEach(() => {
 		vi.useRealTimers();
 		vi.restoreAllMocks();
+		// vi.restoreAllMocks() does not revert a direct global assignment, so the
+		// fetch stub is registered via vi.stubGlobal and cleared here explicitly.
+		vi.unstubAllGlobals();
 	});
 
 	test('shows a "Live · vehicle {id}" heading when a vehicle is present', async () => {
-		global.fetch = vi.fn().mockResolvedValue({
-			ok: true,
-			json: async () => mockTripResponse({ vehicleId: '1_8129001' })
-		});
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () => mockTripResponse({ vehicleId: '1_8129001' })
+			})
+		);
 
 		render(TripDetailsPane, { props: { stop, tripId: '1_trip', serviceDate: 123 } });
 
