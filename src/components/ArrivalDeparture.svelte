@@ -4,7 +4,12 @@
 	import RouteBadge from '$components/RouteBadge.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faTowerBroadcast, faClock } from '@fortawesome/free-solid-svg-icons';
-	let { arrivalDeparture, includeArrivalDepartureInStatusLabel = true, route = null } = $props();
+	let {
+		arrivalDeparture,
+		includeArrivalDepartureInStatusLabel = true,
+		route = null,
+		expanded = false
+	} = $props();
 
 	const MS_IN_MINS = 60000;
 
@@ -231,11 +236,25 @@
 		</p>
 	</div>
 
-	<div class="flex shrink-0 items-start gap-0.5">
-		<span class="text-xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
-		<FontAwesomeIcon
-			icon={arrivalInfo.isPredicted ? faTowerBroadcast : faClock}
-			class="text-xs {arrivalInfo.color}"
-		/>
+	<div class="flex shrink-0 flex-col items-center gap-1">
+		<div class="flex items-start gap-0.5">
+			<span class="text-xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
+			<FontAwesomeIcon
+				icon={arrivalInfo.isPredicted ? faTowerBroadcast : faClock}
+				class="text-xs {arrivalInfo.color}"
+			/>
+		</div>
+		<!-- Expand/collapse chevron, stacked under the ETA (AccordionItem's own
+		     chevron is hidden via hideChevron). -->
+		<svg
+			class="h-5 w-5 text-gray-500 transition-transform dark:text-gray-400"
+			class:rotate-180={expanded}
+			fill="none"
+			stroke="currentColor"
+			viewBox="0 0 24 24"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+		</svg>
 	</div>
 </div>

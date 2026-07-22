@@ -328,14 +328,17 @@
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
-								<AccordionItem data={arrival} fullBleed>
-									{#snippet header()}
+								<AccordionItem data={arrival} fullBleed hideChevron>
+									{#snippet header(isActive)}
 										<!-- min-w-0 lets this flex child shrink below its content width so the
-										     card's headsign truncates instead of pushing the ETA/chevron off-screen -->
+										     card's headsign wraps/clamps instead of pushing the ETA off-screen.
+										     ArrivalDeparture renders the chevron itself (stacked under the ETA),
+										     so the built-in AccordionItem chevron is hidden. -->
 										<span class="block min-w-0 flex-1">
 											<ArrivalDeparture
 												arrivalDeparture={arrival}
 												route={routeById.get(arrival.routeId)}
+												expanded={isActive}
 											/>
 										</span>
 									{/snippet}

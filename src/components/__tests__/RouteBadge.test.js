@@ -21,4 +21,18 @@ describe('RouteBadge', () => {
 		expect(badge).toHaveStyle('background-color: #374151');
 		expect(badge).toHaveStyle('color: #ffffff');
 	});
+
+	test('keeps short codes at the base 14px size', () => {
+		render(RouteBadge, { props: { shortName: '10' } });
+		expect(screen.getByText('10')).toHaveStyle('font-size: 14px');
+	});
+
+	test('shrinks the font so a long name like "Waterfront Shuttle" fits the box', () => {
+		render(RouteBadge, { props: { shortName: 'Waterfront Shuttle' } });
+		const badge = screen.getByText('Waterfront Shuttle');
+		// longest word "Waterfront" (10 chars) -> round(96/10) = 10px, well below 14
+		const fontSize = parseInt(badge.style.fontSize, 10);
+		expect(fontSize).toBeLessThan(14);
+		expect(fontSize).toBeGreaterThanOrEqual(9);
+	});
 });

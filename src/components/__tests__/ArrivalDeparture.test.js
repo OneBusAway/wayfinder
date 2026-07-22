@@ -96,4 +96,21 @@ describe('ArrivalDeparture', () => {
 		expect(eta.className).toContain('text-xl');
 		expect(eta.className).not.toContain('text-3xl');
 	});
+
+	test('renders its own chevron that rotates only when expanded', async () => {
+		// the chevron is the plain svg with `transition-transform` (not a FontAwesome icon)
+		const chevronOf = (container) =>
+			[...container.querySelectorAll('svg')].find((s) =>
+				s.getAttribute('class')?.includes('transition-transform')
+			);
+
+		const { container, rerender } = render(ArrivalDeparture, {
+			props: { arrivalDeparture: baseArrival(), expanded: false }
+		});
+		expect(chevronOf(container)).toBeTruthy();
+		expect(chevronOf(container).getAttribute('class')).not.toContain('rotate-180');
+
+		await rerender({ arrivalDeparture: baseArrival(), expanded: true });
+		expect(chevronOf(container).getAttribute('class')).toContain('rotate-180');
+	});
 });
