@@ -4,6 +4,10 @@
 
 	let { schedule } = $props();
 
+	/** Unique per instance so multiple expanded route tables don't share one */
+	/** caption id (aria-labelledby would otherwise resolve to the first table). */
+	const captionId = `schedule-table-caption-${crypto.randomUUID()}`;
+
 	let scheduleData = $derived(renderScheduleTable(schedule));
 
 	function renderScheduleTable(schedule) {
@@ -29,13 +33,13 @@
 <div
 	role="region"
 	tabindex="0"
-	aria-labelledby="schedule-table-caption"
+	aria-labelledby={captionId}
 	class="overflow-x-auto dark:bg-black"
 >
 	<table
 		class="mt-4 w-full table-auto rounded-lg border border-gray-200 shadow-lg dark:border-gray-700 dark:bg-black"
 	>
-		<caption id="schedule-table-caption" class="sr-only">
+		<caption id={captionId} class="sr-only">
 			{$isLoading
 				? ''
 				: $t('schedule_for_stop.schedule_table_caption', {

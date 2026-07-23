@@ -46,13 +46,15 @@ describe('RouteScheduleTable accessibility', () => {
 	});
 
 	test('exposes the table within a keyboard-focusable labelled region', () => {
-		render(RouteScheduleTable, { props: { schedule } });
+		const { container } = render(RouteScheduleTable, { props: { schedule } });
 
 		const region = screen.getByRole('region', {
 			name: 'Departure times for 44 - University District'
 		});
+		const caption = container.querySelector('caption');
 		expect(region).toHaveAttribute('tabindex', '0');
-		expect(region).toHaveAttribute('aria-labelledby', 'schedule-table-caption');
+		expect(region).toHaveAttribute('aria-labelledby', caption.id);
+		expect(caption.id).toMatch(/^schedule-table-caption-/);
 		expect(region).not.toHaveAttribute('aria-label');
 		expect(region.querySelector('table')).toBeInTheDocument();
 	});
@@ -60,9 +62,25 @@ describe('RouteScheduleTable accessibility', () => {
 	test('table has a caption providing context for the route', () => {
 		const { container } = render(RouteScheduleTable, { props: { schedule } });
 
-		const caption = container.querySelector('#schedule-table-caption');
+		const caption = container.querySelector('caption');
 		expect(caption).toBeInTheDocument();
 		expect(caption).toHaveTextContent('Departure times for 44 - University District');
+	});
+
+	test('assigns a unique caption id per instance', () => {
+		const { container: first } = render(RouteScheduleTable, { props: { schedule } });
+		const { container: second } = render(RouteScheduleTable, {
+			props: { schedule: { ...schedule, tripHeadsign: '8 - Rainier Beach' } }
+		});
+
+		const firstCaption = first.querySelector('caption');
+		const secondCaption = second.querySelector('caption');
+		const firstRegion = first.querySelector('[role="region"]');
+		const secondRegion = second.querySelector('[role="region"]');
+
+		expect(firstCaption.id).not.toBe(secondCaption.id);
+		expect(firstRegion).toHaveAttribute('aria-labelledby', firstCaption.id);
+		expect(secondRegion).toHaveAttribute('aria-labelledby', secondCaption.id);
 	});
 
 	test('AM and PM section rows are header cells with rowgroup scope', () => {
@@ -110,10 +128,10 @@ describe('RouteScheduleTable loading state', () => {
 		const { container } = render(RouteScheduleTable, { props: { schedule } });
 
 		const region = container.querySelector('[role="region"]');
+		const caption = container.querySelector('caption');
 		expect(region).not.toHaveAttribute('aria-label');
-		expect(region).toHaveAttribute('aria-labelledby', 'schedule-table-caption');
-
-		const caption = container.querySelector('#schedule-table-caption');
+		expect(region).toHaveAttribute('aria-labelledby', caption.id);
+		expect(caption.id).toMatch(/^schedule-table-caption-/);
 		expect(caption).toHaveTextContent('');
 	});
 });
