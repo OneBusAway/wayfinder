@@ -361,6 +361,63 @@ describe('addVehicleMarker — route color', () => {
 	});
 });
 
+describe('setTheme — avoids redundant layer rebuilds', () => {
+	let provider;
+	let removeLayer;
+
+	beforeEach(() => {
+		provider = new OpenStreetMapProvider(vi.fn());
+		removeLayer = vi.fn();
+		provider.map = { removeLayer };
+		provider.L = {
+			maplibreGL: vi.fn(() => ({ addTo: vi.fn().mockReturnThis() }))
+		};
+		// Simulate post-initMap state: the light (positron) style is applied.
+		provider.currentStyleUrl = 'https://tiles.openfreemap.org/styles/positron';
+		provider.maplibreLayer = { existing: true };
+	});
+
+	// Regression guard: onMount dispatches a themeChange right after initMap, so
+	// setTheme is called with the theme that already matches the boot style. If it
+	// rebuilds the layer, MapLibre re-fetches the style/sprites/fonts/tiles and the
+	// whole map loads over the network twice.
+	test('does not rebuild the layer when the style is unchanged', () => {
+		provider.setTheme('light');
+
+		expect(removeLayer).not.toHaveBeenCalled();
+		expect(provider.L.maplibreGL).not.toHaveBeenCalled();
+		expect(provider.currentStyleUrl).toBe('https://tiles.openfreemap.org/styles/positron');
+	});
+
+	test('rebuilds with the new style when the theme actually changes', () => {
+		provider.setTheme('dark');
+
+		expect(removeLayer).toHaveBeenCalledWith({ existing: true });
+		expect(provider.L.maplibreGL).toHaveBeenCalledWith({
+			style: 'https://tiles.openfreemap.org/styles/dark'
+		});
+		expect(provider.currentStyleUrl).toBe('https://tiles.openfreemap.org/styles/dark');
+	});
+
+	test('a repeated switch to the same theme is a no-op after the first change', () => {
+		provider.setTheme('dark');
+		provider.L.maplibreGL.mockClear();
+		removeLayer.mockClear();
+
+		provider.setTheme('dark');
+
+		expect(removeLayer).not.toHaveBeenCalled();
+		expect(provider.L.maplibreGL).not.toHaveBeenCalled();
+	});
+
+	test('bails out before the map is initialized', () => {
+		provider.map = null;
+		provider.setTheme('dark');
+
+		expect(provider.L.maplibreGL).not.toHaveBeenCalled();
+	});
+});
+
 describe('flyTo — vertical offset for the bottom sheet', () => {
 	let provider;
 
