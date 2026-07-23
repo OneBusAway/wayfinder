@@ -1,6 +1,7 @@
 <script>
 	import { pushState, replaceState, afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { get } from 'svelte/store';
 	import SearchPane from '$components/search/SearchPane.svelte';
 	import MapContainer from '$components/MapContainer.svelte';
 	import RouteModal from '$components/routes/RouteModal.svelte';
@@ -30,12 +31,18 @@
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
 	import { mapStopPath } from '$lib/mapStopUrl.js';
 
-	// Parse initial coordinates from URL query parameters
-	const initialCoords = parseInitialCoordinates(
-		$page.url.searchParams,
-		Number(PUBLIC_OBA_REGION_CENTER_LAT),
-		Number(PUBLIC_OBA_REGION_CENTER_LNG)
-	);
+	// One-time snapshot at mount: on a cold /map/stops/{id} load, `data.stopData` is
+	// present, so boot the map centered on the stop (the selection effect then applies
+	// the mobile offset with animate:false — no visible pan). Otherwise fall back to the
+	// existing ?lat/?lng query params / region center.
+	const initialPage = get(page);
+	const initialCoords = initialPage.data?.stopData
+		? { lat: initialPage.data.stopData.lat, lng: initialPage.data.stopData.lon }
+		: parseInitialCoordinates(
+				initialPage.url.searchParams,
+				Number(PUBLIC_OBA_REGION_CENTER_LAT),
+				Number(PUBLIC_OBA_REGION_CENTER_LNG)
+			);
 
 	let currentModal = $state(null);
 	let selectedTrip = $state(null);
