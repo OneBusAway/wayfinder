@@ -345,11 +345,6 @@
 						{@render loadMoreButton(true)}
 					</div>
 				{:else}
-					<h2
-						class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
-					>
-						{$isLoading ? '' : $t('arrivals_and_departures')}
-					</h2>
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}

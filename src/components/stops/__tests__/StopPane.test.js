@@ -271,7 +271,7 @@ describe('StopPane', () => {
 		});
 	});
 
-	test('renders the ARRIVALS & DEPARTURES section header when arrivals exist', async () => {
+	test('does not render an "Arrivals and departures" section header', async () => {
 		global.fetch.mockResolvedValueOnce({
 			ok: true,
 			status: 200,
@@ -280,8 +280,10 @@ describe('StopPane', () => {
 
 		render(StopPane, { props: { stop: mockStopData } });
 		await waitFor(() => {
-			expect(screen.getByText('Arrivals and departures')).toBeInTheDocument();
+			expect(global.fetch).toHaveBeenCalled();
 		});
+
+		expect(screen.queryByText('Arrivals and departures')).not.toBeInTheDocument();
 	});
 
 	test('displays route information when available', async () => {
@@ -515,10 +517,9 @@ describe('StopPane', () => {
 			expect(stopNameHeading).toHaveTextContent('Pine St & 3rd Ave');
 
 			const headings = screen.getAllByRole('heading', { level: 2 });
-			expect(headings).toHaveLength(3);
+			expect(headings).toHaveLength(2);
 			expect(headings[0]).toHaveTextContent('Stop #75403');
 			expect(headings[1]).toHaveTextContent('Routes: 10, 11');
-			expect(headings[2]).toHaveTextContent('Arrivals and departures');
 		});
 	});
 

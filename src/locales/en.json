@@ -131,6 +131,7 @@
 	"refresh": "Refresh",
 	"no_arrivals_found_in_next_minutes": "No arrivals found in the next {minutes} minutes",
 	"stop": "Stop",
+	"direction_bound": "{direction} bound",
 	"routes": "Routes",
 	"route": "route",
 	"route_modal_title": "Route {name}",
@@ -197,7 +198,8 @@
 	},
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
-		"view_details": "View Details"
+		"view_details": "View Details",
+		"stop_info": "Stop Info"
 	},
 	"language_switcher": {
 		"select_language": "Select language: {language}",
