@@ -87,6 +87,11 @@
 		currentModal = Modal.STOP;
 		stop = stopData;
 		searchCollapsed = true;
+		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
+		// bottom sheet, so open it fully instead of at the half detent.
+		if (browser && window.innerWidth >= 768) {
+			sheetSnap = 'full';
+		}
 		pushState(`/stops/${stop.id}`);
 		loadSurveys(stop, getUserId());
 
@@ -111,6 +116,11 @@
 
 	function handleViewAllRoutes() {
 		currentModal = Modal.ALL_ROUTES;
+		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
+		// bottom sheet, so open it fully instead of at the half detent.
+		if (browser && window.innerWidth >= 768) {
+			sheetSnap = 'full';
+		}
 	}
 
 	function handleModalRouteClick(route) {
@@ -211,6 +221,11 @@
 		currentIntervalId = routeData.currentIntervalId;
 		currentModal = Modal.ROUTE;
 		isRouteSelected = true;
+		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
+		// bottom sheet, so open it fully instead of at the half detent.
+		if (browser && window.innerWidth >= 768) {
+			sheetSnap = 'full';
+		}
 		analytics.reportRouteClicked(selectedRoute.id);
 	}
 
@@ -264,6 +279,11 @@
 		tripItineraries = tripData.plan?.itineraries || [];
 		tripPlanError = tripData.error || null;
 		currentModal = Modal.TRIP_PLANNER;
+		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
+		// bottom sheet, so open it fully instead of at the half detent.
+		if (browser && window.innerWidth >= 768) {
+			sheetSnap = 'full';
+		}
 	}
 
 	function handleTabSwitched() {
@@ -362,9 +382,9 @@
 						bind:snap={sheetSnap}
 					/>
 				{:else if currentModal === Modal.ROUTE}
-					<RouteModal {closePane} {mapProvider} {stops} {selectedRoute} />
+					<RouteModal {closePane} {mapProvider} {stops} {selectedRoute} bind:snap={sheetSnap} />
 				{:else if currentModal === Modal.ALL_ROUTES}
-					<ViewAllRoutesModal {closePane} {handleModalRouteClick} />
+					<ViewAllRoutesModal {closePane} {handleModalRouteClick} bind:snap={sheetSnap} />
 				{:else if currentModal === Modal.TRIP_PLANNER}
 					<TripPlanModal
 						{mapProvider}
@@ -372,6 +392,7 @@
 						error={tripPlanError}
 						loading={loadingItineraries}
 						closePane={closeTripPlanModal}
+						bind:snap={sheetSnap}
 					/>
 				{/if}
 			</div>

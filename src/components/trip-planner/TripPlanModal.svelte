@@ -1,8 +1,11 @@
 <script>
-	import ModalPane from '$components/navigation/ModalPane.svelte';
+	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import ItineraryDetails from './ItineraryDetails.svelte';
 	import ItineraryTab from './ItineraryTab.svelte';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faX } from '@fortawesome/free-solid-svg-icons';
+	import { keybinding } from '$lib/keybinding';
 	import { onDestroy, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -14,10 +17,18 @@
 	 * @property {any} [error]
 	 * @property {boolean} [loading]
 	 * @property {Function} closePane
+	 * @property {('peek'|'half'|'full')} [snap]
 	 */
 
 	/** @type {Props} */
-	let { mapProvider, itineraries = [], error = null, loading = false, closePane } = $props();
+	let {
+		mapProvider,
+		itineraries = [],
+		error = null,
+		loading = false,
+		closePane,
+		snap = $bindable('half')
+	} = $props();
 
 	let expandedSteps = $state({});
 	let activeTab = $state(0);
@@ -125,7 +136,24 @@
 	});
 </script>
 
-<ModalPane {closePane} title={$t('trip-planner.trip_itineraries')}>
+<BottomSheet bind:snap>
+	{#snippet header()}
+		<div class="flex items-center gap-2.5">
+			<p class="min-w-0 flex-1 truncate text-base font-semibold text-black dark:text-white">
+				{$t('trip-planner.trip_itineraries')}
+			</p>
+			<button
+				type="button"
+				onclick={closePane}
+				use:keybinding={{ code: 'Escape' }}
+				class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gray-200 text-sm text-black hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+			>
+				<FontAwesomeIcon icon={faX} />
+				<span class="sr-only">{$t('sheet.close')}</span>
+			</button>
+		</div>
+	{/snippet}
+
 	{#if loading}
 		<LoadingSpinner />
 	{/if}
@@ -163,7 +191,7 @@
 			{/if}
 		</div>
 	{/if}
-</ModalPane>
+</BottomSheet>
 
 <style>
 	.animate-fade-in {

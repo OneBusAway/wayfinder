@@ -1,12 +1,27 @@
+<!--
+    @component
+    Lists every route in the region inside a draggable bottom sheet so the map
+    stays visible behind it, at every viewport width. The condensed header (title
+    + close action) lives in the drag-handle row; the search field and route list
+    scroll in the sheet body.
+
+    @prop {Function} handleModalRouteClick - Called when a route row is tapped
+    @prop {Function} closePane - Called when the close button is tapped (or Escape is pressed)
+    @prop {('peek'|'half'|'full')} snap - Bindable current snap point of the sheet
+-->
+
 <script>
-	import ModalPane from '$components/navigation/ModalPane.svelte';
+	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import RouteItem from '$components/RouteItem.svelte';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faX } from '@fortawesome/free-solid-svg-icons';
+	import { keybinding } from '$lib/keybinding';
 	import { onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import { filterAndSortRoutes } from '$lib/routeUtils';
 
-	let { handleModalRouteClick, closePane } = $props();
+	let { handleModalRouteClick, closePane, snap = $bindable('half') } = $props();
 
 	let routes = $state([]);
 	let filteredRoutes = $state([]);
@@ -50,14 +65,31 @@
 	}
 </script>
 
-<ModalPane {closePane} title={$t('search.all_routes')}>
+<BottomSheet bind:snap>
+	{#snippet header()}
+		<div class="flex items-center gap-2.5">
+			<p class="min-w-0 flex-1 truncate text-base font-semibold text-black dark:text-white">
+				{$t('search.all_routes')}
+			</p>
+			<button
+				type="button"
+				onclick={closePane}
+				use:keybinding={{ code: 'Escape' }}
+				class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gray-200 text-sm text-black hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+			>
+				<FontAwesomeIcon icon={faX} />
+				<span class="sr-only">{$t('sheet.close')}</span>
+			</button>
+		</div>
+	{/snippet}
+
 	{#if loading}
 		<LoadingSpinner />
 	{/if}
 
 	{#if routes.length > 0}
 		<div>
-			<div class="sticky top-0">
+			<div class="sticky top-0 z-10 bg-surface pb-2 dark:bg-surface-dark">
 				<input
 					type="text"
 					placeholder={$t('search.search_for_routes')}
@@ -95,4 +127,4 @@
 			</div>
 		</div>
 	{/if}
-</ModalPane>
+</BottomSheet>
