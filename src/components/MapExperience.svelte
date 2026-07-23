@@ -73,7 +73,7 @@
 
 	// The open stop is driven by page.state.stopData. A marker tap sets it via shallow
 	// pushState; a cold load / share seeds it from the server load's page.data in
-	// onMount (below). IMPORTANT: shallow pushState updates page.state and the browser
+	// afterNavigate (below). IMPORTANT: shallow pushState updates page.state and the browser
 	// URL bar, but NOT the reactive $page.url — so page.state, not the URL, is the
 	// signal. Because page.state is cleared on close, gating on its presence is safe
 	// (unlike page.data, which lingers after a real navigation).
