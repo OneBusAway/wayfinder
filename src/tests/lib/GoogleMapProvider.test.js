@@ -191,3 +191,49 @@ describe('flyTo — vertical offset for the bottom sheet', () => {
 		expect(provider.map.panBy).toHaveBeenCalledWith(0, 200);
 	});
 });
+
+describe('addUserLocationMarker — one marker, repositioned', () => {
+	let provider;
+	let MarkerMock;
+
+	beforeEach(() => {
+		MarkerMock = vi.fn(function GoogleMarker(options) {
+			this.options = options;
+			this.setMap = vi.fn();
+			this.setPosition = vi.fn();
+		});
+		setupGoogleMaps(MarkerMock);
+		provider = new GoogleMapProvider('key', vi.fn());
+		provider.map = {};
+	});
+
+	test('creates the marker on the first call', () => {
+		const marker = provider.addUserLocationMarker({ lat: 47.6, lng: -122.3 });
+
+		expect(MarkerMock).toHaveBeenCalledOnce();
+		expect(marker.options.position).toEqual({ lat: 47.6, lng: -122.3 });
+		expect(provider.userLocationMarker).toBe(marker);
+	});
+
+	test('moves the existing marker instead of stacking a second one', () => {
+		const first = provider.addUserLocationMarker({ lat: 47.6, lng: -122.3 });
+		const second = provider.addUserLocationMarker({ lat: 47.5, lng: -122.4 });
+
+		expect(MarkerMock).toHaveBeenCalledOnce();
+		expect(second).toBe(first);
+		expect(first.setPosition).toHaveBeenCalledWith({ lat: 47.5, lng: -122.4 });
+	});
+
+	test('removeUserLocationMarker detaches the marker and clears the reference', () => {
+		const marker = provider.addUserLocationMarker({ lat: 47.6, lng: -122.3 });
+
+		provider.removeUserLocationMarker();
+
+		expect(marker.setMap).toHaveBeenCalledWith(null);
+		expect(provider.userLocationMarker).toBeNull();
+	});
+
+	test('removeUserLocationMarker is a no-op when no marker exists', () => {
+		expect(() => provider.removeUserLocationMarker()).not.toThrow();
+	});
+});

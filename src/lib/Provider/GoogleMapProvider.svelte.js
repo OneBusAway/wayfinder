@@ -34,6 +34,7 @@ export default class GoogleMapProvider {
 		this.routeLabelsVisible = false;
 		this.contextMenuInfoWindow = null;
 		this.contextMenuComponent = null;
+		this.userLocationMarker = null;
 	}
 
 	async initMap(element, options) {
@@ -487,8 +488,18 @@ export default class GoogleMapProvider {
 		this.map.setOptions({ styles });
 	}
 
+	/**
+	 * Shows the user's location. There is only ever one such marker: repeat calls
+	 * move the existing one, so successive location fixes can't leave a trail of
+	 * stale blue dots behind.
+	 */
 	addUserLocationMarker(latLng) {
-		new google.maps.Marker({
+		if (this.userLocationMarker) {
+			this.userLocationMarker.setPosition(latLng);
+			return this.userLocationMarker;
+		}
+
+		this.userLocationMarker = new google.maps.Marker({
 			map: this.map,
 			position: latLng,
 			title: 'Your Location',
@@ -501,6 +512,14 @@ export default class GoogleMapProvider {
 				strokeColor: '#FFFFFF'
 			}
 		});
+
+		return this.userLocationMarker;
+	}
+
+	removeUserLocationMarker() {
+		if (!this.userLocationMarker) return;
+		this.userLocationMarker.setMap(null);
+		this.userLocationMarker = null;
 	}
 
 	/**

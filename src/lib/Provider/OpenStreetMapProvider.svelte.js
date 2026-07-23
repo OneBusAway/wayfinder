@@ -51,6 +51,7 @@ export default class OpenStreetMapProvider {
 		this.routeLabelsVisible = false;
 		this.contextMenuPopup = null;
 		this.contextMenuComponent = null;
+		this.userLocationMarker = null;
 		// Incremented on each fitToPolylines() so a superseded route load's
 		// pending reveal can detect it's stale and bail out.
 		this._fitToken = 0;
@@ -515,15 +516,34 @@ export default class OpenStreetMapProvider {
 		this.map.on(event, callback);
 	}
 
+	/**
+	 * Shows the user's location. There is only ever one such marker: repeat calls
+	 * move the existing one, so successive location fixes can't leave a trail of
+	 * stale blue dots behind.
+	 */
 	addUserLocationMarker(latLng) {
-		if (!browser || !this.map) return;
-		this.L.circleMarker([latLng.lat, latLng.lng], {
+		if (!browser || !this.map) return null;
+
+		if (this.userLocationMarker) {
+			this.userLocationMarker.setLatLng([latLng.lat, latLng.lng]);
+			return this.userLocationMarker;
+		}
+
+		this.userLocationMarker = this.L.circleMarker([latLng.lat, latLng.lng], {
 			radius: 8,
 			fillColor: '#007BFF',
 			fillOpacity: 1,
 			color: '#FFFFFF',
 			weight: 2
 		}).addTo(this.map);
+
+		return this.userLocationMarker;
+	}
+
+	removeUserLocationMarker() {
+		if (!browser || !this.map || !this.userLocationMarker) return;
+		this.map.removeLayer(this.userLocationMarker);
+		this.userLocationMarker = null;
 	}
 
 	setCenter(latLng) {

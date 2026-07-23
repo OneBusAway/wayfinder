@@ -454,3 +454,53 @@ describe('flyTo — vertical offset for the bottom sheet', () => {
 		expect(flyTo).toHaveBeenCalledWith(shiftedCenter, 16, { animate: true });
 	});
 });
+
+describe('addUserLocationMarker — one marker, repositioned', () => {
+	let provider;
+	let circleMarker;
+	let removeLayer;
+
+	beforeEach(() => {
+		circleMarker = vi.fn(() => ({
+			addTo: vi.fn().mockReturnThis(),
+			setLatLng: vi.fn()
+		}));
+		removeLayer = vi.fn();
+		provider = new OpenStreetMapProvider(vi.fn());
+		provider.L = { circleMarker };
+		provider.map = { removeLayer };
+	});
+
+	test('creates the marker on the first call', () => {
+		const marker = provider.addUserLocationMarker({ lat: 47.6, lng: -122.3 });
+
+		expect(circleMarker).toHaveBeenCalledOnce();
+		expect(circleMarker.mock.calls[0][0]).toEqual([47.6, -122.3]);
+		expect(marker.addTo).toHaveBeenCalledWith(provider.map);
+		expect(provider.userLocationMarker).toBe(marker);
+	});
+
+	test('moves the existing marker instead of stacking a second one', () => {
+		const first = provider.addUserLocationMarker({ lat: 47.6, lng: -122.3 });
+		const second = provider.addUserLocationMarker({ lat: 47.5, lng: -122.4 });
+
+		expect(circleMarker).toHaveBeenCalledOnce();
+		expect(second).toBe(first);
+		expect(first.setLatLng).toHaveBeenCalledWith([47.5, -122.4]);
+	});
+
+	test('removeUserLocationMarker drops the layer and clears the reference', () => {
+		const marker = provider.addUserLocationMarker({ lat: 47.6, lng: -122.3 });
+
+		provider.removeUserLocationMarker();
+
+		expect(removeLayer).toHaveBeenCalledWith(marker);
+		expect(provider.userLocationMarker).toBeNull();
+	});
+
+	test('removeUserLocationMarker is a no-op when no marker exists', () => {
+		provider.removeUserLocationMarker();
+
+		expect(removeLayer).not.toHaveBeenCalled();
+	});
+});

@@ -146,13 +146,10 @@
 
 			mapInstance = mapProvider;
 
-			// If we have initial coordinates from URL, update the user location store
-			// and add a user location marker
-			if (initialCoords) {
-				const coords = { lat: mapCenterLat, lng: mapCenterLng };
-				userLocation.set(coords);
-				mapInstance.addUserLocationMarker(coords);
-			}
+			// `initialCoords` only says where to center the map — it's a deep-linked
+			// stop or ?lat/?lng, never a geolocation fix. Don't drop a "you are here"
+			// dot on it or seed the userLocation store (which feeds the analytics
+			// distance-to-stop bucket) with coordinates that aren't the user's.
 
 			await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
 
