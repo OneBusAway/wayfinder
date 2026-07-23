@@ -30,12 +30,7 @@
 <!-- A focusable scroll container gives keyboard users an entry point to the
 	scrollable schedule table; role="region" + aria-labelledby name it via the caption. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div
-	role="region"
-	tabindex="0"
-	aria-labelledby={captionId}
-	class="overflow-x-auto dark:bg-black"
->
+<div role="region" tabindex="0" aria-labelledby={captionId} class="overflow-x-auto dark:bg-black">
 	<table
 		class="mt-4 w-full table-auto rounded-lg border border-gray-200 shadow-lg dark:border-gray-700 dark:bg-black"
 	>
