@@ -1,9 +1,26 @@
+<!--
+    @component
+    Shows a selected route's description and its list of stops inside a draggable
+    bottom sheet so the map stays visible behind it, at every viewport width. The
+    condensed header (route title + close action) lives in the drag-handle row;
+    the route hero and stop list scroll in the sheet body.
+
+    @prop {Object} selectedRoute - The currently selected route
+    @prop {Array} stops - Stops served by the route
+    @prop {Object} mapProvider - Map provider used to reposition on stop taps
+    @prop {Function} closePane - Called when the close button is tapped (or Escape is pressed)
+    @prop {('peek'|'half'|'full')} snap - Bindable current snap point of the sheet
+-->
+
 <script>
 	import StopItem from '$components/StopItem.svelte';
-	import ModalPane from '$components/navigation/ModalPane.svelte';
+	import BottomSheet from '$components/navigation/BottomSheet.svelte';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faX } from '@fortawesome/free-solid-svg-icons';
+	import { keybinding } from '$lib/keybinding';
 	import { t } from 'svelte-i18n';
 
-	let { selectedRoute, stops, mapProvider, closePane } = $props();
+	let { selectedRoute, stops, mapProvider, closePane, snap = $bindable('half') } = $props();
 
 	let showFullDescription = $state(false);
 
@@ -39,7 +56,24 @@
 	}
 </script>
 
-<ModalPane {closePane} title={title()}>
+<BottomSheet bind:snap>
+	{#snippet header()}
+		<div class="flex items-center gap-2.5">
+			<p class="min-w-0 flex-1 truncate text-base font-semibold text-black dark:text-white">
+				{title()}
+			</p>
+			<button
+				type="button"
+				onclick={closePane}
+				use:keybinding={{ code: 'Escape' }}
+				class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gray-200 text-sm text-black hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+			>
+				<FontAwesomeIcon icon={faX} />
+				<span class="sr-only">{$t('sheet.close')}</span>
+			</button>
+		</div>
+	{/snippet}
+
 	{#if stops && selectedRoute}
 		<div class="space-y-4">
 			<div>
@@ -78,4 +112,4 @@
 			</div>
 		</div>
 	{/if}
-</ModalPane>
+</BottomSheet>
