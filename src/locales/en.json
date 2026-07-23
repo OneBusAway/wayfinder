@@ -128,6 +128,7 @@
 	"show_more": "Show more",
 	"show_less": "Show less",
 	"load_more_arrivals": "Load more arrivals",
+	"refresh": "Refresh",
 	"no_arrivals_found_in_next_minutes": "No arrivals found in the next {minutes} minutes",
 	"stop": "Stop",
 	"routes": "Routes",
