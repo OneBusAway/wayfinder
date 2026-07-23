@@ -1,6 +1,7 @@
 <script>
-	import { pushState } from '$app/navigation';
+	import { pushState, replaceState, afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { get } from 'svelte/store';
 	import SearchPane from '$components/search/SearchPane.svelte';
 	import MapContainer from '$components/MapContainer.svelte';
 	import RouteModal from '$components/routes/RouteModal.svelte';
@@ -28,16 +29,22 @@
 	import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
+	import { mapStopPath } from '$lib/mapStopUrl.js';
 
-	// Parse initial coordinates from URL query parameters
-	const initialCoords = parseInitialCoordinates(
-		$page.url.searchParams,
-		Number(PUBLIC_OBA_REGION_CENTER_LAT),
-		Number(PUBLIC_OBA_REGION_CENTER_LNG)
-	);
+	// One-time snapshot at mount: on a cold /map/stops/{id} load, `data.stopData` is
+	// present, so boot the map centered on the stop (the selection effect then applies
+	// the mobile offset with animate:false — no visible pan). Otherwise fall back to the
+	// existing ?lat/?lng query params / region center.
+	const initialPage = get(page);
+	const initialCoords = initialPage.data?.stopData
+		? { lat: initialPage.data.stopData.lat, lng: initialPage.data.stopData.lon }
+		: parseInitialCoordinates(
+				initialPage.url.searchParams,
+				Number(PUBLIC_OBA_REGION_CENTER_LAT),
+				Number(PUBLIC_OBA_REGION_CENTER_LNG)
+			);
 
 	let currentModal = $state(null);
-	let stop = $state();
 	let selectedTrip = $state(null);
 	let isRouteSelected = $state(false);
 	let selectedRoute = $state(null);
@@ -54,65 +61,133 @@
 	let loadingItineraries = false;
 	let currentHighlightedStopId = null;
 
+	// Last stop id the effect acted on, and whether the map was already interactive
+	// on a prior run — used to decide animate (cold load snaps; in-app taps animate).
+	let appliedStopId = null;
+	let mapWasReady = false;
+
 	let currentUserLocation = $state($userLocation);
 
 	const Modal = {
-		STOP: 'stop',
 		ROUTE: 'route',
 		ALL_ROUTES: 'allRoutes',
 		TRIP_PLANNER: 'tripPlanner'
 	};
+
+	// Fraction of map height to lift a selected stop above center so the mobile
+	// bottom sheet (half detent, ~55% tall) doesn't cover it — lands it ~25% down.
+	const MOBILE_STOP_MAP_OFFSET_Y = 0.25;
+
+	// The open stop is driven by page.state.stopData. A marker tap sets it via shallow
+	// pushState; a cold load / share seeds it from the server load's page.data in
+	// afterNavigate (below). IMPORTANT: shallow pushState updates page.state and the browser
+	// URL bar, but NOT the reactive $page.url — so page.state, not the URL, is the
+	// signal. Because page.state is cleared on close, gating on its presence is safe
+	// (unlike page.data, which lingers after a real navigation).
+	let selectedStopData = $derived($page.state?.stopData ?? null);
+	let selectedStopId = $derived(selectedStopData?.id ?? null);
 
 	// While a stop's bottom sheet is open, the search pane collapses to a single
 	// floating field below the md breakpoint; on wider viewports the pane stays
 	// put (visibility is CSS-responsive, so there's no JS breakpoint detection).
 	let searchCollapsed = $state(false);
 	let sheetSnap = $state('half');
-	let stopSheetOpen = $derived(currentModal === Modal.STOP);
+	let stopSheetOpen = $derived(selectedStopId != null);
 	let showCollapsedSearch = $derived(stopSheetOpen && searchCollapsed);
 
 	function handleStopMarkerSelect(stopData) {
-		if (currentModal === Modal.ROUTE || selectedRoute || isRouteSelected) {
-			mapProvider.clearAllPolylines();
-			mapProvider.removeStopMarkers();
-			mapProvider.clearVehicleMarkers();
-			if (currentIntervalId) {
-				clearInterval(currentIntervalId);
-				currentIntervalId = null;
+		// Instant: the marker already carries the stop, so push it into history state
+		// (no fetch). The selection effect reacts to the URL change and frames the map.
+		// $state.snapshot: the marker's stopData is a reactive proxy, and pushState
+		// structured-clones its state argument (DataCloneError on a proxy). Snapshot
+		// yields a plain, clone-safe copy.
+		pushState(mapStopPath(stopData.id), { stopData: $state.snapshot(stopData) });
+	}
+
+	$effect(() => {
+		const id = selectedStopId; // track
+		const provider = mapProvider; // track — null until MapContainer mounts
+
+		if (!provider) return; // wait for the map (re-runs when mapProvider is set)
+
+		if (id === appliedStopId) {
+			// On a cold /map/stops/{id} load this branch runs first with both ids null
+			// (page.state isn't seeded until afterNavigate). Don't flip mapWasReady then,
+			// or the deferred stop selection would animate instead of snapping. A normal
+			// load (no cold stopData) can mark the map ready so later in-app taps animate.
+			if (!initialPage.data?.stopData) mapWasReady = true;
+			return;
+		}
+
+		if (id) {
+			const data = selectedStopData;
+			if (!data) return; // wait for state/load data; re-runs when it arrives
+
+			// A stop supersedes any other selection. Tear down the map overlays a route
+			// or trip left behind only when one was active, but always clear currentModal
+			// (including ALL_ROUTES / TRIP_PLANNER, which draw no map overlays) and its
+			// selection state so no modal reappears when the stop sheet closes.
+			if (
+				currentModal === Modal.ROUTE ||
+				currentModal === Modal.TRIP_PLANNER ||
+				selectedRoute ||
+				isRouteSelected
+			) {
+				provider.clearAllPolylines();
+				provider.removeStopMarkers();
+				provider.clearVehicleMarkers();
+				if (currentIntervalId) {
+					clearInterval(currentIntervalId);
+					currentIntervalId = null;
+				}
+				selectedRoute = null;
+				isRouteSelected = false;
+				selectedTrip = null;
+				tripItineraries = [];
+				tripPlanError = null;
 			}
-			selectedRoute = null;
-			isRouteSelected = false;
+			currentModal = null;
+
+			searchCollapsed = true;
+			if (browser && window.innerWidth >= 768) sheetSnap = 'full';
+
+			const offsetY = browser && window.innerWidth < 768 ? MOBILE_STOP_MAP_OFFSET_Y : 0;
+			// mapWasReady is false only on the very first framing (cold load) → snap
+			// instantly; later in-app selections animate.
+			provider.flyTo(data.lat, data.lon, 16, { offsetY, animate: mapWasReady });
+
+			if (currentHighlightedStopId !== null) provider.unHighlightMarker(currentHighlightedStopId);
+			provider.highlightMarker(id);
+			currentHighlightedStopId = id;
+
+			loadSurveys(data, getUserId());
+			analytics.reportStopViewed(
+				id,
+				analyticsDistanceToStop(
+					currentUserLocation.lat,
+					currentUserLocation.lng,
+					data.lat,
+					data.lon
+				)
+			);
+		} else {
+			// Closed (back button or close): tear down the stop overlay.
+			if (currentHighlightedStopId !== null) {
+				provider.unHighlightMarker(currentHighlightedStopId);
+				currentHighlightedStopId = null;
+			}
+			provider.cleanupInfoWindow();
+			// Don't wipe vehicle markers a route is drawing: when a route is selected
+			// from an open stop sheet, handleRouteSelected has already set
+			// currentModal = Modal.ROUTE and added the route's vehicles before this
+			// teardown flushes. A normal stop close leaves currentModal null.
+			if (currentModal !== Modal.ROUTE) provider.clearVehicleMarkers();
 			selectedTrip = null;
 		}
-		currentModal = Modal.STOP;
-		stop = stopData;
-		searchCollapsed = true;
-		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
-		// bottom sheet, so open it fully instead of at the half detent.
-		if (browser && window.innerWidth >= 768) {
-			sheetSnap = 'full';
-		}
-		pushState(`/stops/${stop.id}`);
-		loadSurveys(stop, getUserId());
 
-		if (mapProvider && mapProvider.flyTo) {
-			mapProvider.flyTo(stopData.lat, stopData.lon, 16);
-		}
-
-		if (currentHighlightedStopId !== null) {
-			mapProvider.unHighlightMarker(currentHighlightedStopId);
-		}
-		mapProvider.highlightMarker(stop.id);
-		currentHighlightedStopId = stop.id;
-
-		const distanceCategory = analyticsDistanceToStop(
-			currentUserLocation.lat,
-			currentUserLocation.lng,
-			stop.lat,
-			stop.lon
-		);
-		analytics.reportStopViewed(stop.id, distanceCategory);
-	}
+		appliedStopId = id;
+		mapWasReady = true;
+	});
 
 	function handleViewAllRoutes() {
 		currentModal = Modal.ALL_ROUTES;
@@ -134,7 +209,11 @@
 	}
 
 	function closePane() {
-		pushState('/');
+		if (stopSheetOpen) {
+			pushState('/', {}); // selection effect runs the map/stop teardown
+			return;
+		}
+		// route / all-routes / trip-planner modals are local state
 		if (polylines) {
 			mapProvider.clearAllPolylines();
 			mapProvider.removeStopMarkers();
@@ -143,18 +222,11 @@
 			clearInterval(currentIntervalId);
 			currentIntervalId = null;
 		}
-
-		mapProvider.unHighlightMarker(currentHighlightedStopId);
-		stop = null;
 		selectedTrip = null;
 		selectedRoute = null;
 		isRouteSelected = false;
 		showRouteMap = false;
-		currentHighlightedStopId = null;
 		currentModal = null;
-		// searchCollapsed needs no reset: its consumers are gated on stopSheetOpen,
-		// and opening a stop always sets it. sheetSnap intentionally persists so
-		// the next stop's sheet reopens at the rider's last-used height.
 	}
 
 	let snapBeforeSearchExpand = null;
@@ -187,17 +259,17 @@
 				shortName: event.detail.routeShortName
 			};
 
-			if (stop && mapProvider && mapProvider.updatePopupContent) {
+			if (selectedStopData && mapProvider && mapProvider.updatePopupContent) {
 				const arrivalTime = event.detail.predictedArrivalTime || event.detail.scheduledArrivalTime;
-				mapProvider.updatePopupContent(stop, arrivalTime);
+				mapProvider.updatePopupContent(selectedStopData, arrivalTime);
 			}
 		} else {
 			selectedTrip = null;
 			isRouteSelected = false;
 			selectedRoute = null;
 
-			if (stop && mapProvider && mapProvider.updatePopupContent) {
-				mapProvider.updatePopupContent(stop, null);
+			if (selectedStopData && mapProvider && mapProvider.updatePopupContent) {
+				mapProvider.updatePopupContent(selectedStopData, null);
 			}
 		}
 	}
@@ -215,6 +287,7 @@
 	 * @param {number} routeData.currentIntervalId - The current interval ID.
 	 */
 	function handleRouteSelected(routeData) {
+		if (stopSheetOpen) pushState('/', {});
 		selectedRoute = routeData.route;
 		polylines = routeData.polylines;
 		stops = routeData.stops;
@@ -313,6 +386,24 @@
 		}
 	});
 
+	// Cold load / share: the server load placed the stop in page.data, but the sheet
+	// and framing effect are driven by page.state (shallow routing never populates
+	// page.state on first load). Copy it across once so a shared link behaves exactly
+	// like an in-app tap. afterNavigate (not onMount) because replaceState can't run
+	// before the client router is initialized, and it fires on the cold-load mount.
+	// page.data.stopData is already a plain SSR object, so no snapshot is needed.
+	afterNavigate(() => {
+		// Defer one macrotask: on the initial cold-load hydration, afterNavigate runs
+		// before SvelteKit marks the client router initialized, and replaceState throws
+		// until then. A 0ms timeout lets hydration finish first. Harmless on '/' (there
+		// is no page.data.stopData) and idempotent (guarded on !page.state.stopData).
+		setTimeout(() => {
+			if ($page.data?.stopData && !$page.state?.stopData) {
+				replaceState('', { stopData: $page.data.stopData });
+			}
+		}, 0);
+	});
+
 	onDestroy(() => {
 		if (browser) {
 			window.removeEventListener('tabSwitched', handleTabSwitched);
@@ -375,7 +466,7 @@
 			<div class="relative mt-2 flex-1 md:mt-4">
 				{#if stopSheetOpen}
 					<StopBottomSheet
-						{stop}
+						stop={selectedStopData}
 						{closePane}
 						{tripSelected}
 						{handleUpdateRouteMap}
@@ -413,7 +504,7 @@
 	<MapContainer
 		{selectedTrip}
 		{selectedRoute}
-		{stop}
+		stop={selectedStopData}
 		{handleStopMarkerSelect}
 		{isRouteSelected}
 		{showRouteMap}
