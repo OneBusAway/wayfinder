@@ -16,7 +16,12 @@
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import StopPane from '$components/stops/StopPane.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faCircleInfo, faCalendarDays, faX } from '@fortawesome/free-solid-svg-icons';
+	import {
+		faCircleInfo,
+		faCalendarDays,
+		faX,
+		faArrowsRotate
+	} from '@fortawesome/free-solid-svg-icons';
 	import { keybinding } from '$lib/keybinding';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
@@ -25,6 +30,10 @@
 	let { stop, closePane, tripSelected, handleUpdateRouteMap, snap = $bindable('half') } = $props();
 
 	let arrivalsAndDeparturesResponse = $state(null);
+	// Bound from StopPane so the toolbar refresh button can spin while any fetch
+	// (initial, manual, or the 30s poll) is in flight, and trigger a manual one.
+	let stopPane = $state(null);
+	let stopPaneLoading = $state(false);
 
 	let actions = $derived([
 		{ href: `/stops/${stop.id}`, icon: faCircleInfo, labelKey: 'stop_details.view_details' },
@@ -50,6 +59,19 @@
 				<p class="truncate text-xs text-gray-600 dark:text-gray-400">{subtitle}</p>
 			</div>
 			<div class="flex flex-none gap-1.5">
+				<button
+					type="button"
+					onclick={() => stopPane?.refresh()}
+					disabled={stopPaneLoading}
+					title={$isLoading ? '' : $t('refresh')}
+					aria-label={$isLoading ? '' : $t('refresh')}
+					aria-busy={stopPaneLoading}
+					class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-accent text-sm text-white hover:bg-brand-accent-dark disabled:cursor-not-allowed disabled:opacity-60"
+				>
+					<span class="flex" class:animate-spin={stopPaneLoading}>
+						<FontAwesomeIcon icon={faArrowsRotate} />
+					</span>
+				</button>
 				{#each actions as action (action.href)}
 					<a
 						href={action.href}
@@ -74,10 +96,12 @@
 	{/snippet}
 
 	<StopPane
+		bind:this={stopPane}
 		{tripSelected}
 		{handleUpdateRouteMap}
 		{stop}
 		showHeroCard={false}
 		bind:arrivalsAndDeparturesResponse
+		bind:loading={stopPaneLoading}
 	/>
 </BottomSheet>

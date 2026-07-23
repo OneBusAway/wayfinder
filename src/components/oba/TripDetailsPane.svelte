@@ -9,7 +9,7 @@
 	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
-	import { resolveVehicleStopIndex, computeVisibleStopRange } from '$lib/tripDetailsUtils';
+	import { resolveVehicleStopIndex, buildStopSegments } from '$lib/tripDetailsUtils';
 
 	/**
 	 * @typedef {Object} Props
@@ -29,11 +29,12 @@
 	let busPosition = $state(-1);
 	let abortController = null;
 
-	// Only show the segment from the vehicle's current position through the
-	// rider's selected stop: stops already passed and stops beyond the rider's
-	// stop are hidden.
-	let visibleRange = $derived(
-		computeVisibleStopRange(tripDetails?.schedule?.stopTimes, busPosition, stop.id)
+	// Rows to render for the segment from the vehicle's current position through
+	// the rider's selected stop: stops already passed and stops beyond the rider's
+	// stop are hidden, and a long run of stops in the middle is collapsed into a
+	// single "N stops" marker (mirroring the iOS trip view).
+	let stopSegments = $derived(
+		buildStopSegments(tripDetails?.schedule?.stopTimes, busPosition, stop.id)
 	);
 
 	// Locate the vehicle along the trip using the stop IDs the server reports for
@@ -122,34 +123,79 @@
 			</h2>
 		{/if}
 		{#if tripDetails.schedule?.stopTimes.length > 0}
-			<div class="relative">
-				<div class="absolute bottom-0 left-3.5 top-0 w-[1px] bg-neutral-400"></div>
-
-				{#each tripDetails.schedule.stopTimes as tripStop, index}
-					{#if index >= visibleRange.start && index <= visibleRange.end}
-						<div class="mb-4 flex items-center">
-							<div
-								class="relative flex size-8 items-center justify-center {index === busPosition
-									? 'rounded-md bg-neutral-800 dark:bg-neutral-200'
-									: ''}"
-							>
-								{#if index === busPosition}
-									<FontAwesomeIcon icon={faBus} class="text-sm text-white dark:text-neutral-900" />
-									{#if tripStop.stopId === stop.id}
-										<FontAwesomeIcon
-											icon={faCheck}
-											class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
-										/>
-									{/if}
-								{:else if tripStop.stopId === stop.id}
-									<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
-								{:else}
+			<div>
+				{#each stopSegments as segment, i (segment.type === 'stop' ? `stop-${segment.index}` : 'collapsed')}
+					{@const isFirst = i === 0}
+					{@const isLast = i === stopSegments.length - 1}
+					{#if segment.type === 'collapsed'}
+						<div class="flex items-stretch">
+							<div class="relative flex w-8 shrink-0 justify-center">
+								<!-- Zig-zag connector standing in for the collapsed stops. It IS this
+								     row's rail segment, so it joins the straight rail above and below
+								     without needing an opaque mask. -->
+								<svg
+									class="text-neutral-400"
+									width="16"
+									height="56"
+									viewBox="0 0 16 56"
+									fill="none"
+									aria-hidden="true"
+								>
+									<path
+										d="M8 0 L8 8 L12 16 L4 24 L12 32 L4 40 L8 48 L8 56"
+										stroke="currentColor"
+										stroke-width="1.5"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</div>
+							<div class="ml-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+								{$_('trip_details.collapsed_stops', { values: { count: segment.count } })}
+							</div>
+						</div>
+					{:else}
+						{@const index = segment.index}
+						{@const tripStop = tripDetails.schedule.stopTimes[index]}
+						<div class="flex items-stretch">
+							<div class="relative flex w-8 shrink-0 justify-center">
+								<!-- Per-row rail line, centered on the marker. Trimmed to a half at
+								     the first and last rows so it never overshoots the endpoints. -->
+								{#if !(isFirst && isLast)}
 									<div
-										class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"
+										class="absolute w-px bg-neutral-400 {isFirst
+											? 'bottom-0 top-1/2'
+											: isLast
+												? 'top-0 h-1/2'
+												: 'inset-y-0'}"
 									></div>
 								{/if}
+								<div
+									class="relative my-2 flex size-8 items-center justify-center {index ===
+									busPosition
+										? 'rounded-md bg-neutral-800 dark:bg-neutral-200'
+										: ''}"
+								>
+									{#if index === busPosition}
+										<FontAwesomeIcon
+											icon={faBus}
+											class="text-sm text-white dark:text-neutral-900"
+										/>
+										{#if tripStop.stopId === stop.id}
+											<FontAwesomeIcon
+												icon={faCheck}
+												class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
+											/>
+										{/if}
+									{:else if tripStop.stopId === stop.id}
+										<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
+									{:else}
+										<div
+											class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"
+										></div>
+									{/if}
+								</div>
 							</div>
-							<div class="ml-4 flex w-full items-center justify-between space-x-1">
+							<div class="ml-4 flex flex-1 items-center justify-between space-x-1">
 								<div
 									class="text-md dark:text-white {tripStop.stopId === stop.id
 										? 'font-bold'

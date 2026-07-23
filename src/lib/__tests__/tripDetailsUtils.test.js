@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { resolveVehicleStopIndex, computeVisibleStopRange } from '$lib/tripDetailsUtils.js';
+import {
+	resolveVehicleStopIndex,
+	computeVisibleStopRange,
+	buildStopSegments
+} from '$lib/tripDetailsUtils.js';
 
 describe('resolveVehicleStopIndex', () => {
 	const stopTimes = [{ stopId: 'a' }, { stopId: 'b' }, { stopId: 'c' }, { stopId: 'd' }];
@@ -77,5 +81,85 @@ describe('computeVisibleStopRange', () => {
 	it('returns an empty range for no stop times', () => {
 		expect(computeVisibleStopRange([], 0, 'a')).toEqual({ start: 0, end: -1 });
 		expect(computeVisibleStopRange(null, 0, 'a')).toEqual({ start: 0, end: -1 });
+	});
+});
+
+describe('buildStopSegments', () => {
+	// 10 stops: a..j
+	const stopTimes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'].map((stopId) => ({
+		stopId
+	}));
+
+	it('collapses the middle stops when the vehicle is far from the rider stop', () => {
+		// bus at index 0 (a), rider stop j (index 9): 8 intermediate stops,
+		// keep the last 3 (g, h, i), collapse the other 5.
+		expect(buildStopSegments(stopTimes, 0, 'j')).toEqual([
+			{ type: 'stop', index: 0 },
+			{ type: 'collapsed', count: 5 },
+			{ type: 'stop', index: 6 },
+			{ type: 'stop', index: 7 },
+			{ type: 'stop', index: 8 },
+			{ type: 'stop', index: 9 }
+		]);
+	});
+
+	it('collapses exactly one stop when the vehicle is tailCount + 2 stops away', () => {
+		// bus at 0, rider at index 5: 4 intermediate stops, collapse 1, keep 3.
+		expect(buildStopSegments(stopTimes, 0, 'f')).toEqual([
+			{ type: 'stop', index: 0 },
+			{ type: 'collapsed', count: 1 },
+			{ type: 'stop', index: 2 },
+			{ type: 'stop', index: 3 },
+			{ type: 'stop', index: 4 },
+			{ type: 'stop', index: 5 }
+		]);
+	});
+
+	it('does not collapse when intermediate stops equal the tail count', () => {
+		// bus at 0, rider at index 4: 3 intermediate stops == tailCount, show all.
+		expect(buildStopSegments(stopTimes, 0, 'e')).toEqual([
+			{ type: 'stop', index: 0 },
+			{ type: 'stop', index: 1 },
+			{ type: 'stop', index: 2 },
+			{ type: 'stop', index: 3 },
+			{ type: 'stop', index: 4 }
+		]);
+	});
+
+	it('respects a custom tailCount', () => {
+		// bus at 0, rider at index 9, tailCount 2: keep last 2 (h, i), collapse 6.
+		expect(buildStopSegments(stopTimes, 0, 'j', 2)).toEqual([
+			{ type: 'stop', index: 0 },
+			{ type: 'collapsed', count: 6 },
+			{ type: 'stop', index: 7 },
+			{ type: 'stop', index: 8 },
+			{ type: 'stop', index: 9 }
+		]);
+	});
+
+	it('collapses long scheduled trips even without a known vehicle position', () => {
+		// busPosition -1 => range starts at 0; rider at index 9 => collapse 5.
+		expect(buildStopSegments(stopTimes, -1, 'j')).toEqual([
+			{ type: 'stop', index: 0 },
+			{ type: 'collapsed', count: 5 },
+			{ type: 'stop', index: 6 },
+			{ type: 'stop', index: 7 },
+			{ type: 'stop', index: 8 },
+			{ type: 'stop', index: 9 }
+		]);
+	});
+
+	it('returns a single stop when the vehicle sits at the rider stop', () => {
+		expect(buildStopSegments(stopTimes, 3, 'd')).toEqual([{ type: 'stop', index: 3 }]);
+	});
+
+	it('returns an empty list when the bus has already passed the rider stop', () => {
+		// bus at 5, rider at index 3 => computeVisibleStopRange clamps to 3..3.
+		expect(buildStopSegments(stopTimes, 5, 'd')).toEqual([{ type: 'stop', index: 3 }]);
+	});
+
+	it('returns an empty list when there are no stop times', () => {
+		expect(buildStopSegments([], 0, 'a')).toEqual([]);
+		expect(buildStopSegments(null, 0, 'a')).toEqual([]);
 	});
 });

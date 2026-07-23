@@ -117,8 +117,11 @@
 			{@render header?.()}
 		</div>
 
+		<!-- px-4 (not px-3) so full-bleed accordion rows, which reach the edge with
+		     `-mx-4` (1rem), line up exactly with this padding instead of spilling 4px
+		     past it. overflow-x-hidden guards against any other incidental overflow. -->
 		<div
-			class="flex-1 overflow-y-auto overscroll-contain px-3"
+			class="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4"
 			style:padding-bottom="calc(1rem + env(safe-area-inset-bottom))"
 		>
 			{@render children?.()}

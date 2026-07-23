@@ -1,7 +1,6 @@
 <script>
 	import ArrivalDeparture from '$components/ArrivalDeparture.svelte';
 	import TripDetailsPane from '$components/oba/TripDetailsPane.svelte';
-	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import Accordion from '$components/containers/SingleSelectAccordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import SurveyModal from '$components/surveys/SurveyModal.svelte';
@@ -32,7 +31,10 @@
 		handleUpdateRouteMap = null,
 		tripSelected = null,
 		showHeroCard = true,
-		arrivalsAndDeparturesResponse = $bindable(null)
+		arrivalsAndDeparturesResponse = $bindable(null),
+		// Exposed so a parent (e.g. the bottom-sheet toolbar refresh button) can
+		// reflect whether a fetch — initial, manual, or the 30s poll — is in flight.
+		loading = $bindable(false)
 	} = $props();
 
 	// Time window (in minutes) for upcoming arrivals. Defaults to the OBA
@@ -41,10 +43,15 @@
 	const DEFAULT_MINUTES_AFTER = 35;
 	const MINUTES_AFTER_INCREMENT = 30;
 
-	let arrivalsAndDepartures = $state();
-	let loading = $state(false);
+	// Seed from any server-rendered response so the standalone page shows arrivals
+	// immediately instead of flashing the first-load skeleton.
+	let arrivalsAndDepartures = $state(arrivalsAndDeparturesResponse?.data?.entry);
 	let error = $state();
-	let serviceAlerts = $state([]);
+	// Seed alerts from the same server-rendered response so they show on first
+	// render instead of waiting for the initial client fetch to complete.
+	let serviceAlerts = $state(
+		filterActiveAlerts(arrivalsAndDeparturesResponse?.data?.references?.situations ?? [])
+	);
 	let minutesAfter = $state(DEFAULT_MINUTES_AFTER);
 	let loadingMore = $state(false);
 	let noMoreArrivals = $state(false);
@@ -114,6 +121,11 @@
 		}, 30000);
 
 		return promise;
+	}
+
+	// Manual refresh for the toolbar button: fetch now and restart the poll timer.
+	export function refresh() {
+		if (stop?.id) resetDataFetchInterval(stop.id);
 	}
 
 	// Widen the arrivals window and refetch. If the count doesn't grow, surface a
@@ -229,14 +241,27 @@
 	});
 </script>
 
+{#snippet skeletonList()}
+	<!-- First-load placeholder. Once real data arrives, `arrivalsAndDepartures`
+	     stays set, so background refreshes never bring this back. -->
+	<div class="space-y-4" role="status" aria-busy="true" aria-label={$t('loading')}>
+		{#each Array.from({ length: 4 }, (_, i) => i) as i (i)}
+			<div class="flex items-center gap-3 px-1">
+				<div class="h-14 w-14 shrink-0 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+				<div class="flex-1 space-y-2">
+					<div class="h-4 w-3/4 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+					<div class="h-3 w-1/2 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+				</div>
+				<div class="h-5 w-10 shrink-0 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+			</div>
+		{/each}
+	</div>
+{/snippet}
+
 {#if $isLoading}
-	<p>Loading...</p>
+	{@render skeletonList()}
 {:else}
 	<div>
-		{#if loading && isLoading && tripSelected}
-			<LoadingSpinner />
-		{/if}
-
 		{#if error}
 			<p>{error}</p>
 		{/if}
@@ -356,6 +381,8 @@
 					</div>
 				{/if}
 			</div>
+		{:else if !error}
+			{@render skeletonList()}
 		{/if}
 	</div>
 {/if}

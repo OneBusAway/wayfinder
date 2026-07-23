@@ -51,6 +51,30 @@ function mockTripResponse({ vehicleId }) {
 	};
 }
 
+// Builds a trip of `stopCount` stops where the vehicle sits at the first stop
+// and the rider's stop (`stop.id`) is the last one, so the whole run from the
+// vehicle to the rider is visible.
+function mockLongTripResponse(stopCount) {
+	const stopTimes = Array.from({ length: stopCount }, (_, i) => ({
+		stopId: i === stopCount - 1 ? stop.id : `1_stop${i}`,
+		arrivalTime: 41400 + i * 60
+	}));
+
+	return {
+		data: {
+			entry: {
+				routeId: '1_100479',
+				status: { vehicleId: '1_8129001', closestStop: stopTimes[0].stopId },
+				schedule: { stopTimes }
+			},
+			references: {
+				routes: [{ id: '1_100479', shortName: 'C Line' }],
+				stops: [{ id: stop.id, name: stop.name }]
+			}
+		}
+	};
+}
+
 describe('TripDetailsPane', () => {
 	beforeEach(() => {
 		vi.useFakeTimers();
@@ -77,5 +101,41 @@ describe('TripDetailsPane', () => {
 		await waitFor(() => {
 			expect(screen.getByText('trip_details.live_vehicle 1_8129001')).toBeInTheDocument();
 		});
+	});
+
+	test('collapses the middle stops into an "N stops" marker on a long trip', async () => {
+		// 10 stops, vehicle at index 0, rider at index 9: keep the last 3, collapse 5.
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () => mockLongTripResponse(10)
+			})
+		);
+
+		render(TripDetailsPane, { props: { stop, tripId: '1_trip' } });
+
+		await waitFor(() => {
+			expect(screen.getByText('trip_details.collapsed_stops 5')).toBeInTheDocument();
+		});
+	});
+
+	test('does not collapse when only a few stops remain to the rider stop', async () => {
+		// 4 stops: vehicle at index 0, rider at the last index, so only 2
+		// intermediate stops -- fewer than the tail count of 3, so no marker.
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () => mockLongTripResponse(4)
+			})
+		);
+
+		render(TripDetailsPane, { props: { stop, tripId: '1_trip' } });
+
+		await waitFor(() => {
+			expect(screen.getByText(stop.name)).toBeInTheDocument();
+		});
+		expect(screen.queryByText(/trip_details\.collapsed_stops/)).not.toBeInTheDocument();
 	});
 });
