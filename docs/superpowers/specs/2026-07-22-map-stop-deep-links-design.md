@@ -27,9 +27,10 @@ We want a dedicated URL, `/map/stops/{stop_id}`, that:
 - **Marker tap = instant (shallow `pushState`).** A tap pushes the URL + history entry
   using the stop object the marker already carries — no server round-trip. Cold
   loads/shares use a server `load`.
-- **Close = `pushState('/')`** (shallow, matches today's behavior). Simpler than
+- **Close = `pushState('/', {})`** (shallow, matches today's behavior). Simpler than
   `history.back()` and never risks leaving the site on a cold-loaded share. Tradeoff:
-  after close, the Back button reopens the stop.
+  after close, the Back button reopens the stop. (`state` is a required second arg — pass
+  `{}`, not nothing.)
 
 ## Environment notes
 
@@ -61,6 +62,12 @@ src/routes/
 `/` ↔ `/map/stops/{id}` share the `(map)/+layout.svelte` segment, so navigating between
 them keeps the map mounted.
 
+**Only the shared layout persists.** On a real `/` ↔ `/map/stops/{id}` navigation the
+child `+page.svelte` components are destroyed and recreated (and the child `load` re-runs);
+the `(map)/+layout.svelte` component instance is preserved and its `load` does not re-run
+on client-side navigation between children. This is the load-bearing reason the map lives
+in the layout and the child pages are throwaway.
+
 The current ~400-line `src/routes/+page.svelte` body moves into the layout. To keep it
 focused and testable, extract it into `$components/MapExperience.svelte` (the map + sheet
 + handlers) that `(map)/+layout.svelte` renders once. The child `+page.svelte` files are
@@ -82,8 +89,14 @@ let stopSheetOpen    = $derived(selectedStopId != null);
 - **Marker tap** → data comes from `$page.state.stopData` (pushed, no fetch).
 - **Cold load / share** → data comes from `$page.data.stopData` (server load).
 - Deriving `selectedStopId` from the **pathname** (not `$page.params`) is what lets
-  shallow `pushState` and real navigation share one code path: shallow routing updates
-  `$page.url` but **not** `$page.params` (no navigation occurs).
+  shallow `pushState` and real navigation share one code path: shallow routing changes
+  `$page.url` without triggering a navigation, so `$page.params` / `$page.route` keep
+  reflecting the previously-matched route.
+- **Gate every consumer on `selectedStopId` / `stopSheetOpen`, never on `selectedStopData`
+  truthiness.** `pushState('/', {})` on close changes `$page.url`/`$page.state` but not
+  `$page.data`, so on a cold-loaded `/map/stops/{id}` that is then closed,
+  `$page.data.stopData` (and therefore `selectedStopData`) stays populated. That is
+  harmless only because open/closed is decided by the pathname-derived `selectedStopId`.
 
 `stopIdFromPath(pathname)` parses `/map/stops/<id>` → `<id>` (decodeURIComponent),
 returns `null` otherwise. Lives in `$lib` and is unit-tested.
@@ -107,6 +120,10 @@ function handleStopMarkerSelect(stopData) {
 
 `stop`/`currentModal === STOP` local state is replaced by the derived
 `selectedStopData`/`stopSheetOpen`.
+
+Note: no `preloadData` / `data-sveltekit-preload-data` here. Those exist for `<a>` clicks
+that don't already hold the data; a marker tap already carries the full stop object, so
+pushing it straight into `page.state` is correct — do not "upgrade" this to `preloadData`.
 
 ### Cold load / share (server load)
 
@@ -147,8 +164,10 @@ zoom 16, or apply the zoom via the follow-up instant `flyTo`.
 
 ## Close & back/forward
 
-- **Close button (`closePane`)** → `pushState('/')` (shallow). `selectedStopId` derives to
-  null → sheet closes, map stays put. Keeps existing polyline/marker/interval cleanup.
+- **Close button (`closePane`)** → `pushState('/', {})` (shallow; `state` is required, pass
+  `{}`). `selectedStopId` derives to null → sheet closes, map stays put. Keeps existing
+  polyline/marker/interval cleanup. If repeated open/close history pile-up becomes a
+  concern, switch to `replaceState('/', {})`.
 - **Back / forward** → history pops update `$page.url` / `$page.state`, so the sheet opens
   and closes automatically. This is the core benefit of shallow routing.
 
@@ -169,7 +188,11 @@ zoom 16, or apply the zoom via the follow-up instant `flyTo`.
   ```
 
 - The stop route SSRs `stopData`, so shared links get a correct `<title>` / meta and the
-  sheet header renders before hydration.
+  sheet header renders before hydration. **Because the sheet is rendered by the layout and
+  the child `+page.svelte` is minimal, make sure a `<svelte:head>` title/meta block
+  actually renders on a cold load** — put it in the child `map/stops/[stopID]/+page.svelte`
+  (which has `data.stopData` on SSR), or in the layout keyed on `selectedStopData`. Don't
+  let it fall through the cracks between the two.
 - Shallow-routing caveat (from the SvelteKit docs): `page.state` is empty during SSR and
   on the first landing page until the user navigates. This is why cold loads read
   `$page.data.stopData` (server load) rather than `page.state`.
@@ -180,7 +203,7 @@ zoom 16, or apply the zoom via the follow-up instant `flyTo`.
   loader returns a normalized stop entry.
 - **Component**: layout/`MapExperience` renders the sheet when `$page.url` is
   `/map/stops/{id}` (via `$page` mock) and hides it on `/`; `handleStopMarkerSelect` calls
-  `pushState` with `{ stopData }`; `closePane` calls `pushState('/')`.
+  `pushState` with `{ stopData }`; `closePane` calls `pushState('/', {})`.
 - **E2E (Playwright, mobile viewport)**: cold-load `/map/stops/{id}` → sheet open + stop
   framed ~25% from top; tap a marker → URL updates to `/map/stops/{id}` + sheet opens
   instantly (no fetch); browser Back closes the sheet. Reuses the mobile-viewport harness
