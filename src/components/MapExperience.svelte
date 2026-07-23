@@ -1,5 +1,5 @@
 <script>
-	import { pushState } from '$app/navigation';
+	import { pushState, replaceState, afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
 	import SearchPane from '$components/search/SearchPane.svelte';
 	import MapContainer from '$components/MapContainer.svelte';
@@ -28,7 +28,7 @@
 	import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
-	import { mapStopPath, stopIdFromPath } from '$lib/mapStopUrl.js';
+	import { mapStopPath } from '$lib/mapStopUrl.js';
 
 	// Parse initial coordinates from URL query parameters
 	const initialCoords = parseInitialCoordinates(
@@ -71,11 +71,14 @@
 	// bottom sheet (half detent, ~55% tall) doesn't cover it — lands it ~25% down.
 	const MOBILE_STOP_MAP_OFFSET_Y = 0.25;
 
-	// The open stop is derived from the URL, unifying marker taps (shallow pushState
-	// state) and cold loads/shares (server load data). Gate UI on selectedStopId /
-	// stopSheetOpen — never on selectedStopData (it can linger after close).
-	let selectedStopId = $derived(stopIdFromPath($page.url.pathname));
-	let selectedStopData = $derived($page.state?.stopData ?? $page.data?.stopData ?? null);
+	// The open stop is driven by page.state.stopData. A marker tap sets it via shallow
+	// pushState; a cold load / share seeds it from the server load's page.data in
+	// onMount (below). IMPORTANT: shallow pushState updates page.state and the browser
+	// URL bar, but NOT the reactive $page.url — so page.state, not the URL, is the
+	// signal. Because page.state is cleared on close, gating on its presence is safe
+	// (unlike page.data, which lingers after a real navigation).
+	let selectedStopData = $derived($page.state?.stopData ?? null);
+	let selectedStopId = $derived(selectedStopData?.id ?? null);
 
 	// While a stop's bottom sheet is open, the search pane collapses to a single
 	// floating field below the md breakpoint; on wider viewports the pane stays
@@ -356,6 +359,24 @@
 				cleanUrlParams();
 			}
 		}
+	});
+
+	// Cold load / share: the server load placed the stop in page.data, but the sheet
+	// and framing effect are driven by page.state (shallow routing never populates
+	// page.state on first load). Copy it across once so a shared link behaves exactly
+	// like an in-app tap. afterNavigate (not onMount) because replaceState can't run
+	// before the client router is initialized, and it fires on the cold-load mount.
+	// page.data.stopData is already a plain SSR object, so no snapshot is needed.
+	afterNavigate(() => {
+		// Defer one macrotask: on the initial cold-load hydration, afterNavigate runs
+		// before SvelteKit marks the client router initialized, and replaceState throws
+		// until then. A 0ms timeout lets hydration finish first. Harmless on '/' (there
+		// is no page.data.stopData) and idempotent (guarded on !page.state.stopData).
+		setTimeout(() => {
+			if ($page.data?.stopData && !$page.state?.stopData) {
+				replaceState('', { stopData: $page.data.stopData });
+			}
+		}, 0);
 	});
 
 	onDestroy(() => {

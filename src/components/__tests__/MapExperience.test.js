@@ -31,7 +31,11 @@ vi.mock('$components/stops/StopBottomSheet.svelte', () => ({
 	}
 }));
 
-vi.mock('$app/navigation', () => ({ pushState: vi.fn(), replaceState: vi.fn() }));
+vi.mock('$app/navigation', () => ({
+	pushState: vi.fn(),
+	replaceState: vi.fn(),
+	afterNavigate: vi.fn()
+}));
 
 // The global vitest-setup svelte-i18n mock omits isLoading, which MapExperience's
 // template subscribes to; false means "loaded" so the map UI renders.
