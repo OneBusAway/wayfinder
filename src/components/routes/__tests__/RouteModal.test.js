@@ -4,7 +4,7 @@ import { expect, test, describe, vi, beforeEach } from 'vitest';
 import RouteModal from '../RouteModal.svelte';
 import { mockRoutesListData, mockStopsForRouteData } from '../../../tests/fixtures/obaData.js';
 
-// Allow ModalPane and StopItem to render naturally - they should be properly implemented
+// Allow BottomSheet and StopItem to render naturally - they should be properly implemented
 
 // Mock svelte-i18n
 vi.mock('svelte-i18n', () => ({
@@ -208,7 +208,7 @@ describe('RouteModal', () => {
 			}
 		});
 
-		// Find close button (typically rendered by ModalPane)
+		// Find close button (rendered in the BottomSheet header)
 		const closeButton = screen.getByRole('button', { name: /close/i });
 		await user.click(closeButton);
 

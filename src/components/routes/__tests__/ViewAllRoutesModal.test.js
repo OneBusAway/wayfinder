@@ -520,7 +520,7 @@ describe('ViewAllRoutesModal', () => {
 			}
 		});
 
-		// Find close button (typically rendered by ModalPane)
+		// Find close button (rendered in the BottomSheet header)
 		const closeButton = screen.getByRole('button', { name: /close/i });
 		await user.click(closeButton);
 

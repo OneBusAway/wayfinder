@@ -279,6 +279,11 @@
 		tripItineraries = tripData.plan?.itineraries || [];
 		tripPlanError = tripData.error || null;
 		currentModal = Modal.TRIP_PLANNER;
+		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
+		// bottom sheet, so open it fully instead of at the half detent.
+		if (browser && window.innerWidth >= 768) {
+			sheetSnap = 'full';
+		}
 	}
 
 	function handleTabSwitched() {
@@ -387,6 +392,7 @@
 						error={tripPlanError}
 						loading={loadingItineraries}
 						closePane={closeTripPlanModal}
+						bind:snap={sheetSnap}
 					/>
 				{/if}
 			</div>
