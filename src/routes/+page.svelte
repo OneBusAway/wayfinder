@@ -63,6 +63,10 @@
 		TRIP_PLANNER: 'tripPlanner'
 	};
 
+	// Fraction of the map height to lift a selected stop above center so the mobile
+	// bottom sheet (half detent, ~55% tall) doesn't cover it — lands it ~25% down.
+	const MOBILE_STOP_MAP_OFFSET_Y = 0.25;
+
 	// While a stop's bottom sheet is open, the search pane collapses to a single
 	// floating field below the md breakpoint; on wider viewports the pane stays
 	// put (visibility is CSS-responsive, so there's no JS breakpoint detection).
@@ -96,7 +100,12 @@
 		loadSurveys(stop, getUserId());
 
 		if (mapProvider && mapProvider.flyTo) {
-			mapProvider.flyTo(stopData.lat, stopData.lon, 16);
+			// Below md the sheet is a bottom sheet covering ~55% of the map, so a
+			// centered stop lands behind it. Lift the stop to ~25% from the top so it
+			// stays visible above the half detent. On desktop the sheet is a narrow
+			// left column, so no offset is needed.
+			const offsetY = browser && window.innerWidth < 768 ? MOBILE_STOP_MAP_OFFSET_Y : 0;
+			mapProvider.flyTo(stopData.lat, stopData.lon, 16, { offsetY });
 		}
 
 		if (currentHighlightedStopId !== null) {

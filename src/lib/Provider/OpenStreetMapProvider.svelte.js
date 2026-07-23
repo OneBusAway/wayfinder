@@ -699,10 +699,22 @@ export default class OpenStreetMapProvider {
 
 	flyTo(lat, lng, zoom = 15, options = {}) {
 		if (!browser || !this.map) return;
+
+		let center = [lat, lng];
+		// `offsetY` (fraction of the viewport height) pushes the map center south
+		// of the target so the marker settles that far above true center — used to
+		// clear the mobile bottom sheet. Project at the destination zoom, nudge the
+		// center point down, then unproject back to a latlng.
+		if (options.offsetY) {
+			const point = this.map.project([lat, lng], zoom);
+			point.y += this.map.getSize().y * options.offsetY;
+			center = this.map.unproject(point, zoom);
+		}
+
 		// Pass `{ animate: false }` to reposition instantly. An animated zoom
 		// desyncs the MapLibre GL basemap from SVG overlays (e.g. a displayed
 		// route), making the route flicker/float until the move settles.
-		this.map.flyTo([lat, lng], zoom, { animate: options.animate ?? true });
+		this.map.flyTo(center, zoom, { animate: options.animate ?? true });
 	}
 
 	setZoom(zoom) {

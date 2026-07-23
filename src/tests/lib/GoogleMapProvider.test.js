@@ -155,3 +155,39 @@ describe('addVehicleMarker — route color', () => {
 		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false);
 	});
 });
+
+describe('flyTo — vertical offset for the bottom sheet', () => {
+	let provider;
+
+	beforeEach(() => {
+		provider = new GoogleMapProvider('test-key', vi.fn());
+	});
+
+	function makeMap() {
+		return {
+			setZoom: vi.fn(),
+			setCenter: vi.fn(),
+			panBy: vi.fn(),
+			getDiv: vi.fn(() => ({ offsetHeight: 800 }))
+		};
+	}
+
+	test('centers on the raw coordinates when no offset is given', () => {
+		provider.map = makeMap();
+
+		provider.flyTo(47.6, -122.3, 16);
+
+		expect(provider.map.setCenter).toHaveBeenCalledWith({ lat: 47.6, lng: -122.3 });
+		expect(provider.map.panBy).not.toHaveBeenCalled();
+	});
+
+	test('offsetY pans the map down by a fraction of the map height', () => {
+		provider.map = makeMap();
+
+		provider.flyTo(47.6, -122.3, 16, { offsetY: 0.25 });
+
+		expect(provider.map.setCenter).toHaveBeenCalledWith({ lat: 47.6, lng: -122.3 });
+		// 800px map * 0.25 = 200px southward pan → marker rises to ~25% from the top.
+		expect(provider.map.panBy).toHaveBeenCalledWith(0, 200);
+	});
+});

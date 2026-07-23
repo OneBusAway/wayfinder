@@ -360,3 +360,40 @@ describe('addVehicleMarker — route color', () => {
 		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false);
 	});
 });
+
+describe('flyTo — vertical offset for the bottom sheet', () => {
+	let provider;
+
+	beforeEach(() => {
+		provider = new OpenStreetMapProvider(vi.fn());
+	});
+
+	test('centers on the raw coordinates when no offset is given', () => {
+		const flyTo = vi.fn();
+		provider.map = { flyTo, getSize: vi.fn(), project: vi.fn(), unproject: vi.fn() };
+
+		provider.flyTo(47.6, -122.3, 16);
+
+		expect(flyTo).toHaveBeenCalledWith([47.6, -122.3], 16, { animate: true });
+		expect(provider.map.project).not.toHaveBeenCalled();
+	});
+
+	test('offsetY shifts the target up by a fraction of the viewport height', () => {
+		// Marker projects to pixel (100, 300) at zoom 16; the 800px-tall viewport
+		// and offsetY 0.25 should push the map center 200px south so the marker
+		// lands ~25% down from the top instead of dead center.
+		const point = { x: 100, y: 300 };
+		const shiftedCenter = { lat: 47.5, lng: -122.3 };
+		const project = vi.fn(() => point);
+		const unproject = vi.fn(() => shiftedCenter);
+		const flyTo = vi.fn();
+		provider.map = { flyTo, getSize: vi.fn(() => ({ y: 800 })), project, unproject };
+
+		provider.flyTo(47.6, -122.3, 16, { offsetY: 0.25 });
+
+		expect(project).toHaveBeenCalledWith([47.6, -122.3], 16);
+		expect(point.y).toBe(500);
+		expect(unproject).toHaveBeenCalledWith(point, 16);
+		expect(flyTo).toHaveBeenCalledWith(shiftedCenter, 16, { animate: true });
+	});
+});

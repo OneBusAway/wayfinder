@@ -633,12 +633,17 @@ export default class GoogleMapProvider {
 	}
 
 	// Google Maps repositions instantly here (no zoom animation), so its native
-	// polylines never desync. `_options` mirrors the OSM provider's signature
-	// (e.g. `{ animate }`) but has no effect here.
-	// eslint-disable-next-line no-unused-vars
-	flyTo(lat, lng, zoom = 15, _options = {}) {
+	// polylines never desync. `options.animate` is accepted to mirror the OSM
+	// provider's signature but has no effect here.
+	flyTo(lat, lng, zoom = 15, options = {}) {
 		this.map.setZoom(zoom);
 		this.map.setCenter({ lat, lng });
+		// `offsetY` (fraction of the map height) pans the map south of the target
+		// so the marker rises that far above center, clearing the mobile bottom
+		// sheet.
+		if (options.offsetY) {
+			this.map.panBy(0, this.map.getDiv().offsetHeight * options.offsetY);
+		}
 	}
 	setZoom(zoom) {
 		this.map.setZoom(zoom);
