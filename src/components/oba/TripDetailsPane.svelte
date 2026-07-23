@@ -123,61 +123,79 @@
 			</h2>
 		{/if}
 		{#if tripDetails.schedule?.stopTimes.length > 0}
-			<div class="relative">
-				<div class="absolute bottom-0 left-3.5 top-0 w-[1px] bg-neutral-400"></div>
-
-				{#each stopSegments as segment (segment.type === 'stop' ? `stop-${segment.index}` : 'collapsed')}
+			<div>
+				{#each stopSegments as segment, i (segment.type === 'stop' ? `stop-${segment.index}` : 'collapsed')}
+					{@const isFirst = i === 0}
+					{@const isLast = i === stopSegments.length - 1}
 					{#if segment.type === 'collapsed'}
-						<div class="mb-4 flex items-center">
-							<div class="relative flex size-8 items-center justify-center">
-								<!-- Zig-zag connector standing in for the collapsed stops; the opaque
-								     background masks the straight rail line behind it. -->
+						<div class="flex items-stretch">
+							<div class="relative flex w-8 shrink-0 justify-center">
+								<!-- Zig-zag connector standing in for the collapsed stops. It IS this
+								     row's rail segment, so it joins the straight rail above and below
+								     without needing an opaque mask. -->
 								<svg
-									class="bg-white text-neutral-400 dark:bg-neutral-800"
+									class="text-neutral-400"
 									width="16"
-									height="36"
-									viewBox="0 0 16 36"
+									height="56"
+									viewBox="0 0 16 56"
 									fill="none"
 									aria-hidden="true"
 								>
 									<path
-										d="M8 0 L2 6 L14 12 L2 18 L14 24 L2 30 L8 36"
+										d="M8 0 L8 8 L12 16 L4 24 L12 32 L4 40 L8 48 L8 56"
 										stroke="currentColor"
-										stroke-width="2"
+										stroke-width="1.5"
 										stroke-linejoin="round"
 									/>
 								</svg>
 							</div>
-							<div class="ml-4 text-sm text-gray-500 dark:text-gray-400">
+							<div class="ml-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
 								{$_('trip_details.collapsed_stops', { values: { count: segment.count } })}
 							</div>
 						</div>
 					{:else}
 						{@const index = segment.index}
 						{@const tripStop = tripDetails.schedule.stopTimes[index]}
-						<div class="mb-4 flex items-center">
-							<div
-								class="relative flex size-8 items-center justify-center {index === busPosition
-									? 'rounded-md bg-neutral-800 dark:bg-neutral-200'
-									: ''}"
-							>
-								{#if index === busPosition}
-									<FontAwesomeIcon icon={faBus} class="text-sm text-white dark:text-neutral-900" />
-									{#if tripStop.stopId === stop.id}
-										<FontAwesomeIcon
-											icon={faCheck}
-											class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
-										/>
-									{/if}
-								{:else if tripStop.stopId === stop.id}
-									<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
-								{:else}
+						<div class="flex items-stretch">
+							<div class="relative flex w-8 shrink-0 justify-center">
+								<!-- Per-row rail line, centered on the marker. Trimmed to a half at
+								     the first and last rows so it never overshoots the endpoints. -->
+								{#if !(isFirst && isLast)}
 									<div
-										class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"
+										class="absolute w-px bg-neutral-400 {isFirst
+											? 'bottom-0 top-1/2'
+											: isLast
+												? 'top-0 h-1/2'
+												: 'inset-y-0'}"
 									></div>
 								{/if}
+								<div
+									class="relative my-2 flex size-8 items-center justify-center {index ===
+									busPosition
+										? 'rounded-md bg-neutral-800 dark:bg-neutral-200'
+										: ''}"
+								>
+									{#if index === busPosition}
+										<FontAwesomeIcon
+											icon={faBus}
+											class="text-sm text-white dark:text-neutral-900"
+										/>
+										{#if tripStop.stopId === stop.id}
+											<FontAwesomeIcon
+												icon={faCheck}
+												class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
+											/>
+										{/if}
+									{:else if tripStop.stopId === stop.id}
+										<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
+									{:else}
+										<div
+											class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"
+										></div>
+									{/if}
+								</div>
 							</div>
-							<div class="ml-4 flex w-full items-center justify-between space-x-1">
+							<div class="ml-4 flex flex-1 items-center justify-between space-x-1">
 								<div
 									class="text-md dark:text-white {tripStop.stopId === stop.id
 										? 'font-bold'
