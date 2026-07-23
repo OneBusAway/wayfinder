@@ -88,7 +88,10 @@
 	function handleStopMarkerSelect(stopData) {
 		// Instant: the marker already carries the stop, so push it into history state
 		// (no fetch). The selection effect reacts to the URL change and frames the map.
-		pushState(mapStopPath(stopData.id), { stopData });
+		// $state.snapshot: the marker's stopData is a reactive proxy, and pushState
+		// structured-clones its state argument (DataCloneError on a proxy). Snapshot
+		// yields a plain, clone-safe copy.
+		pushState(mapStopPath(stopData.id), { stopData: $state.snapshot(stopData) });
 	}
 
 	$effect(() => {
