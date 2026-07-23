@@ -25,7 +25,7 @@
 
 <div
 	class="flex h-14 w-16 shrink-0 items-center justify-center break-words rounded-lg px-1 text-center font-bold leading-tight"
-	style="background-color: {bg}; color: {fg}; font-size: {fontSize}px;"
+	style="background-color: {bg}; background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 42%, rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.12) 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.12); color: {fg}; font-size: {fontSize}px;"
 >
 	{shortName}
 </div>
