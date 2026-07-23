@@ -22,30 +22,33 @@
 
 ## File Structure
 
-| File | Responsibility |
-|------|----------------|
-| `src/lib/mapStopUrl.js` (create) | Pure URL helpers: `mapStopPath(id)`, `stopIdFromPath(pathname)` |
-| `src/lib/__tests__/mapStopUrl.test.js` (create) | Unit tests for the helpers |
-| `src/app.d.ts` (modify) | `App.PageState` type for `pushState`/`page.state` |
-| `src/components/MapExperience.svelte` (create; moved from `+page.svelte`) | The persistent map shell + URL-driven stop selection |
-| `src/routes/+page.svelte` (delete) | Replaced by the `(map)` group |
-| `src/routes/(map)/+layout.svelte` (create) | Owns/renders `MapExperience` once; persists across children |
-| `src/routes/(map)/+page.svelte` (create) | `/` — idle map, no stop |
-| `src/routes/(map)/map/stops/[stopID]/+page.server.js` (create) | Cold-load `load`: fetch the stop entry |
-| `src/routes/(map)/map/stops/[stopID]/+page.svelte` (create) | Minimal; `<svelte:head>` title/meta for shares |
-| `src/tests/routes/mapStopLoad.test.js` (create) | Unit test for the loader |
-| `src/components/__tests__/MapExperience.test.js` (create) | Sheet visibility follows the URL |
+| File                                                                      | Responsibility                                                  |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `src/lib/mapStopUrl.js` (create)                                          | Pure URL helpers: `mapStopPath(id)`, `stopIdFromPath(pathname)` |
+| `src/lib/__tests__/mapStopUrl.test.js` (create)                           | Unit tests for the helpers                                      |
+| `src/app.d.ts` (modify)                                                   | `App.PageState` type for `pushState`/`page.state`               |
+| `src/components/MapExperience.svelte` (create; moved from `+page.svelte`) | The persistent map shell + URL-driven stop selection            |
+| `src/routes/+page.svelte` (delete)                                        | Replaced by the `(map)` group                                   |
+| `src/routes/(map)/+layout.svelte` (create)                                | Owns/renders `MapExperience` once; persists across children     |
+| `src/routes/(map)/+page.svelte` (create)                                  | `/` — idle map, no stop                                         |
+| `src/routes/(map)/map/stops/[stopID]/+page.server.js` (create)            | Cold-load `load`: fetch the stop entry                          |
+| `src/routes/(map)/map/stops/[stopID]/+page.svelte` (create)               | Minimal; `<svelte:head>` title/meta for shares                  |
+| `src/tests/routes/mapStopLoad.test.js` (create)                           | Unit test for the loader                                        |
+| `src/components/__tests__/MapExperience.test.js` (create)                 | Sheet visibility follows the URL                                |
 
 ---
 
 ## Task 1: URL helpers (`mapStopPath` / `stopIdFromPath`)
 
 **Files:**
+
 - Create: `src/lib/mapStopUrl.js`
 - Test: `src/lib/__tests__/mapStopUrl.test.js`
 
 **Interfaces:**
+
 - Produces:
+
   - `mapStopPath(id: string): string` — returns `/map/stops/<encoded id>`
   - `stopIdFromPath(pathname: string): string | null` — returns the decoded stop id when `pathname` matches `/map/stops/<id>`, else `null`
 
@@ -130,9 +133,11 @@ git commit -m "feat: add map stop URL helpers (mapStopPath, stopIdFromPath)"
 ## Task 2: `App.PageState` type
 
 **Files:**
+
 - Modify: `src/app.d.ts`
 
 **Interfaces:**
+
 - Produces: `App.PageState.stopData?` — the marker/loader stop entry pushed via `pushState('/map/stops/{id}', { stopData })` and read via `$page.state.stopData`.
 
 - [ ] **Step 1: Write the type declaration**
@@ -181,12 +186,14 @@ This is a pure restructure: extract today's `src/routes/+page.svelte` into a reu
 `pushState('/stops/${stop.id}')` for now (rewired in Task 5).
 
 **Files:**
+
 - Create: `src/components/MapExperience.svelte` (moved content of `src/routes/+page.svelte`)
 - Delete: `src/routes/+page.svelte`
 - Create: `src/routes/(map)/+layout.svelte`
 - Create: `src/routes/(map)/+page.svelte`
 
 **Interfaces:**
+
 - Produces: `MapExperience` (no props) — renders the full map UI, reads `$page` for initial coordinates. Consumed by `(map)/+layout.svelte`.
 
 - [ ] **Step 1: Move the page file into a component**
@@ -257,11 +264,13 @@ Adds the real `/map/stops/[stopID]` route. After this task a cold load renders t
 react to it — the sheet opens in Task 5.
 
 **Files:**
+
 - Create: `src/routes/(map)/map/stops/[stopID]/+page.server.js`
 - Create: `src/routes/(map)/map/stops/[stopID]/+page.svelte`
 - Test: `src/tests/routes/mapStopLoad.test.js`
 
 **Interfaces:**
+
 - Produces: `load({ params })` returning `{ stopData }`, where `stopData` is the OBA stop
   **entry** (`{ id, lat, lon, name, routeIds, ... }`) — the same shape a map marker hands
   `handleStopMarkerSelect`, so `selectedStopData` is uniform across both entry paths.
@@ -372,10 +381,12 @@ URL-derived selection, rewire the marker tap and close to shallow routing, and a
 effect that flies/highlights/reports when the selected stop changes.
 
 **Files:**
+
 - Modify: `src/components/MapExperience.svelte`
 - Test: `src/components/__tests__/MapExperience.test.js`
 
 **Interfaces:**
+
 - Consumes: `mapStopPath`, `stopIdFromPath` (Task 1); `App.PageState.stopData` (Task 2);
   loader `stopData` (Task 4); existing `flyTo(lat, lon, zoom, { offsetY, animate })`.
 - Produces: `handleStopMarkerSelect(stopData)` → `pushState(mapStopPath(id), { stopData })`;
@@ -548,7 +559,7 @@ In `handleRouteSelected`, drop an open stop's URL first so the route modal isn't
 competing with a stop sheet. Add as the first line of `handleRouteSelected`:
 
 ```js
-	if (stopSheetOpen) pushState('/', {});
+if (stopSheetOpen) pushState('/', {});
 ```
 
 - [ ] **Step 7: Write the sheet-visibility test**
@@ -585,7 +596,12 @@ vi.mock('$app/navigation', () => ({ pushState: vi.fn(), replaceState: vi.fn() })
 // Per-test controllable page store (overrides the global vitest-setup mock).
 let pageValue;
 vi.mock('$app/stores', () => ({
-	page: { subscribe: (fn) => { fn(pageValue); return () => {}; } }
+	page: {
+		subscribe: (fn) => {
+			fn(pageValue);
+			return () => {};
+		}
+	}
 }));
 
 global.fetch = vi.fn(async () => ({ ok: false, status: 204 })); // loadAlerts no-op
@@ -653,9 +669,11 @@ region-center → stop flash), then apply the mobile offset with `animate:false`
 wired in Task 5's effect). This task supplies the initial center.
 
 **Files:**
+
 - Modify: `src/components/MapExperience.svelte`
 
 **Interfaces:**
+
 - Consumes: loader `stopData` via `$page.data` at mount; existing `MapContainer`
   `initialCoords={{ lat, lng }}` prop.
 
@@ -733,6 +751,7 @@ browser to a mobile viewport (390×844) and navigate to `http://localhost:5173/`
 - [ ] **Step 2: Marker tap → instant deep link**
 
 Tap a stop marker in the lower half of the map. Expected:
+
 - URL becomes `/map/stops/{id}` (shallow — no full navigation/reload).
 - The sheet opens immediately (no fetch wait).
 - The map animates so the stop sits ~25% from the top.
@@ -772,6 +791,7 @@ Expected: format, lint, and the full Vitest suite all pass.
 ## Self-Review
 
 **Spec coverage:**
+
 - Two distinct URLs (`/map/stops/{id}` vs `/stops/{id}`) → Tasks 3–5, Task 7 Step 7. ✓
 - Route-group layout owns the map → Task 3. ✓
 - Cold load instant, pre-centered → Tasks 4 + 6. ✓

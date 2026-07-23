@@ -70,8 +70,9 @@ in the layout and the child pages are throwaway.
 
 The current ~400-line `src/routes/+page.svelte` body moves into the layout. To keep it
 focused and testable, extract it into `$components/MapExperience.svelte` (the map + sheet
-+ handlers) that `(map)/+layout.svelte` renders once. The child `+page.svelte` files are
-minimal — the layout renders the sheet based on the URL.
+
+- handlers) that `(map)/+layout.svelte` renders once. The child `+page.svelte` files are
+  minimal — the layout renders the sheet based on the URL.
 
 ## Source of truth: which stop is open
 
@@ -81,9 +82,9 @@ The selected stop is derived from the URL, which unifies both entry paths:
 // in the layout / MapExperience
 import { page } from '$app/stores';
 
-let selectedStopId   = $derived(stopIdFromPath($page.url.pathname));   // null on "/"
+let selectedStopId = $derived(stopIdFromPath($page.url.pathname)); // null on "/"
 let selectedStopData = $derived($page.state?.stopData ?? $page.data?.stopData ?? null);
-let stopSheetOpen    = $derived(selectedStopId != null);
+let stopSheetOpen = $derived(selectedStopId != null);
 ```
 
 - **Marker tap** → data comes from `$page.state.stopData` (pushed, no fetch).
@@ -112,9 +113,9 @@ cleanup block in today's `handleStopMarkerSelect`).
 
 ```js
 function handleStopMarkerSelect(stopData) {
-  // …existing route/polyline/vehicle cleanup…
-  pushState(`/map/stops/${stopData.id}`, { stopData });   // URL + history entry, no fetch
-  // …highlight marker, analytics (reportStopViewed), loadSurveys — as today…
+	// …existing route/polyline/vehicle cleanup…
+	pushState(`/map/stops/${stopData.id}`, { stopData }); // URL + history entry, no fetch
+	// …highlight marker, analytics (reportStopViewed), loadSurveys — as today…
 }
 ```
 
@@ -135,9 +136,9 @@ uniform across both paths:
 import oba, { handleOBAResponse } from '$lib/obaSdk.js';
 
 export async function load({ params }) {
-  const res  = await oba.stop.retrieve(params.stopID);
-  const body = await handleOBAResponse(res, 'stop').json();
-  return { stopData: body.data.entry };   // { id, lat, lon, name, routeIds/routes, … }
+	const res = await oba.stop.retrieve(params.stopID);
+	const body = await handleOBAResponse(res, 'stop').json();
+	return { stopData: body.data.entry }; // { id, lat, lon, name, routeIds/routes, … }
 }
 ```
 
@@ -178,11 +179,11 @@ zoom 16, or apply the zoom via the follow-up instant `flyTo`.
 
   ```ts
   declare global {
-    namespace App {
-      interface PageState {
-        stopData?: { id: string; lat: number; lon: number; name: string; [k: string]: unknown };
-      }
-    }
+  	namespace App {
+  		interface PageState {
+  			stopData?: { id: string; lat: number; lon: number; name: string; [k: string]: unknown };
+  		}
+  	}
   }
   export {};
   ```
