@@ -87,6 +87,11 @@
 		currentModal = Modal.STOP;
 		stop = stopData;
 		searchCollapsed = true;
+		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
+		// bottom sheet, so open it fully instead of at the half detent.
+		if (browser && window.innerWidth >= 768) {
+			sheetSnap = 'full';
+		}
 		pushState(`/stops/${stop.id}`);
 		loadSurveys(stop, getUserId());
 
