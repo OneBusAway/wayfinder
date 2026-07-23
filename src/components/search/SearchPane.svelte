@@ -18,6 +18,7 @@
 	import { page } from '$app/stores';
 	import { parseTripParams, hasTripParams } from '$lib/urlState';
 	import { notifyRouteLoadFailed, notifyPartialRouteShape } from '$lib/routeNotifications';
+	import { notifications } from '$stores/notificationStore';
 
 	let {
 		handleRouteSelected,
@@ -112,6 +113,9 @@
 
 	async function handleRouteClick(route) {
 		const loadToken = ++routeLoadToken;
+		// Drop any prior retriable toast so a stale Retry for a previous route
+		// can't wipe markers/polylines after the user has moved on.
+		notifications.dismiss();
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
 		mapProvider.clearVehicleMarkers();
@@ -324,6 +328,7 @@
 	});
 
 	onDestroy(() => {
+		notifications.dismiss();
 		if (unsubscribeMapLoaded) {
 			unsubscribeMapLoaded();
 		}

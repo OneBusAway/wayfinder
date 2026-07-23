@@ -10,6 +10,7 @@
 	import { t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { notifyPartialRouteShape } from '$lib/routeNotifications';
+	import { notifications } from '$stores/notificationStore';
 
 	/**
 	 * @typedef {Object} Props
@@ -137,6 +138,9 @@
 	});
 
 	onDestroy(() => {
+		// Partial-shape warnings auto-dismiss, but clear immediately on close so
+		// they don't linger over the next view.
+		notifications.dismiss();
 		if (currPolylines.length > 0) {
 			currPolylines.forEach(async (polyline) => {
 				mapProvider.removePolyline(await polyline);

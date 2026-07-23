@@ -4,6 +4,7 @@
 	import { mapContrastColor } from '$lib/colorUtils';
 	import { onMount, onDestroy } from 'svelte';
 	import { notifyRouteLoadFailed, notifyPartialRouteShape } from '$lib/routeNotifications';
+	import { notifications } from '$stores/notificationStore';
 	let { mapProvider, tripId, currentSelectedStop = null } = $props();
 	let shapeId = null;
 	let tripData = null;
@@ -21,6 +22,9 @@
 
 	onDestroy(async () => {
 		isMounted = false;
+		// Retriable error toasts have no auto-dismiss; drop ours so a stale
+		// Retry can't clear map content owned by the next view.
+		notifications.dismiss();
 		if (loadRouteDataPromise) {
 			await loadRouteDataPromise;
 		}
