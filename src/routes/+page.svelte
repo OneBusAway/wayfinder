@@ -116,6 +116,11 @@
 
 	function handleViewAllRoutes() {
 		currentModal = Modal.ALL_ROUTES;
+		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
+		// bottom sheet, so open it fully instead of at the half detent.
+		if (browser && window.innerWidth >= 768) {
+			sheetSnap = 'full';
+		}
 	}
 
 	function handleModalRouteClick(route) {
@@ -369,7 +374,7 @@
 				{:else if currentModal === Modal.ROUTE}
 					<RouteModal {closePane} {mapProvider} {stops} {selectedRoute} />
 				{:else if currentModal === Modal.ALL_ROUTES}
-					<ViewAllRoutesModal {closePane} {handleModalRouteClick} />
+					<ViewAllRoutesModal {closePane} {handleModalRouteClick} bind:snap={sheetSnap} />
 				{:else if currentModal === Modal.TRIP_PLANNER}
 					<TripPlanModal
 						{mapProvider}
