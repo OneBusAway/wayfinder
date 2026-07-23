@@ -9,7 +9,7 @@
 	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
-	import { resolveVehicleStopIndex, computeVisibleStopRange } from '$lib/tripDetailsUtils';
+	import { resolveVehicleStopIndex, buildStopSegments } from '$lib/tripDetailsUtils';
 
 	/**
 	 * @typedef {Object} Props
@@ -29,11 +29,12 @@
 	let busPosition = $state(-1);
 	let abortController = null;
 
-	// Only show the segment from the vehicle's current position through the
-	// rider's selected stop: stops already passed and stops beyond the rider's
-	// stop are hidden.
-	let visibleRange = $derived(
-		computeVisibleStopRange(tripDetails?.schedule?.stopTimes, busPosition, stop.id)
+	// Rows to render for the segment from the vehicle's current position through
+	// the rider's selected stop: stops already passed and stops beyond the rider's
+	// stop are hidden, and a long run of stops in the middle is collapsed into a
+	// single "N stops" marker (mirroring the iOS trip view).
+	let stopSegments = $derived(
+		buildStopSegments(tripDetails?.schedule?.stopTimes, busPosition, stop.id)
 	);
 
 	// Locate the vehicle along the trip using the stop IDs the server reports for
@@ -125,8 +126,35 @@
 			<div class="relative">
 				<div class="absolute bottom-0 left-3.5 top-0 w-[1px] bg-neutral-400"></div>
 
-				{#each tripDetails.schedule.stopTimes as tripStop, index}
-					{#if index >= visibleRange.start && index <= visibleRange.end}
+				{#each stopSegments as segment (segment.type === 'stop' ? `stop-${segment.index}` : 'collapsed')}
+					{#if segment.type === 'collapsed'}
+						<div class="mb-4 flex items-center">
+							<div class="relative flex size-8 items-center justify-center">
+								<!-- Zig-zag connector standing in for the collapsed stops; the opaque
+								     background masks the straight rail line behind it. -->
+								<svg
+									class="bg-white text-neutral-400 dark:bg-neutral-800"
+									width="16"
+									height="36"
+									viewBox="0 0 16 36"
+									fill="none"
+									aria-hidden="true"
+								>
+									<path
+										d="M8 0 L2 6 L14 12 L2 18 L14 24 L2 30 L8 36"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</div>
+							<div class="ml-4 text-sm text-gray-500 dark:text-gray-400">
+								{$_('trip_details.collapsed_stops', { values: { count: segment.count } })}
+							</div>
+						</div>
+					{:else}
+						{@const index = segment.index}
+						{@const tripStop = tripDetails.schedule.stopTimes[index]}
 						<div class="mb-4 flex items-center">
 							<div
 								class="relative flex size-8 items-center justify-center {index === busPosition

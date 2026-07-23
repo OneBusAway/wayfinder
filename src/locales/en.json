@@ -233,7 +233,8 @@
 		"route": "Route",
 		"no_stops": "No stop times available for this trip.",
 		"loading": "Loading trip details...",
-		"live_vehicle": "Live · vehicle {vehicleId}"
+		"live_vehicle": "Live · vehicle {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# stop} other {# stops}}"
 	},
 	"skip_to_main_content": "Skip to main content"
 }
