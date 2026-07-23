@@ -14,7 +14,7 @@
 - `pushState(url, state)` — **`state` is a required second argument.** Use `pushState('/', {})`, never `pushState('/')`.
 - No `preloadData` / `data-sveltekit-preload-data` for marker taps — the marker already carries the stop object; push it straight into `page.state`.
 - Reuse the existing `flyTo(lat, lon, zoom, { offsetY, animate })` — `offsetY` is `0.25` below the `md` (768px) breakpoint, else `0` (desktop uses a side-panel sheet).
-- Open/closed is decided by the pathname-derived `selectedStopId`/`stopSheetOpen` — **never** gate UI on `selectedStopData` truthiness (it can be stale after close on a cold-loaded page).
+- **CORRECTION (verified live during implementation):** shallow `pushState` updates `page.state` and the browser URL bar but **NOT** the reactive `$page.url`, so the open stop is derived from **`page.state.stopData`**, not the URL. `selectedStopData = $page.state?.stopData ?? null`; `selectedStopId = selectedStopData?.id`; `stopSheetOpen = selectedStopId != null`. On a **cold load** the server load puts the stop in `page.data`; seed it into `page.state` via `afterNavigate` + a `setTimeout(…, 0)` (deferred one macrotask, because `replaceState` throws "before router is initialized" during hydration). Gate UI on `stopSheetOpen`/`selectedStopId` (page.state-backed, cleared on close) — never on `page.data` (it lingers after a real navigation). Task 5's code blocks below show the original URL-based approach; the committed code uses this corrected page.state approach.
 - Standalone `/stops/{id}` and `/stops/{id}/schedule` pages stay **unchanged**; the sheet's "View Details" link still points to `/stops/{id}`.
 - Run tests with `npx vitest run <path>` (not `npm run test`, which watches).
 

@@ -76,6 +76,18 @@ focused and testable, extract it into `$components/MapExperience.svelte` (the ma
 
 ## Source of truth: which stop is open
 
+> **CORRECTION (verified live during implementation).** The original design below
+> assumed shallow `pushState` updates `$page.url`. It does **not** — `pushState`
+> updates `page.state` and the browser URL bar, but the reactive `$page.url` keeps
+> reflecting the last real navigation. So the open stop is derived from
+> **`page.state.stopData`** (`selectedStopData = $page.state?.stopData ?? null`;
+> `selectedStopId = selectedStopData?.id`), not the URL. On a cold load the stop
+> arrives in `page.data`; seed it into `page.state` with `afterNavigate` +
+> `setTimeout(…, 0)` (deferred past hydration, since `replaceState` throws before
+> the router is initialized). Gating on `page.state` (cleared on close) rather than
+> `page.data` (which lingers) is what makes close reliable everywhere. The rest of
+> this section reflects the original URL-based intent.
+
 The selected stop is derived from the URL, which unifies both entry paths:
 
 ```js
