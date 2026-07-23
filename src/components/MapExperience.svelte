@@ -111,7 +111,11 @@
 		if (!provider) return; // wait for the map (re-runs when mapProvider is set)
 
 		if (id === appliedStopId) {
-			mapWasReady = true;
+			// On a cold /map/stops/{id} load this branch runs first with both ids null
+			// (page.state isn't seeded until afterNavigate). Don't flip mapWasReady then,
+			// or the deferred stop selection would animate instead of snapping. A normal
+			// load (no cold stopData) can mark the map ready so later in-app taps animate.
+			if (!initialPage.data?.stopData) mapWasReady = true;
 			return;
 		}
 
@@ -119,8 +123,16 @@
 			const data = selectedStopData;
 			if (!data) return; // wait for state/load data; re-runs when it arrives
 
-			// A stop supersedes any route/trip selection.
-			if (currentModal === Modal.ROUTE || selectedRoute || isRouteSelected) {
+			// A stop supersedes any other selection. Tear down the map overlays a route
+			// or trip left behind only when one was active, but always clear currentModal
+			// (including ALL_ROUTES / TRIP_PLANNER, which draw no map overlays) and its
+			// selection state so no modal reappears when the stop sheet closes.
+			if (
+				currentModal === Modal.ROUTE ||
+				currentModal === Modal.TRIP_PLANNER ||
+				selectedRoute ||
+				isRouteSelected
+			) {
 				provider.clearAllPolylines();
 				provider.removeStopMarkers();
 				provider.clearVehicleMarkers();
@@ -131,8 +143,10 @@
 				selectedRoute = null;
 				isRouteSelected = false;
 				selectedTrip = null;
-				currentModal = null;
+				tripItineraries = [];
+				tripPlanError = null;
 			}
+			currentModal = null;
 
 			searchCollapsed = true;
 			if (browser && window.innerWidth >= 768) sheetSnap = 'full';
