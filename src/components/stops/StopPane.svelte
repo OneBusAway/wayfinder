@@ -47,7 +47,11 @@
 	// immediately instead of flashing the first-load skeleton.
 	let arrivalsAndDepartures = $state(arrivalsAndDeparturesResponse?.data?.entry);
 	let error = $state();
-	let serviceAlerts = $state([]);
+	// Seed alerts from the same server-rendered response so they show on first
+	// render instead of waiting for the initial client fetch to complete.
+	let serviceAlerts = $state(
+		filterActiveAlerts(arrivalsAndDeparturesResponse?.data?.references?.situations ?? [])
+	);
 	let minutesAfter = $state(DEFAULT_MINUTES_AFTER);
 	let loadingMore = $state(false);
 	let noMoreArrivals = $state(false);
@@ -240,7 +244,7 @@
 {#snippet skeletonList()}
 	<!-- First-load placeholder. Once real data arrives, `arrivalsAndDepartures`
 	     stays set, so background refreshes never bring this back. -->
-	<div class="space-y-4" role="status" aria-busy="true" aria-label="Loading">
+	<div class="space-y-4" role="status" aria-busy="true" aria-label={$t('loading')}>
 		{#each Array.from({ length: 4 }, (_, i) => i) as i (i)}
 			<div class="flex items-center gap-3 px-1">
 				<div class="h-14 w-14 shrink-0 animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700"></div>

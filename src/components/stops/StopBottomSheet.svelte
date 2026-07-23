@@ -62,10 +62,11 @@
 				<button
 					type="button"
 					onclick={() => stopPane?.refresh()}
+					disabled={stopPaneLoading}
 					title={$isLoading ? '' : $t('refresh')}
 					aria-label={$isLoading ? '' : $t('refresh')}
 					aria-busy={stopPaneLoading}
-					class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-accent text-sm text-white hover:bg-brand-accent-dark"
+					class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-accent text-sm text-white hover:bg-brand-accent-dark disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					<span class="flex" class:animate-spin={stopPaneLoading}>
 						<FontAwesomeIcon icon={faArrowsRotate} />

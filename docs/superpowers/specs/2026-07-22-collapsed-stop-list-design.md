@@ -87,7 +87,7 @@ straight rail reads as flowing into and out of the zig-zag.
 New key `trip_details.collapsed_stops` in `src/locales/en.json`, pluralized via
 svelte-i18n's ICU MessageFormat:
 
-```
+```json
 "collapsed_stops": "{count, plural, one {# stop} other {# stops}}"
 ```
 

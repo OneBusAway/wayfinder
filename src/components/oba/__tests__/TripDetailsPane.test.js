@@ -121,7 +121,8 @@ describe('TripDetailsPane', () => {
 	});
 
 	test('does not collapse when only a few stops remain to the rider stop', async () => {
-		// 4 stops (3 intermediate == tail count) => no collapsed marker.
+		// 4 stops: vehicle at index 0, rider at the last index, so only 2
+		// intermediate stops -- fewer than the tail count of 3, so no marker.
 		vi.stubGlobal(
 			'fetch',
 			vi.fn().mockResolvedValue({
