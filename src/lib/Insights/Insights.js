@@ -1,4 +1,5 @@
 import { env as dynamicEnv } from '$env/dynamic/public';
+import { upstreamError } from './upstreamError.js';
 
 /**
  * Provider-agnostic facade. Builds an AnalyticsEnvelope and POSTs it to /api/events.
@@ -75,8 +76,7 @@ export class Analytics {
 			});
 
 			if (!response.ok) {
-				const errorText = await response.text();
-				throw new Error(`Error sending event: ${response.statusText}. ${errorText}`);
+				throw await upstreamError(response);
 			}
 			return response.json();
 		} catch (error) {

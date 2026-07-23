@@ -1,3 +1,5 @@
+import { insightsError, upstreamError } from '../upstreamError.js';
+
 const UPSTREAM_TIMEOUT_MS = 5000;
 
 const MAX_DATA_VALUE_LENGTH = 256;
@@ -135,16 +137,12 @@ export class UmamiAdapter {
 			});
 
 			if (!res.ok) {
-				const err = new Error(`Error sending event: ${res.statusText}`);
-				err.upstreamStatus = res.status;
-				throw err;
+				throw await upstreamError(res);
 			}
 
 			const text = await res.text();
 			if (!isSuccessfulIngest(text)) {
-				const err = new Error('Umami dropped event as bot-like (isbot rejected the User-Agent)');
-				err.upstreamStatus = 502;
-				throw err;
+				throw insightsError('Umami dropped event as bot-like (isbot rejected the User-Agent)', 502);
 			}
 			try {
 				return JSON.parse(text);

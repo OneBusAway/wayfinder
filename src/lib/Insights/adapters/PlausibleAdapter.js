@@ -1,3 +1,5 @@
+import { upstreamError } from '../upstreamError.js';
+
 const UPSTREAM_TIMEOUT_MS = 5000;
 
 export class PlausibleAdapter {
@@ -56,9 +58,7 @@ export class PlausibleAdapter {
 			});
 
 			if (!res.ok) {
-				const err = new Error(`Error sending event: ${res.statusText}`);
-				err.upstreamStatus = res.status;
-				throw err;
+				throw await upstreamError(res);
 			}
 
 			const text = await res.text();
