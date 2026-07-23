@@ -7,15 +7,3 @@
 export function mapStopPath(id) {
 	return `/map/stops/${encodeURIComponent(id)}`;
 }
-
-/**
- * The stop id embedded in a `/map/stops/{id}` pathname, or null for any other
- * path. Used to derive "which stop is open" from the URL — works for both
- * shallow `pushState` and real navigation.
- * @param {string} pathname
- * @returns {string | null}
- */
-export function stopIdFromPath(pathname) {
-	const match = /^\/map\/stops\/([^/]+)\/?$/.exec(pathname);
-	return match ? decodeURIComponent(match[1]) : null;
-}

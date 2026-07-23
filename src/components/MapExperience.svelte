@@ -163,7 +163,11 @@
 				currentHighlightedStopId = null;
 			}
 			provider.cleanupInfoWindow();
-			provider.clearVehicleMarkers();
+			// Don't wipe vehicle markers a route is drawing: when a route is selected
+			// from an open stop sheet, handleRouteSelected has already set
+			// currentModal = Modal.ROUTE and added the route's vehicles before this
+			// teardown flushes. A normal stop close leaves currentModal null.
+			if (currentModal !== Modal.ROUTE) provider.clearVehicleMarkers();
 			selectedTrip = null;
 		}
 
