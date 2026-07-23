@@ -7,6 +7,7 @@ import {
 	prioritizedRouteTypeForDisplay,
 	SHOW_ROUTE_LABELS_AT_ZOOM
 } from '$config/routeConfig';
+import 'leaflet/dist/leaflet.css';
 import './../../assets/styles/leaflet-map.css';
 import PolylineUtil from 'polyline-encoded';
 import { COLORS } from '$lib/colors';
@@ -64,17 +65,18 @@ export default class OpenStreetMapProvider {
 
 		this.L = leaflet.default;
 
-		// Leaflet CSS
-		const link = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-		document.head.appendChild(link);
+		// Leaflet's CSS is bundled via the top-of-file import 'leaflet/dist/leaflet.css'
+		// rather than injected from a CDN at runtime, so the map's core styles aren't a
+		// render-blocking third-party request or a single point of failure.
 
 		this.map = this.L.map(element, { zoomControl: false }).setView([options.lat, options.lng], 14);
 
 		this.L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+		// Record the applied style URL so setTheme() can skip a redundant layer
+		// rebuild when the theme already matches the boot style (see setTheme).
+		this.currentStyleUrl = `https://tiles.openfreemap.org/styles/${this.maplibreLayer}`;
 		this.maplibreLayer = this.L.maplibreGL({
-			style: `https://tiles.openfreemap.org/styles/${this.maplibreLayer}`,
+			style: this.currentStyleUrl,
 			interactive: true,
 			dragRotate: false
 		}).addTo(this.map);
@@ -574,6 +576,13 @@ export default class OpenStreetMapProvider {
 		} else {
 			styleUrl = 'https://tiles.openfreemap.org/styles/positron';
 		}
+
+		// Rebuilding the MapLibre layer re-fetches the style, sprites, glyph fonts,
+		// and vector tiles. Skip it when the style is unchanged — otherwise the
+		// themeChange dispatched right after initMap tears down and rebuilds the
+		// layer with the identical style, doubling the map's cold-load network cost.
+		if (styleUrl === this.currentStyleUrl) return;
+		this.currentStyleUrl = styleUrl;
 
 		if (this.maplibreLayer) {
 			this.map.removeLayer(this.maplibreLayer);
