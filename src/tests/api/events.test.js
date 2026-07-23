@@ -118,7 +118,24 @@ describe('POST /api/events', () => {
 		);
 	});
 
-	it('forwards upstream status code on upstream error', async () => {
+	// The whole point of folding the body in is that it survives to the wire, so assert it
+	// here and not only at the adapter level.
+	it('forwards upstream status code and the upstream reason on upstream error', async () => {
+		global.fetch = vi.fn().mockResolvedValue({
+			ok: false,
+			status: 400,
+			statusText: 'Bad Request',
+			text: async () => '{"error":{"message":"Website not found."}}'
+		});
+		const response = await POST(buildEvent());
+		const data = await response.json();
+		expect(response.status).toBe(400);
+		expect(data.error).toBe(
+			'Error sending event: 400 Bad Request — {"error":{"message":"Website not found."}}'
+		);
+	});
+
+	it('still forwards the upstream status when the upstream body cannot be read', async () => {
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: false,
 			status: 502,
@@ -127,7 +144,8 @@ describe('POST /api/events', () => {
 		const response = await POST(buildEvent());
 		const data = await response.json();
 		expect(response.status).toBe(502);
-		expect(data).toEqual({ error: 'Error sending event: Bad Gateway' });
+		expect(data.error).toContain('Error sending event: 502 Bad Gateway');
+		expect(data.error).toContain('upstream body unreadable');
 	});
 
 	it('returns 400 when request body is not valid JSON', async () => {
