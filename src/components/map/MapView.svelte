@@ -57,7 +57,11 @@
 		let newMode;
 		if (isTripPlanModeActive) {
 			newMode = Modes.TRIP_PLAN;
-		} else if (selectedRoute || isRouteSelected || showRouteMap || selectedTrip) {
+			// A selected stop owns the map: expanding one of its arrival rows sets
+			// selectedTrip/isRouteSelected/showRouteMap, and without this guard that
+			// would flip us to ROUTE — whose effect clears every stop marker, exactly
+			// when the stop-selection layer needs them tiered and on screen.
+		} else if (!stop && (selectedRoute || isRouteSelected || showRouteMap || selectedTrip)) {
 			newMode = Modes.ROUTE;
 		} else {
 			newMode = Modes.NORMAL;
