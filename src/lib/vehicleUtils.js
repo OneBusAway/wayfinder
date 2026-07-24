@@ -243,6 +243,28 @@ export function clearVehicleMarkersMap() {
 	activeTripMap.clear();
 }
 
+/**
+ * Removes only the vehicle markers owned by the given routes, leaving markers
+ * for any other route (e.g. one a sibling component is polling) untouched.
+ *
+ * Self-scoped counterpart to `removeInactiveMarkers`: that sweep decides which
+ * markers within a set of *polled* routes are stale; this one removes every
+ * marker for a set of routes outright, for a caller (StopRoutesLayer's
+ * teardown) tearing down its own selection rather than reconciling a poll.
+ *
+ * @param {Iterable<string>} routeIds
+ * @param {Object} mapProvider
+ */
+export function removeVehicleMarkersForRoutes(routeIds, mapProvider) {
+	const idsToRemove = routeIds instanceof Set ? routeIds : new Set(routeIds);
+	for (const [markerKey, entry] of vehicleMarkersMap) {
+		if (idsToRemove.has(entry.routeId)) {
+			mapProvider.removeVehicleMarker(entry.marker);
+			vehicleMarkersMap.delete(markerKey);
+		}
+	}
+}
+
 export function buildVehiclePopupData(vehicle, activeTrip, stopsMap) {
 	return {
 		nextDestination: activeTrip.tripHeadsign,

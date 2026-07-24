@@ -18,7 +18,10 @@
 -->
 <script>
 	import { onDestroy, untrack } from 'svelte';
-	import { fetchAndUpdateVehiclesForRoutes, clearVehicleMarkersMap } from '$lib/vehicleUtils.js';
+	import {
+		fetchAndUpdateVehiclesForRoutes,
+		removeVehicleMarkersForRoutes
+	} from '$lib/vehicleUtils.js';
 	// From the provider-neutral module, NOT from a provider: importing either
 	// provider here would pull its whole map stack into the bundle regardless of
 	// which one PUBLIC_OBA_MAP_PROVIDER selects.
@@ -233,12 +236,26 @@
 		// mapProvider can be null: a cold deep-link whose arrivals land before
 		// initMap() resolves mounts this layer with no provider yet, and
 		// onDestroy calls teardown() unconditionally.
-		mapProvider?.clearAllPolylines();
-		mapProvider?.clearVehicleMarkers();
-		// clearVehicleMarkers only detaches markers; the module-level map would
-		// otherwise hand stale entries to the next selection.
-		clearVehicleMarkersMap();
-		// clearAllPolylines() above only tears down the map layer side; the
+		//
+		// Self-scoped: this must remove only what THIS layer drew, never the
+		// whole map. A map-wide clearAllPolylines()/clearVehicleMarkers() here
+		// would also wipe a route SearchPane just drew on top of an open stop
+		// sheet (see MapExperience's handleRouteSelected, which closes the
+		// sheet — and therefore unmounts this layer — *after* SearchPane has
+		// already drawn the newly selected route). polylinesByRouteId's keys
+		// are exactly the route ids this layer drew as of the last completed
+		// drawRoutes() call: on a signature-change redraw this runs before the
+		// new drawRoutes() starts, so it still reflects the *previous* draw,
+		// which is what needs clearing.
+		if (mapProvider) {
+			for (const polyline of polylinesByRouteId.values()) {
+				mapProvider.removePolyline(polyline);
+			}
+			// Array.from, not the live Map iterator: polylinesByRouteId.clear()
+			// below would otherwise empty the iterator's backing map out from
+			// under a caller (or a test spy) that reads it after this call returns.
+			removeVehicleMarkersForRoutes(Array.from(polylinesByRouteId.keys()), mapProvider);
+		}
 		// promotion effect's own bookkeeping must be reset here too, or it would
 		// try to re-pane a polyline that no longer exists.
 		polylinesByRouteId.clear();

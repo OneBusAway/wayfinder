@@ -4,7 +4,8 @@ import {
 	clearVehicleMarkersMap,
 	fetchVehicles,
 	fetchAndUpdateVehicles,
-	fetchAndUpdateVehiclesForRoutes
+	fetchAndUpdateVehiclesForRoutes,
+	removeVehicleMarkersForRoutes
 } from '$lib/vehicleUtils.js';
 
 function tripsResponse(routeId, vehicles) {
@@ -504,6 +505,60 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 
 		const counts = onCounts.mock.calls.at(-1)[0];
 		expect(counts.get('r_b')).toBe(1);
+	});
+});
+
+// Self-scoped teardown for a caller (StopRoutesLayer) that owns a subset of
+// routes and must remove exactly its own markers on unmount/redraw, without
+// disturbing markers a sibling component (e.g. SearchPane, drawing a route
+// selected from search) is polling concurrently.
+describe('removeVehicleMarkersForRoutes', () => {
+	beforeEach(() => {
+		clearVehicleMarkersMap();
+		vi.useFakeTimers();
+	});
+	afterEach(() => vi.useRealTimers());
+
+	test('removes only the given routes markers, leaving others intact', async () => {
+		const provider = makeMultiRouteProvider();
+		global.fetch = vi.fn(async (url) => {
+			const routeId = url.split('/').pop();
+			return {
+				ok: true,
+				json: async () =>
+					tripsResponse(routeId, [{ tripId: `t_${routeId}`, vehicleId: `v_${routeId}` }])
+			};
+		});
+
+		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
+			[
+				{ id: 'r_a', type: 3 },
+				{ id: 'r_b', type: 3 }
+			],
+			provider
+		);
+		clearInterval(intervalId);
+		expect(provider.addVehicleMarker).toHaveBeenCalledTimes(2);
+
+		removeVehicleMarkersForRoutes(['r_a'], provider);
+
+		expect(provider.removeVehicleMarker).toHaveBeenCalledTimes(1);
+		expect(provider.removeVehicleMarker).toHaveBeenCalledWith({ id: 'v_r_a' });
+
+		// r_b's marker must survive: re-polling only r_b (simulating a sibling
+		// layer that still owns it) must update the existing marker rather than
+		// add a new one, proving it's still tracked in the module map rather than
+		// only detached visually.
+		provider.addVehicleMarker.mockClear();
+		provider.updateVehicleMarker.mockClear();
+		const { intervalId: secondIntervalId } = await fetchAndUpdateVehiclesForRoutes(
+			[{ id: 'r_b', type: 3 }],
+			provider
+		);
+		clearInterval(secondIntervalId);
+
+		expect(provider.updateVehicleMarker).toHaveBeenCalledTimes(1);
+		expect(provider.addVehicleMarker).not.toHaveBeenCalled();
 	});
 });
 

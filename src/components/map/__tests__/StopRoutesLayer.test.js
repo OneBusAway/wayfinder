@@ -5,9 +5,12 @@ import { ROUTE_PANE } from '$lib/mapPanes.js';
 
 vi.mock('$lib/vehicleUtils.js', () => ({
 	fetchAndUpdateVehiclesForRoutes: vi.fn().mockResolvedValue({ intervalId: 42, tick: vi.fn() }),
-	clearVehicleMarkersMap: vi.fn()
+	removeVehicleMarkersForRoutes: vi.fn()
 }));
-import { fetchAndUpdateVehiclesForRoutes, clearVehicleMarkersMap } from '$lib/vehicleUtils.js';
+import {
+	fetchAndUpdateVehiclesForRoutes,
+	removeVehicleMarkersForRoutes
+} from '$lib/vehicleUtils.js';
 import { createLayerBindings } from './support/layerBindings.svelte.js';
 
 function makeProvider() {
@@ -239,6 +242,7 @@ describe('StopRoutesLayer', () => {
 		const { unmount } = render(StopRoutesLayer, {
 			props: { mapProvider, activeRoutes: routes, routeColors: colors }
 		});
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2));
 		await vi.waitFor(() => expect(fetchAndUpdateVehiclesForRoutes).toHaveBeenCalled());
 		// Flush the resolved fetchAndUpdateVehiclesForRoutes promise so
 		// vehicleIntervalId is actually assigned before we unmount and assert
@@ -248,11 +252,62 @@ describe('StopRoutesLayer', () => {
 		const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
 		unmount();
 
-		expect(mapProvider.clearAllPolylines).toHaveBeenCalled();
-		expect(mapProvider.clearVehicleMarkers).toHaveBeenCalled();
-		expect(clearVehicleMarkersMap).toHaveBeenCalled();
+		// Self-scoped teardown: exactly the two polylines this layer drew, not a
+		// map-wide clear (which would also strip anything a sibling component
+		// drew, e.g. a route SearchPane just drew over an open stop sheet).
+		expect(mapProvider.removePolyline).toHaveBeenCalledTimes(2);
+		expect(removeVehicleMarkersForRoutes).toHaveBeenCalledWith(
+			expect.arrayContaining(['r_c', 'r_22']),
+			mapProvider
+		);
 		expect(clearIntervalSpy).toHaveBeenCalledWith(42);
 		clearIntervalSpy.mockRestore();
+	});
+
+	// The headline regression this diff guards against (strand-route-on-search-
+	// select): teardown used to call the map-wide clearAllPolylines(), which
+	// would also strip a polyline a sibling component drew directly on the
+	// shared provider — e.g. SearchPane drawing a newly selected route while a
+	// stop sheet (and therefore this layer) was still open. This provider fake
+	// models the map's actual polyline set, including a "foreign" polyline
+	// never handed to this layer, so a map-wide clear is distinguishable from a
+	// self-scoped one. Fails against the old `mapProvider.clearAllPolylines()`
+	// teardown, which would empty `onMap` entirely.
+	test('removes only its own polylines on teardown, leaving a foreign one (e.g. one SearchPane just drew) untouched', async () => {
+		const onMap = new Set();
+		let nextId = 0;
+		const mapProvider = {
+			createPolyline: vi.fn(async () => {
+				const polyline = { id: `own-${nextId++}` };
+				onMap.add(polyline);
+				return polyline;
+			}),
+			revealPolylines: vi.fn(),
+			clearAllPolylines: vi.fn(() => onMap.clear()),
+			clearVehicleMarkers: vi.fn(),
+			removePolyline: vi.fn((polyline) => onMap.delete(polyline)),
+			setPolylineLayer: vi.fn()
+		};
+
+		const { unmount } = render(StopRoutesLayer, {
+			props: { mapProvider, activeRoutes: routes, routeColors: colors }
+		});
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2));
+		const ownPolylines = [...onMap];
+		expect(ownPolylines).toHaveLength(2);
+
+		// A route SearchPane drew directly on the shared provider — this layer
+		// never created it and has no reference to it.
+		const foreignPolyline = { id: 'searchpane-route' };
+		onMap.add(foreignPolyline);
+
+		unmount();
+
+		expect(onMap.has(foreignPolyline)).toBe(true);
+		for (const polyline of ownPolylines) {
+			expect(onMap.has(polyline)).toBe(false);
+		}
+		expect(mapProvider.clearAllPolylines).not.toHaveBeenCalled();
 	});
 
 	// Finding 1 (CRITICAL): StopPane polls arrivals every 30s, and
@@ -267,7 +322,7 @@ describe('StopRoutesLayer', () => {
 		});
 		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2));
 		const fetchCallsAfterFirstDraw = global.fetch.mock.calls.length;
-		const clearCallsAfterFirstDraw = mapProvider.clearAllPolylines.mock.calls.length;
+		const removeCallsAfterFirstDraw = mapProvider.removePolyline.mock.calls.length;
 
 		const sameRoutes = routes.map((route) => ({ ...route }));
 		const sameColors = new Map(Array.from(colors, ([id, value]) => [id, { ...value }]));
@@ -276,7 +331,7 @@ describe('StopRoutesLayer', () => {
 
 		expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2);
 		expect(global.fetch.mock.calls.length).toBe(fetchCallsAfterFirstDraw);
-		expect(mapProvider.clearAllPolylines.mock.calls.length).toBe(clearCallsAfterFirstDraw);
+		expect(mapProvider.removePolyline.mock.calls.length).toBe(removeCallsAfterFirstDraw);
 	});
 
 	test('does redraw when the route set actually changes', async () => {
@@ -291,7 +346,14 @@ describe('StopRoutesLayer', () => {
 		await rerender({ mapProvider, activeRoutes: routes, routeColors: changedColors });
 
 		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(4));
-		expect(mapProvider.clearAllPolylines).toHaveBeenCalledTimes(2);
+		// The redraw's own teardown removes exactly the two polylines the
+		// previous draw produced (the first mount's teardown had nothing to
+		// remove yet).
+		expect(mapProvider.removePolyline).toHaveBeenCalledTimes(2);
+		expect(removeVehicleMarkersForRoutes).toHaveBeenCalledWith(
+			expect.arrayContaining(['r_c', 'r_22']),
+			mapProvider
+		);
 	});
 
 	// Finding 2 (CRITICAL): a cold deep-link whose arrivals land before
@@ -315,14 +377,18 @@ describe('StopRoutesLayer', () => {
 		const { rerender } = render(StopRoutesLayer, {
 			props: { mapProvider, activeRoutes: routes, routeColors: colors }
 		});
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2));
 		await vi.waitFor(() => expect(fetchAndUpdateVehiclesForRoutes).toHaveBeenCalled());
 		await flush();
 
 		const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
 		await rerender({ mapProvider, activeRoutes: [], routeColors: new Map() });
 
-		expect(mapProvider.clearAllPolylines).toHaveBeenCalled();
-		expect(mapProvider.clearVehicleMarkers).toHaveBeenCalled();
+		expect(mapProvider.removePolyline).toHaveBeenCalledTimes(2);
+		expect(removeVehicleMarkersForRoutes).toHaveBeenCalledWith(
+			expect.arrayContaining(['r_c', 'r_22']),
+			mapProvider
+		);
 		expect(clearIntervalSpy).toHaveBeenCalledWith(42);
 		clearIntervalSpy.mockRestore();
 	});
@@ -510,10 +576,7 @@ describe('StopRoutesLayer — trip expansion (promote route / highlight vehicle)
 		});
 		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2));
 		const fetchCallsBefore = global.fetch.mock.calls.length;
-		// The very first draw's own teardown() (there's nothing to tear down
-		// yet, but it always runs) already calls clearAllPolylines() once —
-		// baseline off that rather than asserting zero calls.
-		const clearCallsBefore = mapProvider.clearAllPolylines.mock.calls.length;
+		const removeCallsBefore = mapProvider.removePolyline.mock.calls.length;
 
 		await rerender({ promotedRouteId: 'r_c', highlightedTripId: 't_c' });
 		await flush();
@@ -529,7 +592,8 @@ describe('StopRoutesLayer — trip expansion (promote route / highlight vehicle)
 
 		expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2);
 		expect(global.fetch.mock.calls.length).toBe(fetchCallsBefore);
-		expect(mapProvider.clearAllPolylines.mock.calls.length).toBe(clearCallsBefore);
+		// Promoting/demoting must not tear down and redraw anything.
+		expect(mapProvider.removePolyline.mock.calls.length).toBe(removeCallsBefore);
 	});
 
 	test('changing highlightedTripId forces an immediate vehicle refresh without redrawing', async () => {
