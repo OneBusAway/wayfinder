@@ -359,6 +359,13 @@ Then replace the framing effect's `else` branch (currently lines 173-186):
     // from an open stop sheet, handleRouteSelected has already set
     // currentModal = Modal.ROUTE and added the route's vehicles before this
     // teardown flushes. A normal stop close leaves currentModal null.
+    // Everything in this block is scoped to a *plain* stop close. When a route is
+    // selected from an open stop sheet, handleRouteSelected has already pushed
+    // '/' and set currentModal = Modal.ROUTE, selectedRoute, and isRouteSelected
+    // in the same synchronous handler — Svelte coalesces that into one flush, so
+    // this branch runs with the route already live. Resetting any of it here
+    // would stomp the selection the rider just made (and RouteModal would keep
+    // rendering against a null route).
     if (currentModal !== Modal.ROUTE) {
         provider.clearVehicleMarkers();
         // clearVehicleMarkers only detaches the markers from the map. The module
@@ -366,17 +373,20 @@ Then replace the framing effect's `else` branch (currently lines 173-186):
         // find stale entries via .has() and update detached markers that never
         // render. RouteMap's onDestroy already pairs these two calls.
         clearVehicleMarkersMap();
+
+        // closePane() short-circuits for the stop case (pushState + return), and
+        // the accordion never fires its collapse callback because StopPane is
+        // destroyed rather than collapsed. So if the rider had a row expanded,
+        // these three are still truthy — which pins mapMode at ROUTE forever and
+        // permanently stops markers from loading.
+        showRouteMap = false;
+        isRouteSelected = false;
+        selectedRoute = null;
     }
+    // Correct on both paths: a route selection should still drop the previously
+    // expanded trip and the previous stop's arrivals.
     selectedTrip = null;
     stopArrivals = null;
-    // closePane() short-circuits for the stop case (pushState + return), and the
-    // accordion never fires its collapse callback because StopPane is destroyed
-    // rather than collapsed. So if the rider had a row expanded, these three are
-    // still truthy — which pins mapMode at ROUTE forever and permanently stops
-    // markers from loading. Reset them here, where every close path converges.
-    showRouteMap = false;
-    isRouteSelected = false;
-    selectedRoute = null;
 }
 ```
 
