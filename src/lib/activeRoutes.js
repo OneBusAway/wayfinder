@@ -72,3 +72,88 @@ export function activeRoutesFromArrivals(response) {
 			};
 		});
 }
+
+import { mapContrastColor, getBrightness, hexToRgb } from '$lib/colorUtils.js';
+import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';
+
+/**
+ * @typedef {Object} RouteColors
+ * @property {string} line    - '#rrggbb', for polylines and vehicle markers
+ * @property {string} badgeBg - 'rrggbb' (no '#'), for RouteBadge `color`
+ * @property {string} badgeFg - 'rrggbb' (no '#'), for RouteBadge `textColor`
+ */
+
+// Stable index into the fallback palette. Keyed on the route id rather than the
+// route's position in the list so a 30s refresh that reorders arrivals doesn't
+// change any route's color.
+function paletteIndexFor(routeId) {
+	let hash = 0;
+	for (let i = 0; i < routeId.length; i++) {
+		hash = (hash * 31 + routeId.charCodeAt(i)) | 0;
+	}
+	return Math.abs(hash) % ROUTE_FALLBACK_PALETTE.length;
+}
+
+// Badge text: the background is no longer the agency's own color, so the
+// agency's textColor (chosen for that original hex) may be unreadable against
+// it. Pick from the resolved background instead. 140 is the midpoint of
+// colorUtils' own brightness scale.
+function badgeForeground(hex) {
+	return getBrightness(hexToRgb(hex)) > 140 ? '000000' : 'ffffff';
+}
+
+/**
+ * Resolves one color per route, used identically by the polyline, the vehicle
+ * markers, the legend, and the arrival badge.
+ *
+ * @param {ActiveRoute[]} routes - in draw order (soonest arrival first)
+ * @param {{ dark?: boolean }} options
+ * @returns {Map<string, RouteColors>}
+ */
+export function assignRouteColors(routes, { dark = false } = {}) {
+	/** @type {Map<string, RouteColors>} */
+	const colors = new Map();
+	const taken = new Set();
+
+	const finish = (routeId, line) => {
+		taken.add(line.toLowerCase());
+		const badgeBg = line.slice(1);
+		colors.set(routeId, { line, badgeBg, badgeFg: badgeForeground(line) });
+	};
+
+	// Two passes so palette assignment is order-independent: every route that can
+	// keep its own GTFS color claims it first, and only then do the leftovers pick
+	// from the palette. A single pass would let an early colorless route grab a
+	// palette slot that a later route's GTFS color also maps to.
+	const needsFallback = [];
+	for (const route of routes) {
+		const resolved = mapContrastColor(route.gtfsColor, { dark });
+		if (resolved && !taken.has(resolved.toLowerCase())) {
+			finish(route.id, resolved);
+		} else {
+			needsFallback.push(route);
+		}
+	}
+
+	for (const route of needsFallback) {
+		const start = paletteIndexFor(route.id);
+		let line = null;
+		// Linear-probe from the hashed slot to the next unused palette entry.
+		for (let offset = 0; offset < ROUTE_FALLBACK_PALETTE.length; offset++) {
+			const entry = ROUTE_FALLBACK_PALETTE[(start + offset) % ROUTE_FALLBACK_PALETTE.length];
+			const candidate = dark ? entry.dark : entry.light;
+			if (!taken.has(candidate.toLowerCase())) {
+				line = candidate;
+				break;
+			}
+		}
+		// More routes than palette entries: accept a repeat rather than no color.
+		if (!line) {
+			const entry = ROUTE_FALLBACK_PALETTE[start];
+			line = dark ? entry.dark : entry.light;
+		}
+		finish(route.id, line);
+	}
+
+	return colors;
+}

@@ -253,3 +253,113 @@ describe('activeRoutesFromArrivals', () => {
 		expect(result).toEqual([]);
 	});
 });
+
+import { assignRouteColors } from '$lib/activeRoutes.js';
+import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';
+
+const route = (id, gtfsColor) => ({ id, shortName: id, type: 3, tripId: `t_${id}`, gtfsColor });
+
+function contrast(hexA, hexB) {
+	const lum = (hex) => {
+		const channels = [1, 3, 5]
+			.map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+			.map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+		return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+	};
+	const [hi, lo] = [lum(hexA), lum(hexB)].sort((a, b) => b - a);
+	return (hi + 0.05) / (lo + 0.05);
+}
+
+describe('assignRouteColors', () => {
+	test('keeps a unique GTFS color, contrast-adjusted for the basemap', () => {
+		const colors = assignRouteColors([route('r_c', 'b02a37')], { dark: false });
+		expect(colors.get('r_c').line).toBe('#b02a37');
+		expect(colors.get('r_c').badgeBg).toBe('b02a37');
+	});
+
+	test('badgeBg is always the line color without the hash', () => {
+		const colors = assignRouteColors([route('r_c', 'b02a37'), route('r_22', 'e0a021')], {
+			dark: true
+		});
+		for (const value of colors.values()) {
+			expect(value.badgeBg).toBe(value.line.slice(1));
+		}
+	});
+
+	test('gives colliding routes distinct colors', () => {
+		const colors = assignRouteColors([route('r_22', '4a4a4a'), route('r_128', '4a4a4a')], {
+			dark: false
+		});
+		expect(colors.get('r_22').line).not.toBe(colors.get('r_128').line);
+	});
+
+	test('assigns a palette color when the GTFS color is missing or invalid', () => {
+		const palette = ROUTE_FALLBACK_PALETTE.map((entry) => entry.light);
+		const colors = assignRouteColors([route('r_a', null), route('r_b', 'nonsense')], {
+			dark: false
+		});
+		expect(palette).toContain(colors.get('r_a').line);
+		expect(palette).toContain(colors.get('r_b').line);
+		expect(colors.get('r_a').line).not.toBe(colors.get('r_b').line);
+	});
+
+	test('is stable when the input order changes', () => {
+		const routes = [route('r_a', null), route('r_b', null), route('r_c', null)];
+		const forward = assignRouteColors(routes, { dark: false });
+		const reversed = assignRouteColors([...routes].reverse(), { dark: false });
+		for (const { id } of routes) {
+			expect(reversed.get(id).line).toBe(forward.get(id).line);
+		}
+	});
+
+	test('uses the dark palette variant in dark mode', () => {
+		const light = assignRouteColors([route('r_a', null)], { dark: false });
+		const dark = assignRouteColors([route('r_a', null)], { dark: true });
+		expect(dark.get('r_a').line).not.toBe(light.get('r_a').line);
+		expect(ROUTE_FALLBACK_PALETTE.map((e) => e.dark)).toContain(dark.get('r_a').line);
+	});
+
+	test('picks a readable badge foreground for light backgrounds', () => {
+		// #DCE775 (the Olive dark variant) is far too light for white text.
+		const colors = assignRouteColors([route('r_a', 'DCE775')], { dark: true });
+		const { badgeBg, badgeFg } = colors.get('r_a');
+		expect(contrast(`#${badgeBg}`, `#${badgeFg}`)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	test('returns an empty map for an empty route list', () => {
+		expect(assignRouteColors([], { dark: false }).size).toBe(0);
+	});
+});
+
+describe('ROUTE_FALLBACK_PALETTE', () => {
+	// These guarantees are asserted in the design spec; enforce them here so a
+	// future palette edit can't quietly break legibility.
+	test('every entry clears 3:1 against its basemap and 4.5:1 against its text', () => {
+		for (const { light, dark } of ROUTE_FALLBACK_PALETTE) {
+			expect(contrast(light, '#F2F2F0')).toBeGreaterThanOrEqual(3);
+			expect(contrast(dark, '#1B1B1B')).toBeGreaterThanOrEqual(3);
+			expect(
+				Math.max(contrast(light, '#FFFFFF'), contrast(light, '#000000'))
+			).toBeGreaterThanOrEqual(4.5);
+			expect(Math.max(contrast(dark, '#FFFFFF'), contrast(dark, '#000000'))).toBeGreaterThanOrEqual(
+				4.5
+			);
+		}
+	});
+
+	test('entries stay visually distinct within each mode', () => {
+		const distance = (a, b) => {
+			const parse = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+			const [x, y] = [parse(a), parse(b)];
+			return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]);
+		};
+		for (const key of ['light', 'dark']) {
+			const values = ROUTE_FALLBACK_PALETTE.map((entry) => entry[key]);
+			for (let i = 0; i < values.length; i++) {
+				for (let j = i + 1; j < values.length; j++) {
+					expect(distance(values[i], values[j])).toBeGreaterThan(60);
+				}
+			}
+		}
+	});
+});
