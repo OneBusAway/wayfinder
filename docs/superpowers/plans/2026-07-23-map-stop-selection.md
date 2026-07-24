@@ -1373,11 +1373,7 @@ Replace the markup block (currently lines 71-103) with:
 	<!-- The button keeps its 32px box in every tier. Collapsing the *icon* to a
 	     dot is the whole point, but collapsing the hit target with it would put
 	     the control under the WCAG 2.5.8 minimum and make it unusable on touch. -->
-	<button
-		class="marker-hit-area"
-		onclick={onClick}
-		aria-label={stop.name}
-	>
+	<button class="marker-hit-area" onclick={onClick} aria-label={stop.name}>
 		{#if isFullPin}
 			<span class="custom-marker dark:border-[#5a2c2c] {isHighlighted ? 'highlight' : ''}">
 				<span class="bus-icon dark:text-white">
