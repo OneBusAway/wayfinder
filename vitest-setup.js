@@ -45,12 +45,6 @@ vi.mock('svelte-i18n', () => ({
 			return () => {};
 		})
 	},
-	isLoading: {
-		subscribe: vi.fn((fn) => {
-			fn(false);
-			return () => {};
-		})
-	},
 	_: vi.fn((key) => key),
 	addMessages: vi.fn(),
 	init: vi.fn(),

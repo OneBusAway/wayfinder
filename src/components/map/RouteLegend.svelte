@@ -27,11 +27,12 @@
 			{#each routes as route (route.id)}
 				<li class="flex items-center gap-2">
 					<span
+						aria-hidden="true"
 						class="legend-swatch h-1.5 w-5 flex-none rounded-full"
 						style="background-color: {routeColors.get(route.id)?.line};"
 					></span>
 					<span class="text-[13px] font-bold text-gray-900 dark:text-white">{route.shortName}</span>
-					{#if liveCounts.get(route.id)}
+					{#if liveCounts.has(route.id)}
 						<span class="ml-auto text-[11px] text-gray-500 dark:text-gray-400">
 							{$isLoading
 								? ''
