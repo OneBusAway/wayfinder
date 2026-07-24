@@ -758,7 +758,7 @@ export default class OpenStreetMapProvider {
 	 */
 	_setPolylinesVisible(visible) {
 		this.polylines.forEach((polyline) => {
-			[polyline, polyline.arrowDecorator].forEach((layer) => {
+			[polyline, polyline._casing, polyline.arrowDecorator].forEach((layer) => {
 				if (!layer) return;
 				if (visible) {
 					if (!this.map.hasLayer(layer)) layer.addTo(this.map);
@@ -770,14 +770,27 @@ export default class OpenStreetMapProvider {
 	}
 
 	/**
-	 * Reveals the route polylines with a "draw from start to end" animation
-	 * using the SVG stroke-dashoffset technique. The direction-arrow decorators
-	 * are added once the line has finished drawing.
-	 * @param {number} duration animation length in seconds
+	 * Reveals polylines with a "draw from start to end" animation using the SVG
+	 * stroke-dashoffset technique, without touching the camera. The direction-arrow
+	 * decorators are added once the line has finished drawing.
+	 *
+	 * @param {{ only?: Array, duration?: number }} [options] `only` limits the
+	 *   animation to specific polylines — used by the stop-selection layer, whose
+	 *   routes resolve one at a time and must not re-animate their neighbors.
+	 *   Omit it to reveal every tracked polyline.
 	 */
-	_revealPolylinesWithDraw(duration = 1.2) {
-		this.polylines.forEach((polyline) => {
-			if (!this.map.hasLayer(polyline)) polyline.addTo(this.map);
+	revealPolylines({ only = [], duration = 1.2 } = {}) {
+		const targets = only.length ? only : this.polylines;
+
+		targets.forEach((polyline) => {
+			if (!polyline) return;
+			// The casing is a second, wider stroke drawn underneath. It is deliberately
+			// absent from this.polylines (like arrowDecorator) so it can't double-count
+			// in fitToPolylines/_getRoutePaths, so reveal it explicitly here.
+			[polyline._casing, polyline].forEach((layer) => {
+				if (!layer) return;
+				if (!this.map.hasLayer(layer)) layer.addTo(this.map);
+			});
 
 			const path = polyline._path;
 			const addDecorator = () => {
@@ -792,14 +805,18 @@ export default class OpenStreetMapProvider {
 				return;
 			}
 
-			const length = path.getTotalLength();
-			path.style.transition = 'none';
-			path.style.strokeDasharray = `${length} ${length}`;
-			path.style.strokeDashoffset = `${length}`;
-			// Force a reflow so the starting offset is applied before transitioning.
-			path.getBoundingClientRect();
-			path.style.transition = `stroke-dashoffset ${duration}s ease-in-out`;
-			path.style.strokeDashoffset = '0';
+			[polyline._casing, polyline].forEach((layer) => {
+				const layerPath = layer?._path;
+				if (!layerPath || typeof layerPath.getTotalLength !== 'function') return;
+				const length = layerPath.getTotalLength();
+				layerPath.style.transition = 'none';
+				layerPath.style.strokeDasharray = `${length} ${length}`;
+				layerPath.style.strokeDashoffset = `${length}`;
+				// Force a reflow so the starting offset is applied before transitioning.
+				layerPath.getBoundingClientRect();
+				layerPath.style.transition = `stroke-dashoffset ${duration}s ease-in-out`;
+				layerPath.style.strokeDashoffset = '0';
+			});
 
 			polyline._drawTimeoutId = setTimeout(() => {
 				polyline._drawTimeoutId = null;
@@ -807,9 +824,13 @@ export default class OpenStreetMapProvider {
 				if (!this.map.hasLayer(polyline)) return;
 				// Clear the inline styles so the original stroke (e.g. the dashed
 				// pattern used for walking legs) is restored once drawing is done.
-				path.style.transition = '';
-				path.style.strokeDasharray = '';
-				path.style.strokeDashoffset = '';
+				[polyline._casing, polyline].forEach((layer) => {
+					const layerPath = layer?._path;
+					if (!layerPath) return;
+					layerPath.style.transition = '';
+					layerPath.style.strokeDasharray = '';
+					layerPath.style.strokeDashoffset = '';
+				});
 				addDecorator();
 			}, duration * 1000);
 		});
@@ -855,7 +876,7 @@ export default class OpenStreetMapProvider {
 					resolve(false);
 					return;
 				}
-				this._revealPolylinesWithDraw(options.drawDuration ?? 1.2);
+				this.revealPolylines({ duration: options.drawDuration ?? 1.2 });
 				// Resolve as the route starts drawing so callers can reveal stop
 				// markers in sync, rather than before the camera has settled.
 				resolve(true);

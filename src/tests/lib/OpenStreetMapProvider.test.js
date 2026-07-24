@@ -504,3 +504,51 @@ describe('addUserLocationMarker — one marker, repositioned', () => {
 		expect(removeLayer).not.toHaveBeenCalled();
 	});
 });
+
+describe('revealPolylines', () => {
+	function fakePolyline() {
+		const path = {
+			style: {},
+			getTotalLength: () => 100,
+			getBoundingClientRect: () => ({})
+		};
+		return { _path: path, addTo: vi.fn(), remove: vi.fn() };
+	}
+
+	test('animates only the polylines passed in `only`', () => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		const a = fakePolyline();
+		const b = fakePolyline();
+		provider.map = { hasLayer: () => true, removeLayer: vi.fn() };
+		provider.polylines = [a, b];
+
+		provider.revealPolylines({ only: [a] });
+
+		expect(a._path.style.strokeDashoffset).toBe('0');
+		expect(b._path.style.strokeDashoffset).toBeUndefined();
+	});
+
+	test('animates a polyline casing alongside its polyline', () => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		const line = fakePolyline();
+		line._casing = fakePolyline();
+		provider.map = { hasLayer: () => true, removeLayer: vi.fn() };
+		provider.polylines = [line];
+
+		provider.revealPolylines({ only: [line] });
+
+		expect(line._casing._path.style.strokeDashoffset).toBe('0');
+	});
+
+	test('does not move the camera', () => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		const line = fakePolyline();
+		const flyToBounds = vi.fn();
+		provider.map = { hasLayer: () => true, removeLayer: vi.fn(), flyToBounds };
+		provider.polylines = [line];
+
+		provider.revealPolylines({ only: [line] });
+
+		expect(flyToBounds).not.toHaveBeenCalled();
+	});
+});

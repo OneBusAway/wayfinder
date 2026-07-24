@@ -714,6 +714,13 @@ export default class GoogleMapProvider {
 		});
 	}
 
+	/**
+	 * Provider-parity no-op. Google's Polyline has no SVG path, so the
+	 * stroke-dashoffset draw-in used by the OSM provider has no analogue; Google
+	 * routes appear immediately. Kept so callers don't have to branch on provider.
+	 */
+	revealPolylines() {}
+
 	enableContextMenu() {
 		if (!this.map) return;
 		this.map.addListener('rightclick', (e) => {
