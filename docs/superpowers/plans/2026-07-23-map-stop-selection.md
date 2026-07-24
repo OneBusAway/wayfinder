@@ -1122,10 +1122,17 @@ function paletteIndexFor(routeId) {
 
 // Badge text: the background is no longer the agency's own color, so the
 // agency's textColor (chosen for that original hex) may be unreadable against
-// it. Pick from the resolved background instead. 140 is the midpoint of
-// colorUtils' own brightness scale.
+// it. Pick from the resolved background instead — by true WCAG contrast, NOT by
+// getBrightness, which is NTSC-weighted (G .587) where WCAG luminance weights
+// green .7152 and red .2126. A brightness threshold fails ~14% of colors,
+// including ordinary agency greens/reds/oranges (#009900 -> 3.78:1,
+// #ff6600 -> 2.94:1).
+//
+// Choosing whichever of white/black scores higher is a *structural* guarantee of
+// >= 4.58:1 on any background: the worst case is the luminance where the two tie,
+// (L+0.05)/0.05 == 1.05/(L+0.05), giving L ~ 0.1791 and a ratio of ~4.58.
 function badgeForeground(hex) {
-	return getBrightness(hexToRgb(hex)) > 140 ? '000000' : 'ffffff';
+	return contrastRatio(hex, '#ffffff') >= contrastRatio(hex, '#000000') ? 'ffffff' : '000000';
 }
 
 /**
@@ -1151,6 +1158,14 @@ export function assignRouteColors(routes, { dark = false } = {}) {
 	// keep its own GTFS color claims it first, and only then do the leftovers pick
 	// from the palette. A single pass would let an early colorless route grab a
 	// palette slot that a later route's GTFS color also maps to.
+	//
+	// The keeper within a color group must be chosen by a data-only rule, NOT by
+	// array position. Routes arrive in draw order (soonest arrival first), so two
+	// routes with close arrival times swap between 30s polls — and picking the
+	// first-seen route as keeper flips BOTH routes' colors on screen with no
+	// underlying data change (the loser's fallback depends on what's in `taken` by
+	// the time it is processed). Group by resolved color, then let the lowest
+	// routeId keep it.
 	const needsFallback = [];
 	for (const route of routes) {
 		const resolved = mapContrastColor(route.gtfsColor, { dark });
