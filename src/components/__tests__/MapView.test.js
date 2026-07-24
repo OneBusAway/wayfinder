@@ -1,5 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import MapView from '$components/map/MapView.svelte';
 
 // StopRoutesLayer.svelte and RouteLegend.svelte don't exist yet (later tasks);
@@ -54,11 +55,9 @@ describe('MapView map mode', () => {
 			}
 		});
 		await vi.waitFor(() => expect(mapProvider.initMap).toHaveBeenCalled());
-		// Let the mapInstance assignment (which happens right after initMap
-		// resolves) flush through the $effects before asserting the negative —
-		// otherwise this assertion can pass merely because the effect chain
-		// hasn't run yet, not because markers were preserved.
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		// Use tick() to deterministically flush pending reactive updates and effects,
+		// ensuring the effect chain completes before the negative assertion.
+		await tick();
 		expect(mapProvider.clearAllStopMarkers).not.toHaveBeenCalled();
 	});
 
