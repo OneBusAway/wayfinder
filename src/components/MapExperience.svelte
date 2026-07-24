@@ -31,6 +31,7 @@
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
 	import { mapStopPath } from '$lib/mapStopUrl.js';
 	import { clearVehicleMarkersMap } from '$lib/vehicleUtils';
+	import { activeRoutesFromArrivals, assignRouteColors } from '$lib/activeRoutes.js';
 
 	// One-time snapshot at mount: on a cold /map/stops/{id} load, `data.stopData` is
 	// present, so boot the map centered on the stop (the selection effect then applies
@@ -47,10 +48,10 @@
 
 	let currentModal = $state(null);
 	let selectedTrip = $state(null);
-	// Declared here so this task's teardown can null it; the arrivals plumbing
-	// that actually populates it lands in a later task.
-	// eslint-disable-next-line no-unused-vars -- write-only until the arrivals plumbing lands
+	// Bound up from StopBottomSheet -> StopPane, so the map draws the routes behind
+	// the arrivals the rider is actually looking at, with no second fetch.
 	let stopArrivals = $state(null);
+	let isDarkMode = $state(false);
 	let isRouteSelected = $state(false);
 	let selectedRoute = $state(null);
 	let showRouteMap = $state(false);
@@ -60,6 +61,7 @@
 	let showAlertModal = $state(false);
 	let stops = $state([]);
 	let polylines = [];
+	let themeChangeHandler = null;
 
 	let tripItineraries = $state([]);
 	let tripPlanError = $state(null);
@@ -91,6 +93,15 @@
 	// (unlike page.data, which lingers after a real navigation).
 	let selectedStopData = $derived($page.state?.stopData ?? null);
 	let selectedStopId = $derived(selectedStopData?.id ?? null);
+
+	// Gate on the stop id, not on truthiness: tapping stop A -> stop B keeps the
+	// sheet mounted, so `stopArrivals` still holds A's response until B's fetch
+	// lands. Without this the map would briefly draw A's routes around B's marker.
+	let arrivalsMatchSelection = $derived(
+		stopArrivals?.data?.entry?.stopId != null && stopArrivals.data.entry.stopId === selectedStopId
+	);
+	let activeRoutes = $derived(arrivalsMatchSelection ? activeRoutesFromArrivals(stopArrivals) : []);
+	let routeColors = $derived(assignRouteColors(activeRoutes, { dark: isDarkMode }));
 
 	// While a stop's bottom sheet is open, the search pane collapses to a single
 	// floating field below the md breakpoint; on wider viewports the pane stays
@@ -127,6 +138,11 @@
 		if (id) {
 			const data = selectedStopData;
 			if (!data) return; // wait for state/load data; re-runs when it arrives
+
+			// Stop A -> stop B keeps the sheet mounted, so without this the map would keep
+			// drawing A's routes, ring dots, and vehicles around B's marker until B's
+			// arrivals land ~300ms later.
+			stopArrivals = null;
 
 			// A stop supersedes any other selection. Tear down the map overlays a route
 			// or trip left behind only when one was active, but always clear currentModal
@@ -409,6 +425,13 @@
 			if (initialCoords) {
 				cleanUrlParams();
 			}
+
+			isDarkMode = document.documentElement.classList.contains('dark');
+			const onThemeChange = (event) => {
+				isDarkMode = event.detail.darkMode;
+			};
+			window.addEventListener('themeChange', onThemeChange);
+			themeChangeHandler = onThemeChange;
 		}
 	});
 
@@ -434,6 +457,9 @@
 		if (browser) {
 			window.removeEventListener('tabSwitched', handleTabSwitched);
 			window.removeEventListener('planTripTabClicked', handlePlanTripTabClicked);
+			if (themeChangeHandler) {
+				window.removeEventListener('themeChange', themeChangeHandler);
+			}
 		}
 		if (currentIntervalId) {
 			clearInterval(currentIntervalId);
@@ -496,6 +522,8 @@
 						{closePane}
 						{tripSelected}
 						{handleUpdateRouteMap}
+						{routeColors}
+						bind:arrivalsAndDeparturesResponse={stopArrivals}
 						bind:snap={sheetSnap}
 					/>
 				{:else if currentModal === Modal.ROUTE}
@@ -535,6 +563,8 @@
 		{isRouteSelected}
 		{showRouteMap}
 		{initialCoords}
+		{activeRoutes}
+		{routeColors}
 		bind:mapProvider
 	/>
 {/if}

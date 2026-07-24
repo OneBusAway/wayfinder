@@ -11,6 +11,8 @@
     @prop {Function} closePane - Called when the close button is tapped (or Escape is pressed)
     @prop {Function} tripSelected - Forwarded to StopPane; called when a trip is selected
     @prop {Function} handleUpdateRouteMap - Forwarded to StopPane; called when the route map needs updating
+    @prop {any} arrivalsAndDeparturesResponse - Bindable; the latest arrivals response, bound up to MapExperience so the map can draw the routes behind it
+    @prop {Map<string, any>} [routeColors] - Resolved by MapExperience; one color per route, forwarded to the arrival badges
 -->
 
 <script>
@@ -23,9 +25,18 @@
 	import { isLoading, t } from 'svelte-i18n';
 	import { removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
 
-	let { stop, closePane, tripSelected, handleUpdateRouteMap, snap = $bindable('half') } = $props();
+	let {
+		stop,
+		closePane,
+		tripSelected,
+		handleUpdateRouteMap,
+		snap = $bindable('half'),
+		// Bound up to MapExperience so the map layer can draw the routes behind
+		// these arrivals without issuing a second fetch.
+		arrivalsAndDeparturesResponse = $bindable(null),
+		routeColors = null
+	} = $props();
 
-	let arrivalsAndDeparturesResponse = $state(null);
 	// Bound from StopPane so the toolbar refresh button can spin while any fetch
 	// (initial, manual, or the 30s poll) is in flight, and trigger a manual one.
 	let stopPane = $state(null);
@@ -101,5 +112,6 @@
 		showHeroCard={false}
 		bind:arrivalsAndDeparturesResponse
 		bind:loading={stopPaneLoading}
+		{routeColors}
 	/>
 </BottomSheet>

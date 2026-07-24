@@ -8,7 +8,12 @@
 		arrivalDeparture,
 		includeArrivalDepartureInStatusLabel = true,
 		route = null,
-		expanded = false
+		expanded = false,
+		// Resolved by the map layer so the badge, the polyline, the vehicle markers,
+		// and the legend all use one color per route. mapContrastColor adjusts most
+		// GTFS colors for the basemap, so without this the badge and the line would
+		// differ for nearly every route in dark mode.
+		routeColors = null
 	} = $props();
 
 	const MS_IN_MINS = 60000;
@@ -222,7 +227,11 @@
 </script>
 
 <div class="flex w-full min-w-0 items-center gap-3 pr-1">
-	<RouteBadge shortName={routeShortName} color={route?.color} textColor={route?.textColor} />
+	<RouteBadge
+		shortName={routeShortName}
+		color={routeColors?.badgeBg ?? route?.color}
+		textColor={routeColors?.badgeFg ?? route?.textColor}
+	/>
 
 	<div class="min-w-0 flex-1">
 		<p class="line-clamp-2 text-lg font-semibold text-gray-900 dark:text-white">
