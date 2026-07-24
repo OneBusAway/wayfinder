@@ -3,10 +3,18 @@ import { render } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import MapView from '$components/map/MapView.svelte';
 
-// StopRoutesLayer.svelte and RouteLegend.svelte don't exist yet (later tasks);
-// MapView doesn't import them, so mocking those paths would fail resolution.
 vi.mock('$components/map/RouteMap.svelte', () => ({ default: () => null }));
 vi.mock('$lib/LocationButton/LocationButton.svelte', () => ({ default: () => null }));
+
+// StopRoutesLayer and RouteLegend are unit-tested on their own (their tests
+// cover shape-fetch races, redraw signatures, vehicle polling, i18n). Mocking
+// them here keeps MapView's tests scoped to the wiring it owns: computing the
+// tier map and calling setStopEmphasis/setBasemapDimmed. Rendering the real
+// StopRoutesLayer would also need every method it calls on mapProvider
+// (createPolyline, clearAllPolylines, revealPolylines, ...) added to the stub
+// just to avoid an unhandled rejection unrelated to what these tests assert.
+vi.mock('$components/map/StopRoutesLayer.svelte', () => ({ default: () => null }));
+vi.mock('$components/map/RouteLegend.svelte', () => ({ default: () => null }));
 
 // The global vitest-setup mock omits the region-center coords MapView reads at
 // module init (see MapExperience.test.js for the same override).
@@ -73,5 +81,44 @@ describe('MapView map mode', () => {
 			}
 		});
 		await vi.waitFor(() => expect(mapProvider.clearAllStopMarkers).toHaveBeenCalled());
+	});
+});
+
+describe('stop selection layer', () => {
+	test('tiers markers when routes are drawn: route stops ring, everything else muted', async () => {
+		const mapProvider = makeProvider();
+		render(MapView, {
+			props: {
+				handleStopMarkerSelect: vi.fn(),
+				mapProvider,
+				stop: { id: 'stop_sel', lat: 47.6, lon: -122.3 },
+				activeRoutes: [
+					{ id: 'r_c', shortName: 'C Line', type: 3, tripId: 't_c', gtfsColor: 'b02a37' }
+				],
+				routeColors: new Map([['r_c', { line: '#b02a37', badgeBg: 'b02a37', badgeFg: 'ffffff' }]])
+			}
+		});
+
+		await vi.waitFor(() => expect(mapProvider.setStopEmphasis).toHaveBeenCalled());
+		const [, defaultEmphasis, selectedStopId] = mapProvider.setStopEmphasis.mock.calls.at(-1);
+		expect(defaultEmphasis).toBe('muted');
+		expect(selectedStopId).toBe('stop_sel');
+	});
+
+	test('does not tier or dim when there are no active routes', async () => {
+		const mapProvider = makeProvider();
+		render(MapView, {
+			props: {
+				handleStopMarkerSelect: vi.fn(),
+				mapProvider,
+				stop: { id: 'stop_sel', lat: 47.6, lon: -122.3 },
+				activeRoutes: [],
+				routeColors: new Map()
+			}
+		});
+
+		await vi.waitFor(() => expect(mapProvider.initMap).toHaveBeenCalled());
+		expect(mapProvider.setStopEmphasis).not.toHaveBeenCalled();
+		expect(mapProvider.setBasemapDimmed).not.toHaveBeenCalledWith(true);
 	});
 });
