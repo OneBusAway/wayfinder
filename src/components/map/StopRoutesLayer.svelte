@@ -47,6 +47,10 @@
 	// Incremented per load so a superseded selection's in-flight fetches bail out
 	// instead of drawing over the newer one.
 	let loadToken = 0;
+	// The content signature (see the $effect below) that produced the routes
+	// currently on the map, so a redraw can be skipped when a new
+	// activeRoutes/routeColors identity carries identical content.
+	let lastSignature = null;
 
 	function weightFor(index) {
 		return Math.max(MIN_WEIGHT, BASE_WEIGHT - index);
@@ -81,10 +85,28 @@
 	}
 
 	async function drawRoutes(routes, colors, token) {
+		if (token !== loadToken) return;
+
+		// Publish immediately rather than waiting for the first shape to
+		// resolve (or, if every fetch fails, never). Between teardown and the
+		// first resolution this briefly leaves dots un-ringed rather than
+		// still ringed for the *previous* stop's routes — a stale ring lies
+		// about which stop is selected, an absent one just looks momentary.
+		routeStopIds = new Map();
+
 		// Accumulated outside the map closure so concurrent resolutions merge
 		// into one shared map instead of each mapper invocation racing to publish
 		// its own partial snapshot over the others.
 		const nextStopIds = new Map();
+		// Which route index currently claims each stop, so a shared stop is
+		// decided by index priority (soonest-arrival-first) rather than by
+		// whichever shape happens to resolve first over the network.
+		const stopClaimIndex = new Map();
+		// Polylines drawn so far this call, so paint order can be restored to
+		// index order after every resolution — Leaflet/Google paint in the
+		// order createPolyline resolved, which is shape-fetch race order, not
+		// activeRoutes order.
+		const drawnPolylines = [];
 
 		await Promise.all(
 			routes.map(async (route, index) => {
@@ -115,21 +137,50 @@
 					pane: isPromoted ? ROUTE_PANE.PROMOTED : ROUTE_PANE.LINE,
 					casingPane: ROUTE_PANE.CASING
 				});
-				if (token !== loadToken) return;
+				if (token !== loadToken) {
+					// A supersede ran clearAllPolylines() before this create resolved
+					// (Google's createPolyline is async, awaiting importLibrary), so
+					// the polyline this call just attached to the map is an orphan of
+					// the selection that's already gone — take it back off.
+					mapProvider.removePolyline(polyline);
+					return;
+				}
 				if (!polyline) return;
 
 				// Reveal only this route: its neighbors may already be drawn, and
 				// re-animating them on every resolution would look like a glitch.
 				mapProvider.revealPolylines({ only: [polyline], duration: 0.8 });
 
-				// First route to claim a stop wins, and routes arrive soonest-first,
-				// so a shared stop takes the color of the route arriving next. Both
+				// Paint order is shape-fetch resolution order, not index order, so
+				// re-assert index order after every resolution: the widest route
+				// (lowest index) must stay backmost and the narrower ones (higher
+				// index) frontmost, or the widest — if it happens to resolve last —
+				// paints over the narrower ones entirely and the fringe described
+				// above disappears. Calling bringToFront() ascending by index, last
+				// call wins, puts the highest index frontmost. bringToFront is a
+				// Leaflet Path method the OSM provider's polyline exposes directly;
+				// it's a no-op on Google's polyline object, whose paint order already
+				// comes from the pane's zIndex set at creation, so this line is
+				// harmless there.
+				drawnPolylines.push({ index, polyline });
+				drawnPolylines.sort((a, b) => a.index - b.index);
+				for (const drawn of drawnPolylines) {
+					drawn.polyline.bringToFront?.();
+				}
+
+				// A shared stop is claimed by index priority: only a lower index
+				// (sooner-arriving route) may overwrite a stop already claimed by a
+				// higher one, regardless of which of the two resolves first. Both
 				// the mutation and the publish happen synchronously within this
 				// resolved route's turn, so two routes resolving "at the same time"
 				// (already-resolved microtasks) still apply one at a time rather than
 				// clobbering each other's contribution.
 				for (const stopId of shape.stopIds) {
-					if (!nextStopIds.has(stopId)) nextStopIds.set(stopId, color);
+					const claimedIndex = stopClaimIndex.get(stopId);
+					if (claimedIndex === undefined || index < claimedIndex) {
+						nextStopIds.set(stopId, color);
+						stopClaimIndex.set(stopId, index);
+					}
 				}
 				routeStopIds = new Map(nextStopIds);
 			})
@@ -145,8 +196,11 @@
 
 	function teardown() {
 		stopVehiclePolling();
-		mapProvider.clearAllPolylines();
-		mapProvider.clearVehicleMarkers();
+		// mapProvider can be null: a cold deep-link whose arrivals land before
+		// initMap() resolves mounts this layer with no provider yet, and
+		// onDestroy calls teardown() unconditionally.
+		mapProvider?.clearAllPolylines();
+		mapProvider?.clearVehicleMarkers();
 		// clearVehicleMarkers only detaches markers; the module-level map would
 		// otherwise hand stale entries to the next selection.
 		clearVehicleMarkersMap();
@@ -178,12 +232,48 @@
 	$effect(() => {
 		const routes = activeRoutes;
 		const colors = routeColors;
+
+		// Redraw is keyed on a content signature, not on activeRoutes/routeColors
+		// identity. StopPane polls arrivals every ~30s, and MapExperience's
+		// $derived recomputes activeRoutesFromArrivals/assignRouteColors from
+		// scratch on every poll, handing this effect a brand-new array and a
+		// brand-new Map even when nothing actually changed. Keying on identity
+		// tore down and redrew everything — every polyline and casing, every
+		// vehicle marker (restarting animateMarker's position interpolation from
+		// scratch), 2x the shape/vehicle requests, and a replayed 0.8s draw
+		// animation — every 30 seconds. A signature built from route ids and
+		// their resolved line colors catches actual changes while ignoring
+		// re-allocation noise.
+		//
+		// Sorted deliberately: activeRoutes is ordered soonest-arrival-first and
+		// genuinely reshuffles as predictions update, so an order-sensitive
+		// signature would still redraw on every reshuffle even when the route
+		// set and colors are unchanged. The cost is that stroke weights (which
+		// come from index/order — see weightFor) reflect whichever order was
+		// current at the *first* draw of this route set, not the live
+		// soonest-first order; that's a far smaller price than refetching and
+		// re-animating every 30 seconds.
+		const signature = routes
+			.map((route) => `${route.id}:${colors.get(route.id)?.line ?? ''}`)
+			.sort()
+			.join('|');
+
+		if (!mapProvider) return;
+		if (signature === lastSignature) return;
+		lastSignature = signature;
+
 		const token = ++loadToken;
-
-		if (!mapProvider || routes.length === 0) return;
-
 		teardown();
-		drawRoutes(routes, colors, token);
+
+		// An emptied route set must still tear down (polylines, vehicle
+		// markers, the poll interval) rather than leaving the previous
+		// selection on the map indefinitely — teardown() above already
+		// happened; there's just nothing to redraw.
+		if (routes.length === 0) return;
+
+		drawRoutes(routes, colors, token).catch((error) => {
+			console.error('StopRoutesLayer: drawRoutes failed', error);
+		});
 
 		// untrack(() => highlightedTripId): this options object is built
 		// synchronously — before any await — as part of *calling*
@@ -198,14 +288,18 @@
 			onCounts: (counts) => {
 				if (token === loadToken) liveCounts = counts;
 			}
-		}).then((intervalId) => {
-			// A newer load took over while this poll was starting; don't leak it.
-			if (token !== loadToken) {
-				clearInterval(intervalId);
-				return;
-			}
-			vehicleIntervalId = intervalId;
-		});
+		})
+			.then((intervalId) => {
+				// A newer load took over while this poll was starting; don't leak it.
+				if (token !== loadToken) {
+					clearInterval(intervalId);
+					return;
+				}
+				vehicleIntervalId = intervalId;
+			})
+			.catch((error) => {
+				console.error('StopRoutesLayer: vehicle poll failed', error);
+			});
 	});
 
 	onDestroy(() => {
