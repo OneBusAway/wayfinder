@@ -73,7 +73,7 @@ export function activeRoutesFromArrivals(response) {
 		});
 }
 
-import { mapContrastColor, getBrightness, hexToRgb } from '$lib/colorUtils.js';
+import { mapContrastColor, contrastRatio } from '$lib/colorUtils.js';
 import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';
 
 /**
@@ -96,10 +96,19 @@ function paletteIndexFor(routeId) {
 
 // Badge text: the background is no longer the agency's own color, so the
 // agency's textColor (chosen for that original hex) may be unreadable against
-// it. Pick from the resolved background instead. 140 is the midpoint of
-// colorUtils' own brightness scale.
+// it. Pick from the resolved background instead.
+//
+// Picking whichever of white/black has the higher *true* WCAG contrast
+// (contrastRatio, not the NTSC-weighted getBrightness) is a structural
+// guarantee, not an empirical one: the worst case is the background luminance
+// L where white and black tie, i.e. (L+0.05)/0.05 == 1.05/(L+0.05), which
+// solves to L ≈ 0.1791 and a ratio of ≈4.58. Since 4.58 > the 4.5:1 WCAG AA
+// text minimum, "better of white/black" clears AA for *any* background hex —
+// no palette-specific tuning required.
 function badgeForeground(hex) {
-	return getBrightness(hexToRgb(hex)) > 140 ? '000000' : 'ffffff';
+	const whiteContrast = contrastRatio(hex, '#ffffff');
+	const blackContrast = contrastRatio(hex, '#000000');
+	return blackContrast >= whiteContrast ? '000000' : 'ffffff';
 }
 
 /**
@@ -125,14 +134,33 @@ export function assignRouteColors(routes, { dark = false } = {}) {
 	// keep its own GTFS color claims it first, and only then do the leftovers pick
 	// from the palette. A single pass would let an early colorless route grab a
 	// palette slot that a later route's GTFS color also maps to.
+	//
+	// Routes are grouped by their *resolved* GTFS color before anyone claims one,
+	// rather than letting whichever route is processed first win. Routes arrive in
+	// draw order (soonest arrival first), which reorders on every 30s poll — if the
+	// winner were "first in the array", two same-colored routes with close arrival
+	// times would flip colors on every poll with no underlying data change, and the
+	// loser's fallback color would flip with it. Picking the keeper by lowest
+	// routeId is a stable, data-only rule: the same two routes always resolve the
+	// same way regardless of what order they're passed in.
 	const needsFallback = [];
+	const byResolvedColor = new Map();
 	for (const route of routes) {
 		const resolved = mapContrastColor(route.gtfsColor, { dark });
-		if (resolved && !taken.has(resolved.toLowerCase())) {
-			finish(route.id, resolved);
-		} else {
+		if (!resolved) {
 			needsFallback.push(route);
+			continue;
 		}
+		const key = resolved.toLowerCase();
+		if (!byResolvedColor.has(key)) byResolvedColor.set(key, []);
+		byResolvedColor.get(key).push({ route, resolved });
+	}
+
+	for (const group of byResolvedColor.values()) {
+		group.sort((a, b) => (a.route.id < b.route.id ? -1 : a.route.id > b.route.id ? 1 : 0));
+		const [keeper, ...rest] = group;
+		finish(keeper.route.id, keeper.resolved);
+		needsFallback.push(...rest.map((entry) => entry.route));
 	}
 
 	for (const route of needsFallback) {

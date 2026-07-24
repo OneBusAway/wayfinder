@@ -256,19 +256,13 @@ describe('activeRoutesFromArrivals', () => {
 
 import { assignRouteColors } from '$lib/activeRoutes.js';
 import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';
+import { contrastRatio, rgbToHex } from '$lib/colorUtils.js';
 
 const route = (id, gtfsColor) => ({ id, shortName: id, type: 3, tripId: `t_${id}`, gtfsColor });
 
-function contrast(hexA, hexB) {
-	const lum = (hex) => {
-		const channels = [1, 3, 5]
-			.map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
-			.map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
-		return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
-	};
-	const [hi, lo] = [lum(hexA), lum(hexB)].sort((a, b) => b - a);
-	return (hi + 0.05) / (lo + 0.05);
-}
+// Thin wrapper kept so the palette/badge assertions below read as "hex, hex"
+// rather than "#hex, #hex" — contrastRatio itself tolerates either form.
+const contrast = (hexA, hexB) => contrastRatio(hexA, hexB);
 
 describe('assignRouteColors', () => {
 	test('keeps a unique GTFS color, contrast-adjusted for the basemap', () => {
@@ -312,6 +306,43 @@ describe('assignRouteColors', () => {
 		}
 	});
 
+	// Two routes sharing one real, valid GTFS color is the exact scenario the
+	// fallback palette exists for. Routes are drawn soonest-arrival-first, so a
+	// naive "whichever comes first in the array wins the shared color" rule
+	// means two routes with close arrival times would swap the winner — and
+	// therefore both routes' colors — between 30s polls, with no underlying
+	// data change. Every permutation of the same three routes must produce
+	// identical colors for every route, not just the keeper.
+	test('resolves a shared GTFS color collision identically regardless of input order', () => {
+		const alpha = route('r_alpha', '4a4a4a');
+		const beta = route('r_beta', '4a4a4a');
+		const gamma = route('r_gamma', null);
+		const all = [alpha, beta, gamma];
+
+		const permutations = [
+			[alpha, beta, gamma],
+			[alpha, gamma, beta],
+			[beta, alpha, gamma],
+			[beta, gamma, alpha],
+			[gamma, alpha, beta],
+			[gamma, beta, alpha]
+		];
+
+		const results = permutations.map((order) => assignRouteColors(order, { dark: false }));
+		const reference = results[0];
+
+		for (const result of results) {
+			for (const { id } of all) {
+				expect(result.get(id)).toEqual(reference.get(id));
+			}
+		}
+
+		// 'r_alpha' sorts before 'r_beta' lexicographically, so it is the
+		// deterministic keeper of the shared color; 'r_beta' must fall back.
+		expect(reference.get('r_alpha').line).toBe('#4a4a4a');
+		expect(reference.get('r_beta').line).not.toBe('#4a4a4a');
+	});
+
 	test('uses the dark palette variant in dark mode', () => {
 		const light = assignRouteColors([route('r_a', null)], { dark: false });
 		const dark = assignRouteColors([route('r_a', null)], { dark: true });
@@ -324,6 +355,45 @@ describe('assignRouteColors', () => {
 		const colors = assignRouteColors([route('r_a', 'DCE775')], { dark: true });
 		const { badgeBg, badgeFg } = colors.get('r_a');
 		expect(contrast(`#${badgeBg}`, `#${badgeFg}`)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	// Property test, not an example: the old NTSC-brightness heuristic
+	// (getBrightness(rgb) > 140) mis-picked badge text color on 14.4% of a
+	// dense RGB sweep run through this same pipeline — including ordinary GTFS
+	// colors like forest green and saturated red that keep their own color and
+	// so aren't covered by any palette test. Sweep a coarse-but-broad grid of
+	// backgrounds through the real pipeline in both themes and require every
+	// single one to clear the 4.5:1 WCAG AA minimum.
+	test('badge foreground clears 4.5:1 WCAG contrast for every color the pipeline can produce', () => {
+		const step = 51; // 0,51,102,153,204,255: 6^3 = 216 combos
+		const swept = [];
+		for (let r = 0; r <= 255; r += step) {
+			for (let g = 0; g <= 255; g += step) {
+				for (let b = 0; b <= 255; b += step) {
+					swept.push(rgbToHex(r, g, b).slice(1));
+				}
+			}
+		}
+
+		// Colors called out by name as failures under the old heuristic (worst
+		// case 1.63:1 for #00eb0f). Kept explicit so a regression on any one of
+		// them fails with an obvious message rather than being one hit among 216.
+		const knownFailures = ['00eb0f', '009900', 'ff0000', 'ff6600', 'ff00ff'];
+
+		const palette = [...new Set([...swept, ...knownFailures])];
+
+		for (const dark of [false, true]) {
+			for (const hex of palette) {
+				const routeId = `r_${hex}`;
+				const colors = assignRouteColors([route(routeId, hex)], { dark });
+				const { badgeBg, badgeFg } = colors.get(routeId);
+				const ratio = contrast(`#${badgeBg}`, `#${badgeFg}`);
+				expect(
+					ratio,
+					`#${hex} (dark=${dark}): badgeFg #${badgeFg} vs badgeBg #${badgeBg} = ${ratio.toFixed(2)}:1`
+				).toBeGreaterThanOrEqual(4.5);
+			}
+		}
 	});
 
 	test('returns an empty map for an empty route list', () => {
