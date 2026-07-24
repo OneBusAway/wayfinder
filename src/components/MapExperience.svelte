@@ -101,7 +101,16 @@
 		stopArrivals?.data?.entry?.stopId != null && stopArrivals.data.entry.stopId === selectedStopId
 	);
 	let activeRoutes = $derived(arrivalsMatchSelection ? activeRoutesFromArrivals(stopArrivals) : []);
-	let routeColors = $derived(assignRouteColors(activeRoutes, { dark: isDarkMode }));
+	// Deliberately NOT gated on arrivalsMatchSelection (derived from stopArrivals
+	// directly, not from the gated activeRoutes above). StopPane's rendered rows are
+	// a one-time $state seed that doesn't react to stopArrivals going stale, so
+	// during the A -> B transition the sheet is still showing A's rows — A's colors
+	// are the correct colors for them. The map is separately held back from drawing
+	// anything stale by activeRoutes being empty until B's arrivals land. Two
+	// consumers of routeColors, two different staleness semantics, one source.
+	let routeColors = $derived(
+		assignRouteColors(activeRoutesFromArrivals(stopArrivals), { dark: isDarkMode })
+	);
 
 	// While a stop's bottom sheet is open, the search pane collapses to a single
 	// floating field below the md breakpoint; on wider viewports the pane stays
@@ -138,11 +147,6 @@
 		if (id) {
 			const data = selectedStopData;
 			if (!data) return; // wait for state/load data; re-runs when it arrives
-
-			// Stop A -> stop B keeps the sheet mounted, so without this the map would keep
-			// drawing A's routes, ring dots, and vehicles around B's marker until B's
-			// arrivals land ~300ms later.
-			stopArrivals = null;
 
 			// A stop supersedes any other selection. Tear down the map overlays a route
 			// or trip left behind only when one was active, but always clear currentModal
