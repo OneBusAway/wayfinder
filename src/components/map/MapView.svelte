@@ -367,7 +367,7 @@
 	     wipe the stop-selection layer. While a stop is selected, StopRoutesLayer
 	     owns the map instead and expansion just promotes a route. -->
 	{#if selectedTrip && showRouteMap && !stop}
-		<RouteMap mapProvider={mapInstance} tripId={selectedTrip.tripId} currentSelectedStop={stop} />
+		<RouteMap mapProvider={mapInstance} tripId={selectedTrip?.tripId} currentSelectedStop={stop} />
 	{/if}
 
 	<!-- The `stop ? … : []` ternary is defensive, not load-bearing: upstream,
