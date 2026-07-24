@@ -23,6 +23,7 @@ import { env } from '$env/dynamic/public';
 import { buildVehiclePopupData } from '$lib/vehicleUtils';
 import { get } from 'svelte/store';
 import { t } from 'svelte-i18n';
+import { ROUTE_PANE_Z_INDEX } from '$lib/mapPanes.js';
 
 // activeTrip is always truthy here: the sole caller (vehicleUtils.js) guards on
 // it, and buildVehiclePopupData reads activeTrip.tripHeadsign without optional
@@ -86,6 +87,16 @@ export default class OpenStreetMapProvider {
 		this.map.on('zoomend', () => {
 			this.updateMarkersRouteLabelVisibility();
 		});
+
+		// Custom panes give the route layer explicit stacking: every casing below
+		// every colored stroke, and the promoted route above its peers.
+		// createPane does not assign a z-index — .leaflet-pane sets 400 for all of
+		// them — so it must be set here, or the panes tie with overlayPane and
+		// order only by DOM insertion.
+		for (const [name, zIndex] of Object.entries(ROUTE_PANE_Z_INDEX)) {
+			this.map.createPane(name);
+			this.map.getPane(name).style.zIndex = String(zIndex);
+		}
 	}
 
 	eventListeners(mapInstance, debouncedLoadMarkers) {
@@ -125,7 +136,9 @@ export default class OpenStreetMapProvider {
 			icon: icon,
 			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false,
-			showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom
+			showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom,
+			emphasis: options.emphasis ?? 'full',
+			dotColor: options.dotColor ?? null
 		});
 
 		mount(StopMarker, {
@@ -219,6 +232,53 @@ export default class OpenStreetMapProvider {
 		if (!marker) return;
 
 		marker.props.isHighlighted = false;
+	}
+
+	/**
+	 * Applies marker prominence across the map. Called by the map layer whenever the
+	 * selection or the drawn route set changes.
+	 *
+	 * @param {Map<string, {emphasis: string, dotColor: string|null}>} byStopId
+	 * @param {'full'|'muted'} defaultEmphasis - for stops not in byStopId
+	 * @param {string|null} selectedStopId - always rendered as the full pin
+	 */
+	setStopEmphasis(byStopId, defaultEmphasis = 'full', selectedStopId = null) {
+		for (const [stopId, marker] of this.markersMap) {
+			// addStopRouteMarker writes plain markers into markersMap on the Google
+			// provider; those have no reactive props to mutate.
+			if (!marker?.props) continue;
+
+			if (stopId === selectedStopId) {
+				marker.props.emphasis = 'full';
+				marker.props.dotColor = null;
+				continue;
+			}
+
+			const tier = byStopId.get(stopId);
+			marker.props.emphasis = tier?.emphasis ?? defaultEmphasis;
+			marker.props.dotColor = tier?.dotColor ?? null;
+		}
+	}
+
+	resetStopEmphasis() {
+		for (const marker of this.markersMap.values()) {
+			if (!marker?.props) continue;
+			marker.props.emphasis = 'full';
+			marker.props.dotColor = null;
+		}
+	}
+
+	/**
+	 * Fades the basemap so the colored routes and vehicles carry the map.
+	 *
+	 * The MapLibre GL canvas is the only thing in Leaflet's tilePane, so a CSS
+	 * filter scoped there dims the basemap and nothing else — routes and markers
+	 * live in overlayPane/markerPane and keep full contrast. The class goes on the
+	 * container rather than the layer so it survives setTheme's layer rebuild.
+	 */
+	setBasemapDimmed(dimmed) {
+		if (!browser || !this.map) return;
+		this.map.getContainer().classList.toggle('oba-dim-basemap', dimmed);
 	}
 
 	// Leaflet only activates markers on Enter, so we add Space for ARIA button parity.
@@ -633,16 +693,38 @@ export default class OpenStreetMapProvider {
 		}
 
 		const withArrow = options.withArrow ?? true;
+		const weight = options.weight || 4;
+		const pane = options.pane;
+
+		// White casing underneath, so the route reads on any basemap tile without a
+		// halo hack. Created first so it renders below; kept off this.polylines (like
+		// arrowDecorator) so fitToPolylines/getPolylinesCount/_getRoutePaths don't
+		// double-count it, and torn down with its polyline.
+		let casing = null;
+		if (options.casing) {
+			casing = new this.L.Polyline(decodedPolyline, {
+				color: '#ffffff',
+				weight: weight + 5,
+				opacity: 0.95,
+				lineCap: 'round',
+				lineJoin: 'round',
+				...(options.casingPane ? { pane: options.casingPane } : {})
+			}).addTo(this.map);
+		}
 
 		const polylineOpts = {
 			color: options.color || COLORS.POLYLINE,
-			weight: options.weight || 4,
-			opacity: options.opacity ?? 1
+			weight,
+			opacity: options.opacity ?? 1,
+			lineCap: 'round',
+			lineJoin: 'round'
 		};
+		if (pane) polylineOpts.pane = pane;
 		if (options.dashArray) {
 			polylineOpts.dashArray = options.dashArray;
 		}
 		const polyline = new this.L.Polyline(decodedPolyline, polylineOpts).addTo(this.map);
+		polyline._casing = casing;
 
 		this.polylines.push(polyline);
 
@@ -660,7 +742,8 @@ export default class OpenStreetMapProvider {
 							color: arrowColor,
 							fill: true,
 							fillColor: arrowColor,
-							fillOpacity: 0.85
+							fillOpacity: 0.85,
+							...(pane ? { pane } : {})
 						}
 					})
 				}
@@ -683,6 +766,11 @@ export default class OpenStreetMapProvider {
 		if (polyline.arrowDecorator) {
 			polyline.arrowDecorator.remove();
 			polyline.arrowDecorator = null;
+		}
+
+		if (polyline._casing) {
+			polyline._casing.remove();
+			polyline._casing = null;
 		}
 
 		polyline.remove();
@@ -709,6 +797,10 @@ export default class OpenStreetMapProvider {
 				if (polyline.arrowDecorator) {
 					polyline.arrowDecorator.remove();
 					polyline.arrowDecorator = null;
+				}
+				if (polyline._casing) {
+					polyline._casing.remove();
+					polyline._casing = null;
 				}
 				polyline.remove();
 			}

@@ -24,6 +24,15 @@ vi.mock('$lib/MapHelpers/animateMarker', () => ({
 	cancelMarkerAnimation: vi.fn()
 }));
 
+vi.mock('polyline-encoded', () => ({
+	default: {
+		decode: vi.fn(() => [
+			[47.6, -122.3],
+			[47.61, -122.31]
+		])
+	}
+}));
+
 // addMarker() bails early unless browser is true, and mounts the StopMarker
 // component. Force browser on and stub mount/unmount (the $state rune compiles
 // to svelte/internal/client, so it is unaffected by mocking the top-level module).
@@ -77,7 +86,16 @@ function makeFakeMarker() {
 function makeFakeL(fakeMarker) {
 	return {
 		divIcon: vi.fn(() => ({})),
-		marker: vi.fn(() => fakeMarker)
+		marker: vi.fn(() => fakeMarker),
+		Polyline: vi.fn(function FakePolyline(latlngs, options) {
+			this.options = options;
+			this.addTo = vi.fn().mockReturnThis();
+			this.remove = vi.fn();
+			this.getLatLngs = vi.fn(() => latlngs);
+			this.getBounds = vi.fn(() => ({}));
+		}),
+		polylineDecorator: vi.fn(() => ({ addTo: vi.fn().mockReturnThis(), remove: vi.fn() })),
+		Symbol: { arrowHead: vi.fn(() => ({})) }
 	};
 }
 
@@ -606,5 +624,144 @@ describe('revealPolylines', () => {
 			clearTimeoutSpy.mockRestore();
 			vi.useRealTimers();
 		}
+	});
+});
+
+describe('stop emphasis', () => {
+	function providerWithMarkers(entries) {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		provider.markersMap = new Map(entries);
+		return provider;
+	}
+
+	test('applies per-stop emphasis and the default to everything else', () => {
+		const a = { props: { emphasis: 'full', dotColor: null } };
+		const b = { props: { emphasis: 'full', dotColor: null } };
+		const provider = providerWithMarkers([
+			['stop_a', a],
+			['stop_b', b]
+		]);
+
+		provider.setStopEmphasis(
+			new Map([['stop_a', { emphasis: 'routeDot', dotColor: '#b02a37' }]]),
+			'muted',
+			null
+		);
+
+		expect(a.props.emphasis).toBe('routeDot');
+		expect(a.props.dotColor).toBe('#b02a37');
+		expect(b.props.emphasis).toBe('muted');
+		expect(b.props.dotColor).toBeNull();
+	});
+
+	// The selected stop is served by the drawn trips, so it is always in the
+	// ring-dot map. Forcing 'full' here keeps the invariant in one place rather
+	// than at every call site.
+	test('forces the selected stop to full even when it is in the ring-dot map', () => {
+		const selected = { props: { emphasis: 'full', dotColor: null } };
+		const provider = providerWithMarkers([['stop_sel', selected]]);
+
+		provider.setStopEmphasis(
+			new Map([['stop_sel', { emphasis: 'routeDot', dotColor: '#b02a37' }]]),
+			'muted',
+			'stop_sel'
+		);
+
+		expect(selected.props.emphasis).toBe('full');
+	});
+
+	// GoogleMapProvider.addStopRouteMarker writes bare google.maps.Marker objects
+	// into markersMap; those have no reactive props to mutate.
+	test('skips markers with no props', () => {
+		const provider = providerWithMarkers([['stop_a', { noProps: true }]]);
+		expect(() => provider.setStopEmphasis(new Map(), 'muted', null)).not.toThrow();
+	});
+
+	test('resetStopEmphasis returns every marker to full', () => {
+		const a = { props: { emphasis: 'muted', dotColor: '#b02a37' } };
+		const provider = providerWithMarkers([['stop_a', a]]);
+		provider.resetStopEmphasis();
+		expect(a.props.emphasis).toBe('full');
+		expect(a.props.dotColor).toBeNull();
+	});
+});
+
+describe('setBasemapDimmed', () => {
+	test('toggles the dim class on the map container', () => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		const container = document.createElement('div');
+		provider.map = { getContainer: () => container };
+
+		provider.setBasemapDimmed(true);
+		expect(container.classList.contains('oba-dim-basemap')).toBe(true);
+
+		provider.setBasemapDimmed(false);
+		expect(container.classList.contains('oba-dim-basemap')).toBe(false);
+	});
+});
+
+describe('createPolyline casing', () => {
+	function makeProvider() {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		provider.L = makeFakeL(makeFakeMarker());
+		provider.map = { hasLayer: () => true, removeLayer: vi.fn() };
+		return provider;
+	}
+
+	test('draws a wider white casing under the colored stroke', () => {
+		const provider = makeProvider();
+		const line = provider.createPolyline('encoded', { color: '#b02a37', casing: true, weight: 5 });
+
+		expect(line._casing).toBeTruthy();
+		expect(line._casing.options.color).toBe('#ffffff');
+		expect(line._casing.options.weight).toBeGreaterThan(line.options.weight);
+	});
+
+	test('gives the polyline and its casing the panes it was asked for', () => {
+		const provider = makeProvider();
+		const line = provider.createPolyline('encoded', {
+			color: '#b02a37',
+			casing: true,
+			pane: 'obaRoute',
+			casingPane: 'obaRouteCasing'
+		});
+
+		expect(line.options.pane).toBe('obaRoute');
+		expect(line._casing.options.pane).toBe('obaRouteCasing');
+	});
+
+	// Without this the arrow decorator builds its polyline in overlayPane (400),
+	// below the casings at 402, and every arrow vanishes under a white stroke.
+	test('draws the arrow decorator in the same pane as its polyline', () => {
+		const provider = makeProvider();
+		provider.createPolyline('encoded', { color: '#b02a37', pane: 'obaRoute' });
+
+		const decoratorOptions = provider.L.polylineDecorator.mock.calls[0][1];
+		expect(decoratorOptions.patterns[0].symbol).toBeDefined();
+		expect(provider.L.Symbol.arrowHead.mock.calls[0][0].pathOptions.pane).toBe('obaRoute');
+	});
+
+	// The casing must stay out of this.polylines or fitToPolylines,
+	// getPolylinesCount, and _getRoutePaths all double-count it.
+	test('does not track the casing in this.polylines', () => {
+		const provider = makeProvider();
+		provider.createPolyline('encoded', { color: '#b02a37', casing: true });
+		expect(provider.getPolylinesCount()).toBe(1);
+	});
+
+	test('removes the casing with its polyline', () => {
+		const provider = makeProvider();
+		const line = provider.createPolyline('encoded', { color: '#b02a37', casing: true });
+		const casing = line._casing;
+		provider.removePolyline(line);
+		expect(casing.remove).toHaveBeenCalled();
+	});
+
+	test('clearAllPolylines removes casings too', () => {
+		const provider = makeProvider();
+		const line = provider.createPolyline('encoded', { color: '#b02a37', casing: true });
+		const casing = line._casing;
+		provider.clearAllPolylines();
+		expect(casing.remove).toHaveBeenCalled();
 	});
 });

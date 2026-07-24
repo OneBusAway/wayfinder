@@ -181,8 +181,8 @@
 				provider.unHighlightMarker(currentHighlightedStopId);
 				currentHighlightedStopId = null;
 			}
-			provider.resetStopEmphasis?.(); // TODO: temporary ?. — provider doesn't implement this yet
-			provider.setBasemapDimmed?.(false); // TODO: temporary ?. — provider doesn't implement this yet
+			provider.resetStopEmphasis();
+			provider.setBasemapDimmed(false);
 			provider.cleanupInfoWindow();
 			// Don't wipe vehicle markers or the route-selection flags a route is drawing:
 			// when a route is selected from an open stop sheet, handleRouteSelected has

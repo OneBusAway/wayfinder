@@ -46,3 +46,21 @@
 		opacity: 1;
 	}
 }
+
+/* Basemap dim for stop selection. Scoped to the tile pane, which holds only the
+   MapLibre GL canvas — routes (overlayPane and the oba route panes) and markers
+   (markerPane) keep full contrast. Transitioned so selecting a stop doesn't
+   snap. */
+.leaflet-container.oba-dim-basemap .leaflet-tile-pane {
+	filter: saturate(0.55) brightness(1.05) opacity(0.72);
+}
+
+.leaflet-container .leaflet-tile-pane {
+	transition: filter 220ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.leaflet-container .leaflet-tile-pane {
+		transition: none;
+	}
+}

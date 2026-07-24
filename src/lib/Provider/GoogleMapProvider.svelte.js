@@ -17,6 +17,15 @@ import { animateMarkerTo, cancelMarkerAnimation } from '$lib/MapHelpers/animateM
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
 import { mount, unmount } from 'svelte';
 import { buildVehiclePopupData } from '$lib/vehicleUtils';
+import { ROUTE_PANE } from '$lib/mapPanes.js';
+
+// Google orders polylines by zIndex rather than by pane. Same contract as the
+// OSM panes: every casing below every colored stroke, promoted above its peers.
+const ROUTE_LAYER_Z_INDEX = {
+	[ROUTE_PANE.CASING]: 10,
+	[ROUTE_PANE.LINE]: 20,
+	[ROUTE_PANE.PROMOTED]: 30
+};
 
 export default class GoogleMapProvider {
 	constructor(apiKey, handleStopMarkerSelect) {
@@ -35,6 +44,8 @@ export default class GoogleMapProvider {
 		this.contextMenuInfoWindow = null;
 		this.contextMenuComponent = null;
 		this.userLocationMarker = null;
+		this._darkTheme = false;
+		this._dimmed = false;
 	}
 
 	async initMap(element, options) {
@@ -102,7 +113,9 @@ export default class GoogleMapProvider {
 				icon: icon,
 				onClick: options.onClick,
 				isHighlighted: options.isHighlighted ?? false,
-				showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom
+				showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom,
+				emphasis: options.emphasis ?? 'full',
+				dotColor: options.dotColor ?? null
 			});
 
 			const marker = mount(StopMarker, {
@@ -277,6 +290,40 @@ export default class GoogleMapProvider {
 		if (!marker) return;
 
 		marker.props.isHighlighted = false;
+	}
+
+	/**
+	 * Applies marker prominence across the map. Called by the map layer whenever the
+	 * selection or the drawn route set changes.
+	 *
+	 * @param {Map<string, {emphasis: string, dotColor: string|null}>} byStopId
+	 * @param {'full'|'muted'} defaultEmphasis - for stops not in byStopId
+	 * @param {string|null} selectedStopId - always rendered as the full pin
+	 */
+	setStopEmphasis(byStopId, defaultEmphasis = 'full', selectedStopId = null) {
+		for (const [stopId, marker] of this.markersMap) {
+			// addStopRouteMarker writes plain google.maps.Marker objects into
+			// markersMap; those have no reactive props to mutate.
+			if (!marker?.props) continue;
+
+			if (stopId === selectedStopId) {
+				marker.props.emphasis = 'full';
+				marker.props.dotColor = null;
+				continue;
+			}
+
+			const tier = byStopId.get(stopId);
+			marker.props.emphasis = tier?.emphasis ?? defaultEmphasis;
+			marker.props.dotColor = tier?.dotColor ?? null;
+		}
+	}
+
+	resetStopEmphasis() {
+		for (const marker of this.markersMap.values()) {
+			if (!marker?.props) continue;
+			marker.props.emphasis = 'full';
+			marker.props.dotColor = null;
+		}
 	}
 
 	removeStopMarkers() {
@@ -483,9 +530,33 @@ export default class GoogleMapProvider {
 		this.map.addListener(event, callback);
 	}
 
+	/**
+	 * Google replaces the whole `styles` array on setOptions, so theme and dim have
+	 * to be composed in one place — otherwise a theme toggle silently drops the dim.
+	 */
+	_applyStyles() {
+		const base = this._darkTheme ? nightModeStyles() : [];
+		const dim = this._dimmed
+			? [
+					{
+						featureType: 'all',
+						elementType: 'all',
+						stylers: [{ saturation: -45 }, { lightness: 25 }]
+					}
+				]
+			: [];
+		const styles = [...base, ...dim];
+		this.map.setOptions({ styles: styles.length ? styles : null });
+	}
+
 	setTheme(theme) {
-		const styles = theme === 'dark' ? nightModeStyles() : null;
-		this.map.setOptions({ styles });
+		this._darkTheme = theme === 'dark';
+		this._applyStyles();
+	}
+
+	setBasemapDimmed(dimmed) {
+		this._dimmed = dimmed;
+		this._applyStyles();
 	}
 
 	/**
@@ -554,14 +625,20 @@ export default class GoogleMapProvider {
 			return null;
 		}
 		const path = decodedPath.map((point) => ({ lat: point.lat(), lng: point.lng() }));
+		const weight = options.weight || 5;
 
 		const polylineOptions = {
 			path,
 			geodesic: true,
 			strokeColor: options.color || COLORS.POLYLINE,
 			strokeOpacity: options.dashArray ? 0 : (options.opacity ?? 1.0),
-			strokeWeight: options.weight || 5
+			strokeWeight: weight
 		};
+
+		const zIndex = ROUTE_LAYER_Z_INDEX[options.pane];
+		if (zIndex !== undefined) {
+			polylineOptions.zIndex = zIndex;
+		}
 
 		const icons = [];
 
@@ -605,6 +682,22 @@ export default class GoogleMapProvider {
 
 		polyline.setMap(this.map);
 
+		// White casing underneath, so the route reads on any basemap tile without a
+		// halo hack. Kept off this.polylines (same shape as OSM) so
+		// fitToPolylines/getPolylinesCount/_getRoutePaths don't double-count it,
+		// and torn down alongside its polyline.
+		if (options.casing) {
+			polyline._casing = new window.google.maps.Polyline({
+				path,
+				geodesic: true,
+				strokeColor: '#ffffff',
+				strokeOpacity: 0.95,
+				strokeWeight: weight + 5,
+				zIndex: ROUTE_LAYER_Z_INDEX[options.casingPane] ?? ROUTE_LAYER_Z_INDEX[ROUTE_PANE.CASING],
+				map: this.map
+			});
+		}
+
 		this.polylines.push(polyline);
 
 		return polyline;
@@ -613,6 +706,11 @@ export default class GoogleMapProvider {
 	async removePolyline(polyline) {
 		if (polyline && polyline.setMap) {
 			polyline.setMap(null);
+		}
+
+		if (polyline?._casing) {
+			polyline._casing.setMap(null);
+			polyline._casing = null;
 		}
 
 		// Remove from tracking array
@@ -633,6 +731,10 @@ export default class GoogleMapProvider {
 		this.polylines.forEach((polyline) => {
 			if (polyline && polyline.setMap) {
 				polyline.setMap(null);
+			}
+			if (polyline?._casing) {
+				polyline._casing.setMap(null);
+				polyline._casing = null;
 			}
 		});
 

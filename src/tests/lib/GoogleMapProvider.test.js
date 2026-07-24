@@ -237,3 +237,217 @@ describe('addUserLocationMarker — one marker, repositioned', () => {
 		expect(() => provider.removeUserLocationMarker()).not.toThrow();
 	});
 });
+
+describe('stop emphasis', () => {
+	function providerWithMarkers(entries) {
+		const provider = new GoogleMapProvider('test-key', vi.fn());
+		provider.markersMap = new Map(entries);
+		return provider;
+	}
+
+	test('applies per-stop emphasis and the default to everything else', () => {
+		const a = { props: { emphasis: 'full', dotColor: null } };
+		const b = { props: { emphasis: 'full', dotColor: null } };
+		const provider = providerWithMarkers([
+			['stop_a', a],
+			['stop_b', b]
+		]);
+
+		provider.setStopEmphasis(
+			new Map([['stop_a', { emphasis: 'routeDot', dotColor: '#b02a37' }]]),
+			'muted',
+			null
+		);
+
+		expect(a.props.emphasis).toBe('routeDot');
+		expect(a.props.dotColor).toBe('#b02a37');
+		expect(b.props.emphasis).toBe('muted');
+		expect(b.props.dotColor).toBeNull();
+	});
+
+	// The selected stop is served by the drawn trips, so it is always in the
+	// ring-dot map. Forcing 'full' here keeps the invariant in one place rather
+	// than at every call site.
+	test('forces the selected stop to full even when it is in the ring-dot map', () => {
+		const selected = { props: { emphasis: 'full', dotColor: null } };
+		const provider = providerWithMarkers([['stop_sel', selected]]);
+
+		provider.setStopEmphasis(
+			new Map([['stop_sel', { emphasis: 'routeDot', dotColor: '#b02a37' }]]),
+			'muted',
+			'stop_sel'
+		);
+
+		expect(selected.props.emphasis).toBe('full');
+	});
+
+	// addStopRouteMarker writes bare google.maps.Marker objects into markersMap;
+	// those have no reactive props to mutate.
+	test('skips markers with no props', () => {
+		const provider = providerWithMarkers([['stop_a', { noProps: true }]]);
+		expect(() => provider.setStopEmphasis(new Map(), 'muted', null)).not.toThrow();
+	});
+
+	test('resetStopEmphasis returns every marker to full', () => {
+		const a = { props: { emphasis: 'muted', dotColor: '#b02a37' } };
+		const provider = providerWithMarkers([['stop_a', a]]);
+		provider.resetStopEmphasis();
+		expect(a.props.emphasis).toBe('full');
+		expect(a.props.dotColor).toBeNull();
+	});
+});
+
+describe('setBasemapDimmed / setTheme composition', () => {
+	function makeProvider() {
+		const provider = new GoogleMapProvider('test-key', vi.fn());
+		return provider;
+	}
+
+	test('setBasemapDimmed applies a desaturating style', () => {
+		const provider = makeProvider();
+		const setOptions = vi.fn();
+		provider.map = { setOptions };
+
+		provider.setBasemapDimmed(true);
+
+		const styles = setOptions.mock.calls.at(-1)[0].styles;
+		expect(styles.some((s) => s.stylers?.some((v) => 'saturation' in v))).toBe(true);
+	});
+
+	test('setBasemapDimmed(false) clears the dim style', () => {
+		const provider = makeProvider();
+		const setOptions = vi.fn();
+		provider.map = { setOptions };
+
+		provider.setBasemapDimmed(true);
+		provider.setBasemapDimmed(false);
+
+		const styles = setOptions.mock.calls.at(-1)[0].styles;
+		expect(styles).toBeNull();
+	});
+
+	// Google replaces the whole `styles` array on setOptions, so theme and dim
+	// must be composed together — otherwise a theme toggle silently drops the dim.
+	test('a theme change preserves the basemap dim', () => {
+		const provider = makeProvider();
+		const setOptions = vi.fn();
+		provider.map = { setOptions };
+
+		provider.setBasemapDimmed(true);
+		provider.setTheme('dark');
+
+		const lastStyles = setOptions.mock.calls.at(-1)[0].styles;
+		expect(lastStyles.some((s) => s.stylers?.some((v) => 'saturation' in v))).toBe(true);
+	});
+
+	test('a dim toggle preserves the current theme', () => {
+		const provider = makeProvider();
+		const setOptions = vi.fn();
+		provider.map = { setOptions };
+
+		provider.setTheme('dark');
+		setOptions.mockClear();
+		provider.setBasemapDimmed(true);
+
+		const lastStyles = setOptions.mock.calls.at(-1)[0].styles;
+		// nightModeStyles() is mocked to [] above, so assert the dim entry landed
+		// alongside whatever the (empty, mocked) dark-theme base produced.
+		expect(lastStyles.some((s) => s.stylers?.some((v) => 'saturation' in v))).toBe(true);
+	});
+});
+
+describe('createPolyline casing', () => {
+	function setupGoogleMapsForPolylines() {
+		const PolylineMock = vi.fn(function GooglePolyline(options) {
+			this.options = options;
+			this.setMap = vi.fn();
+		});
+		global.google = {
+			maps: {
+				geometry: {
+					encoding: {
+						decodePath: vi.fn(() => [
+							{ lat: () => 47.6, lng: () => -122.3 },
+							{ lat: () => 47.61, lng: () => -122.31 }
+						])
+					}
+				},
+				importLibrary: vi.fn(async () => {}),
+				Polyline: PolylineMock,
+				SymbolPath: { FORWARD_CLOSED_ARROW: 1 }
+			}
+		};
+		return { PolylineMock };
+	}
+
+	function makeProvider() {
+		const provider = new GoogleMapProvider('test-key', vi.fn());
+		provider.map = {};
+		return provider;
+	}
+
+	test('draws a wider white casing under the colored stroke', async () => {
+		setupGoogleMapsForPolylines();
+		const provider = makeProvider();
+
+		const line = await provider.createPolyline('encoded', {
+			color: '#b02a37',
+			casing: true,
+			weight: 5
+		});
+
+		expect(line._casing).toBeTruthy();
+		expect(line._casing.options.strokeColor).toBe('#ffffff');
+		expect(line._casing.options.strokeWeight).toBeGreaterThan(line.options.strokeWeight);
+	});
+
+	test('gives the polyline and its casing the zIndex layer it was asked for', async () => {
+		setupGoogleMapsForPolylines();
+		const provider = makeProvider();
+
+		const line = await provider.createPolyline('encoded', {
+			color: '#b02a37',
+			casing: true,
+			pane: 'obaRoute',
+			casingPane: 'obaRouteCasing'
+		});
+
+		expect(line.options.zIndex).toBe(20);
+		expect(line._casing.options.zIndex).toBe(10);
+	});
+
+	// The casing must stay out of this.polylines or fitToPolylines,
+	// getPolylinesCount, and _getRoutePaths all double-count it.
+	test('does not track the casing in this.polylines', async () => {
+		setupGoogleMapsForPolylines();
+		const provider = makeProvider();
+
+		await provider.createPolyline('encoded', { color: '#b02a37', casing: true });
+
+		expect(provider.getPolylinesCount()).toBe(1);
+	});
+
+	test('removes the casing with its polyline', async () => {
+		setupGoogleMapsForPolylines();
+		const provider = makeProvider();
+
+		const line = await provider.createPolyline('encoded', { color: '#b02a37', casing: true });
+		const casing = line._casing;
+
+		await provider.removePolyline(line);
+
+		expect(casing.setMap).toHaveBeenCalledWith(null);
+	});
+
+	test('clearAllPolylines removes casings too', async () => {
+		setupGoogleMapsForPolylines();
+		const provider = makeProvider();
+
+		const line = await provider.createPolyline('encoded', { color: '#b02a37', casing: true });
+		const casing = line._casing;
+
+		provider.clearAllPolylines();
+
+		expect(casing.setMap).toHaveBeenCalledWith(null);
+	});
+});
