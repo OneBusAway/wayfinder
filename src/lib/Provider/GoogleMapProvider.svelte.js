@@ -557,6 +557,13 @@ export default class GoogleMapProvider {
 	 * Google-configured deployment.
 	 */
 	_applyStyles() {
+		// Guard here, at the single choke point both setTheme and setBasemapDimmed
+		// pass through: the provider is constructed with this.map = null, and
+		// MapView.initMap swallows init failures, so a themeChange -> setTheme ->
+		// _applyStyles after a failed Google init must no-op rather than throw on
+		// this.map.setOptions. Mirrors OSM's `if (!browser || !this.map) return;`.
+		if (!this.map) return;
+
 		const base = this._darkTheme ? nightModeStyles() : [];
 		const dim = this._dimmed
 			? [
@@ -577,11 +584,7 @@ export default class GoogleMapProvider {
 	}
 
 	setBasemapDimmed(dimmed) {
-		// Mirrors OSM's `if (!browser || !this.map) return;` guard: the provider
-		// is constructed with this.map = null, and MapView.initMap swallows init
-		// failures, so a failed Google init must no-op here rather than throw.
-		if (!this.map) return;
-
+		// Null-map guard lives in _applyStyles, which both callers pass through.
 		this._dimmed = dimmed;
 		this._applyStyles();
 	}

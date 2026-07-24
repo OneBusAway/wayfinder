@@ -392,7 +392,10 @@ describe('setBasemapDimmed / setTheme composition', () => {
 		const provider = makeProvider();
 		expect(provider.map).toBeNull();
 
+		// Both callers pass through _applyStyles, whose null-map guard must keep
+		// either one from dereferencing this.map.setOptions after a failed init.
 		expect(() => provider.setBasemapDimmed(true)).not.toThrow();
+		expect(() => provider.setTheme('dark')).not.toThrow();
 	});
 
 	// Google replaces the whole `styles` array on setOptions, so theme and dim

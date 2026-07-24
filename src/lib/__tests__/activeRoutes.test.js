@@ -306,6 +306,21 @@ describe('assignRouteColors', () => {
 		}
 	});
 
+	// 'r_a' and 'r_i' both hash to the same palette slot, so they contend for one
+	// color: without sorting the fallback set by id, whichever comes first in the
+	// input claims that slot and the other probes forward — reversing the input
+	// would swap their colors. activeRoutes reshuffles on every 30s poll, so the
+	// assignment must not depend on input order even for a hash collision.
+	test('is stable when two fallback routes collide on the same palette slot', () => {
+		const routes = [route('r_a', null), route('r_i', null)];
+		const forward = assignRouteColors(routes, { dark: false });
+		const reversed = assignRouteColors([...routes].reverse(), { dark: false });
+		for (const { id } of routes) {
+			expect(reversed.get(id).line).toBe(forward.get(id).line);
+		}
+		expect(forward.get('r_a').line).not.toBe(forward.get('r_i').line);
+	});
+
 	// Two routes sharing one real, valid GTFS color is the exact scenario the
 	// fallback palette exists for. Routes are drawn soonest-arrival-first, so a
 	// naive "whichever comes first in the array wins the shared color" rule

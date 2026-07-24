@@ -163,6 +163,14 @@ export function assignRouteColors(routes, { dark = false } = {}) {
 		needsFallback.push(...rest.map((entry) => entry.route));
 	}
 
+	// Sorted by id before probing so palette allocation is order-independent too:
+	// two ids that hash to the same slot (e.g. `r_a` and `r_i` both land on slot
+	// 4) would otherwise let whichever arrives first claim it and force the other
+	// to probe forward, so reversing the arrivals order would swap their colors.
+	// activeRoutes reshuffles soonest-arrival-first on every 30s poll, so an
+	// input-order-dependent rule would flip both colors with no data change.
+	needsFallback.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+
 	for (const route of needsFallback) {
 		const start = paletteIndexFor(route.id);
 		let line = null;
