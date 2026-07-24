@@ -146,6 +146,94 @@ describe('activeRoutesFromArrivals', () => {
 		);
 		expect(result[0].shortName).toBe('773');
 		expect(result[0].gtfsColor).toBeNull();
+		expect(result[0].type).toBe(3);
+	});
+
+	test('uses type 3 default when route reference is missing, but uses the reference type when present', () => {
+		const result = activeRoutesFromArrivals(
+			makeResponse(
+				[
+					{
+						routeId: 'r_no_ref',
+						tripId: 't_a',
+						routeShortName: 'NoRef',
+						predicted: true,
+						predictedArrivalTime: 1000,
+						scheduledArrivalTime: 1000
+					},
+					{
+						routeId: 'r_with_ref',
+						tripId: 't_b',
+						routeShortName: 'WithRef',
+						predicted: true,
+						predictedArrivalTime: 2000,
+						scheduledArrivalTime: 2000
+					}
+				],
+				[{ id: 'r_with_ref', shortName: 'WithRef', type: 2, color: 'abc123' }]
+			)
+		);
+		const noRefRoute = result.find((r) => r.id === 'r_no_ref');
+		const withRefRoute = result.find((r) => r.id === 'r_with_ref');
+		expect(noRefRoute.type).toBe(3);
+		expect(withRefRoute.type).toBe(2);
+	});
+
+	test('maintains input order when routes have identical effective arrival times', () => {
+		const result = activeRoutesFromArrivals(
+			makeResponse(
+				[
+					{
+						routeId: 'r_first',
+						tripId: 't_first',
+						predicted: true,
+						predictedArrivalTime: 1000,
+						scheduledArrivalTime: 1000
+					},
+					{
+						routeId: 'r_second',
+						tripId: 't_second',
+						predicted: true,
+						predictedArrivalTime: 1000,
+						scheduledArrivalTime: 1000
+					},
+					{
+						routeId: 'r_third',
+						tripId: 't_third',
+						predicted: true,
+						predictedArrivalTime: 1000,
+						scheduledArrivalTime: 1000
+					}
+				],
+				[
+					{ id: 'r_first', shortName: 'First', type: 3, color: 'aaa' },
+					{ id: 'r_second', shortName: 'Second', type: 3, color: 'bbb' },
+					{ id: 'r_third', shortName: 'Third', type: 3, color: 'ccc' }
+				]
+			)
+		);
+		expect(result.map((r) => r.id)).toEqual(['r_first', 'r_second', 'r_third']);
+	});
+
+	test('handles null entries in arrivalsAndDepartures array', () => {
+		const result = activeRoutesFromArrivals(
+			makeResponse(
+				[
+					null,
+					{
+						routeId: 'r_valid',
+						tripId: 't_valid',
+						predicted: true,
+						predictedArrivalTime: 1000,
+						scheduledArrivalTime: 1000
+					},
+					null
+				],
+				[{ id: 'r_valid', shortName: 'Valid', type: 3, color: 'ddd' }]
+			)
+		);
+		expect(result).toHaveLength(1);
+		expect(result[0].id).toBe('r_valid');
 	});
 
 	test.each([
