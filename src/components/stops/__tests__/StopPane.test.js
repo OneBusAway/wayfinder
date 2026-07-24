@@ -587,6 +587,14 @@ describe('StopPane', () => {
 			);
 		});
 
+		// Wait for the widened response to finish processing: the button only
+		// returns from its loading state after loadMoreArrivals resolves and
+		// recomputes the hint in the same tick (the arrival list itself renders
+		// through mocked children, so it exposes no DOM value to wait on).
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: 'Load more arrivals' })).toBeEnabled();
+		});
+
 		expect(screen.queryByText('No more arrivals in the next 65 minutes')).not.toBeInTheDocument();
 	});
 
