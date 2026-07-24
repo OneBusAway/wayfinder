@@ -244,8 +244,8 @@ export default class OpenStreetMapProvider {
 	 */
 	setStopEmphasis(byStopId, defaultEmphasis = 'full', selectedStopId = null) {
 		for (const [stopId, marker] of this.markersMap) {
-			// addStopRouteMarker writes plain markers into markersMap on the Google
-			// provider; those have no reactive props to mutate.
+			// Defensive: every markersMap entry should be a StopMarker handle with a
+			// reactive props object, but skip gracefully if that ever changes.
 			if (!marker?.props) continue;
 
 			if (stopId === selectedStopId) {

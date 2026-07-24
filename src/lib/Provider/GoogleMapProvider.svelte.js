@@ -35,6 +35,11 @@ export default class GoogleMapProvider {
 		this.popupContentComponent = null;
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
+		// Route-drawn stop markers (addStopRouteMarker), keyed by stop id. Kept
+		// separate from markersMap so drawing a route never clobbers the reactive
+		// props handle addMarker put there for the same stop — see openStopMarker
+		// for the anchor-resolution fallback this implies.
+		this.routeStopMarkers = new Map();
 		this.vehicleMarkers = [];
 		this.markersMap = new Map();
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
@@ -227,7 +232,11 @@ export default class GoogleMapProvider {
 
 		marker.addListener('click', () => this.openStopMarker(stop, stopTime));
 
-		this.markersMap.set(stop.id, marker);
+		// Deliberately not markersMap: a stop drawn as part of a route can already
+		// have a StopMarker entry there (with a reactive `props` handle used by
+		// setStopEmphasis/highlightMarker/etc.); overwriting it with this bare
+		// google.maps.Marker would silently break emphasis for that stop.
+		this.routeStopMarkers.set(stop.id, marker);
 		this.stopMarkers.push(marker);
 	}
 
@@ -257,7 +266,10 @@ export default class GoogleMapProvider {
 			content: popupContainer
 		});
 
-		this.globalInfoWindow.open(this.map, this.markersMap.get(stop.id));
+		// Route-drawn stops anchor to their routeStopMarkers entry; fall back to
+		// markersMap for stops opened via their own StopMarker overlay.
+		const anchor = this.routeStopMarkers.get(stop.id) ?? this.markersMap.get(stop.id);
+		this.globalInfoWindow.open(this.map, anchor);
 	}
 
 	updatePopupContent(stop, arrivalTime = null) {
@@ -302,8 +314,9 @@ export default class GoogleMapProvider {
 	 */
 	setStopEmphasis(byStopId, defaultEmphasis = 'full', selectedStopId = null) {
 		for (const [stopId, marker] of this.markersMap) {
-			// addStopRouteMarker writes plain google.maps.Marker objects into
-			// markersMap; those have no reactive props to mutate.
+			// Defensive: every markersMap entry should be a StopMarker handle with a
+			// reactive props object (addStopRouteMarker keeps its bare markers in
+			// routeStopMarkers instead), but skip gracefully if that ever changes.
 			if (!marker?.props) continue;
 
 			if (stopId === selectedStopId) {
@@ -331,6 +344,7 @@ export default class GoogleMapProvider {
 			marker.setMap(null);
 		});
 		this.stopMarkers = [];
+		this.routeStopMarkers.clear();
 	}
 
 	addPinMarker(position, text) {
@@ -533,6 +547,14 @@ export default class GoogleMapProvider {
 	/**
 	 * Google replaces the whole `styles` array on setOptions, so theme and dim have
 	 * to be composed in one place — otherwise a theme toggle silently drops the dim.
+	 *
+	 * Caveat (needs manual verification, not testable in jsdom): the dim styler
+	 * below uses `saturation`/`lightness`, which Google's style reference defines
+	 * as *relative* to the base map style. nightModeStyles() sets *absolute*
+	 * `color` on nearly every element instead. Whether a trailing relative styler
+	 * visibly dims already-absolute-colored elements is not guaranteed by the
+	 * API — add this to the manual dark-mode verification list for a
+	 * Google-configured deployment.
 	 */
 	_applyStyles() {
 		const base = this._darkTheme ? nightModeStyles() : [];
@@ -555,6 +577,11 @@ export default class GoogleMapProvider {
 	}
 
 	setBasemapDimmed(dimmed) {
+		// Mirrors OSM's `if (!browser || !this.map) return;` guard: the provider
+		// is constructed with this.map = null, and MapView.initMap swallows init
+		// failures, so a failed Google init must no-op here rather than throw.
+		if (!this.map) return;
+
 		this._dimmed = dimmed;
 		this._applyStyles();
 	}
@@ -638,6 +665,13 @@ export default class GoogleMapProvider {
 		const zIndex = ROUTE_LAYER_Z_INDEX[options.pane];
 		if (zIndex !== undefined) {
 			polylineOptions.zIndex = zIndex;
+		} else if (options.casing) {
+			// The casing below always gets an explicit zIndex (its own default or
+			// ROUTE_LAYER_Z_INDEX[ROUTE_PANE.CASING]). Google documents no default
+			// for PolylineOptions.zIndex, so an explicit casing zIndex beats an
+			// unset line zIndex — without this, an unpaned casing:true call would
+			// paint the white casing over its own colored line.
+			polylineOptions.zIndex = ROUTE_LAYER_Z_INDEX[ROUTE_PANE.LINE];
 		}
 
 		const icons = [];

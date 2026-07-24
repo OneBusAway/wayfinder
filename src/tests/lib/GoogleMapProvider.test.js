@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import GoogleMapProvider from '$lib/Provider/GoogleMapProvider.svelte.js';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
+import { nightModeStyles } from '$lib/googleMaps';
 
 vi.mock('$components/map/StopMarker.svelte', () => ({ default: {} }));
 vi.mock('$components/map/PopupContent.svelte', () => ({ default: {} }));
@@ -19,11 +20,18 @@ vi.mock('$lib/MapHelpers/animateMarker', () => ({
 vi.mock('$lib/vehicleUtils', () => ({
 	buildVehiclePopupData: vi.fn(() => ({}))
 }));
-vi.mock('$lib/googleMaps', () => ({
-	loadGoogleMapsLibrary: vi.fn(),
-	createMap: vi.fn(),
-	nightModeStyles: vi.fn(() => [])
-}));
+// nightModeStyles is the real implementation (not stubbed to []): the
+// setBasemapDimmed/setTheme composition tests below need a genuinely
+// non-empty base theme to prove _applyStyles actually merges theme + dim,
+// rather than passing against an empty array regardless of composition.
+vi.mock('$lib/googleMaps', async (importOriginal) => {
+	const actual = await importOriginal();
+	return {
+		loadGoogleMapsLibrary: vi.fn(),
+		createMap: vi.fn(),
+		nightModeStyles: actual.nightModeStyles
+	};
+});
 vi.mock('svelte', async (importOriginal) => {
 	const actual = await importOriginal();
 	return { ...actual, mount: vi.fn(), unmount: vi.fn() };
@@ -281,8 +289,8 @@ describe('stop emphasis', () => {
 		expect(selected.props.emphasis).toBe('full');
 	});
 
-	// addStopRouteMarker writes bare google.maps.Marker objects into markersMap;
-	// those have no reactive props to mutate.
+	// Defensive: markersMap entries are expected to always carry a reactive
+	// props object; skip gracefully rather than throw if that ever changes.
 	test('skips markers with no props', () => {
 		const provider = providerWithMarkers([['stop_a', { noProps: true }]]);
 		expect(() => provider.setStopEmphasis(new Map(), 'muted', null)).not.toThrow();
@@ -294,6 +302,56 @@ describe('stop emphasis', () => {
 		provider.resetStopEmphasis();
 		expect(a.props.emphasis).toBe('full');
 		expect(a.props.dotColor).toBeNull();
+	});
+});
+
+describe('addStopRouteMarker — does not clobber an existing stop-emphasis handle', () => {
+	let provider;
+
+	beforeEach(() => {
+		global.google = {
+			maps: {
+				Marker: makeGoogleMarkerMock(),
+				InfoWindow: vi.fn(function InfoWindow() {
+					this.open = vi.fn();
+					this.close = vi.fn();
+				}),
+				OverlayView: vi.fn(function OverlayView() {
+					this.setMap = vi.fn();
+					this.getPanes = vi.fn(() => ({
+						overlayMouseTarget: document.createElement('div')
+					}));
+				}),
+				SymbolPath: { CIRCLE: 0 },
+				Size: vi.fn(),
+				Point: vi.fn()
+			}
+		};
+
+		provider = new GoogleMapProvider('test-key', vi.fn());
+		provider.map = { getZoom: vi.fn(() => 10) };
+	});
+
+	// addMarker's StopMarker handle (with its reactive `props`) is what
+	// setStopEmphasis/highlightMarker/etc. mutate. If addStopRouteMarker
+	// overwrites that markersMap entry with a bare google.maps.Marker (no
+	// props), emphasis silently becomes a no-op for that stop.
+	test('a stop already tracked via addMarker keeps its emphasis handle after its route is drawn', () => {
+		const markerObj = provider.addMarker({
+			stop: STOP,
+			position: { lat: STOP.lat, lng: STOP.lon }
+		});
+
+		provider.addStopRouteMarker(STOP);
+
+		provider.setStopEmphasis(
+			new Map([[STOP.id, { emphasis: 'routeDot', dotColor: '#b02a37' }]]),
+			'muted',
+			null
+		);
+
+		expect(markerObj.props.emphasis).toBe('routeDot');
+		expect(markerObj.props.dotColor).toBe('#b02a37');
 	});
 });
 
@@ -326,8 +384,23 @@ describe('setBasemapDimmed / setTheme composition', () => {
 		expect(styles).toBeNull();
 	});
 
+	// Parity with OSM's `if (!browser || !this.map) return;` guard. The provider
+	// is constructed with this.map = null, and MapView.initMap swallows init
+	// failures in a try/catch, so a Google map that failed to initialize must
+	// no-op here rather than throw on this.map.setOptions.
+	test('no-ops when the map has not been initialized', () => {
+		const provider = makeProvider();
+		expect(provider.map).toBeNull();
+
+		expect(() => provider.setBasemapDimmed(true)).not.toThrow();
+	});
+
 	// Google replaces the whole `styles` array on setOptions, so theme and dim
 	// must be composed together — otherwise a theme toggle silently drops the dim.
+	// nightModeStyles() is the real (non-empty) implementation here, so this only
+	// passes if _applyStyles genuinely concatenates theme + dim, not just if a
+	// lone dim entry happens to satisfy a loose "some styler has saturation"
+	// check against an empty base.
 	test('a theme change preserves the basemap dim', () => {
 		const provider = makeProvider();
 		const setOptions = vi.fn();
@@ -337,9 +410,18 @@ describe('setBasemapDimmed / setTheme composition', () => {
 		provider.setTheme('dark');
 
 		const lastStyles = setOptions.mock.calls.at(-1)[0].styles;
-		expect(lastStyles.some((s) => s.stylers?.some((v) => 'saturation' in v))).toBe(true);
+		const base = nightModeStyles();
+		expect(base.length).toBeGreaterThan(0);
+		expect(lastStyles).toHaveLength(base.length + 1);
+		expect(lastStyles.slice(0, base.length)).toEqual(base);
+		expect(lastStyles.at(-1).stylers.some((v) => 'saturation' in v)).toBe(true);
 	});
 
+	// Distinct from the test above: theme applied first, dim toggled after.
+	// Before nightModeStyles() was de-stubbed this was byte-identical to
+	// 'setBasemapDimmed applies a desaturating style' (empty base both times) and
+	// asserted nothing about composition; with a real base it now genuinely
+	// checks that toggling the dim doesn't drop the theme's entries.
 	test('a dim toggle preserves the current theme', () => {
 		const provider = makeProvider();
 		const setOptions = vi.fn();
@@ -350,9 +432,11 @@ describe('setBasemapDimmed / setTheme composition', () => {
 		provider.setBasemapDimmed(true);
 
 		const lastStyles = setOptions.mock.calls.at(-1)[0].styles;
-		// nightModeStyles() is mocked to [] above, so assert the dim entry landed
-		// alongside whatever the (empty, mocked) dark-theme base produced.
-		expect(lastStyles.some((s) => s.stylers?.some((v) => 'saturation' in v))).toBe(true);
+		const base = nightModeStyles();
+		expect(base.length).toBeGreaterThan(0);
+		expect(lastStyles).toHaveLength(base.length + 1);
+		expect(lastStyles.slice(0, base.length)).toEqual(base);
+		expect(lastStyles.at(-1).stylers.some((v) => 'saturation' in v)).toBe(true);
 	});
 });
 
@@ -414,6 +498,38 @@ describe('createPolyline casing', () => {
 
 		expect(line.options.zIndex).toBe(20);
 		expect(line._casing.options.zIndex).toBe(10);
+	});
+
+	// A casing always gets an explicit zIndex, even with no pane (falls back to
+	// ROUTE_LAYER_Z_INDEX[CASING]). Without a matching explicit zIndex on the
+	// line, Google has no documented default for PolylineOptions.zIndex, so the
+	// casing's explicit 10 would beat the line's unset zIndex and paint the
+	// white casing on top of the colored route.
+	test('keeps the colored line above its casing when no pane is given', async () => {
+		setupGoogleMapsForPolylines();
+		const provider = makeProvider();
+
+		const line = await provider.createPolyline('encoded', {
+			color: '#b02a37',
+			casing: true
+		});
+
+		expect(line.options.zIndex).not.toBeUndefined();
+		expect(line.options.zIndex).toBeGreaterThan(line._casing.options.zIndex);
+	});
+
+	test('keeps the colored line above its casing when an explicit pane is given', async () => {
+		setupGoogleMapsForPolylines();
+		const provider = makeProvider();
+
+		const line = await provider.createPolyline('encoded', {
+			color: '#b02a37',
+			casing: true,
+			pane: 'obaRoute',
+			casingPane: 'obaRouteCasing'
+		});
+
+		expect(line.options.zIndex).toBeGreaterThan(line._casing.options.zIndex);
 	});
 
 	// The casing must stay out of this.polylines or fitToPolylines,
