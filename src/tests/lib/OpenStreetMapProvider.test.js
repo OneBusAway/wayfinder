@@ -540,7 +540,7 @@ describe('revealPolylines', () => {
 		expect(line._casing._path.style.strokeDashoffset).toBe('0');
 	});
 
-	test('does not move the camera', () => {
+	test('does not move the camera, but still runs the reveal', () => {
 		const provider = new OpenStreetMapProvider(vi.fn());
 		const line = fakePolyline();
 		const flyToBounds = vi.fn();
@@ -550,5 +550,61 @@ describe('revealPolylines', () => {
 		provider.revealPolylines({ only: [line] });
 
 		expect(flyToBounds).not.toHaveBeenCalled();
+		expect(line._path.style.strokeDashoffset).toBe('0');
+	});
+
+	test('an empty `only` array animates nothing', () => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		const a = fakePolyline();
+		const b = fakePolyline();
+		provider.map = { hasLayer: () => true, removeLayer: vi.fn() };
+		provider.polylines = [a, b];
+
+		provider.revealPolylines({ only: [] });
+
+		expect(a._path.style.strokeDashoffset).toBeUndefined();
+		expect(b._path.style.strokeDashoffset).toBeUndefined();
+	});
+
+	test('omitting `only` animates every tracked polyline', () => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		const a = fakePolyline();
+		const b = fakePolyline();
+		provider.map = { hasLayer: () => true, removeLayer: vi.fn() };
+		provider.polylines = [a, b];
+
+		provider.revealPolylines();
+
+		expect(a._path.style.strokeDashoffset).toBe('0');
+		expect(b._path.style.strokeDashoffset).toBe('0');
+	});
+
+	test('a second reveal call clears the prior pending draw timeout for the same polyline', () => {
+		vi.useFakeTimers();
+		const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
+		try {
+			const provider = new OpenStreetMapProvider(vi.fn());
+			const line = fakePolyline();
+			provider.map = { hasLayer: () => true, removeLayer: vi.fn() };
+			provider.polylines = [line];
+
+			provider.revealPolylines({ only: [line] });
+			const firstTimeoutId = line._drawTimeoutId;
+			expect(firstTimeoutId).toBeDefined();
+
+			provider.revealPolylines({ only: [line] });
+			const secondTimeoutId = line._drawTimeoutId;
+
+			expect(clearTimeoutSpy).toHaveBeenCalledWith(firstTimeoutId);
+			expect(secondTimeoutId).not.toBe(firstTimeoutId);
+
+			// Only one timer should still be outstanding: advancing time should
+			// only ever fire once more (the second, still-pending timer), not
+			// throw or double-fire against a torn-down node.
+			expect(vi.getTimerCount()).toBe(1);
+		} finally {
+			clearTimeoutSpy.mockRestore();
+			vi.useRealTimers();
+		}
 	});
 });

@@ -774,13 +774,16 @@ export default class OpenStreetMapProvider {
 	 * stroke-dashoffset technique, without touching the camera. The direction-arrow
 	 * decorators are added once the line has finished drawing.
 	 *
-	 * @param {{ only?: Array, duration?: number }} [options] `only` limits the
-	 *   animation to specific polylines — used by the stop-selection layer, whose
-	 *   routes resolve one at a time and must not re-animate their neighbors.
-	 *   Omit it to reveal every tracked polyline.
+	 * @param {{ only?: Array | null, duration?: number }} [options] `only` limits
+	 *   the animation to specific polylines — used by the stop-selection layer,
+	 *   whose routes resolve one at a time and must not re-animate their
+	 *   neighbors. The sentinel is *absence*, not emptiness: omit `only` (or pass
+	 *   `null`/`undefined`) to reveal every tracked polyline, but an explicit
+	 *   array — including an empty one — is taken literally, so `only: []`
+	 *   animates nothing.
 	 */
-	revealPolylines({ only = [], duration = 1.2 } = {}) {
-		const targets = only.length ? only : this.polylines;
+	revealPolylines({ only = null, duration = 1.2 } = {}) {
+		const targets = only ?? this.polylines;
 
 		targets.forEach((polyline) => {
 			if (!polyline) return;
@@ -817,6 +820,16 @@ export default class OpenStreetMapProvider {
 				layerPath.style.transition = `stroke-dashoffset ${duration}s ease-in-out`;
 				layerPath.style.strokeDashoffset = '0';
 			});
+
+			// Clear any prior pending reveal for this polyline before scheduling a
+			// new one — otherwise a second call within `duration` overwrites the
+			// stored id, orphaning the first timer so it later fires against a
+			// removed or reused DOM node (removePolyline/clearAllPolylines only
+			// ever clear the single stored id).
+			if (polyline._drawTimeoutId) {
+				clearTimeout(polyline._drawTimeoutId);
+				polyline._drawTimeoutId = null;
+			}
 
 			polyline._drawTimeoutId = setTimeout(() => {
 				polyline._drawTimeoutId = null;
