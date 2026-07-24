@@ -156,17 +156,28 @@ export async function fetchAndUpdateVehiclesForRoutes(
 			// Leave this route out of the sweep scope so its markers survive.
 			if (!data) return;
 
-			polledRouteIds.add(route.id);
-			const routeKeys = applyRouteVehicles(
-				data,
-				route.id,
-				mapProvider,
-				route.type,
-				highlightedTripId,
-				colorsByRouteId.get(route.id)?.line
-			);
-			routeKeys.forEach((key) => activeKeys.add(key));
-			counts.set(route.id, routeKeys.size);
+			// A synchronous throw here (e.g. a map-provider bug) must not abort the
+			// routes ordered after this one in the forEach, nor skip the sweep below.
+			// Treat it the same as a failed fetch: leave the route's markers alone.
+			try {
+				const routeKeys = applyRouteVehicles(
+					data,
+					route.id,
+					mapProvider,
+					route.type,
+					highlightedTripId,
+					colorsByRouteId.get(route.id)?.line
+				);
+				polledRouteIds.add(route.id);
+				routeKeys.forEach((key) => activeKeys.add(key));
+				counts.set(route.id, routeKeys.size);
+			} catch (error) {
+				console.error(
+					'fetchAndUpdateVehiclesForRoutes: applying route vehicles failed',
+					route.id,
+					error
+				);
+			}
 		});
 
 		removeInactiveMarkers(activeKeys, mapProvider, polledRouteIds);
@@ -201,31 +212,6 @@ export async function fetchAndUpdateVehicles(
 		highlightedTripId,
 		colorsByRouteId: routeColor ? new Map([[routeId, { line: routeColor }]]) : new Map()
 	});
-}
-
-/**
- * Single-route wrapper around applyRouteVehicles + removeInactiveMarkers, kept
- * for the existing per-route test suite. Not used by the batched entry point.
- */
-export async function updateVehicleMarkers(
-	routeId,
-	mapProvider,
-	routeType,
-	highlightedTripId = null,
-	routeColor = undefined
-) {
-	const data = await fetchVehicles(routeId);
-	if (!data) return;
-
-	const activeKeys = applyRouteVehicles(
-		data,
-		routeId,
-		mapProvider,
-		routeType,
-		highlightedTripId,
-		routeColor
-	);
-	removeInactiveMarkers(activeKeys, mapProvider, new Set([routeId]));
 }
 
 export function clearVehicleMarkersMap() {
