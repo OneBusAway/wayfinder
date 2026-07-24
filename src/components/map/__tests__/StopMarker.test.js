@@ -50,13 +50,29 @@ describe('StopMarker emphasis', () => {
 		expect(container.querySelector('.emphasis-dot')).not.toBeInTheDocument();
 	});
 
+	// jsdom doesn't load component <style> blocks (no `css: true` in the vitest
+	// config), so @apply-generated Tailwind utilities never resolve here and a
+	// getComputedStyle assertion would be meaningless either way. What actually
+	// makes `:global(.dark) .highlight .direction-arrow { @apply text-brand; }`
+	// win is the caret's <svg> staying classless: an element's own directly
+	// matching class (e.g. a `dark:text-white` FontAwesomeIcon class landing on
+	// the rendered <svg>) always beats a rule inherited from an ancestor,
+	// regardless of the ancestor's specificity. Lock down that markup contract.
+	test('highlighted caret svg has no color class of its own, so it inherits from .direction-arrow', () => {
+		const { container } = renderMarker({ isHighlighted: true });
+		const directionArrow = container.querySelector('.direction-arrow');
+		expect(directionArrow).toHaveClass('dark:text-white');
+		const caretSvg = directionArrow.querySelector('svg');
+		expect(caretSvg).not.toHaveClass('dark:text-white');
+		expect(caretSvg.getAttribute('class') ?? '').not.toMatch(/text-/);
+	});
+
 	test.each(['full', 'routeDot', 'muted'])(
 		'keeps an accessible 32px button in the %s tier',
 		(emphasis) => {
-			const { container } = renderMarker({ emphasis, dotColor: '#b02a37' });
+			renderMarker({ emphasis, dotColor: '#b02a37' });
 			const button = screen.getByRole('button', { name: stop.name });
-			expect(button).toBeInTheDocument();
-			expect(container.querySelector('.marker-hit-area')).toBeInTheDocument();
+			expect(button).toHaveClass('marker-hit-area', 'h-8', 'w-8');
 		}
 	);
 

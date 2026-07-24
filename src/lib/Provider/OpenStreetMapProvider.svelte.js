@@ -143,7 +143,7 @@ export default class OpenStreetMapProvider {
 		// tabindex="0" + role="button" on the wrapper <div> whenever keyboard is
 		// truthy (its default), regardless of interactive. That wrapper holds the
 		// mounted StopMarker, which already has its own real <button> with an
-		// sr-only accessible name — so leaving keyboard on would create nested
+		// aria-label accessible name — so leaving keyboard on would create nested
 		// interactive controls plus a second, unlabeled, dead tab stop per stop.
 		const marker = this.L.marker([options.position.lat, options.position.lng], {
 			icon: customIcon,

@@ -1374,7 +1374,7 @@ Replace the markup block (currently lines 71-103) with:
 	     dot is the whole point, but collapsing the hit target with it would put
 	     the control under the WCAG 2.5.8 minimum and make it unusable on touch. -->
 	<button
-		class="marker-hit-area {isFullPin ? '' : 'as-dot'}"
+		class="marker-hit-area"
 		onclick={onClick}
 		aria-label={stop.name}
 	>
@@ -1383,8 +1383,12 @@ Replace the markup block (currently lines 71-103) with:
 				<span class="bus-icon dark:text-white">
 					<FontAwesomeIcon {icon} class=" text-black" />
 					{#if stop.direction}
+						<!-- No class on the caret icon itself: svelte-fontawesome spreads it onto
+						     the <svg>, and an element's own rule always beats a color inherited
+						     from an ancestor — which would make the .highlight caret tint below
+						     dead in dark mode. Let the svg inherit currentColor from this span. -->
 						<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
-							<FontAwesomeIcon icon={faCaretUp} class="dark:text-white" />
+							<FontAwesomeIcon icon={faCaretUp} />
 						</span>
 					{/if}
 				</span>

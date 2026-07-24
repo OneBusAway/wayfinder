@@ -89,24 +89,21 @@
 	<!-- The button keeps its 32px box in every tier. Collapsing the *icon* to a
 	     dot is the whole point, but collapsing the hit target with it would put
 	     the control under the WCAG 2.5.8 minimum and make it unusable on touch. -->
-	<button
-		class="marker-hit-area {isFullPin ? '' : 'as-dot'}"
-		onclick={onClick}
-		aria-label={stop.name}
-	>
+	<button class="marker-hit-area h-8 w-8" onclick={onClick} aria-label={stop.name}>
 		{#if isFullPin}
 			<span class="custom-marker dark:border-[#5a2c2c] {isHighlighted ? 'highlight' : ''}">
 				<span class="bus-icon dark:text-white">
 					<FontAwesomeIcon {icon} class=" text-black" />
 					{#if stop.direction}
 						<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
-							<FontAwesomeIcon icon={faCaretUp} class="dark:text-white" />
+							<FontAwesomeIcon icon={faCaretUp} />
 						</span>
 					{/if}
 				</span>
 			</span>
 		{:else if resolvedEmphasis === 'routeDot'}
-			<span class="emphasis-dot route-dot" style="border-color: {dotColor};"></span>
+			<span class="emphasis-dot route-dot" style={dotColor ? `border-color: ${dotColor};` : ''}
+			></span>
 		{:else if resolvedEmphasis === 'muted'}
 			<span class="emphasis-dot muted-dot"></span>
 		{/if}
@@ -142,7 +139,6 @@
 	}
 
 	.marker-hit-area {
-		@apply h-8 w-8;
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -198,7 +194,9 @@
 	}
 
 	/* The caret is otherwise hard-coded black; tint it to match the selected
-	   marker's brand-accent border. */
+	   marker's brand-accent border. The caret's <svg> must stay classless (no
+	   dark:text-white of its own) so it inherits color from this span instead
+	   of shadowing it — see StopMarker.test.js for the regression this guards. */
 	.highlight .direction-arrow {
 		@apply text-brand-accent;
 	}
