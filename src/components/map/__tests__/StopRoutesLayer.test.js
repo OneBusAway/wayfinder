@@ -577,4 +577,84 @@ describe('StopRoutesLayer — trip expansion (promote route / highlight vehicle)
 
 		expect(mapProvider.setPolylineLayer).not.toHaveBeenCalled();
 	});
+
+	// IMPORTANT finding: OSM's setPolylineLayer(poly, ROUTE_PANE.LINE) does
+	// remove()+addTo(), which appends the demoted route's <path> to the LINE
+	// pane's SVG container — making it frontmost regardless of its
+	// drawRoutes index. In a 3-route corridor this leaves the widest route
+	// (index 0, drawn backmost on purpose so its casing shows as a fringe
+	// beside its neighbors) painting over a narrower one once it is demoted
+	// back out of the promoted pane. The fix must re-issue drawRoutes'
+	// ascending-index bringToFront pass over the non-promoted routes after
+	// every promote/demote.
+	test('restores LINE-pane paint order (widest backmost) after demoting a route back from promoted', async () => {
+		const threeRoutes = [
+			...routes,
+			{ id: 'r_x', shortName: 'X', type: 3, tripId: 't_x', gtfsColor: '000000' }
+		];
+		const threeColors = new Map(colors);
+		threeColors.set('r_x', { line: '#000000', badgeBg: '000000', badgeFg: 'ffffff' });
+
+		const callOrder = [];
+		const polyC = { id: 'poly_c', bringToFront: vi.fn(() => callOrder.push('poly_c')) };
+		const poly22 = { id: 'poly_22', bringToFront: vi.fn(() => callOrder.push('poly_22')) };
+		const polyX = { id: 'poly_x', bringToFront: vi.fn(() => callOrder.push('poly_x')) };
+		const mapProvider = {
+			createPolyline: vi.fn(async (points, options) => {
+				if (options.color === '#b02a37') return polyC;
+				if (options.color === '#e0a021') return poly22;
+				return polyX;
+			}),
+			revealPolylines: vi.fn(),
+			clearAllPolylines: vi.fn(),
+			clearVehicleMarkers: vi.fn(),
+			removePolyline: vi.fn(),
+			setPolylineLayer: vi.fn()
+		};
+
+		const { rerender } = render(StopRoutesLayer, {
+			props: {
+				mapProvider,
+				activeRoutes: threeRoutes,
+				routeColors: threeColors,
+				promotedRouteId: null,
+				highlightedTripId: null
+			}
+		});
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(3));
+
+		// Promote r_c (index 0, the widest — the shared-corridor route), then
+		// isolate what happens next: reset the bringToFront spies so only the
+		// promotion effect's own calls remain.
+		await rerender({ promotedRouteId: 'r_c', highlightedTripId: 't_c' });
+		await flush();
+		callOrder.length = 0;
+		polyC.bringToFront.mockClear();
+		poly22.bringToFront.mockClear();
+		polyX.bringToFront.mockClear();
+
+		// Now promote r_22 instead: r_c is demoted back to ROUTE_PANE.LINE,
+		// landing frontmost under the unfixed OSM behavior. r_x (index 2) was
+		// never disturbed and stays in LINE throughout.
+		await rerender({ promotedRouteId: 'r_22', highlightedTripId: 't_22' });
+		await flush();
+
+		expect(mapProvider.setPolylineLayer).toHaveBeenCalledWith(polyC, ROUTE_PANE.LINE);
+		expect(mapProvider.setPolylineLayer).toHaveBeenCalledWith(poly22, ROUTE_PANE.PROMOTED);
+
+		// Paint order must be re-asserted in index order over the two routes
+		// now sharing the LINE pane (r_c index 0, r_x index 2), the same way
+		// drawRoutes does: ascending by index, last call wins, so the higher
+		// index ends up frontmost and the demoted widest route (r_c) goes
+		// back to the bottom of the stack rather than staying on top of it.
+		expect(polyC.bringToFront).toHaveBeenCalled();
+		expect(polyX.bringToFront).toHaveBeenCalled();
+		expect(callOrder.indexOf('poly_c')).toBeLessThan(callOrder.lastIndexOf('poly_x'));
+		expect(callOrder[callOrder.length - 1]).toBe('poly_x');
+		// The freshly promoted route lives in its own pane above LINE and is
+		// excluded from this reassert.
+		expect(poly22.bringToFront).not.toHaveBeenCalled();
+
+		expect(mapProvider.createPolyline).toHaveBeenCalledTimes(3);
+	});
 });

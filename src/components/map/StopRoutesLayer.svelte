@@ -63,6 +63,14 @@
 	// bringToFront). Populated as each route's shape resolves in drawRoutes;
 	// cleared in teardown().
 	let polylinesByRouteId = new Map();
+	// routeId -> the index it drew at (see weightFor), so the promotion
+	// effect below can restore LINE-pane paint order after a demote without
+	// re-deriving it from the live activeRoutes prop — which can reorder
+	// (soonest-arrival-first) without a redraw, per the main effect's
+	// signature-dedup comment below, and so would no longer match the order
+	// the polylines were actually drawn/weighted in. Populated alongside
+	// polylinesByRouteId in drawRoutes; cleared in teardown().
+	let routeDrawIndex = new Map();
 	// The route currently sitting in ROUTE_PANE.PROMOTED, so the promotion
 	// effect can demote it before promoting a new one. Reset in teardown()
 	// since a redraw discards every polyline, promoted or not.
@@ -169,6 +177,7 @@
 				// so the promotion effect's own idea of "currently promoted" starts
 				// in sync with what was actually drawn.
 				polylinesByRouteId.set(route.id, polyline);
+				routeDrawIndex.set(route.id, index);
 				if (isPromoted) currentlyPromotedRouteId = route.id;
 
 				// Reveal only this route: its neighbors may already be drawn, and
@@ -233,7 +242,33 @@
 		// promotion effect's own bookkeeping must be reset here too, or it would
 		// try to re-pane a polyline that no longer exists.
 		polylinesByRouteId.clear();
+		routeDrawIndex.clear();
 		currentlyPromotedRouteId = null;
+	}
+
+	// Restores drawRoutes' widest-backmost / narrowest-frontmost LINE-pane
+	// order after a promote/demote pass. setPolylineLayer's OSM
+	// implementation detaches and re-adds the polyline's <path>, which
+	// appends it to the end of the pane's SVG container regardless of index
+	// — so a demoted route (e.g. the widest one in a shared corridor) would
+	// otherwise land frontmost and paint over its narrower neighbor,
+	// hiding the fringe drawRoutes' stacking order exists to keep visible.
+	// Same mechanism drawRoutes itself uses (see its bringToFront comment
+	// above): call bringToFront() ascending by index so the last call —
+	// the highest index, narrowest route — wins and ends up frontmost.
+	// Excludes whichever route currently sits in ROUTE_PANE.PROMOTED: it
+	// lives in a separate pane above LINE and isn't part of this ordering.
+	function reassertLinePaintOrder() {
+		const nonPromoted = [];
+		for (const [routeId, index] of routeDrawIndex) {
+			if (routeId === currentlyPromotedRouteId) continue;
+			const polyline = polylinesByRouteId.get(routeId);
+			if (polyline) nonPromoted.push({ index, polyline });
+		}
+		nonPromoted.sort((a, b) => a.index - b.index);
+		for (const { polyline } of nonPromoted) {
+			polyline.bringToFront?.();
+		}
 	}
 
 	// Tracks only activeRoutes and routeColors: those two are what define which
@@ -373,6 +408,14 @@
 				}
 
 				currentlyPromotedRouteId = promoted;
+
+				// The demote above (setPolylineLayer(..., ROUTE_PANE.LINE)) just
+				// re-added the outgoing route's polyline to the LINE pane, which on
+				// OSM appends it — making it frontmost regardless of its index.
+				// Re-assert index order over the pane now, the same way drawRoutes
+				// does, so the widest-backmost / narrowest-frontmost stacking that
+				// keeps a shared corridor legible survives the pane move.
+				reassertLinePaintOrder();
 			}
 
 			// Force an immediate refresh rather than waiting up to 30s for the
