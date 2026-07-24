@@ -281,7 +281,10 @@
 			stop: s,
 			isHighlighted: shouldHighlight,
 			emphasis: shouldHighlight ? 'full' : (tier?.emphasis ?? 'full'),
-			dotColor: tier?.dotColor ?? null,
+			// Gated the same way as emphasis: a selected stop always renders as a full
+			// pin, so a leftover ring color here would be dead data — but leaving it
+			// non-null was an easy trap for a future reader to assume it's live.
+			dotColor: shouldHighlight ? null : (tier?.dotColor ?? null),
 			onClick: () => {
 				handleStopMarkerSelect(s);
 			}
@@ -367,6 +370,9 @@
 		<RouteMap mapProvider={mapInstance} tripId={selectedTrip.tripId} currentSelectedStop={stop} />
 	{/if}
 
+	<!-- The `stop ? … : []` ternary is defensive, not load-bearing: upstream,
+	     MapExperience already gates activeRoutes on arrivalsMatchSelection, so
+	     activeRoutes is guaranteed empty whenever stop is null. -->
 	<RouteLegend routes={stop ? activeRoutes : []} {routeColors} {liveCounts} />
 </div>
 
