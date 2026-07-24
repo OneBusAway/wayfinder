@@ -125,4 +125,38 @@ describe('ArrivalDeparture', () => {
 		await rerender({ arrivalDeparture: baseArrival(), expanded: true });
 		expect(chevronOf(container).getAttribute('class')).toContain('rotate-180');
 	});
+
+	describe('route colors', () => {
+		const arrival = {
+			routeId: 'r_c',
+			routeShortName: 'C Line',
+			tripHeadsign: 'Downtown Seattle',
+			scheduledArrivalTime: Date.now() + 300000,
+			predictedArrivalTime: Date.now() + 300000,
+			predicted: true,
+			stopSequence: 1
+		};
+
+		test('uses the resolved route color for the badge when provided', () => {
+			render(ArrivalDeparture, {
+				props: {
+					arrivalDeparture: arrival,
+					route: { id: 'r_c', shortName: 'C Line', color: 'b02a37', textColor: 'ffffff' },
+					routeColors: { line: '#1565C0', badgeBg: '1565C0', badgeFg: 'ffffff' }
+				}
+			});
+			expect(screen.getByText('C Line')).toHaveStyle('background-color: #1565C0');
+			expect(screen.getByText('C Line')).toHaveStyle('color: #ffffff');
+		});
+
+		test('falls back to the GTFS color when no resolved color is given', () => {
+			render(ArrivalDeparture, {
+				props: {
+					arrivalDeparture: arrival,
+					route: { id: 'r_c', shortName: 'C Line', color: 'b02a37', textColor: 'ffffff' }
+				}
+			});
+			expect(screen.getByText('C Line')).toHaveStyle('background-color: #b02a37');
+		});
+	});
 });

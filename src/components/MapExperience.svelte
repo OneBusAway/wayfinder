@@ -30,6 +30,8 @@
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
 	import { mapStopPath } from '$lib/mapStopUrl.js';
+	import { clearVehicleMarkersMap } from '$lib/vehicleUtils';
+	import { activeRoutesFromArrivals, assignRouteColors } from '$lib/activeRoutes.js';
 
 	// One-time snapshot at mount: on a cold /map/stops/{id} load, `data.stopData` is
 	// present, so boot the map centered on the stop (the selection effect then applies
@@ -46,6 +48,10 @@
 
 	let currentModal = $state(null);
 	let selectedTrip = $state(null);
+	// Bound up from StopBottomSheet -> StopPane, so the map draws the routes behind
+	// the arrivals the rider is actually looking at, with no second fetch.
+	let stopArrivals = $state(null);
+	let isDarkMode = $state(false);
 	let isRouteSelected = $state(false);
 	let selectedRoute = $state(null);
 	let showRouteMap = $state(false);
@@ -55,6 +61,7 @@
 	let showAlertModal = $state(false);
 	let stops = $state([]);
 	let polylines = [];
+	let themeChangeHandler = null;
 
 	let tripItineraries = $state([]);
 	let tripPlanError = $state(null);
@@ -86,6 +93,24 @@
 	// (unlike page.data, which lingers after a real navigation).
 	let selectedStopData = $derived($page.state?.stopData ?? null);
 	let selectedStopId = $derived(selectedStopData?.id ?? null);
+
+	// Gate on the stop id, not on truthiness: tapping stop A -> stop B keeps the
+	// sheet mounted, so `stopArrivals` still holds A's response until B's fetch
+	// lands. Without this the map would briefly draw A's routes around B's marker.
+	let arrivalsMatchSelection = $derived(
+		stopArrivals?.data?.entry?.stopId != null && stopArrivals.data.entry.stopId === selectedStopId
+	);
+	let activeRoutes = $derived(arrivalsMatchSelection ? activeRoutesFromArrivals(stopArrivals) : []);
+	// Deliberately NOT gated on arrivalsMatchSelection (derived from stopArrivals
+	// directly, not from the gated activeRoutes above). StopPane's rendered rows are
+	// a one-time $state seed that doesn't react to stopArrivals going stale, so
+	// during the A -> B transition the sheet is still showing A's rows — A's colors
+	// are the correct colors for them. The map is separately held back from drawing
+	// anything stale by activeRoutes being empty until B's arrivals land. Two
+	// consumers of routeColors, two different staleness semantics, one source.
+	let routeColors = $derived(
+		assignRouteColors(activeRoutesFromArrivals(stopArrivals), { dark: isDarkMode })
+	);
 
 	// While a stop's bottom sheet is open, the search pane collapses to a single
 	// floating field below the md breakpoint; on wider viewports the pane stays
@@ -176,13 +201,34 @@
 				provider.unHighlightMarker(currentHighlightedStopId);
 				currentHighlightedStopId = null;
 			}
+			provider.resetStopEmphasis();
+			provider.setBasemapDimmed(false);
 			provider.cleanupInfoWindow();
-			// Don't wipe vehicle markers a route is drawing: when a route is selected
-			// from an open stop sheet, handleRouteSelected has already set
-			// currentModal = Modal.ROUTE and added the route's vehicles before this
-			// teardown flushes. A normal stop close leaves currentModal null.
-			if (currentModal !== Modal.ROUTE) provider.clearVehicleMarkers();
+			// Don't wipe vehicle markers or the route-selection flags a route is drawing:
+			// when a route is selected from an open stop sheet, handleRouteSelected has
+			// already set currentModal = Modal.ROUTE, isRouteSelected = true, and
+			// selectedRoute before this teardown flushes (both run in the same effect
+			// flush). Resetting these unconditionally would stomp that selection back to
+			// null/false while currentModal stays ROUTE, leaving RouteModal rendering with
+			// a null route. A normal stop close leaves currentModal null.
+			if (currentModal !== Modal.ROUTE) {
+				provider.clearVehicleMarkers();
+				// clearVehicleMarkers only detaches the markers from the map. The module
+				// -level vehicleMarkersMap still holds them, so the next selection would
+				// find stale entries via .has() and update detached markers that never
+				// render. RouteMap's onDestroy already pairs these two calls.
+				clearVehicleMarkersMap();
+				// closePane() short-circuits for the stop case (pushState + return), and the
+				// accordion never fires its collapse callback because StopPane is destroyed
+				// rather than collapsed. So if the rider had a row expanded, these three are
+				// still truthy — which pins mapMode at ROUTE forever and permanently stops
+				// markers from loading. Reset them here, where every close path converges.
+				showRouteMap = false;
+				isRouteSelected = false;
+				selectedRoute = null;
+			}
 			selectedTrip = null;
+			stopArrivals = null;
 		}
 
 		appliedStopId = id;
@@ -383,6 +429,13 @@
 			if (initialCoords) {
 				cleanUrlParams();
 			}
+
+			isDarkMode = document.documentElement.classList.contains('dark');
+			const onThemeChange = (event) => {
+				isDarkMode = event.detail.darkMode;
+			};
+			window.addEventListener('themeChange', onThemeChange);
+			themeChangeHandler = onThemeChange;
 		}
 	});
 
@@ -408,6 +461,9 @@
 		if (browser) {
 			window.removeEventListener('tabSwitched', handleTabSwitched);
 			window.removeEventListener('planTripTabClicked', handlePlanTripTabClicked);
+			if (themeChangeHandler) {
+				window.removeEventListener('themeChange', themeChangeHandler);
+			}
 		}
 		if (currentIntervalId) {
 			clearInterval(currentIntervalId);
@@ -470,6 +526,8 @@
 						{closePane}
 						{tripSelected}
 						{handleUpdateRouteMap}
+						{routeColors}
+						bind:arrivalsAndDeparturesResponse={stopArrivals}
 						bind:snap={sheetSnap}
 					/>
 				{:else if currentModal === Modal.ROUTE}
@@ -509,6 +567,8 @@
 		{isRouteSelected}
 		{showRouteMap}
 		{initialCoords}
+		{activeRoutes}
+		{routeColors}
 		bind:mapProvider
 	/>
 {/if}

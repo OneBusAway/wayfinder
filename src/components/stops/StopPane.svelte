@@ -23,6 +23,7 @@
 	 * @property {Function} [tripSelected]
 	 * @property {boolean} [showHeroCard] - Render the brand-accent hero card above the arrivals list
 	 * @property {any} [arrivalsAndDeparturesResponse]
+	 * @property {Map<string, any>} [routeColors]
 	 */
 
 	/** @type {Props} */
@@ -34,7 +35,8 @@
 		arrivalsAndDeparturesResponse = $bindable(null),
 		// Exposed so a parent (e.g. the bottom-sheet toolbar refresh button) can
 		// reflect whether a fetch — initial, manual, or the 30s poll — is in flight.
-		loading = $bindable(false)
+		loading = $bindable(false),
+		routeColors = null
 	} = $props();
 
 	// Time window (in minutes) for upcoming arrivals. Defaults to the OBA
@@ -345,11 +347,6 @@
 						{@render loadMoreButton(true)}
 					</div>
 				{:else}
-					<h2
-						class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
-					>
-						{$isLoading ? '' : $t('arrivals_and_departures')}
-					</h2>
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
@@ -363,6 +360,7 @@
 											<ArrivalDeparture
 												arrivalDeparture={arrival}
 												route={routeById.get(arrival.routeId)}
+												routeColors={routeColors?.get(arrival.routeId) ?? null}
 												expanded={isActive}
 											/>
 										</span>

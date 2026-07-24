@@ -41,27 +41,32 @@ describe('StopBottomSheet', () => {
 		});
 	});
 
-	test('renders the condensed stop header with stop number and routes', async () => {
+	test('renders the condensed stop header with stop number, direction and routes', async () => {
 		render(StopBottomSheet, { props: defaultProps });
 
 		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 
 		await waitFor(() => {
-			expect(screen.getByText('stop #75403 · 10, 11')).toBeInTheDocument();
+			// The i18n mock echoes keys, so the direction segment renders as its key.
+			expect(screen.getByText('stop #75403 · direction_bound · 10, 11')).toBeInTheDocument();
 		});
 	});
 
-	test('renders View Details and View Schedule links to the standalone stop pages', () => {
+	test('renders a Stop Info link to the standalone stop page', () => {
 		render(StopBottomSheet, { props: defaultProps });
 
-		expect(screen.getByRole('link', { name: 'stop_details.view_details' })).toHaveAttribute(
+		expect(screen.getByRole('link', { name: 'stop_details.stop_info' })).toHaveAttribute(
 			'href',
 			`/stops/${mockStopData.id}`
 		);
-		expect(screen.getByRole('link', { name: 'schedule_for_stop.view_schedule' })).toHaveAttribute(
-			'href',
-			`/stops/${mockStopData.id}/schedule`
-		);
+	});
+
+	test('does not render a schedule link', () => {
+		render(StopBottomSheet, { props: defaultProps });
+
+		expect(
+			screen.queryByRole('link', { name: 'schedule_for_stop.view_schedule' })
+		).not.toBeInTheDocument();
 	});
 
 	test('close button calls closePane', async () => {

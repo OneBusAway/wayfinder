@@ -10,6 +10,8 @@
 	import { debounce } from '$lib/utils';
 	import LocationButton from '$lib/LocationButton/LocationButton.svelte';
 	import RouteMap from './RouteMap.svelte';
+	import StopRoutesLayer from './StopRoutesLayer.svelte';
+	import RouteLegend from './RouteLegend.svelte';
 
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { userLocation } from '$src/stores/userLocationStore';
@@ -33,8 +35,42 @@
 		showRouteMap = false,
 		mapProvider = null,
 		stop = null,
-		initialCoords = null
+		initialCoords = null,
+		activeRoutes = [],
+		routeColors = new Map()
 	} = $props();
+
+	let routeStopIds = $state(new Map());
+	let liveCounts = $state(new Map());
+
+	// The layer only draws once the arrivals belong to this stop, so gate everything
+	// on there actually being routes. A stop with no arrivals in-window keeps
+	// today's map exactly — there's no catchable bus to point at, so dots on a
+	// washed-out basemap would be noise.
+	let routeLayerActive = $derived(!!stop && activeRoutes.length > 0);
+
+	// Ring-dot tier for every stop the drawn routes serve.
+	let emphasisByStopId = $derived(
+		new Map(
+			[...routeStopIds].map(([stopId, color]) => [
+				stopId,
+				{ emphasis: 'routeDot', dotColor: color }
+			])
+		)
+	);
+
+	$effect(() => {
+		if (!mapInstance) return;
+		if (routeLayerActive) {
+			// Non-selected stops collapse to quiet dots so the selected stop and the
+			// drawn routes are the only loud things on the map.
+			mapInstance.setStopEmphasis(emphasisByStopId, 'muted', stop.id);
+			mapInstance.setBasemapDimmed(true);
+		} else {
+			mapInstance.resetStopEmphasis();
+			mapInstance.setBasemapDimmed(false);
+		}
+	});
 
 	let isTripPlanModeActive = $state(false);
 	let mapInstance = $state(null);
@@ -57,7 +93,11 @@
 		let newMode;
 		if (isTripPlanModeActive) {
 			newMode = Modes.TRIP_PLAN;
-		} else if (selectedRoute || isRouteSelected || showRouteMap || selectedTrip) {
+			// A selected stop owns the map: expanding one of its arrival rows sets
+			// selectedTrip/isRouteSelected/showRouteMap, and without this guard that
+			// would flip us to ROUTE — whose effect clears every stop marker, exactly
+			// when the stop-selection layer needs them tiered and on screen.
+		} else if (!stop && (selectedRoute || isRouteSelected || showRouteMap || selectedTrip)) {
 			newMode = Modes.ROUTE;
 		} else {
 			newMode = Modes.NORMAL;
@@ -146,13 +186,10 @@
 
 			mapInstance = mapProvider;
 
-			// If we have initial coordinates from URL, update the user location store
-			// and add a user location marker
-			if (initialCoords) {
-				const coords = { lat: mapCenterLat, lng: mapCenterLng };
-				userLocation.set(coords);
-				mapInstance.addUserLocationMarker(coords);
-			}
+			// `initialCoords` only says where to center the map — it's a deep-linked
+			// stop or ?lat/?lng, never a geolocation fix. Don't drop a "you are here"
+			// dot on it or seed the userLocation store (which feeds the analytics
+			// distance-to-stop bucket) with coordinates that aren't the user's.
 
 			await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
 
@@ -232,10 +269,22 @@
 		// Check if this marker should be highlighted (if it's the currently selected stop)
 		const shouldHighlight = stop && s.id === stop.id;
 
+		// Seeded here rather than patched after batchAddMarkers, which defers creation
+		// into a rAF — a later setStopEmphasis() would iterate a markersMap that doesn't
+		// hold these markers yet, and stops panned in mid-selection would stay full pins.
+		const tier = routeLayerActive
+			? (emphasisByStopId.get(s.id) ?? { emphasis: 'muted', dotColor: null })
+			: null;
+
 		const markerObj = mapInstance.addMarker({
 			position: { lat: s.lat, lng: s.lon },
 			stop: s,
 			isHighlighted: shouldHighlight,
+			emphasis: shouldHighlight ? 'full' : (tier?.emphasis ?? 'full'),
+			// Gated the same way as emphasis: a selected stop always renders as a full
+			// pin, so a leftover ring color here would be dead data — but leaving it
+			// non-null was an easy trap for a future reader to assume it's live.
+			dotColor: shouldHighlight ? null : (tier?.dotColor ?? null),
 			onClick: () => {
 				handleStopMarkerSelect(s);
 			}
@@ -302,9 +351,29 @@
 <div class="map-container">
 	<div id="map" bind:this={mapElement}></div>
 
-	{#if selectedTrip && showRouteMap}
-		<RouteMap mapProvider={mapInstance} tripId={selectedTrip.tripId} currentSelectedStop={stop} />
+	{#if mapInstance && stop && activeRoutes.length > 0}
+		<StopRoutesLayer
+			mapProvider={mapInstance}
+			{activeRoutes}
+			{routeColors}
+			promotedRouteId={selectedRoute?.id ?? null}
+			highlightedTripId={selectedTrip?.tripId ?? null}
+			bind:routeStopIds
+			bind:liveCounts
+		/>
 	{/if}
+
+	<!-- RouteMap opens with clearAllPolylines() + removeStopMarkers(), which would
+	     wipe the stop-selection layer. While a stop is selected, StopRoutesLayer
+	     owns the map instead and expansion just promotes a route. -->
+	{#if selectedTrip && showRouteMap && !stop}
+		<RouteMap mapProvider={mapInstance} tripId={selectedTrip?.tripId} currentSelectedStop={stop} />
+	{/if}
+
+	<!-- The `stop ? … : []` ternary is defensive, not load-bearing: upstream,
+	     MapExperience already gates activeRoutes on arrivalsMatchSelection, so
+	     activeRoutes is guaranteed empty whenever stop is null. -->
+	<RouteLegend routes={stop ? activeRoutes : []} {routeColors} {liveCounts} />
 </div>
 
 <div class="controls">

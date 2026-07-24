@@ -24,6 +24,14 @@
 			await loadRouteDataPromise;
 		}
 
+		// No tripId means loadRouteData bailed before drawing anything (see the
+		// guard below) — a transient mount/unmount like this must not clear
+		// polylines/markers it never created, nor fly to the stop as if a trip
+		// had just finished loading.
+		if (!tripId) {
+			return;
+		}
+
 		await Promise.all([
 			mapProvider.clearAllPolylines(),
 			mapProvider.removeStopMarkers(),
@@ -39,6 +47,13 @@
 	});
 
 	async function loadRouteData() {
+		// A transient mount (e.g. selectedTrip going null while this is briefly
+		// rendered during a stop close) can land here with no tripId. Bail before
+		// touching the map or issuing a `/api/oba/trip-details/null` request.
+		if (!tripId) {
+			return;
+		}
+
 		try {
 			mapProvider.clearAllPolylines();
 			mapProvider.removeStopMarkers();
