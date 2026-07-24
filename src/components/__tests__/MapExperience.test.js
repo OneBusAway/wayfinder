@@ -27,7 +27,15 @@ vi.mock('$components/MapContainer.svelte', () => ({
 		return {};
 	}
 }));
-vi.mock('$components/search/SearchPane.svelte', () => ({ default: () => ({}) }));
+// Captures the props MapExperience passes down (incl. handleRouteSelected) so the
+// route-flag-reset regression test below can invoke it the way the app does.
+let capturedSearchPaneProps = null;
+vi.mock('$components/search/SearchPane.svelte', () => ({
+	default: function SearchPane(anchor, props) {
+		capturedSearchPaneProps = props;
+		return {};
+	}
+}));
 vi.mock('$components/search/CollapsedSearchField.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/routes/RouteModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/routes/ViewAllRoutesModal.svelte', () => ({ default: () => ({}) }));
@@ -97,15 +105,12 @@ vi.mock('$env/static/public', () => ({
 // away from a stop after render — which is how the teardown path is reached.
 import { writable } from 'svelte/store';
 
-// eslint-disable-next-line no-unused-vars -- write-only bookkeeping to mirror the brief's setPage() shape
-let pageValue;
 const pageStore = writable(undefined);
 vi.mock('$app/stores', () => ({
 	page: { subscribe: (fn) => pageStore.subscribe(fn) }
 }));
 
 function setPage(next) {
-	pageValue = next;
 	pageStore.set(next);
 }
 
@@ -212,6 +217,40 @@ test('clearing the selection resets the route flags an expanded row left behind'
 		expect(capturedMapContainerProps.selectedRoute).toBeNull();
 		expect(capturedMapContainerProps.selectedTrip).toBeNull();
 	});
+});
+
+test('selecting a route from an open stop sheet survives the resulting stop-close teardown', async () => {
+	setPage(pageWithStop());
+	render(MapExperience);
+
+	// Mirrors handleRouteSelected: stopSheetOpen is true, so it calls pushState('/', {})
+	// (mocked — doesn't itself change the page store) and then synchronously sets
+	// selectedRoute / currentModal / isRouteSelected. Svelte coalesces these into one
+	// effect flush together with the page-store change we drive next, which is what
+	// makes the framing effect's stop-close branch run with currentModal already
+	// ROUTE — the exact scenario the guard exists for.
+	const route = { id: 'route_1', shortName: 'C' };
+	capturedSearchPaneProps.handleRouteSelected({
+		route,
+		polylines: [],
+		stops: [],
+		currentIntervalId: null
+	});
+
+	// Simulate the navigation handleRouteSelected's pushState('/', {}) triggers: the
+	// stop id goes null, which is what runs the framing effect's else branch.
+	setPage(pageWithoutStop());
+
+	// The else branch is synchronous and unconditionally calls cleanupInfoWindow near
+	// its top, before the route-flag lines run — waiting for that call is proof the
+	// whole branch (including the flag resets under test) has finished executing, so
+	// the assertions below can't pass on a stale, pre-effect snapshot of the state.
+	await vi.waitFor(() => {
+		expect(capturedMapContainerProps.mapProvider.cleanupInfoWindow).toHaveBeenCalled();
+	});
+
+	expect(capturedMapContainerProps.isRouteSelected).toBe(true);
+	expect(capturedMapContainerProps.selectedRoute).toEqual(route);
 });
 
 test('clearing the selection empties the module-level vehicle marker map', async () => {

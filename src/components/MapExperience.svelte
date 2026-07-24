@@ -181,13 +181,16 @@
 				provider.unHighlightMarker(currentHighlightedStopId);
 				currentHighlightedStopId = null;
 			}
-			provider.resetStopEmphasis?.();
-			provider.setBasemapDimmed?.(false);
+			provider.resetStopEmphasis?.(); // TODO: temporary ?. — provider doesn't implement this yet
+			provider.setBasemapDimmed?.(false); // TODO: temporary ?. — provider doesn't implement this yet
 			provider.cleanupInfoWindow();
-			// Don't wipe vehicle markers a route is drawing: when a route is selected
-			// from an open stop sheet, handleRouteSelected has already set
-			// currentModal = Modal.ROUTE and added the route's vehicles before this
-			// teardown flushes. A normal stop close leaves currentModal null.
+			// Don't wipe vehicle markers or the route-selection flags a route is drawing:
+			// when a route is selected from an open stop sheet, handleRouteSelected has
+			// already set currentModal = Modal.ROUTE, isRouteSelected = true, and
+			// selectedRoute before this teardown flushes (both run in the same effect
+			// flush). Resetting these unconditionally would stomp that selection back to
+			// null/false while currentModal stays ROUTE, leaving RouteModal rendering with
+			// a null route. A normal stop close leaves currentModal null.
 			if (currentModal !== Modal.ROUTE) {
 				provider.clearVehicleMarkers();
 				// clearVehicleMarkers only detaches the markers from the map. The module
@@ -195,17 +198,17 @@
 				// find stale entries via .has() and update detached markers that never
 				// render. RouteMap's onDestroy already pairs these two calls.
 				clearVehicleMarkersMap();
+				// closePane() short-circuits for the stop case (pushState + return), and the
+				// accordion never fires its collapse callback because StopPane is destroyed
+				// rather than collapsed. So if the rider had a row expanded, these three are
+				// still truthy — which pins mapMode at ROUTE forever and permanently stops
+				// markers from loading. Reset them here, where every close path converges.
+				showRouteMap = false;
+				isRouteSelected = false;
+				selectedRoute = null;
 			}
 			selectedTrip = null;
 			stopArrivals = null;
-			// closePane() short-circuits for the stop case (pushState + return), and the
-			// accordion never fires its collapse callback because StopPane is destroyed
-			// rather than collapsed. So if the rider had a row expanded, these three are
-			// still truthy — which pins mapMode at ROUTE forever and permanently stops
-			// markers from loading. Reset them here, where every close path converges.
-			showRouteMap = false;
-			isRouteSelected = false;
-			selectedRoute = null;
 		}
 
 		appliedStopId = id;
