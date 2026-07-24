@@ -440,30 +440,34 @@ describe('setBasemapDimmed / setTheme composition', () => {
 	});
 });
 
-describe('createPolyline casing', () => {
-	function setupGoogleMapsForPolylines() {
-		const PolylineMock = vi.fn(function GooglePolyline(options) {
-			this.options = options;
-			this.setMap = vi.fn();
-		});
-		global.google = {
-			maps: {
-				geometry: {
-					encoding: {
-						decodePath: vi.fn(() => [
-							{ lat: () => 47.6, lng: () => -122.3 },
-							{ lat: () => 47.61, lng: () => -122.31 }
-						])
-					}
-				},
-				importLibrary: vi.fn(async () => {}),
-				Polyline: PolylineMock,
-				SymbolPath: { FORWARD_CLOSED_ARROW: 1 }
-			}
-		};
-		return { PolylineMock };
-	}
+// Shared by both the createPolyline and setPolylineLayer suites below, since
+// setPolylineLayer's tests also need to createPolyline() first to have
+// something to re-pane.
+function setupGoogleMapsForPolylines() {
+	const PolylineMock = vi.fn(function GooglePolyline(options) {
+		this.options = options;
+		this.setMap = vi.fn();
+		this.setOptions = vi.fn((nextOptions) => Object.assign(this.options, nextOptions));
+	});
+	global.google = {
+		maps: {
+			geometry: {
+				encoding: {
+					decodePath: vi.fn(() => [
+						{ lat: () => 47.6, lng: () => -122.3 },
+						{ lat: () => 47.61, lng: () => -122.31 }
+					])
+				}
+			},
+			importLibrary: vi.fn(async () => {}),
+			Polyline: PolylineMock,
+			SymbolPath: { FORWARD_CLOSED_ARROW: 1 }
+		}
+	};
+	return { PolylineMock };
+}
 
+describe('createPolyline casing', () => {
 	function makeProvider() {
 		const provider = new GoogleMapProvider('test-key', vi.fn());
 		provider.map = {};
@@ -565,5 +569,44 @@ describe('createPolyline casing', () => {
 		provider.clearAllPolylines();
 
 		expect(casing.setMap).toHaveBeenCalledWith(null);
+	});
+});
+
+describe('setPolylineLayer', () => {
+	function makeProvider() {
+		const provider = new GoogleMapProvider('test-key', vi.fn());
+		provider.map = {};
+		return provider;
+	}
+
+	// Google orders polylines purely by zIndex, so — unlike OSM, which must
+	// detach/reattach to change Leaflet panes — this is a single option update.
+	test('sets the zIndex for the given pane', async () => {
+		setupGoogleMapsForPolylines();
+		const provider = makeProvider();
+		const line = await provider.createPolyline('encoded', {
+			color: '#b02a37',
+			pane: 'obaRoute'
+		});
+
+		provider.setPolylineLayer(line, 'obaRoutePromoted');
+
+		expect(line.setOptions).toHaveBeenCalledWith({ zIndex: 30 });
+		expect(line.options.zIndex).toBe(30);
+	});
+
+	test('is a no-op with no map', async () => {
+		setupGoogleMapsForPolylines();
+		const provider = makeProvider();
+		const line = await provider.createPolyline('encoded', { color: '#b02a37', pane: 'obaRoute' });
+		provider.map = null;
+
+		expect(() => provider.setPolylineLayer(line, 'obaRoutePromoted')).not.toThrow();
+		expect(line.setOptions).not.toHaveBeenCalled();
+	});
+
+	test('is a no-op with no polyline', () => {
+		const provider = makeProvider();
+		expect(() => provider.setPolylineLayer(null, 'obaRoutePromoted')).not.toThrow();
 	});
 });

@@ -44,6 +44,11 @@
 	const MIN_WEIGHT = 4;
 
 	let vehicleIntervalId = null;
+	// Forces an immediate vehicle refresh (see fetchAndUpdateVehiclesForRoutes)
+	// rather than waiting up to 30s for the next scheduled poll. Set once the
+	// poll started by the main redraw effect below resolves; read by the
+	// promotion effect so expanding a trip moves the amber glow right away.
+	let vehicleTick = null;
 	// Incremented per load so a superseded selection's in-flight fetches bail out
 	// instead of drawing over the newer one.
 	let loadToken = 0;
@@ -51,6 +56,17 @@
 	// currently on the map, so a redraw can be skipped when a new
 	// activeRoutes/routeColors identity carries identical content.
 	let lastSignature = null;
+	// routeId -> the polyline drawn for it, so the promotion effect below can
+	// re-pane a route without re-fetching or re-creating anything. Named
+	// distinctly from drawRoutes' local `drawnPolylines` paint-order array
+	// below, which tracks something else (resolution order, for
+	// bringToFront). Populated as each route's shape resolves in drawRoutes;
+	// cleared in teardown().
+	let polylinesByRouteId = new Map();
+	// The route currently sitting in ROUTE_PANE.PROMOTED, so the promotion
+	// effect can demote it before promoting a new one. Reset in teardown()
+	// since a redraw discards every polyline, promoted or not.
+	let currentlyPromotedRouteId = null;
 
 	function weightFor(index) {
 		return Math.max(MIN_WEIGHT, BASE_WEIGHT - index);
@@ -147,6 +163,14 @@
 				}
 				if (!polyline) return;
 
+				// Retained so the promotion effect can re-pane this route later
+				// without redrawing it. isPromoted was already decided above (from
+				// the untracked promotedRouteId read at the top of this callback),
+				// so the promotion effect's own idea of "currently promoted" starts
+				// in sync with what was actually drawn.
+				polylinesByRouteId.set(route.id, polyline);
+				if (isPromoted) currentlyPromotedRouteId = route.id;
+
 				// Reveal only this route: its neighbors may already be drawn, and
 				// re-animating them on every resolution would look like a glitch.
 				mapProvider.revealPolylines({ only: [polyline], duration: 0.8 });
@@ -192,6 +216,7 @@
 			clearInterval(vehicleIntervalId);
 			vehicleIntervalId = null;
 		}
+		vehicleTick = null;
 	}
 
 	function teardown() {
@@ -204,6 +229,11 @@
 		// clearVehicleMarkers only detaches markers; the module-level map would
 		// otherwise hand stale entries to the next selection.
 		clearVehicleMarkersMap();
+		// clearAllPolylines() above only tears down the map layer side; the
+		// promotion effect's own bookkeeping must be reset here too, or it would
+		// try to re-pane a polyline that no longer exists.
+		polylinesByRouteId.clear();
+		currentlyPromotedRouteId = null;
 	}
 
 	// Tracks only activeRoutes and routeColors: those two are what define which
@@ -217,18 +247,19 @@
 	//    first await runs in a later microtask, outside that stack. So this read
 	//    is naturally untracked; it's wrapped in untrack() anyway so that stays
 	//    true even if the code is later reordered above the await.
-	//  - highlightedTripId is read synchronously (while building the options
-	//    object passed to fetchAndUpdateVehiclesForRoutes, before any await), so
-	//    without untrack() it WOULD become a dependency. untrack() is required
-	//    here, not just defensive.
+	//  - highlightedTripId is passed down as a getter closure (see
+	//    fetchAndUpdateVehiclesForRoutes' `highlightedTripId` option), not read
+	//    directly here, so defining the closure doesn't itself read the prop —
+	//    only *calling* it later would. It's still wrapped in untrack() for the
+	//    same defensive reason as promotedRouteId above: so a future refactor
+	//    that calls the getter synchronously, inside this effect, doesn't
+	//    silently start tracking it.
 	// Net effect: expanding a trip (which only changes promotedRouteId /
 	// highlightedTripId) does not re-fire this effect, does not tear down and
 	// redraw every polyline, and does not restart the vehicle poll — exactly the
-	// "no flash on expand" requirement. The tradeoff is that a vehicle's
-	// highlight glow reflects whichever trip was expanded when the current
-	// route set was drawn; expanding a different trip without changing routes
-	// won't move the glow until the next redraw. No interface exists yet to
-	// update just the highlight without restarting the poll.
+	// "no flash on expand" requirement. Moving the promoted pane and the
+	// highlight glow in response to those two props is instead handled by the
+	// second, narrowly-scoped $effect below.
 	$effect(() => {
 		const routes = activeRoutes;
 		const colors = routeColors;
@@ -275,31 +306,81 @@
 			console.error('StopRoutesLayer: drawRoutes failed', error);
 		});
 
-		// untrack(() => highlightedTripId): this options object is built
-		// synchronously — before any await — as part of *calling*
-		// fetchAndUpdateVehiclesForRoutes, so a plain read here would register as
-		// an effect dependency and re-trigger the whole redraw/re-poll on every
-		// trip expansion. untrack keeps the poll itself scoped to
-		// activeRoutes/routeColors while still passing the current
-		// highlightedTripId value into this run's poll.
+		// A getter, not a captured value: highlightedTripId can change (via trip
+		// expansion) without this effect re-running, so the poll must re-read it
+		// on every tick rather than freezing whatever it was when the poll
+		// started. Wrapped in untrack() so that if a future refactor ever calls
+		// this getter synchronously from inside an effect, it still won't
+		// register highlightedTripId as that effect's dependency.
 		fetchAndUpdateVehiclesForRoutes(routes, mapProvider, {
-			highlightedTripId: untrack(() => highlightedTripId),
+			highlightedTripId: () => untrack(() => highlightedTripId),
 			colorsByRouteId: colors,
 			onCounts: (counts) => {
 				if (token === loadToken) liveCounts = counts;
 			}
 		})
-			.then((intervalId) => {
+			.then(({ intervalId, tick }) => {
 				// A newer load took over while this poll was starting; don't leak it.
 				if (token !== loadToken) {
 					clearInterval(intervalId);
 					return;
 				}
 				vehicleIntervalId = intervalId;
+				vehicleTick = tick;
 			})
 			.catch((error) => {
 				console.error('StopRoutesLayer: vehicle poll failed', error);
 			});
+	});
+
+	// Narrowly scoped: tracks only promotedRouteId and highlightedTripId, the
+	// two props the main redraw effect above deliberately excludes. This is
+	// what actually makes trip expansion move the promoted pane and the
+	// highlight glow — every other read in here is wrapped in untrack() so
+	// this effect can never fire a redraw, a shape refetch, or a poll restart;
+	// see the main effect's comment for why that separation exists.
+	$effect(() => {
+		const promoted = promotedRouteId;
+		// Read only to register as a dependency — the value itself is consumed
+		// live, inside vehicleUtils' tick(), via the getter closure passed to
+		// fetchAndUpdateVehiclesForRoutes above.
+		void highlightedTripId;
+
+		untrack(() => {
+			// No-op before the first draw has landed: mapProvider may still be
+			// null (a cold deep-link mounts this layer before initMap()
+			// resolves), and before any route has been drawn there is nothing to
+			// re-pane and no poll yet to nudge.
+			if (!mapProvider) return;
+
+			if (promoted !== currentlyPromotedRouteId) {
+				// Demote the previously promoted route first — if the polyline it
+				// named ever resolved. Tolerated as a no-op otherwise (its shape
+				// fetch may have failed, or nothing was promoted yet).
+				const previousPolyline = currentlyPromotedRouteId
+					? polylinesByRouteId.get(currentlyPromotedRouteId)
+					: null;
+				if (previousPolyline) {
+					mapProvider.setPolylineLayer(previousPolyline, ROUTE_PANE.LINE);
+				}
+
+				// Promote the new one — same tolerance: promotedRouteId may name a
+				// route whose shape fetch failed, in which case there's no
+				// polyline to move and this is a no-op.
+				const nextPolyline = promoted ? polylinesByRouteId.get(promoted) : null;
+				if (nextPolyline) {
+					mapProvider.setPolylineLayer(nextPolyline, ROUTE_PANE.PROMOTED);
+				}
+
+				currentlyPromotedRouteId = promoted;
+			}
+
+			// Force an immediate refresh rather than waiting up to 30s for the
+			// next scheduled poll, so the amber glow moves right away. Guarded
+			// because the poll's setup promise may not have resolved yet (e.g.
+			// this effect's first run, racing the main effect's initial draw).
+			vehicleTick?.();
+		});
 	});
 
 	onDestroy(() => {

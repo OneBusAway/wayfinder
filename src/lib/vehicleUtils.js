@@ -128,14 +128,26 @@ const VEHICLE_POLL_INTERVAL_MS = 30000;
  *
  * @param {Array<{id: string, type?: number}>} routes
  * @param {Object} mapProvider
- * @param {{highlightedTripId?: string|null, colorsByRouteId?: Map<string,{line:string}>, onCounts?: Function}} [options]
- * @returns {Promise<number>} interval id
+ * @param {{highlightedTripId?: string|null|(() => string|null), colorsByRouteId?: Map<string,{line:string}>, onCounts?: Function}} [options]
+ * `highlightedTripId` may be a plain value (captured once, for callers that
+ * genuinely never change it) or a getter function, resolved fresh on every
+ * tick — the trip-expansion glow needs the latter: the poll is started once
+ * per route-set redraw, but the highlighted trip changes independently of
+ * that redraw (see StopRoutesLayer's second effect), so a value captured at
+ * start time would go stale until the next redraw.
+ * @returns {Promise<{intervalId: number, tick: () => Promise<void>}>} the
+ * poll's interval id, plus `tick` so a caller can force an immediate refresh
+ * (e.g. to move the highlight glow right away) instead of waiting up to
+ * VEHICLE_POLL_INTERVAL_MS for the next scheduled one.
  */
 export async function fetchAndUpdateVehiclesForRoutes(
 	routes,
 	mapProvider,
 	{ highlightedTripId = null, colorsByRouteId = new Map(), onCounts = null } = {}
 ) {
+	const resolveHighlightedTripId = () =>
+		typeof highlightedTripId === 'function' ? highlightedTripId() : highlightedTripId;
+
 	const tick = async () => {
 		const results = await Promise.all(
 			routes.map((route) =>
@@ -165,7 +177,7 @@ export async function fetchAndUpdateVehiclesForRoutes(
 					route.id,
 					mapProvider,
 					route.type,
-					highlightedTripId,
+					resolveHighlightedTripId(),
 					colorsByRouteId.get(route.id)?.line
 				);
 				polledRouteIds.add(route.id);
@@ -190,16 +202,23 @@ export async function fetchAndUpdateVehiclesForRoutes(
 		console.error('fetchAndUpdateVehiclesForRoutes: initial tick failed', error);
 	}
 
-	return setInterval(() => {
+	const intervalId = setInterval(() => {
 		tick().catch((error) => {
 			console.error('fetchAndUpdateVehiclesForRoutes: polling tick failed', error);
 		});
 	}, VEHICLE_POLL_INTERVAL_MS);
+
+	return { intervalId, tick };
 }
 
 /**
  * Single-route wrapper, kept so SearchPane and RouteMap run through the same
- * code path. Signature and behavior are unchanged.
+ * code path. Signature and behavior are unchanged: unlike
+ * `fetchAndUpdateVehiclesForRoutes`, this still resolves to a bare interval
+ * id — SearchPane.svelte and RouteMap.svelte both do
+ * `currentIntervalId = await fetchAndUpdateVehicles(...)` and later
+ * `clearInterval(currentIntervalId)`, so returning `{ intervalId, tick }`
+ * here instead would silently break both.
  */
 export async function fetchAndUpdateVehicles(
 	routeId,
@@ -208,10 +227,15 @@ export async function fetchAndUpdateVehicles(
 	highlightedTripId = null,
 	routeColor = undefined
 ) {
-	return fetchAndUpdateVehiclesForRoutes([{ id: routeId, type: routeType }], mapProvider, {
-		highlightedTripId,
-		colorsByRouteId: routeColor ? new Map([[routeId, { line: routeColor }]]) : new Map()
-	});
+	const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
+		[{ id: routeId, type: routeType }],
+		mapProvider,
+		{
+			highlightedTripId,
+			colorsByRouteId: routeColor ? new Map([[routeId, { line: routeColor }]]) : new Map()
+		}
+	);
+	return intervalId;
 }
 
 export function clearVehicleMarkersMap() {

@@ -737,6 +737,18 @@ export default class GoogleMapProvider {
 		return polyline;
 	}
 
+	/**
+	 * Moves an already-drawn polyline to a different stacking layer — used to
+	 * promote the expanded arrival's route above its peers. Uniform in intent
+	 * with OpenStreetMapProvider.setPolylineLayer, but Google's Polyline
+	 * orders purely by `zIndex`, so re-paning is a single option update rather
+	 * than a detach/reattach.
+	 */
+	setPolylineLayer(polyline, pane) {
+		if (!this.map || !polyline) return;
+		polyline.setOptions({ zIndex: ROUTE_LAYER_Z_INDEX[pane] });
+	}
+
 	async removePolyline(polyline) {
 		if (polyline && polyline.setMap) {
 			polyline.setMap(null);

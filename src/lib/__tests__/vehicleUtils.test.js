@@ -96,7 +96,7 @@ describe('applyRouteVehicles behavior via fetchAndUpdateVehiclesForRoutes (singl
 	}
 
 	async function updateRoute1(provider, { highlightedTripId = null, routeColor } = {}) {
-		const intervalId = await fetchAndUpdateVehiclesForRoutes(
+		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
 			[{ id: 'route-1', type: undefined }],
 			provider,
 			{
@@ -320,7 +320,7 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 			};
 		});
 
-		const intervalId = await fetchAndUpdateVehiclesForRoutes(
+		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
 			[
 				{ id: 'r_a', type: 3 },
 				{ id: 'r_b', type: 3 },
@@ -350,7 +350,7 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 			{ id: 'r_a', type: 3 },
 			{ id: 'r_b', type: 3 }
 		];
-		const intervalId = await fetchAndUpdateVehiclesForRoutes(routes, provider);
+		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(routes, provider);
 		secondTick = true;
 		await vi.advanceTimersByTimeAsync(30000);
 		clearInterval(intervalId);
@@ -373,7 +373,7 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 			};
 		});
 
-		const intervalId = await fetchAndUpdateVehiclesForRoutes(
+		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
 			[
 				{ id: 'r_a', type: 3 },
 				{ id: 'r_b', type: 3 }
@@ -400,7 +400,7 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 		});
 		const onCounts = vi.fn();
 
-		const intervalId = await fetchAndUpdateVehiclesForRoutes(
+		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
 			[
 				{ id: 'r_a', type: 3 },
 				{ id: 'r_b', type: 3 }
@@ -453,7 +453,7 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 			{ id: 'r_a', type: 3 },
 			{ id: 'r_b', type: 3 }
 		];
-		const intervalId = await fetchAndUpdateVehiclesForRoutes(routes, provider);
+		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(routes, provider);
 
 		tick = 2;
 		await vi.advanceTimersByTimeAsync(30000);
@@ -487,7 +487,7 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 		});
 		const onCounts = vi.fn();
 
-		const intervalId = await fetchAndUpdateVehiclesForRoutes(
+		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
 			[
 				{ id: 'r_a', type: 3 },
 				{ id: 'r_b', type: 3 }
@@ -504,6 +504,98 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 
 		const counts = onCounts.mock.calls.at(-1)[0];
 		expect(counts.get('r_b')).toBe(1);
+	});
+});
+
+// Task 10b: highlightedTripId used to be captured once, by value, at poll
+// start — so it could never change without restarting the whole poll. It can
+// now also be a getter, re-resolved on every tick, so a trip expansion can
+// move the highlight glow onto a live poll instead of waiting for the next
+// route redraw.
+describe('fetchAndUpdateVehiclesForRoutes — live highlight', () => {
+	beforeEach(() => {
+		clearVehicleMarkersMap();
+		vi.useFakeTimers();
+	});
+	afterEach(() => vi.useRealTimers());
+
+	function mockTwoRoutesOneVehicleEach() {
+		global.fetch = vi.fn(async (url) => {
+			const routeId = url.split('/').pop();
+			return {
+				ok: true,
+				json: async () =>
+					tripsResponse(routeId, [{ tripId: `t_${routeId}`, vehicleId: `v_${routeId}` }])
+			};
+		});
+	}
+
+	test('re-reads the highlight via a getter, so it can change between ticks', async () => {
+		const provider = makeMultiRouteProvider();
+		mockTwoRoutesOneVehicleEach();
+		let highlighted = 't_r_a';
+
+		const { intervalId, tick } = await fetchAndUpdateVehiclesForRoutes(
+			[
+				{ id: 'r_a', type: 3 },
+				{ id: 'r_b', type: 3 }
+			],
+			provider,
+			{ highlightedTripId: () => highlighted }
+		);
+
+		const firstPassCalls = provider.addVehicleMarker.mock.calls;
+		expect(firstPassCalls.find((c) => c[1].id === 't_r_a')[3]).toBe(true);
+		expect(firstPassCalls.find((c) => c[1].id === 't_r_b')[3]).toBe(false);
+
+		// Change which trip is highlighted, then force a tick — a value
+		// captured once at poll start could never observe this change.
+		highlighted = 't_r_b';
+		provider.updateVehicleMarker.mockClear();
+		await tick();
+
+		const secondPassCalls = provider.updateVehicleMarker.mock.calls;
+		expect(secondPassCalls.find((c) => c[2].id === 't_r_a')[4]).toBe(false);
+		expect(secondPassCalls.find((c) => c[2].id === 't_r_b')[4]).toBe(true);
+
+		clearInterval(intervalId);
+	});
+
+	test('tick() forces an immediate refresh instead of waiting for the poll interval', async () => {
+		const provider = makeMultiRouteProvider();
+		let vehicleId = 'v1';
+		global.fetch = vi.fn(async () => ({
+			ok: true,
+			json: async () => tripsResponse('r_a', [{ tripId: 't1', vehicleId }])
+		}));
+
+		const { intervalId, tick } = await fetchAndUpdateVehiclesForRoutes(
+			[{ id: 'r_a', type: 3 }],
+			provider
+		);
+		expect(provider.addVehicleMarker).toHaveBeenCalledTimes(1);
+
+		// A second, distinct vehicle appears — proves this ran a real extra
+		// fetch/apply cycle, not just a no-op re-invocation.
+		vehicleId = 'v2';
+		await tick();
+
+		expect(provider.addVehicleMarker).toHaveBeenCalledTimes(2);
+		clearInterval(intervalId);
+	});
+
+	test('still accepts a plain value for highlightedTripId, not just a getter', async () => {
+		const provider = makeMultiRouteProvider();
+		mockTwoRoutesOneVehicleEach();
+
+		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
+			[{ id: 'r_a', type: 3 }],
+			provider,
+			{ highlightedTripId: 't_r_a' }
+		);
+
+		expect(provider.addVehicleMarker.mock.calls[0][3]).toBe(true);
+		clearInterval(intervalId);
 	});
 });
 
@@ -579,5 +671,24 @@ describe('fetchAndUpdateVehicles (wrapper)', () => {
 		clearInterval(intervalId);
 
 		expect(provider.addVehicleMarker.mock.calls[0][4]).toBeUndefined();
+	});
+
+	// SearchPane.svelte:174 and RouteMap.svelte:100 both do
+	// `currentIntervalId = await fetchAndUpdateVehicles(...)` and later
+	// `clearInterval(currentIntervalId)` — unlike
+	// fetchAndUpdateVehiclesForRoutes, this wrapper must keep resolving to a
+	// bare interval id, not `{ intervalId, tick }`, or both call sites break.
+	test('resolves to a bare interval id, not an { intervalId, tick } object', async () => {
+		mockFetch(ONE_VEHICLE_RESPONSE);
+		const provider = makeProvider();
+
+		const result = await fetchAndUpdateVehicles('route-1', provider, 3);
+
+		// Node's setInterval returns an opaque Timeout, not a plain number, so
+		// assert on shape rather than typeof: the wrapper must hand back
+		// whatever setInterval itself returned, not { intervalId, tick }.
+		expect(result).not.toHaveProperty('intervalId');
+		expect(result).not.toHaveProperty('tick');
+		expect(() => clearInterval(result)).not.toThrow();
 	});
 });

@@ -755,6 +755,69 @@ export default class OpenStreetMapProvider {
 		return polyline;
 	}
 
+	/**
+	 * Moves an already-drawn polyline to a different stacking pane — used to
+	 * promote the expanded arrival's route above its peers.
+	 *
+	 * Not a property set: Leaflet's Path.beforeAdd resolves
+	 * `this._renderer = map.getRenderer(this)` once, at add time, from
+	 * `layer.options.pane`. Assigning `polyline.options.pane` on an
+	 * already-added layer does nothing on its own — the layer must be
+	 * detached and reattached for the new pane to take effect.
+	 *
+	 * SVG._initPath creates a brand-new `<path>` DOM element on every onAdd,
+	 * discarding any in-flight reveal transition, so a pending
+	 * `_drawTimeoutId` is cleared first — left alone, it would later fire its
+	 * "clear the inline dash styles" step against the dead node.
+	 *
+	 * The arrow decorator bakes `pane` into its `Symbol.arrowHead`
+	 * `pathOptions` at construction time, so it has to be recreated, not just
+	 * re-added, to follow the line into its new pane.
+	 *
+	 * Uses `layer.remove()`, not `this.removePolyline()`: that helper also
+	 * splices the layer out of `this.polylines`, and `addTo()` doesn't push it
+	 * back in, so a later `clearAllPolylines()` would leak this layer.
+	 *
+	 * The casing is left untouched in its own pane — only the colored line
+	 * (and its arrows) move.
+	 */
+	setPolylineLayer(polyline, pane) {
+		if (!this.map || !polyline) return;
+
+		if (polyline._drawTimeoutId) {
+			clearTimeout(polyline._drawTimeoutId);
+			polyline._drawTimeoutId = null;
+		}
+
+		polyline.remove();
+		polyline.options.pane = pane;
+		polyline.addTo(this.map);
+
+		if (polyline.arrowDecorator) {
+			polyline.arrowDecorator.remove();
+
+			const arrowColor = polylineArrowColor(polyline.options.color);
+			polyline.arrowDecorator = this.L.polylineDecorator(polyline, {
+				patterns: [
+					{
+						offset: 0,
+						repeat: 125,
+						symbol: this.L.Symbol.arrowHead({
+							pixelSize: 12,
+							pathOptions: {
+								color: arrowColor,
+								fill: true,
+								fillColor: arrowColor,
+								fillOpacity: 0.85,
+								pane
+							}
+						})
+					}
+				]
+			}).addTo(this.map);
+		}
+	}
+
 	removePolyline(polyline) {
 		if (!polyline) return;
 

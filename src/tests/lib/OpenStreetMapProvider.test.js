@@ -765,3 +765,103 @@ describe('createPolyline casing', () => {
 		expect(casing.remove).toHaveBeenCalled();
 	});
 });
+
+describe('setPolylineLayer', () => {
+	function makeProvider() {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		provider.L = makeFakeL(makeFakeMarker());
+		provider.map = { hasLayer: () => true, removeLayer: vi.fn() };
+		return provider;
+	}
+
+	test('moves the polyline to the new pane', () => {
+		const provider = makeProvider();
+		const line = provider.createPolyline('encoded', { color: '#b02a37', pane: 'obaRoute' });
+
+		provider.setPolylineLayer(line, 'obaRoutePromoted');
+
+		expect(line.remove).toHaveBeenCalledOnce();
+		expect(line.options.pane).toBe('obaRoutePromoted');
+		// addTo is called once by createPolyline, then again by setPolylineLayer.
+		expect(line.addTo).toHaveBeenCalledTimes(2);
+		expect(line.addTo).toHaveBeenLastCalledWith(provider.map);
+	});
+
+	// Path.beforeAdd resolves the renderer from options.pane once, at add time.
+	// SVG._initPath then creates a brand-new <path> on that add, discarding any
+	// in-flight reveal transition — so a pending draw-reveal timer must not
+	// later fire against the now-dead node.
+	test('clears a pending draw-reveal timeout before re-adding', () => {
+		const provider = makeProvider();
+		const line = provider.createPolyline('encoded', { color: '#b02a37', pane: 'obaRoute' });
+		line._drawTimeoutId = 1234;
+		const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
+
+		provider.setPolylineLayer(line, 'obaRoutePromoted');
+
+		expect(clearTimeoutSpy).toHaveBeenCalledWith(1234);
+		expect(line._drawTimeoutId).toBeNull();
+		clearTimeoutSpy.mockRestore();
+	});
+
+	// The arrow decorator bakes `pane` into its Symbol.arrowHead pathOptions at
+	// construction time, so re-assigning options.pane on the existing decorator
+	// wouldn't move its arrows — it has to be rebuilt from scratch.
+	test('recreates the arrow decorator in the new pane rather than re-paning the old one', () => {
+		const provider = makeProvider();
+		const line = provider.createPolyline('encoded', { color: '#b02a37', pane: 'obaRoute' });
+		const originalDecorator = line.arrowDecorator;
+		expect(originalDecorator).toBeTruthy();
+
+		provider.setPolylineLayer(line, 'obaRoutePromoted');
+
+		expect(originalDecorator.remove).toHaveBeenCalledOnce();
+		expect(line.arrowDecorator).not.toBe(originalDecorator);
+		const lastPathOptions = provider.L.Symbol.arrowHead.mock.calls.at(-1)[0].pathOptions;
+		expect(lastPathOptions.pane).toBe('obaRoutePromoted');
+	});
+
+	// Must use layer.remove(), not provider.removePolyline() — that helper also
+	// splices the layer out of this.polylines, and addTo() doesn't push it back
+	// in, so a later clearAllPolylines() would leak the layer.
+	test('does not remove the polyline from the tracked polylines list', () => {
+		const provider = makeProvider();
+		provider.createPolyline('encoded', { color: '#b02a37', pane: 'obaRoute' });
+		const line = provider.polylines[0];
+
+		provider.setPolylineLayer(line, 'obaRoutePromoted');
+
+		expect(provider.getPolylinesCount()).toBe(1);
+	});
+
+	test('leaves the casing in its own pane', () => {
+		const provider = makeProvider();
+		const line = provider.createPolyline('encoded', {
+			color: '#b02a37',
+			casing: true,
+			pane: 'obaRoute',
+			casingPane: 'obaRouteCasing'
+		});
+
+		provider.setPolylineLayer(line, 'obaRoutePromoted');
+
+		expect(line._casing.options.pane).toBe('obaRouteCasing');
+	});
+
+	test('is a no-op with no map', () => {
+		const provider = makeProvider();
+		const line = provider.createPolyline('encoded', { color: '#b02a37', pane: 'obaRoute' });
+		line.remove.mockClear();
+		line.addTo.mockClear();
+		provider.map = null;
+
+		expect(() => provider.setPolylineLayer(line, 'obaRoutePromoted')).not.toThrow();
+		expect(line.remove).not.toHaveBeenCalled();
+		expect(line.addTo).not.toHaveBeenCalled();
+	});
+
+	test('is a no-op with no polyline', () => {
+		const provider = makeProvider();
+		expect(() => provider.setPolylineLayer(null, 'obaRoutePromoted')).not.toThrow();
+	});
+});

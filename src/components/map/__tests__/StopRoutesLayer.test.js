@@ -1,9 +1,10 @@
 import { render } from '@testing-library/svelte';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import StopRoutesLayer from '../StopRoutesLayer.svelte';
+import { ROUTE_PANE } from '$lib/mapPanes.js';
 
 vi.mock('$lib/vehicleUtils.js', () => ({
-	fetchAndUpdateVehiclesForRoutes: vi.fn().mockResolvedValue(42),
+	fetchAndUpdateVehiclesForRoutes: vi.fn().mockResolvedValue({ intervalId: 42, tick: vi.fn() }),
 	clearVehicleMarkersMap: vi.fn()
 }));
 import { fetchAndUpdateVehiclesForRoutes, clearVehicleMarkersMap } from '$lib/vehicleUtils.js';
@@ -15,7 +16,8 @@ function makeProvider() {
 		revealPolylines: vi.fn(),
 		clearAllPolylines: vi.fn(),
 		clearVehicleMarkers: vi.fn(),
-		removePolyline: vi.fn()
+		removePolyline: vi.fn(),
+		setPolylineLayer: vi.fn()
 	};
 }
 
@@ -463,5 +465,116 @@ describe('StopRoutesLayer', () => {
 		expect(colorGetSpy.mock.calls.length).toBe(colorGetCallsBefore);
 
 		colorGetSpy.mockRestore();
+	});
+});
+
+// Task 10b: expanding an arrival row promotes its route and highlights its
+// vehicle. The main redraw effect above deliberately excludes
+// promotedRouteId/highlightedTripId as dependencies (see the previous test);
+// this second effect is what actually makes expansion do something, without
+// touching the main effect's redraw guarantees.
+describe('StopRoutesLayer — trip expansion (promote route / highlight vehicle)', () => {
+	function makePromotableProvider() {
+		const polyC = { id: 'poly_c' };
+		const poly22 = { id: 'poly_22' };
+		const mapProvider = {
+			createPolyline: vi.fn(async (points, options) =>
+				options.color === '#b02a37' ? polyC : poly22
+			),
+			revealPolylines: vi.fn(),
+			clearAllPolylines: vi.fn(),
+			clearVehicleMarkers: vi.fn(),
+			removePolyline: vi.fn(),
+			setPolylineLayer: vi.fn()
+		};
+		return { mapProvider, polyC, poly22 };
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockShapeFetches();
+	});
+
+	// The deliverable: expansion must re-pane, not redraw. If this regresses to
+	// a full redraw, createPolyline/fetch counts below would climb.
+	test('promotes the newly expanded route and demotes the previous one, without any createPolyline or fetch call', async () => {
+		const { mapProvider, polyC, poly22 } = makePromotableProvider();
+		const { rerender } = render(StopRoutesLayer, {
+			props: {
+				mapProvider,
+				activeRoutes: routes,
+				routeColors: colors,
+				promotedRouteId: null,
+				highlightedTripId: null
+			}
+		});
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2));
+		const fetchCallsBefore = global.fetch.mock.calls.length;
+		// The very first draw's own teardown() (there's nothing to tear down
+		// yet, but it always runs) already calls clearAllPolylines() once —
+		// baseline off that rather than asserting zero calls.
+		const clearCallsBefore = mapProvider.clearAllPolylines.mock.calls.length;
+
+		await rerender({ promotedRouteId: 'r_c', highlightedTripId: 't_c' });
+		await flush();
+
+		expect(mapProvider.setPolylineLayer).toHaveBeenCalledWith(polyC, ROUTE_PANE.PROMOTED);
+
+		mapProvider.setPolylineLayer.mockClear();
+		await rerender({ promotedRouteId: 'r_22', highlightedTripId: 't_22' });
+		await flush();
+
+		expect(mapProvider.setPolylineLayer).toHaveBeenCalledWith(polyC, ROUTE_PANE.LINE);
+		expect(mapProvider.setPolylineLayer).toHaveBeenCalledWith(poly22, ROUTE_PANE.PROMOTED);
+
+		expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2);
+		expect(global.fetch.mock.calls.length).toBe(fetchCallsBefore);
+		expect(mapProvider.clearAllPolylines.mock.calls.length).toBe(clearCallsBefore);
+	});
+
+	test('changing highlightedTripId forces an immediate vehicle refresh without redrawing', async () => {
+		const mapProvider = makeProvider();
+		const { rerender } = render(StopRoutesLayer, {
+			props: {
+				mapProvider,
+				activeRoutes: routes,
+				routeColors: colors,
+				promotedRouteId: null,
+				highlightedTripId: null
+			}
+		});
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2));
+		await vi.waitFor(() => expect(fetchAndUpdateVehiclesForRoutes).toHaveBeenCalled());
+		const { tick } = await fetchAndUpdateVehiclesForRoutes.mock.results[0].value;
+		const fetchCallsBefore = global.fetch.mock.calls.length;
+
+		await rerender({ highlightedTripId: 't_22' });
+		await flush();
+
+		expect(tick).toHaveBeenCalled();
+		expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2);
+		expect(global.fetch.mock.calls.length).toBe(fetchCallsBefore);
+	});
+
+	// promotedRouteId can legitimately name a route whose shape fetch failed —
+	// there is nothing drawn for it to re-pane, and that must not throw or call
+	// setPolylineLayer with an undefined polyline.
+	test('a promotedRouteId with no drawn polyline is a no-op', async () => {
+		const mapProvider = makeProvider();
+		const { rerender } = render(StopRoutesLayer, {
+			props: {
+				mapProvider,
+				activeRoutes: routes,
+				routeColors: colors,
+				promotedRouteId: null,
+				highlightedTripId: null
+			}
+		});
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2));
+
+		await rerender({ promotedRouteId: 'r_never_drawn', highlightedTripId: null });
+		await flush();
+
+		expect(mapProvider.setPolylineLayer).not.toHaveBeenCalled();
 	});
 });
