@@ -13,7 +13,8 @@
 ## Global Constraints
 
 - **Run tests with `npx vitest run`**, never `npm run test` — it hangs in a non-TTY shell.
-- **Settings are module constants, not env vars:** `STOP_TREATMENT = 'dots'`, `SHOW_VEHICLES = true`, `DIM_BASEMAP = true`. There is no `animateFlow` constant and no flow-dash overlay.
+- **The mockup's four settings are inlined, not configurable and not named constants.** Non-route stops always collapse to gray dots, vehicles are always drawn, the basemap is always dimmed while routes are drawn, and there is no flow-dash overlay. Do **not** add `STOP_TREATMENT` / `SHOW_VEHICLES` / `DIM_BASEMAP` constants or an unreachable `hidden` marker tier — a constant that is never false is dead code. Re-introducing configurability later is a deliberate, separate change.
+- **`StopMarker.emphasis` has exactly three values:** `'full' | 'routeDot' | 'muted'`.
 - **Both map providers must stay at parity** for every new method. `PUBLIC_OBA_MAP_PROVIDER` selects between them at runtime; a method on one must exist on the other.
 - **Coverage:** `vite.config.js` sets `all: true` with a global 70% threshold and no `include`, so every new file counts toward coverage whether or not it has a test.
 - **`RouteBadge` takes hex WITHOUT a leading `#`** (`RouteBadge.svelte:12` does `` `#${color}` ``). Map-facing colors carry the `#`. `assignRouteColors` returns both forms; do not convert anywhere else.
@@ -1203,7 +1204,7 @@ light/dark palette, keyed on route id so colors are stable across refreshes."
 **Interfaces:**
 
 - Consumes: nothing.
-- Produces: `StopMarker` accepts `emphasis: 'full' | 'routeDot' | 'muted' | 'hidden'` (default `'full'`) and `dotColor: string | null`. `isHighlighted` is unchanged and **wins over `emphasis`** — a highlighted marker always renders the full pin.
+- Produces: `StopMarker` accepts `emphasis: 'full' | 'routeDot' | 'muted'` (default `'full'`) and `dotColor: string | null`. `isHighlighted` is unchanged and **wins over `emphasis`** — a highlighted marker always renders the full pin.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -1249,12 +1250,6 @@ describe('StopMarker emphasis', () => {
 		expect(container.querySelector('.bus-icon')).not.toBeInTheDocument();
 	});
 
-	test('draws no dot for hidden', () => {
-		const { container } = renderMarker({ emphasis: 'hidden' });
-		expect(container.querySelector('.emphasis-dot')).not.toBeInTheDocument();
-		expect(container.querySelector('.bus-icon')).not.toBeInTheDocument();
-	});
-
 	// The selected stop is always in the ring-dot set (those are the trips that
 	// serve it), so these two props WILL collide. isHighlighted has to win, or the
 	// rider's selected stop becomes the least distinguishable thing on the map.
@@ -1268,7 +1263,7 @@ describe('StopMarker emphasis', () => {
 		expect(container.querySelector('.emphasis-dot')).not.toBeInTheDocument();
 	});
 
-	test.each(['full', 'routeDot', 'muted', 'hidden'])(
+	test.each(['full', 'routeDot', 'muted'])(
 		'keeps an accessible 32px button in the %s tier',
 		(emphasis) => {
 			const { container } = renderMarker({ emphasis, dotColor: '#b02a37' });
@@ -1278,16 +1273,13 @@ describe('StopMarker emphasis', () => {
 		}
 	);
 
-	test.each(['routeDot', 'muted', 'hidden'])(
-		'hides the routes label in the %s tier',
-		(emphasis) => {
-			const withRoutes = { ...stop, routes: [{ shortName: 'C' }, { shortName: '22' }] };
-			render(StopMarker, {
-				props: { stop: withRoutes, icon: faBus, onClick: vi.fn(), showRoutesLabel: true, emphasis }
-			});
-			expect(screen.queryByText('C, 22')).not.toBeInTheDocument();
-		}
-	);
+	test.each(['routeDot', 'muted'])('hides the routes label in the %s tier', (emphasis) => {
+		const withRoutes = { ...stop, routes: [{ shortName: 'C' }, { shortName: '22' }] };
+		render(StopMarker, {
+			props: { stop: withRoutes, icon: faBus, onClick: vi.fn(), showRoutesLabel: true, emphasis }
+		});
+		expect(screen.queryByText('C, 22')).not.toBeInTheDocument();
+	});
 
 	test('shows the routes label in the full tier', () => {
 		const withRoutes = { ...stop, routes: [{ shortName: 'C' }, { shortName: '22' }] };
@@ -1322,7 +1314,7 @@ In `src/components/map/StopMarker.svelte`, update the props block:
  * @property {any} icon
  * @property {boolean} [isHighlighted]
  * @property {boolean} [showRoutesLabel]
- * @property {'full'|'routeDot'|'muted'|'hidden'} [emphasis] - Marker prominence,
+ * @property {'full'|'routeDot'|'muted'} [emphasis] - Marker prominence,
  *   decided by the map layer from the current selection. `full` is today's pin.
  * @property {string|null} [dotColor] - Ring color for the `routeDot` tier.
  */
@@ -1765,7 +1757,7 @@ Add the emphasis and dim methods next to `highlightMarker`:
  * selection or the drawn route set changes.
  *
  * @param {Map<string, {emphasis: string, dotColor: string|null}>} byStopId
- * @param {'full'|'muted'|'hidden'} defaultEmphasis - for stops not in byStopId
+ * @param {'full'|'muted'} defaultEmphasis - for stops not in byStopId
  * @param {string|null} selectedStopId - always rendered as the full pin
  */
 setStopEmphasis(byStopId, defaultEmphasis = 'full', selectedStopId = null) {
@@ -2875,8 +2867,6 @@ Create `src/components/map/StopRoutesLayer.svelte`:
 		liveCounts = $bindable(new Map())
 	} = $props();
 
-	const SHOW_VEHICLES = true;
-
 	// Widest route draws first and each subsequent route is a little narrower, so
 	// a route underneath shows as a colored fringe either side of the one above
 	// it. This is what keeps two routes legible in a shared corridor: all casings
@@ -2992,22 +2982,20 @@ Create `src/components/map/StopRoutesLayer.svelte`:
 		teardown();
 		drawRoutes(routes, colors, token);
 
-		if (SHOW_VEHICLES) {
-			fetchAndUpdateVehiclesForRoutes(routes, mapProvider, {
-				highlightedTripId,
-				colorsByRouteId: colors,
-				onCounts: (counts) => {
-					if (token === loadToken) liveCounts = counts;
-				}
-			}).then((intervalId) => {
-				// A newer load took over while this poll was starting; don't leak it.
-				if (token !== loadToken) {
-					clearInterval(intervalId);
-					return;
-				}
-				vehicleIntervalId = intervalId;
-			});
-		}
+		fetchAndUpdateVehiclesForRoutes(routes, mapProvider, {
+			highlightedTripId,
+			colorsByRouteId: colors,
+			onCounts: (counts) => {
+				if (token === loadToken) liveCounts = counts;
+			}
+		}).then((intervalId) => {
+			// A newer load took over while this poll was starting; don't leak it.
+			if (token !== loadToken) {
+				clearInterval(intervalId);
+				return;
+			}
+			vehicleIntervalId = intervalId;
+		});
 	});
 
 	onDestroy(() => {
@@ -3269,12 +3257,6 @@ let {
 	routeColors = new Map()
 } = $props();
 
-// Non-selected stops collapse to quiet dots so the selected stop and the drawn
-// routes are the only loud things on the map. Kept as a constant rather than
-// config: 'faded' and 'hidden' are one edit away if an agency ever wants them.
-const STOP_TREATMENT = 'dots';
-const DIM_BASEMAP = true;
-
 let routeStopIds = $state(new Map());
 let liveCounts = $state(new Map());
 
@@ -3283,7 +3265,6 @@ let liveCounts = $state(new Map());
 // today's map exactly — there's no catchable bus to point at, so dots on a
 // washed-out basemap would be noise.
 let routeLayerActive = $derived(!!stop && activeRoutes.length > 0);
-let mutedTier = $derived(STOP_TREATMENT === 'hidden' ? 'hidden' : 'muted');
 
 // Ring-dot tier for every stop the drawn routes serve.
 let emphasisByStopId = $derived(
@@ -3295,8 +3276,10 @@ let emphasisByStopId = $derived(
 $effect(() => {
 	if (!mapInstance) return;
 	if (routeLayerActive) {
-		mapInstance.setStopEmphasis(emphasisByStopId, mutedTier, stop.id);
-		if (DIM_BASEMAP) mapInstance.setBasemapDimmed(true);
+		// Non-selected stops collapse to quiet dots so the selected stop and the
+		// drawn routes are the only loud things on the map.
+		mapInstance.setStopEmphasis(emphasisByStopId, 'muted', stop.id);
+		mapInstance.setBasemapDimmed(true);
 	} else {
 		mapInstance.resetStopEmphasis();
 		mapInstance.setBasemapDimmed(false);
@@ -3311,7 +3294,7 @@ Seed emphasis at marker creation. In `addMarker` (currently line 219), after `sh
 // into a rAF — a later setStopEmphasis() would iterate a markersMap that doesn't
 // hold these markers yet, and stops panned in mid-selection would stay full pins.
 const tier = routeLayerActive
-	? (emphasisByStopId.get(s.id) ?? { emphasis: mutedTier, dotColor: null })
+	? (emphasisByStopId.get(s.id) ?? { emphasis: 'muted', dotColor: null })
 	: null;
 
 const markerObj = mapInstance.addMarker({

@@ -42,10 +42,8 @@ all stops back to full bus markers, no route lines, no vehicles.
 
 ## Non-Goals
 
-- **No new environment variables.** The mockup exposes `stopTreatment`,
-  `showVehicles`, `dimBasemap`, and `animateFlow` as per-deployment props. We
-  ship the chosen values as module constants instead (see Settings). Promoting
-  any of them to `PUBLIC_*` config later is a small, additive change.
+- **No configuration surface at all for the mockup's four settings.** Not env
+  vars, and not named constants — the chosen values are inlined. See Settings.
 - **No directional flow animation.** `animateFlow` is off, so the dashed white
   overlay stroke in the mockup is not built at all.
 - **No geometric corridor offset.** The brief asks for a ~2px perpendicular
@@ -67,21 +65,24 @@ all stops back to full bus markers, no route lines, no vehicles.
 
 ## Settings
 
-Module constants, not configuration. Values chosen by the maintainer:
+The mockup exposes four behaviors as per-deployment props. All four are decided
+here and **inlined at their chosen values** — not env vars, and not named
+constants either. A constant that is never false is dead code, and an
+unreachable branch behind it is worse: it reads as a supported configuration
+while never having been exercised or tested.
 
-| Setting          | Value    | Effect                                                    |
-| ---------------- | -------- | --------------------------------------------------------- |
-| `STOP_TREATMENT` | `'dots'` | Non-route stops collapse to quiet gray dots.              |
-| `SHOW_VEHICLES`  | `true`   | Live vehicles are drawn for every active route.           |
-| `DIM_BASEMAP`    | `true`   | Basemap gets a faint wash while the route layer is drawn. |
+| Mockup prop     | Decision                                                     |
+| --------------- | ------------------------------------------------------------ |
+| `stopTreatment` | `dots`. Non-route stops always collapse to quiet gray dots.  |
+| `showVehicles`  | On. Vehicles are always drawn for the active routes.         |
+| `dimBasemap`    | On. The basemap is dimmed whenever the route layer is drawn. |
+| `animateFlow`   | Off. The flow-dash overlay is not built at all.              |
 
-`STOP_TREATMENT` is written as a switch over `'dots' | 'faded' | 'hidden'` so
-the two unused treatments stay one constant away, but only `'dots'` is exercised
-and only `'dots'` is tested.
-
-`animateFlow` gets no constant at all. It is `false`, the flow-dash overlay is
-not built, and a dead constant guarding code that doesn't exist would be worse
-than its absence. It is recorded in Non-Goals instead.
+Consequently `StopMarker.emphasis` has exactly three values —
+`'full' | 'routeDot' | 'muted'`. There is no `hidden` tier and no `faded`
+treatment. Re-introducing any of this as real configuration is a deliberate,
+separate change: thread a prop through both providers and the marker, and test
+the branch you add.
 
 ## Prerequisite fixes
 
@@ -358,7 +359,7 @@ conversion point, in `assignRouteColors`, named explicitly.
 
 `StopMarker.svelte` gains:
 
-- `emphasis: 'full' | 'routeDot' | 'muted' | 'hidden'`, default `'full'`
+- `emphasis: 'full' | 'routeDot' | 'muted'`, default `'full'`
 - `dotColor: string | null` — the route color for `routeDot`
 
 `isHighlighted` **stays as-is** and remains the sole signal for "this is the
@@ -384,7 +385,6 @@ The invariant lives in one place rather than at every call site:
 | `full`     | all stops when nothing selected; the selected stop | Today's pin. With `isHighlighted`, the existing `.highlight` (`scale-125 border-brand-accent drop-shadow-md`). |
 | `routeDot` | stops served by a drawn route, minus the selected  | 14px white-filled circle, 2.5px border in `dotColor`, small drop shadow. No glyph, no caret.                   |
 | `muted`    | every other stop on screen                         | ~9px solid `#8b93a1` at 60% opacity with a thin white halo.                                                    |
-| `hidden`   | (unused at `STOP_TREATMENT: 'dots'`)               | Button retained and focusable; the inner dot is not drawn. Not "renders nothing" — see a11y below.             |
 
 Why dots rather than dimming: a 32px pinned icon carries the same visual weight
 dimmed or not — shape and size dominate opacity. Collapsing to a dot removes the
