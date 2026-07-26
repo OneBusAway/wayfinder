@@ -35,6 +35,30 @@ function getVehicleLabel(activeTrip) {
 		: translate('vehicle.label');
 }
 
+/**
+ * Normalize padding for Leaflet `flyToBounds` / `fitBounds`.
+ * Accepts a number, an `[x, y]` pair, or a `{top,right,bottom,left}` object
+ * (Google Maps Padding shape) and returns the options Leaflet expects.
+ *
+ * @param {number | [number, number] | { top?: number, right?: number, bottom?: number, left?: number } | null | undefined} padding
+ * @returns {{ padding: [number, number] } | { paddingTopLeft: [number, number], paddingBottomRight: [number, number] }}
+ */
+export function toLeafletPadding(padding) {
+	if (padding == null) {
+		return { padding: [50, 50] };
+	}
+	if (typeof padding === 'number') {
+		return { padding: [padding, padding] };
+	}
+	if (Array.isArray(padding)) {
+		return { padding };
+	}
+	return {
+		paddingTopLeft: [padding.left ?? 50, padding.top ?? 50],
+		paddingBottomRight: [padding.right ?? 50, padding.bottom ?? 50]
+	};
+}
+
 export default class OpenStreetMapProvider {
 	constructor(handleStopMarkerSelect) {
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
@@ -1013,7 +1037,7 @@ export default class OpenStreetMapProvider {
 	 * Smoothly flies the map view to the bounds of all currently drawn
 	 * polylines so the full route is centered and visible. Returns true when a
 	 * fit was applied.
-	 * @param {{ padding?: [number, number], maxZoom?: number, duration?: number, drawDuration?: number }} [options]
+	 * @param {{ padding?: number | [number, number] | { top?: number, right?: number, bottom?: number, left?: number }, maxZoom?: number, duration?: number, drawDuration?: number }} [options]
 	 * @returns {Promise<boolean>} resolves once the route reveal begins
 	 */
 	async fitToPolylines(options = {}) {
@@ -1059,7 +1083,7 @@ export default class OpenStreetMapProvider {
 			setTimeout(reveal, duration * 1000 + 250);
 
 			this.map.flyToBounds(bounds, {
-				padding: options.padding ?? [50, 50],
+				...toLeafletPadding(options.padding),
 				maxZoom: options.maxZoom ?? 16,
 				duration
 			});

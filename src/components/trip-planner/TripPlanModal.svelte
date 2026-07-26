@@ -11,6 +11,8 @@
 	import { browser } from '$app/environment';
 	import { notifyPartialRouteShape } from '$lib/routeNotifications';
 	import { notifications } from '$stores/notificationStore';
+	import { panelFitPadding } from '$lib/mapFitPadding.js';
+	import { calculateMidpoint } from '$lib/mathUtils.js';
 
 	/**
 	 * @typedef {Object} Props
@@ -38,6 +40,7 @@
 	let prevItinerariesRef = $state(null);
 	// Id of the toast this modal raised, so closing it clears only its own.
 	let notificationId = null;
+	let sheetElement = $state(null);
 
 	function toggleSteps(index) {
 		expandedSteps[index] = !expandedSteps[index];
@@ -50,6 +53,7 @@
 	}
 
 	let currPolylines = [];
+	let drawToken = 0;
 
 	// Build per-leg polyline style based on mode and route color
 	function getLegPolylineStyle(leg) {
@@ -72,6 +76,8 @@
 
 	// draw the current itinerary route based on the active itinerary tab
 	async function drawRoute() {
+		const token = ++drawToken;
+
 		if (currPolylines.length > 0) {
 			currPolylines.forEach((polyline) => {
 				mapProvider.removePolyline(polyline);
@@ -85,6 +91,7 @@
 
 		let drawnCount = 0;
 		let legCount = 0;
+		const drawn = [];
 
 		for (const leg of itineraries[activeTab].legs) {
 			// Counted before the geometry check: a leg with no geometry at all is
@@ -97,14 +104,45 @@
 			// Await: the Google provider's createPolyline is async and returns
 			// null on decode failure — skip nulls instead of tracking a Promise.
 			const polyline = await mapProvider.createPolyline(shape, style);
+			// A newer draw (tab switch / new results) took over while we were
+			// awaiting — remove the orphan so it can't strand on the map, then bail.
+			if (token !== drawToken) {
+				if (polyline) mapProvider.removePolyline(polyline);
+				for (const prior of drawn) mapProvider.removePolyline(prior);
+				return;
+			}
 			if (polyline) {
-				currPolylines.push(polyline);
+				drawn.push(polyline);
 				drawnCount++;
 			}
 		}
+		currPolylines = drawn;
 
 		if (legCount > 0 && drawnCount < legCount) {
 			notificationId = notifyPartialRouteShape();
+		}
+
+		const padding = panelFitPadding(sheetElement?.getBoundingClientRect(), {
+			width: window.innerWidth,
+			height: window.innerHeight
+		});
+
+		let fitted = false;
+		try {
+			fitted = await mapProvider.fitToPolylines?.({ padding });
+		} catch (error) {
+			console.error('Error fitting trip itinerary to view:', error);
+		}
+		if (token !== drawToken) return;
+
+		if (!fitted) {
+			// No drawable geometry (e.g. a leg missing legGeometry) — frame the
+			// itinerary endpoints instead of leaving the camera where it was.
+			const legs = itineraries[activeTab].legs;
+			const midpoint = calculateMidpoint([legs[0].from, legs.at(-1).to]);
+			if (midpoint) {
+				mapProvider.flyTo(midpoint.lat, midpoint.lon, 13);
+			}
 		}
 	}
 
@@ -143,6 +181,7 @@
 	});
 
 	onDestroy(() => {
+		drawToken++;
 		// Partial-shape warnings auto-dismiss, but clear ours immediately on close
 		// so it doesn't linger over the next view.
 		notifications.dismiss(notificationId);
@@ -158,7 +197,7 @@
 	});
 </script>
 
-<BottomSheet bind:snap>
+<BottomSheet bind:snap bind:element={sheetElement}>
 	{#snippet header()}
 		<div class="flex items-center gap-2.5">
 			<p class="min-w-0 flex-1 truncate text-base font-semibold text-black dark:text-white">
