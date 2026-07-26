@@ -169,8 +169,7 @@ export const handlers = [
 							summary: { lang: 'en', value: 'Downtown Transit Tunnel Closed' },
 							description: {
 								lang: 'en',
-								value:
-									'The Downtown Seattle Transit Tunnel is temporarily closed for maintenance.'
+								value: 'The Downtown Seattle Transit Tunnel is temporarily closed for maintenance.'
 							},
 							severity: 'severe',
 							reason: 'equipmentReason',
