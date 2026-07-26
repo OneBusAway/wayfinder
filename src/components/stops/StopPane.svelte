@@ -303,7 +303,7 @@
 				{/if}
 
 				{#if serviceAlerts}
-					<ServiceAlerts bind:serviceAlerts />
+					<ServiceAlerts bind:serviceAlerts stopId={stop.id} routeIds={stop.routeIds ?? []} />
 				{/if}
 
 				{#if showHeroQuestion && currentStopSurvey}
