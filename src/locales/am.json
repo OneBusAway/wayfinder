@@ -88,7 +88,8 @@
 		"close": "ዝጋ"
 	},
 	"arrivals_and_departures": "መግቢያዎችና መውጫዎች",
-	"no_arrivals_or_departures_in_next_30_minutes": "በሚቀጥሉት 30 ደቂቃዎች ውስጥ ምንም መድረሻ ወይም ለቆ መሄድ የለም",
+	"load_more_arrivals": "ተጨማሪ መድረሻዎችን ጫን",
+	"no_arrivals_found_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም መድረሻ አልተገኘም",
 	"stop": "ቆሻሻ",
 	"routes": "መንገዶች",
 	"route": "መንገድ",

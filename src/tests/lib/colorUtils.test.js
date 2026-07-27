@@ -7,7 +7,9 @@ import {
 	darkenColor,
 	lightenColor,
 	getBrightness,
-	adjustColorForDarkMode
+	adjustColorForDarkMode,
+	mapContrastColor,
+	polylineArrowColor
 } from '$lib/colorUtils.js';
 
 describe('colorUtils', () => {
@@ -479,6 +481,56 @@ describe('colorUtils', () => {
 				const adjustedBrightness = getBrightness(hexToRgb(adjusted));
 				expect(adjustedBrightness).toBeGreaterThanOrEqual(originalBrightness);
 			});
+		});
+	});
+
+	describe('mapContrastColor', () => {
+		test('returns null for missing or invalid input', () => {
+			expect(mapContrastColor(undefined)).toBeNull();
+			expect(mapContrastColor(null)).toBeNull();
+			expect(mapContrastColor('')).toBeNull();
+			expect(mapContrastColor('not-a-hex')).toBeNull();
+		});
+
+		test('normalizes bare and #-prefixed hex to lowercase #rrggbb in light mode', () => {
+			expect(mapContrastColor('0A4EA2')).toBe('#0a4ea2');
+			expect(mapContrastColor('#0A4EA2')).toBe('#0a4ea2');
+		});
+
+		test('passes a mid/dark color through unchanged in light mode', () => {
+			// #0a4ea2 brightness ≈ 67, well under the 200 threshold
+			expect(mapContrastColor('#0a4ea2', { dark: false })).toBe('#0a4ea2');
+		});
+
+		test('darkens a near-white color in light mode so it stays visible', () => {
+			const out = mapContrastColor('#ffffff', { dark: false });
+			expect(out).not.toBe('#ffffff');
+			expect(getBrightness(hexToRgb(out))).toBeLessThan(200);
+		});
+
+		test('darkens bright yellow in light mode', () => {
+			// #ffff00 brightness ≈ 226, over threshold
+			const out = mapContrastColor('#ffff00', { dark: false });
+			expect(getBrightness(hexToRgb(out))).toBeLessThan(getBrightness(hexToRgb('#ffff00')));
+		});
+
+		test('lightens a dark color in dark mode so it reads on dark tiles', () => {
+			const out = mapContrastColor('#0a4ea2', { dark: true });
+			expect(getBrightness(hexToRgb(out))).toBeGreaterThan(getBrightness(hexToRgb('#0a4ea2')));
+		});
+	});
+
+	describe('polylineArrowColor', () => {
+		test('returns the default blue arrow color when no line color is given', () => {
+			expect(polylineArrowColor(undefined)).toBe('#21649b'); // COLORS.POLYLINE_ARROW_STROKE
+			expect(polylineArrowColor(null)).toBe('#21649b');
+			expect(polylineArrowColor('')).toBe('#21649b');
+		});
+
+		test('returns a darker shade of the line color', () => {
+			const out = polylineArrowColor('#359ff7');
+			expect(out).not.toBe('#359ff7');
+			expect(getBrightness(hexToRgb(out))).toBeLessThan(getBrightness(hexToRgb('#359ff7')));
 		});
 	});
 });

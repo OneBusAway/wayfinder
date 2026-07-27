@@ -224,18 +224,23 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 		}
 	});
 
-	it('throws Error with upstreamStatus on non-OK response', async () => {
+	// Asserts the adapter routes its non-OK branch through upstreamError, body included —
+	// this is the real Umami response to a stale PUBLIC_ANALYTICS_WEBSITE_ID.
+	it('throws Error with upstreamStatus and the upstream body on non-OK response', async () => {
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: false,
-			status: 502,
-			statusText: 'Bad Gateway'
+			status: 400,
+			statusText: 'Bad Request',
+			text: async () => '{"error":{"message":"Website not found.","code":"bad-request"}}'
 		});
 		try {
 			await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
 			expect.unreachable('should have thrown');
 		} catch (error) {
-			expect(error.message).toBe('Error sending event: Bad Gateway');
-			expect(error.upstreamStatus).toBe(502);
+			expect(error.message).toBe(
+				'Error sending event: 400 Bad Request — {"error":{"message":"Website not found.","code":"bad-request"}}'
+			);
+			expect(error.upstreamStatus).toBe(400);
 		}
 	});
 

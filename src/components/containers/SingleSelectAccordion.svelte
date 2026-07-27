@@ -38,8 +38,11 @@
 	});
 </script>
 
+<!-- border-b only (not border-y): the first item sits directly under a header
+     that already draws its own bottom rule, and a top border here would double
+     it up. Combined with divide-y, every item ends with exactly one rule. -->
 <div
-	class="divide-y divide-gray-200 border-y border-gray-200 dark:divide-gray-700 dark:border-gray-700"
+	class="divide-y divide-gray-200 border-b border-gray-200 dark:divide-gray-700 dark:border-gray-700"
 >
 	{@render children?.()}
 </div>

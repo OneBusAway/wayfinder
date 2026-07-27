@@ -88,7 +88,8 @@
 		"close": "ዕጸው"
 	},
 	"arrivals_and_departures": "ምብጻሕን ምብጋስን",
-	"no_arrivals_or_departures_in_next_30_minutes": "ኣብ ዝመጽእ 30 ደቂቕ ዝኾነ ምብጻሕ ወይ ምብጋስ የለን",
+	"load_more_arrivals": "ተወሳኺ ምብጻሓት ጽዓን",
+	"no_arrivals_found_in_next_minutes": "ኣብ ዝመጽእ {minutes} ደቓይቕ ዝኾነ ምብጻሕ ኣይተረኽበን",
 	"stop": "መዕረፊ",
 	"routes": "መስመራት",
 	"route": "መስመር",

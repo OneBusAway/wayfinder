@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { debounce, removeAgencyPrefix } from '$lib/utils';
+import { debounce, removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
 
 describe('debounce', () => {
 	beforeEach(() => {
@@ -135,5 +135,63 @@ describe('removeAgencyPrefix', () => {
 	it('should handle strings with multiple underscores', () => {
 		expect(removeAgencyPrefix('1_2_3_4')).toBe('2_3_4');
 		expect(removeAgencyPrefix('agency_route_stop')).toBe('route_stop');
+	});
+});
+
+describe('routeShortNamesForStop', () => {
+	const stop = { routeIds: ['1_100', '1_200'] };
+
+	it('returns sorted short names for the routes serving the stop', () => {
+		const response = {
+			data: {
+				references: {
+					routes: [
+						{ id: '1_200', shortName: 'E Line' },
+						{ id: '1_100', shortName: '44' },
+						{ id: '1_999', shortName: '62' }
+					]
+				}
+			}
+		};
+
+		expect(routeShortNamesForStop(response, stop)).toEqual(['44', 'E Line']);
+	});
+
+	it('falls back to the route id suffix when shortName is missing', () => {
+		const response = {
+			data: {
+				references: {
+					routes: [{ id: '1_100', shortName: null }]
+				}
+			}
+		};
+
+		expect(routeShortNamesForStop(response, stop)).toEqual(['100']);
+	});
+
+	it('keeps the full id suffix when the route id contains multiple underscores', () => {
+		const response = {
+			data: {
+				references: {
+					routes: [{ id: '1_100_x', shortName: null }]
+				}
+			}
+		};
+
+		expect(routeShortNamesForStop(response, { routeIds: ['1_100_x'] })).toEqual(['100_x']);
+	});
+
+	it('returns null when the response has no route references', () => {
+		expect(routeShortNamesForStop(null, stop)).toBe(null);
+		expect(routeShortNamesForStop({ data: { references: {} } }, stop)).toBe(null);
+	});
+
+	it('returns null when the stop has no routeIds array', () => {
+		const response = {
+			data: { references: { routes: [{ id: '1_100', shortName: '44' }] } }
+		};
+
+		expect(routeShortNamesForStop(response, {})).toBe(null);
+		expect(routeShortNamesForStop(response, null)).toBe(null);
 	});
 });

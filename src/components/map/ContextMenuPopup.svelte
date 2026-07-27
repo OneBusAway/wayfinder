@@ -8,14 +8,14 @@
 	<div class="flex flex-col gap-1.5">
 		<button
 			type="button"
-			class="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground shadow-sm transition-colors hover:bg-brand-accent"
+			class="rounded-md bg-brand-accent px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-accent-dark"
 			onclick={onStartHere}
 		>
 			{$t('context-menu.start_here')}
 		</button>
 		<button
 			type="button"
-			class="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground shadow-sm transition-colors hover:bg-brand-accent"
+			class="rounded-md bg-brand-accent px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-accent-dark"
 			onclick={onEndHere}
 		>
 			{$t('context-menu.end_here')}

@@ -5,6 +5,7 @@ import {
 	getWalkDistanceOptions,
 	formatWalkDistanceLabel,
 	snapToClosestOption,
+	resolveWalkDistanceForUnit,
 	UNIT_METRIC,
 	UNIT_IMPERIAL
 } from '$lib/distanceUtils';
@@ -31,8 +32,36 @@ const defaults = {
 	distanceUnit: null // null = auto-detect, 'metric', or 'imperial'
 };
 
+// Exported so the options modal can reset its local editing copies to the same
+// source of truth the store uses. The spread already makes this a separate
+// object from `defaults`; Object.freeze additionally stops consumers from
+// mutating this exported snapshot.
+export const DEFAULT_TRIP_OPTIONS = Object.freeze({ ...defaults });
+
 // Re-export for use by components
-export { getWalkDistanceOptions, snapToClosestOption, UNIT_METRIC, UNIT_IMPERIAL };
+export {
+	getWalkDistanceOptions,
+	snapToClosestOption,
+	resolveWalkDistanceForUnit,
+	UNIT_METRIC,
+	UNIT_IMPERIAL
+};
+
+/**
+ * When persisting walk distance, map a unit-specific default selection back to the
+ * canonical default meters value so auto-detect regions stay forward-compatible.
+ *
+ * @param {number} meters - Selected distance in meters
+ * @param {string} unit - Effective unit system ('metric' or 'imperial')
+ * @returns {number}
+ */
+export function canonicalizeWalkDistance(meters, unit) {
+	const resolvedDefault = resolveWalkDistanceForUnit(DEFAULT_WALK_DISTANCE_METERS, unit);
+	if (meters === resolvedDefault) {
+		return DEFAULT_WALK_DISTANCE_METERS;
+	}
+	return meters;
+}
 
 // Legacy static options - kept for backwards compatibility
 // New code should use getWalkDistanceOptions(unit) instead
@@ -88,18 +117,11 @@ function createTripOptionsStore() {
 			}));
 		},
 
-		// Reset all values to defaults
-		resetAll: () => {
-			if (browser) {
-				localStorage.removeItem('tripOptions_wheelchair');
-				localStorage.removeItem('tripOptions_optimize');
-				localStorage.removeItem('tripOptions_maxWalkDistance');
-				localStorage.removeItem('tripOptions_distanceUnit');
-			}
-			set(defaults);
-		},
-
-		// Update a persisted option (saves to localStorage)
+		// Update a persisted option (saves to localStorage).
+		// Writing the default value clears the key instead of storing it, so the
+		// user tracks future changes to the default rather than being pinned to
+		// today's value. This is what makes "Reset to defaults" forward-compatible:
+		// resetting the draft to defaults and committing removes every key.
 		setPersisted: (key, value) => {
 			update((opts) => {
 				const newOpts = { ...opts, [key]: value };
@@ -107,7 +129,7 @@ function createTripOptionsStore() {
 					browser &&
 					['wheelchair', 'optimize', 'maxWalkDistance', 'distanceUnit'].includes(key)
 				) {
-					if (value === null) {
+					if (value === null || value === defaults[key]) {
 						localStorage.removeItem(`tripOptions_${key}`);
 					} else {
 						localStorage.setItem(`tripOptions_${key}`, String(value));

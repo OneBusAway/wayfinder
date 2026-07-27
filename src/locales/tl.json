@@ -88,7 +88,8 @@
 		"close": "Isara"
 	},
 	"arrivals_and_departures": "Mga pagdating at pag-alis",
-	"no_arrivals_or_departures_in_next_30_minutes": "Walang mga pagdating o pag-alis sa susunod na 30 minuto",
+	"load_more_arrivals": "Mag-load pa ng mga pagdating",
+	"no_arrivals_found_in_next_minutes": "Walang nahanap na pagdating sa susunod na {minutes} minuto",
 	"stop": "Hintuan",
 	"routes": "Mga ruta",
 	"route": "Ruta",

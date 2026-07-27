@@ -6,6 +6,9 @@
 		effectiveDistanceUnit,
 		getWalkDistanceOptions,
 		snapToClosestOption,
+		resolveWalkDistanceForUnit,
+		canonicalizeWalkDistance,
+		DEFAULT_TRIP_OPTIONS,
 		UNIT_METRIC,
 		UNIT_IMPERIAL
 	} from '$stores/tripOptionsStore';
@@ -22,7 +25,9 @@
 	let departureDate = $state($tripOptions.departureDate || '');
 	let wheelchair = $state($tripOptions.wheelchair);
 	let optimize = $state($tripOptions.optimize);
-	let maxWalkDistance = $state($tripOptions.maxWalkDistance);
+	let maxWalkDistance = $state(
+		resolveWalkDistanceForUnit($tripOptions.maxWalkDistance, $effectiveDistanceUnit)
+	);
 	let distanceUnit = $state($tripOptions.distanceUnit); // null = auto, 'metric', or 'imperial'
 
 	// Get the effective unit for display (resolves null to actual unit)
@@ -59,7 +64,10 @@
 		// Update persisted values
 		tripOptions.setPersisted('wheelchair', wheelchair);
 		tripOptions.setPersisted('optimize', optimize);
-		tripOptions.setPersisted('maxWalkDistance', maxWalkDistance);
+		tripOptions.setPersisted(
+			'maxWalkDistance',
+			canonicalizeWalkDistance(maxWalkDistance, displayUnit)
+		);
 		tripOptions.setPersisted('distanceUnit', distanceUnit);
 
 		onDone();
@@ -72,6 +80,22 @@
 			departureTime = getCurrentTimeForInput(regionTz);
 			departureDate = getTodayDateForInput(regionTz);
 		}
+	}
+
+	// Reset the local editing copies back to defaults. Like every other control
+	// in this modal, this is draft-only: nothing is persisted until handleDone()
+	// runs, so Cancel still discards the reset and keeps the saved preferences.
+	function handleReset() {
+		departureType = DEFAULT_TRIP_OPTIONS.departureType;
+		departureTime = DEFAULT_TRIP_OPTIONS.departureTime || '';
+		departureDate = DEFAULT_TRIP_OPTIONS.departureDate || '';
+		wheelchair = DEFAULT_TRIP_OPTIONS.wheelchair;
+		optimize = DEFAULT_TRIP_OPTIONS.optimize;
+		distanceUnit = DEFAULT_TRIP_OPTIONS.distanceUnit;
+		maxWalkDistance = resolveWalkDistanceForUnit(
+			DEFAULT_TRIP_OPTIONS.maxWalkDistance,
+			distanceUnit ?? $effectiveDistanceUnit
+		);
 	}
 </script>
 
@@ -390,6 +414,17 @@
 						{/if}
 					</button>
 				</div>
+			</div>
+
+			<!-- Reset to defaults -->
+			<div class="mt-4 flex justify-center">
+				<button
+					type="button"
+					onclick={handleReset}
+					class="rounded text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-400 dark:hover:text-gray-200"
+				>
+					{$t('trip-planner.reset_to_defaults')}
+				</button>
 			</div>
 		</div>
 	</div>

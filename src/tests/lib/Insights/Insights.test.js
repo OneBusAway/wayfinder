@@ -120,6 +120,7 @@ describe('Analytics envelope construction', () => {
 	it('swallows and logs (does not throw) when /api/events responds non-OK', async () => {
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: false,
+			status: 500,
 			statusText: 'Server Error',
 			text: async () => 'boom'
 		});
@@ -128,7 +129,7 @@ describe('Analytics envelope construction', () => {
 		expect(result).toBeUndefined();
 		expect(errorSpy).toHaveBeenCalledWith(
 			'Analytics error:',
-			expect.objectContaining({ message: 'Error sending event: Server Error. boom' })
+			expect.objectContaining({ message: 'Error sending event: 500 Server Error — boom' })
 		);
 	});
 

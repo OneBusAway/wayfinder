@@ -34,6 +34,7 @@
 		"trip_options": "Trip Options",
 		"cancel": "Cancel",
 		"done": "Done",
+		"reset_to_defaults": "Reset to defaults",
 		"departure_time": "Departure Time",
 		"departure_date": "Departure date",
 		"leave_now": "Leave Now",
@@ -73,7 +74,15 @@
 		"search_for_routes": "Search for routes...",
 		"no_routes_found": "No routes found",
 		"all_routes": "All Routes",
-		"clear": "Clear"
+		"clear": "Clear",
+		"collapse": "Collapse search"
+	},
+	"sheet": {
+		"close": "Close",
+		"resize_handle": "Resize panel",
+		"snap_full": "Full height",
+		"snap_half": "Half height",
+		"snap_peek": "Collapsed"
 	},
 	"survey": {
 		"required_question": "Required question"
@@ -118,8 +127,11 @@
 	"arrivals_and_departures": "Arrivals and departures",
 	"show_more": "Show more",
 	"show_less": "Show less",
-	"no_arrivals_or_departures_in_next_30_minutes": "No arrivals or departures in the next 30 minutes",
+	"load_more_arrivals": "Load more arrivals",
+	"refresh": "Refresh",
+	"no_arrivals_found_in_next_minutes": "No arrivals found in the next {minutes} minutes",
 	"stop": "Stop",
+	"direction_bound": "{direction} bound",
 	"routes": "Routes",
 	"route": "route",
 	"route_modal_title": "Route {name}",
@@ -133,7 +145,8 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n}m"
 	},
 	"vehicle": {
 		"number": "Vehicle #",
@@ -185,14 +198,17 @@
 	},
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
-		"view_details": "View Details"
+		"view_details": "View Details",
+		"stop_info": "Stop Info"
 	},
 	"language_switcher": {
 		"select_language": "Select language: {language}",
 		"available_languages": "Available languages"
 	},
 	"map": {
-		"find_my_location": "Find My Location"
+		"find_my_location": "Find My Location",
+		"routes_shown": "Routes shown",
+		"live_vehicle_count": "{count} live"
 	},
 	"context-menu": {
 		"start_here": "Start Here",
@@ -221,7 +237,9 @@
 	"trip_details": {
 		"route": "Route",
 		"no_stops": "No stop times available for this trip.",
-		"loading": "Loading trip details..."
+		"loading": "Loading trip details...",
+		"live_vehicle": "Live · vehicle {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# stop} other {# stops}}"
 	},
 	"skip_to_main_content": "Skip to main content"
 }
