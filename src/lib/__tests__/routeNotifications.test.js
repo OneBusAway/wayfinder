@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { notifications } from '$stores/notificationStore';
-import { notifyRouteLoadFailed, notifyPartialRouteShape } from '../routeNotifications';
+import {
+	notifyRouteLoadFailed,
+	notifyRouteShapeFailed,
+	notifyPartialRouteShape
+} from '../routeNotifications';
 
 vi.mock('$app/environment', () => ({
 	browser: true
@@ -13,6 +17,7 @@ vi.mock('svelte-i18n', () => ({
 			fn((key) => {
 				const messages = {
 					'notifications.route_load_failed': "Couldn't load this route.",
+					'notifications.route_shape_failed': "Couldn't draw this route on the map.",
 					'notifications.tap_to_retry': 'Tap to retry.',
 					'notifications.route_shape_partial':
 						"Part of this route couldn't be drawn. The map may be missing a segment."
@@ -43,6 +48,16 @@ describe('routeNotifications', () => {
 		expect(active?.onRetry).toBe(onRetry);
 	});
 
+	it('notifyRouteShapeFailed shows a retriable error distinct from a partial shape', () => {
+		const onRetry = vi.fn();
+		notifyRouteShapeFailed(onRetry);
+
+		const active = get(notifications);
+		expect(active?.variant).toBe('error');
+		expect(active?.message).toContain("Couldn't draw this route");
+		expect(active?.onRetry).toBe(onRetry);
+	});
+
 	it('notifyPartialRouteShape shows a warning', () => {
 		notifyPartialRouteShape();
 
@@ -50,5 +65,13 @@ describe('routeNotifications', () => {
 		expect(active?.variant).toBe('warning');
 		expect(active?.message).toContain("couldn't be drawn");
 		expect(active?.onRetry).toBeNull();
+	});
+
+	it('each notify helper returns an id usable for a scoped dismiss', () => {
+		const id = notifyPartialRouteShape();
+		expect(id).toBe(get(notifications).id);
+
+		notifications.dismiss(id);
+		expect(get(notifications)).toBeNull();
 	});
 });

@@ -36,6 +36,8 @@
 	let activeTab = $state(0);
 	let itineraryTabsContainer = $state(null);
 	let prevItinerariesRef = $state(null);
+	// Id of the toast this modal raised, so closing it clears only its own.
+	let notificationId = null;
 
 	function toggleSteps(index) {
 		expandedSteps[index] = !expandedSteps[index];
@@ -85,9 +87,12 @@
 		let legCount = 0;
 
 		for (const leg of itineraries[activeTab].legs) {
+			// Counted before the geometry check: a leg with no geometry at all is
+			// just as invisible on the map as one that fails to decode, so it has
+			// to stay in the denominator or the gap goes unreported.
+			legCount++;
 			const shape = leg.legGeometry?.points;
 			if (!shape) continue;
-			legCount++;
 			const style = getLegPolylineStyle(leg);
 			// Await: the Google provider's createPolyline is async and returns
 			// null on decode failure — skip nulls instead of tracking a Promise.
@@ -99,7 +104,7 @@
 		}
 
 		if (legCount > 0 && drawnCount < legCount) {
-			notifyPartialRouteShape();
+			notificationId = notifyPartialRouteShape();
 		}
 	}
 
@@ -138,9 +143,9 @@
 	});
 
 	onDestroy(() => {
-		// Partial-shape warnings auto-dismiss, but clear immediately on close so
-		// they don't linger over the next view.
-		notifications.dismiss();
+		// Partial-shape warnings auto-dismiss, but clear ours immediately on close
+		// so it doesn't linger over the next view.
+		notifications.dismiss(notificationId);
 		if (currPolylines.length > 0) {
 			currPolylines.forEach(async (polyline) => {
 				mapProvider.removePolyline(await polyline);

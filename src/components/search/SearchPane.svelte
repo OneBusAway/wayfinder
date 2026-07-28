@@ -43,6 +43,9 @@
 	// click took over (after one of its awaits) and bail instead of fighting the
 	// newer route for the camera, stop markers, and vehicle polling.
 	let routeLoadToken = 0;
+	// Id of the toast the current route load raised, so we only ever clear our
+	// own and never one owned by another component.
+	let notificationId = null;
 	let mapLoaded = $state(false);
 	let isSurveyAnswered = $state(false);
 	let activeTab = $state('stops');
@@ -113,9 +116,10 @@
 
 	async function handleRouteClick(route) {
 		const loadToken = ++routeLoadToken;
-		// Drop any prior retriable toast so a stale Retry for a previous route
+		// Drop our prior retriable toast so a stale Retry for a previous route
 		// can't wipe markers/polylines after the user has moved on.
-		notifications.dismiss();
+		notifications.dismiss(notificationId);
+		notificationId = null;
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
 		mapProvider.clearVehicleMarkers();
@@ -127,7 +131,7 @@
 
 			if (!response.ok) {
 				console.error(`Failed to fetch route data: ${response.status}`);
-				notifyRouteLoadFailed(() => handleRouteClick(route));
+				notificationId = notifyRouteLoadFailed(() => handleRouteClick(route));
 				return;
 			}
 
@@ -161,7 +165,7 @@
 			if (loadToken !== routeLoadToken) return;
 
 			if (segmentCount > 0 && polylines.length < segmentCount) {
-				notifyPartialRouteShape();
+				notificationId = notifyPartialRouteShape();
 			}
 
 			// Fit the view to the full route so it's always centered and visible
@@ -206,7 +210,7 @@
 		} catch (error) {
 			console.error('Error fetching route data:', error);
 			if (loadToken === routeLoadToken) {
-				notifyRouteLoadFailed(() => handleRouteClick(route));
+				notificationId = notifyRouteLoadFailed(() => handleRouteClick(route));
 			}
 		}
 	}
@@ -328,7 +332,7 @@
 	});
 
 	onDestroy(() => {
-		notifications.dismiss();
+		notifications.dismiss(notificationId);
 		if (unsubscribeMapLoaded) {
 			unsubscribeMapLoaded();
 		}
