@@ -155,10 +155,10 @@ describe('TripPlanModal map fit', () => {
 		await vi.waitFor(() => expect(mapProvider.fitToPolylines).toHaveBeenCalled());
 
 		releaseFirst({ id: 'stale-line' });
-		await tick();
-		await Promise.resolve();
 
-		expect(mapProvider.removePolyline).toHaveBeenCalledWith({ id: 'stale-line' });
+		await vi.waitFor(() =>
+			expect(mapProvider.removePolyline).toHaveBeenCalledWith({ id: 'stale-line' })
+		);
 
 		unmount();
 	});
