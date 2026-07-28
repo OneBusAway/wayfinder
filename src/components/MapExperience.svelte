@@ -379,10 +379,16 @@
 	}
 
 	function clearTripItineraries() {
+		const hadTripUi =
+			tripItineraries.length > 0 || tripPlanError != null || currentModal === Modal.TRIP_PLANNER;
 		tripItineraries = [];
 		tripPlanError = null;
 		currentModal = null;
 		mapProvider.clearAllPolylines();
+		// Back to edit height when the rider clears results but stays on the mobile plan sheet.
+		if (hadTripUi && planTabActive && isNarrowViewport) {
+			sheetSnap = 'half';
+		}
 	}
 
 	function closeTripPlanModal() {
@@ -400,6 +406,7 @@
 		}
 		planTabActive = false;
 		clearTripItineraries();
+		sheetSnap = 'half';
 	}
 
 	async function loadAlerts() {
@@ -429,9 +436,12 @@
 		tripItineraries = tripData.plan?.itineraries || [];
 		tripPlanError = tripData.error || null;
 		currentModal = Modal.TRIP_PLANNER;
-		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
-		// bottom sheet, so open it fully instead of at the half detent.
+		// Desktop: sheet fills the left rail. Mobile: raise to full when we have
+		// itineraries so leg details aren't cramped under the form; leave half
+		// on empty/error so the rider can edit and still see the map.
 		if (browser && window.innerWidth >= 768) {
+			sheetSnap = 'full';
+		} else if (tripItineraries.length > 0) {
 			sheetSnap = 'full';
 		}
 	}
@@ -444,6 +454,10 @@
 
 	function handlePlanTripTabClicked() {
 		planTabActive = true;
+		// Editing state: half keeps the map visible behind From/To.
+		if (isNarrowViewport) {
+			sheetSnap = 'half';
+		}
 		closePane();
 	}
 
