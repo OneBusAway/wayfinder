@@ -263,6 +263,44 @@ describe('TripPlanModal map fit', () => {
 
 		unmount();
 	});
+
+	it('survives a provider whose createPolyline throws', async () => {
+		mapProvider.fitToPolylines = vi.fn().mockResolvedValue(false);
+		mapProvider.createPolyline = vi.fn(async () => {
+			throw new Error('provider blew up');
+		});
+		const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const rejections = [];
+		const onRejection = (reason) => rejections.push(reason);
+		process.on('unhandledRejection', onRejection);
+
+		const { unmount } = render(TripPlanModal, {
+			props: {
+				mapProvider,
+				itineraries: [makeItinerary([makeLeg()])],
+				closePane: vi.fn()
+			}
+		});
+
+		// A throw must not abort the draw: the fallback still has to run.
+		await vi.waitFor(() => expect(mapProvider.flyTo).toHaveBeenCalled());
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		process.off('unhandledRejection', onRejection);
+
+		expect(rejections.map((r) => String(r?.message ?? r))).toEqual([]);
+		expect(consoleError).toHaveBeenCalledWith(
+			'Error creating itinerary leg polyline:',
+			expect.any(Error)
+		);
+		expect(mapProvider.flyTo).toHaveBeenCalledWith(
+			expect.closeTo(47.65, 5),
+			expect.closeTo(-122.35, 5),
+			13
+		);
+
+		consoleError.mockRestore();
+		unmount();
+	});
 });
 
 // The partial-shape toast and the fit-to-itinerary camera work live in the same

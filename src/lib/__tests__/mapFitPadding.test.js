@@ -73,6 +73,19 @@ describe('panelFitPadding', () => {
 		expect(padding.top).toBe(base);
 	});
 
+	it('pads the top for a wide overlay anchored to the top of the viewport', () => {
+		const viewport = { width: 400, height: 800 };
+		// Wide banner occupying the top of the viewport rather than the bottom.
+		const banner = { top: 0, left: 0, right: 400, bottom: 200, width: 400, height: 200 };
+
+		const padding = panelFitPadding(banner, viewport, base);
+
+		expect(padding.top).toBe(200 + base);
+		expect(padding.bottom).toBe(base);
+		expect(padding.left).toBe(base);
+		expect(padding.right).toBe(base);
+	});
+
 	it('clamps any single side to 60% of the viewport', () => {
 		const viewport = { width: 400, height: 800 };
 		// Full-height sheet would otherwise demand ~800+48 bottom padding.

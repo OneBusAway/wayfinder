@@ -103,7 +103,15 @@
 			const style = getLegPolylineStyle(leg);
 			// Await: the Google provider's createPolyline is async and returns
 			// null on decode failure — skip nulls instead of tracking a Promise.
-			const polyline = await mapProvider.createPolyline(shape, style);
+			// A provider that throws instead of returning null must not reject
+			// this fire-and-forget draw: that would skip the fit *and* the
+			// midpoint fallback, stranding the camera with no route and no toast.
+			let polyline = null;
+			try {
+				polyline = await mapProvider.createPolyline(shape, style);
+			} catch (error) {
+				console.error('Error creating itinerary leg polyline:', error);
+			}
 			// A newer draw (tab switch / new results) took over while we were
 			// awaiting — remove the orphan so it can't strand on the map, then bail.
 			if (token !== drawToken) {
