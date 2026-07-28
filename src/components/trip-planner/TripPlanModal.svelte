@@ -138,8 +138,14 @@
 		if (!fitted) {
 			// No drawable geometry (e.g. a leg missing legGeometry) — frame the
 			// itinerary endpoints instead of leaving the camera where it was.
+			// Endpoints are filtered rather than trusted: an empty legs array or a
+			// leg missing from/to coordinates would otherwise throw here, or hand
+			// calculateMidpoint a NaN it happily averages into a NaN flyTo.
 			const legs = itineraries[activeTab].legs;
-			const midpoint = calculateMidpoint([legs[0].from, legs.at(-1).to]);
+			const endpoints = [legs[0]?.from, legs.at(-1)?.to].filter(
+				(point) => Number.isFinite(point?.lat) && Number.isFinite(point?.lon)
+			);
+			const midpoint = calculateMidpoint(endpoints);
 			if (midpoint) {
 				mapProvider.flyTo(midpoint.lat, midpoint.lon, 13);
 			}
@@ -185,11 +191,8 @@
 		// Partial-shape warnings auto-dismiss, but clear ours immediately on close
 		// so it doesn't linger over the next view.
 		notifications.dismiss(notificationId);
-		if (currPolylines.length > 0) {
-			currPolylines.forEach(async (polyline) => {
-				mapProvider.removePolyline(await polyline);
-			});
-		}
+		// currPolylines only ever holds polylines already awaited in drawRoute.
+		currPolylines.forEach((polyline) => mapProvider.removePolyline(polyline));
 
 		if (browser && itineraryTabsContainer) {
 			itineraryTabsContainer.removeEventListener('wheel', handleWheel);
