@@ -9,6 +9,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { getTripPlanFitPadding } from '$lib/tripPlanUtils';
 
 	/**
 	 * @typedef {Object} Props
@@ -46,6 +47,9 @@
 	}
 
 	let currPolylines = [];
+	// Bumped on every drawRoute() so a superseded tab/itinerary switch can drop
+	// in-flight polyline work instead of leaving stale geometry on the map.
+	let drawToken = 0;
 
 	// Build per-leg polyline style based on mode and route color
 	function getLegPolylineStyle(leg) {
@@ -66,12 +70,23 @@
 		};
 	}
 
+	/**
+	 * Drop polylines created by an aborted draw so a faster tab switch can't
+	 * leave orphan geometry on the map.
+	 * @param {any[]} polylines
+	 */
+	function discardPolylines(polylines) {
+		polylines.forEach((polyline) => {
+			mapProvider.removePolyline(polyline);
+		});
+	}
+
 	// draw the current itinerary route based on the active itinerary tab
 	async function drawRoute() {
+		const token = ++drawToken;
+
 		if (currPolylines.length > 0) {
-			currPolylines.forEach((polyline) => {
-				mapProvider.removePolyline(polyline);
-			});
+			discardPolylines(currPolylines);
 			currPolylines = [];
 		}
 
@@ -79,13 +94,44 @@
 			return;
 		}
 
+		const drawn = [];
 		for (const leg of itineraries[activeTab].legs) {
+			if (token !== drawToken) {
+				discardPolylines(drawn);
+				return;
+			}
+
 			const shape = leg.legGeometry.points;
 			const style = getLegPolylineStyle(leg);
 			// Await: the Google provider's createPolyline is async and returns
 			// null on decode failure — skip nulls instead of tracking a Promise.
 			const polyline = await mapProvider.createPolyline(shape, style);
-			if (polyline) currPolylines.push(polyline);
+			if (token !== drawToken) {
+				if (polyline) mapProvider.removePolyline(polyline);
+				discardPolylines(drawn);
+				return;
+			}
+			if (polyline) drawn.push(polyline);
+		}
+
+		if (token !== drawToken) {
+			discardPolylines(drawn);
+			return;
+		}
+
+		currPolylines = drawn;
+
+		// Frame the itinerary in the visible map band (above the sheet / beside
+		// the left rail), matching how OBA route views call fitToPolylines.
+		try {
+			const padding = getTripPlanFitPadding({
+				snap,
+				width: browser ? window.innerWidth : undefined,
+				height: browser ? window.innerHeight : undefined
+			});
+			await mapProvider.fitToPolylines?.({ padding });
+		} catch (error) {
+			console.error('Error fitting trip itinerary to view:', error);
 		}
 	}
 
@@ -124,6 +170,7 @@
 	});
 
 	onDestroy(() => {
+		drawToken += 1;
 		if (currPolylines.length > 0) {
 			currPolylines.forEach(async (polyline) => {
 				mapProvider.removePolyline(await polyline);

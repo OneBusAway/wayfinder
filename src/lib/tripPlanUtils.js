@@ -97,3 +97,51 @@ export function getRouteName(leg) {
 	if (leg.headsign) return name ? `${name} - ${leg.headsign}` : leg.headsign;
 	return name ?? '';
 }
+
+/** Matches Tailwind `md` — left-rail layout at this width and above. */
+const DESKTOP_BREAKPOINT_PX = 768;
+/** Matches `md:w-96` on the MapExperience left column. */
+const DESKTOP_RAIL_WIDTH_PX = 384;
+/** Matches BottomSheet HALF_FRACTION. */
+const HALF_SHEET_FRACTION = 0.55;
+/** Matches BottomSheet PEEK_HEIGHT. */
+const PEEK_SHEET_HEIGHT_PX = 150;
+
+/**
+ * Padding for `mapProvider.fitToPolylines` when framing a trip itinerary, so the
+ * route sits in the visible map band rather than under the sheet (mobile) or
+ * left rail (desktop).
+ *
+ * @param {Object} [params]
+ * @param {'peek'|'half'|'full'} [params.snap='half'] - Current bottom-sheet snap
+ * @param {number} [params.width] - Viewport width in CSS pixels
+ * @param {number} [params.height] - Viewport height in CSS pixels
+ * @returns {{ top: number, right: number, bottom: number, left: number }}
+ */
+export function getTripPlanFitPadding({ snap = 'half', width, height } = {}) {
+	const edge = 40;
+	const topChrome = 80;
+
+	if (typeof width !== 'number' || typeof height !== 'number') {
+		return { top: topChrome, right: edge, bottom: edge, left: edge };
+	}
+
+	if (width < DESKTOP_BREAKPOINT_PX) {
+		let bottom;
+		if (snap === 'full') {
+			bottom = Math.round(height * 0.85);
+		} else if (snap === 'peek') {
+			bottom = PEEK_SHEET_HEIGHT_PX + 16;
+		} else {
+			bottom = Math.round(height * HALF_SHEET_FRACTION) + 16;
+		}
+		return { top: topChrome, right: edge, bottom, left: edge };
+	}
+
+	return {
+		top: topChrome,
+		right: edge,
+		bottom: edge,
+		left: DESKTOP_RAIL_WIDTH_PX + 32
+	};
+}

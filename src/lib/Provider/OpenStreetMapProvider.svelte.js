@@ -1058,11 +1058,21 @@ export default class OpenStreetMapProvider {
 			// Fallback in case the view doesn't change enough to fire `moveend`.
 			setTimeout(reveal, duration * 1000 + 250);
 
-			this.map.flyToBounds(bounds, {
-				padding: options.padding ?? [50, 50],
+			const flyOptions = {
 				maxZoom: options.maxZoom ?? 16,
 				duration
-			});
+			};
+			// Accept either Leaflet's Point/`[x, y]` padding or a CSS-box object
+			// `{ top, right, bottom, left }` (same shape Google Maps fitBounds uses)
+			// so callers can pass one padding value for both providers.
+			const pad = options.padding;
+			if (pad && typeof pad === 'object' && !Array.isArray(pad) && 'top' in pad) {
+				flyOptions.paddingTopLeft = [pad.left ?? 50, pad.top ?? 50];
+				flyOptions.paddingBottomRight = [pad.right ?? 50, pad.bottom ?? 50];
+			} else {
+				flyOptions.padding = pad ?? [50, 50];
+			}
+			this.map.flyToBounds(bounds, flyOptions);
 		});
 	}
 
