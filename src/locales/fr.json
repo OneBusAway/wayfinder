@@ -126,7 +126,8 @@
 		"route_schedules": "Horaires des lignes",
 		"no_schedules_available": "Aucun horaire disponible pour la date sélectionnée.",
 		"stop_id": "ID de l'arrêt",
-		"direction": "Direction"
+		"direction": "Direction",
+		"schedule_table_caption": "Heures de départ pour {route}"
 	},
 	"direction": {
 		"N": "Nord",

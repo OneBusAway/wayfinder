@@ -126,7 +126,8 @@
 		"route_schedules": "Jadwalka waddooyinka",
 		"no_schedules_available": "Jadwal lama heli karo taariikhda la doortay.",
 		"stop_id": "Aqoonsiga joogsiga",
-		"direction": "Jihada"
+		"direction": "Jihada",
+		"schedule_table_caption": "Waqtiyada bixitaanka ee {route}"
 	},
 	"direction": {
 		"N": "Waqooyi",

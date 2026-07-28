@@ -126,7 +126,8 @@
 		"route_schedules": "برنامه زمانی خطوط",
 		"no_schedules_available": "برنامه‌ای برای تاریخ انتخاب شده موجود نیست.",
 		"stop_id": "شناسه ایستگاه",
-		"direction": "جهت"
+		"direction": "جهت",
+		"schedule_table_caption": "زمان‌های حرکت برای {route}"
 	},
 	"direction": {
 		"N": "شمال",

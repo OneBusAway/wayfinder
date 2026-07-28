@@ -126,7 +126,8 @@
 		"route_schedules": "የመንገድ ጊዜ ሰንጠረዦች",
 		"no_schedules_available": "ምንም ጊዜ ሰንጠረዦች ለተመረጠው ቀን አልተገኙም።",
 		"stop_id": "የማቆሚያ መታወቂያ",
-		"direction": "አቅጣጫ"
+		"direction": "አቅጣጫ",
+		"schedule_table_caption": "የመነሻ ሰዓቶች ለ{route}"
 	},
 	"direction": {
 		"N": "ሰሜን",

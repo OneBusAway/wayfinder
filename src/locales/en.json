@@ -170,7 +170,8 @@
 		"route_schedules": "Route Schedules",
 		"no_schedules_available": "No schedules available for the selected date.",
 		"stop_id": "Stop ID",
-		"direction": "Direction"
+		"direction": "Direction",
+		"schedule_table_caption": "Departure times for {route}"
 	},
 	"direction": {
 		"N": "North",

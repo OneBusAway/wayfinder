@@ -126,7 +126,8 @@
 		"route_schedules": "Rozkłady tras",
 		"no_schedules_available": "Brak dostępnych rozkładów na wybraną datę.",
 		"stop_id": "ID przystanku",
-		"direction": "Kierunek"
+		"direction": "Kierunek",
+		"schedule_table_caption": "Godziny odjazdów dla {route}"
 	},
 	"direction": {
 		"N": "Północ",

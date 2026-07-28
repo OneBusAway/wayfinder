@@ -126,7 +126,8 @@
 		"route_schedules": "Розклад маршрутів",
 		"no_schedules_available": "Немає розкладу на обрану дату.",
 		"stop_id": "ID зупинки",
-		"direction": "Напрямок"
+		"direction": "Напрямок",
+		"schedule_table_caption": "Час відправлення для {route}"
 	},
 	"direction": {
 		"N": "Північ",

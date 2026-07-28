@@ -126,7 +126,8 @@
 		"route_schedules": "Расписание маршрутов",
 		"no_schedules_available": "Нет расписания на выбранную дату.",
 		"stop_id": "ID остановки",
-		"direction": "Направление"
+		"direction": "Направление",
+		"schedule_table_caption": "Время отправления для {route}"
 	},
 	"direction": {
 		"N": "Север",

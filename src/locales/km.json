@@ -126,7 +126,8 @@
 		"route_schedules": "កាលវិភាគផ្លូវ",
 		"no_schedules_available": "គ្មានកាលវិភាគសម្រាប់កាលបរិច្ឆេទដែលបានជ្រើសរើសទេ។",
 		"stop_id": "លេខសម្គាល់ចំណត",
-		"direction": "ទិសដៅ"
+		"direction": "ទិសដៅ",
+		"schedule_table_caption": "ម៉ោងចេញដំណើរសម្រាប់ {route}"
 	},
 	"direction": {
 		"N": "ខាងជើង",

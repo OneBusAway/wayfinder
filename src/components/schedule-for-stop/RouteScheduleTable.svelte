@@ -4,6 +4,10 @@
 
 	let { schedule } = $props();
 
+	/** Unique per instance so multiple expanded route tables don't share one */
+	/** caption id (aria-labelledby would otherwise resolve to the first table). */
+	const captionId = `schedule-table-caption-${crypto.randomUUID()}`;
+
 	let scheduleData = $derived(renderScheduleTable(schedule));
 
 	function renderScheduleTable(schedule) {
@@ -23,25 +27,37 @@
 	}
 </script>
 
-<div class="overflow-x-auto dark:bg-black">
+<!-- A focusable scroll container gives keyboard users an entry point to the
+	scrollable schedule table; role="region" + aria-labelledby name it via the caption. -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<div role="region" tabindex="0" aria-labelledby={captionId} class="overflow-x-auto dark:bg-black">
 	<table
 		class="mt-4 w-full table-auto rounded-lg border border-gray-200 shadow-lg dark:border-gray-700 dark:bg-black"
 	>
+		<caption id={captionId} class="sr-only">
+			{$isLoading
+				? ''
+				: $t('schedule_for_stop.schedule_table_caption', {
+						values: { route: schedule.tripHeadsign }
+					})}
+		</caption>
 		<thead class="bg-gray-100 text-gray-800 dark:bg-gray-900">
 			<tr>
-				<th class="cursor-pointer px-6 py-3 text-left dark:text-white"
+				<th scope="col" class="px-6 py-3 text-left dark:text-white"
 					>{$isLoading ? '' : $t('schedule_for_stop.hour')}</th
 				>
-				<th class="cursor-pointer px-6 py-3 text-left dark:text-white"
+				<th scope="col" class="px-6 py-3 text-left dark:text-white"
 					>{$isLoading ? '' : $t('schedule_for_stop.minutes')}</th
 				>
 			</tr>
 		</thead>
 		<tbody>
 			<tr class="bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-600">
-				<td
+				<th
 					colspan="2"
-					class="px-6 py-3 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">AM</td
+					scope="rowgroup"
+					class="px-6 py-3 text-left font-semibold text-gray-700 dark:bg-gray-800 dark:text-white"
+					>AM</th
 				>
 			</tr>
 			{#if scheduleData.amTimes.length === 0}
@@ -72,11 +88,14 @@
 					</tr>
 				{/each}
 			{/if}
-
+		</tbody>
+		<tbody>
 			<tr class="bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-900">
-				<td
+				<th
 					colspan="2"
-					class="px-6 py-3 font-semibold text-gray-700 dark:bg-gray-800 dark:text-white">PM</td
+					scope="rowgroup"
+					class="px-6 py-3 text-left font-semibold text-gray-700 dark:bg-gray-800 dark:text-white"
+					>PM</th
 				>
 			</tr>
 			{#if scheduleData.pmTimes.length === 0}

@@ -126,7 +126,8 @@
 		"route_schedules": "መደባት መስመር",
 		"no_schedules_available": "ንዝተመርጸ ዕለት ዝኾነ መደብ የለን።",
 		"stop_id": "መለለዪ መዕረፊ",
-		"direction": "ኣንፈት"
+		"direction": "ኣንፈት",
+		"schedule_table_caption": "ናይ መበገሲ ሰዓታት ን{route}"
 	},
 	"direction": {
 		"N": "ሰሜን",

@@ -126,7 +126,8 @@
 		"route_schedules": "मार्ग समय सारणी",
 		"no_schedules_available": "चयनित तिथि के लिए कोई समय सारणी उपलब्ध नहीं।",
 		"stop_id": "स्टॉप आईडी",
-		"direction": "दिशा"
+		"direction": "दिशा",
+		"schedule_table_caption": "{route} के लिए प्रस्थान समय"
 	},
 	"direction": {
 		"N": "उत्तर",

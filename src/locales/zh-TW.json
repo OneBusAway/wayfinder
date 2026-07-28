@@ -126,7 +126,8 @@
 		"route_schedules": "路線時刻表",
 		"no_schedules_available": "所選日期沒有班次。",
 		"stop_id": "站牌編號",
-		"direction": "方向"
+		"direction": "方向",
+		"schedule_table_caption": "{route} 的發車時間"
 	},
 	"direction": {
 		"N": "北",

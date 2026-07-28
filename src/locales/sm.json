@@ -126,7 +126,8 @@
 		"route_schedules": "Fuataga o Auala",
 		"no_schedules_available": "E leai ni fuataga o loʻo avanoa mo le aso na filifilia.",
 		"stop_id": "Numera o le Nofoaga Taofi",
-		"direction": "Itu"
+		"direction": "Itu",
+		"schedule_table_caption": "Taimi e malaga ai mo {route}"
 	},
 	"direction": {
 		"N": "Matu",
