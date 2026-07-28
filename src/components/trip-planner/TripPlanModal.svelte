@@ -9,6 +9,8 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
+	import { notifyPartialRouteShape } from '$lib/routeNotifications';
+	import { notifications } from '$stores/notificationStore';
 
 	/**
 	 * @typedef {Object} Props
@@ -34,6 +36,8 @@
 	let activeTab = $state(0);
 	let itineraryTabsContainer = $state(null);
 	let prevItinerariesRef = $state(null);
+	// Id of the toast this modal raised, so closing it clears only its own.
+	let notificationId = null;
 
 	function toggleSteps(index) {
 		expandedSteps[index] = !expandedSteps[index];
@@ -79,13 +83,28 @@
 			return;
 		}
 
+		let drawnCount = 0;
+		let legCount = 0;
+
 		for (const leg of itineraries[activeTab].legs) {
-			const shape = leg.legGeometry.points;
+			// Counted before the geometry check: a leg with no geometry at all is
+			// just as invisible on the map as one that fails to decode, so it has
+			// to stay in the denominator or the gap goes unreported.
+			legCount++;
+			const shape = leg.legGeometry?.points;
+			if (!shape) continue;
 			const style = getLegPolylineStyle(leg);
 			// Await: the Google provider's createPolyline is async and returns
 			// null on decode failure — skip nulls instead of tracking a Promise.
 			const polyline = await mapProvider.createPolyline(shape, style);
-			if (polyline) currPolylines.push(polyline);
+			if (polyline) {
+				currPolylines.push(polyline);
+				drawnCount++;
+			}
+		}
+
+		if (legCount > 0 && drawnCount < legCount) {
+			notificationId = notifyPartialRouteShape();
 		}
 	}
 
@@ -124,6 +143,9 @@
 	});
 
 	onDestroy(() => {
+		// Partial-shape warnings auto-dismiss, but clear ours immediately on close
+		// so it doesn't linger over the next view.
+		notifications.dismiss(notificationId);
 		if (currPolylines.length > 0) {
 			currPolylines.forEach(async (polyline) => {
 				mapProvider.removePolyline(await polyline);

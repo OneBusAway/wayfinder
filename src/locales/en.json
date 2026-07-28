@@ -137,6 +137,13 @@
 	"routes": "Routes",
 	"route": "route",
 	"route_modal_title": "Route {name}",
+	"notifications": {
+		"route_load_failed": "Couldn't load this route.",
+		"route_shape_failed": "Couldn't draw this route on the map.",
+		"route_shape_partial": "Part of this route couldn't be drawn. The map may be missing a segment.",
+		"tap_to_retry": "Tap to retry.",
+		"dismiss": "Dismiss"
+	},
 	"loading": "Loading",
 	"arrives": "arrives",
 	"NA": "N/A",
