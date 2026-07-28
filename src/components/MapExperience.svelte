@@ -127,14 +127,12 @@
 	let stopSheetOpen = $derived(selectedStopId != null);
 	let showCollapsedSearch = $derived(stopSheetOpen && searchCollapsed);
 
-	// Mobile plan mode: Plan tab UI lives in the bottom sheet (form + recent +
-	// results) instead of stacking a tall SearchPane card above itineraries (#577).
+	// Mobile: form + recent + results in the bottom sheet (#577). Desktop: form stays
+	// in SearchPane; sheet below is only for itinerary results after planning.
 	const NARROW_VIEWPORT_MQ = '(max-width: 767px)';
 	let planTabActive = $state(false);
 	let isNarrowViewport = $state(browser ? window.matchMedia(NARROW_VIEWPORT_MQ).matches : false);
 	let mobilePlanSheetOpen = $derived(planTabActive && isNarrowViewport);
-	// Hide the top SearchPane on mobile while the plan sheet owns the UI (desktop
-	// keeps the existing left-rail SearchPane + results sheet).
 	let hideSearchForMobilePlan = $derived(mobilePlanSheetOpen);
 	let mediaQueryList = null;
 	function syncNarrowViewport(event) {
@@ -391,6 +389,7 @@
 		}
 	}
 
+	/** Close desktop itinerary results sheet; keep Plan tab and form in SearchPane. */
 	function closeTripPlanModal() {
 		if (browser) {
 			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
@@ -398,7 +397,7 @@
 		clearTripItineraries();
 	}
 
-	/** Exit mobile plan-sheet mode: clear results and return SearchPane to Stops. */
+	/** Exit mobile plan sheet and return to Stops. */
 	function closeMobilePlanSheet() {
 		if (browser) {
 			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
@@ -436,13 +435,12 @@
 		tripItineraries = tripData.plan?.itineraries || [];
 		tripPlanError = tripData.error || null;
 		currentModal = Modal.TRIP_PLANNER;
-		// Desktop: sheet fills the left rail. Mobile: raise to full when we have
-		// itineraries so leg details aren't cramped under the form; leave half
-		// on empty/error so the rider can edit and still see the map.
+		// Desktop: sheet fills the left rail. Mobile: stay at half when results land so
+		// the map stays visible; riders can drag to full or scroll inside the sheet.
 		if (browser && window.innerWidth >= 768) {
 			sheetSnap = 'full';
 		} else if (tripItineraries.length > 0) {
-			sheetSnap = 'full';
+			sheetSnap = 'half';
 		}
 	}
 
@@ -454,7 +452,8 @@
 
 	function handlePlanTripTabClicked() {
 		planTabActive = true;
-		// Editing state: half keeps the map visible behind From/To.
+		// Mobile: open the plan sheet at half. Desktop: form lives in SearchPane — no
+		// empty results sheet until the rider plans a trip.
 		if (isNarrowViewport) {
 			sheetSnap = 'half';
 		}

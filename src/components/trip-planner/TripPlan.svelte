@@ -528,8 +528,8 @@
 				class:dark:text-brand={showRecentTrips}
 			>
 				<FontAwesomeIcon icon={faClockRotateLeft} class="h-3.5 w-3.5" />
-				<span class="hidden sm:inline">{$t('trip-planner.recent_searches')}</span>
-				<span class="sr-only sm:hidden">{$t('trip-planner.recent_searches')}</span>
+				<span class="hidden md:inline">{$t('trip-planner.recents')}</span>
+				<span class="sr-only md:hidden">{$t('trip-planner.recent_searches')}</span>
 			</button>
 		{/if}
 		<div class="flex-1"></div>
