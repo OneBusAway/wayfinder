@@ -3,6 +3,7 @@
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import ItineraryDetails from './ItineraryDetails.svelte';
 	import ItineraryTab from './ItineraryTab.svelte';
+	import TripPlan from './TripPlan.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faX } from '@fortawesome/free-solid-svg-icons';
 	import { keybinding } from '$lib/keybinding';
@@ -19,6 +20,9 @@
 	 * @property {boolean} [loading]
 	 * @property {Function} closePane
 	 * @property {('peek'|'half'|'full')} [snap]
+	 * @property {boolean} [showForm] - When true (mobile plan sheet), embed From/To form in this sheet
+	 * @property {Function} [handleTripPlan] - Required when showForm is true
+	 * @property {Function} [clearTripItineraries] - Required when showForm is true
 	 */
 
 	/** @type {Props} */
@@ -28,7 +32,10 @@
 		error = null,
 		loading = false,
 		closePane,
-		snap = $bindable('half')
+		snap = $bindable('half'),
+		showForm = false,
+		handleTripPlan = null,
+		clearTripItineraries = null
 	} = $props();
 
 	let expandedSteps = $state({});
@@ -181,13 +188,20 @@
 			itineraryTabsContainer.removeEventListener('wheel', handleWheel);
 		}
 	});
+
+	let headerTitle = $derived(
+		showForm ? $t('tabs.plan_trip') : $t('trip-planner.trip_itineraries')
+	);
+	let hasResults = $derived(itineraries.length > 0);
+	// "No itineraries" empty state only after a plan attempt, not while editing.
+	let showEmptyState = $derived(!loading && !hasResults && (!showForm || error));
 </script>
 
 <BottomSheet bind:snap>
 	{#snippet header()}
 		<div class="flex items-center gap-2.5">
 			<p class="min-w-0 flex-1 truncate text-base font-semibold text-black dark:text-white">
-				{$t('trip-planner.trip_itineraries')}
+				{headerTitle}
 			</p>
 			<button
 				type="button"
@@ -201,11 +215,21 @@
 		</div>
 	{/snippet}
 
+	{#if showForm && handleTripPlan && clearTripItineraries}
+		<div
+			class={hasResults || loading || error
+				? 'border-b border-gray-200 pb-4 dark:border-gray-700'
+				: ''}
+		>
+			<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
+		</div>
+	{/if}
+
 	{#if loading}
 		<LoadingSpinner />
 	{/if}
 
-	{#if itineraries.length > 0}
+	{#if hasResults}
 		<div class="itinerary-tabs" bind:this={itineraryTabsContainer}>
 			{#each itineraries as itinerary, index}
 				<ItineraryTab {index} {activeTab} {setActiveTab} {itinerary} />
@@ -221,7 +245,7 @@
 				{/key}
 			{/if}
 		</div>
-	{:else if !loading}
+	{:else if showEmptyState}
 		<div class="flex h-full flex-col items-center justify-center gap-3 py-12">
 			<p class="text-gray-400 dark:text-gray-500">
 				{$t('trip-planner.no_itineraries_found')}

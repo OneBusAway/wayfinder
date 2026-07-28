@@ -116,6 +116,27 @@ describe('TripPlanModal map framing', () => {
 		});
 	});
 
+	it('embeds the plan form when showForm is true and skips empty state before planning', async () => {
+		const { queryByText } = render(TripPlanModal, {
+			props: {
+				mapProvider,
+				itineraries: [],
+				closePane: vi.fn(),
+				snap: 'half',
+				showForm: true,
+				handleTripPlan: vi.fn(),
+				clearTripItineraries: vi.fn()
+			}
+		});
+
+		await waitFor(() => {
+			expect(document.querySelector('#from-location-input')).toBeInTheDocument();
+		});
+		expect(document.querySelector('#to-location-input')).toBeInTheDocument();
+		expect(queryByText('trip-planner.no_itineraries_found')).toBeNull();
+		expect(mapProvider.fitToPolylines).not.toHaveBeenCalled();
+	});
+
 	it('refits the map when the active itinerary tab changes', async () => {
 		const { getAllByRole } = render(TripPlanModal, {
 			props: {

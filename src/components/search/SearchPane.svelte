@@ -28,6 +28,9 @@
 		mapProvider = null,
 		onCollapse = null,
 		collapsed = false,
+		// When false, Plan tab stays available but TripPlan mounts elsewhere
+		// (mobile bottom sheet). Avoids two TripPlan instances.
+		embedTripPlan = true,
 		childContent
 	} = $props();
 
@@ -257,8 +260,17 @@
 		isContextMenuTrigger = true;
 		activeTab = 'plan';
 		await tick();
+		// Enter trip-plan mode the same way a Plan tab click does (mobile sheet,
+		// map chrome). Dispatched before setTripPlanLocation so listeners are ready.
+		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
 		window.dispatchEvent(new CustomEvent('setTripPlanLocation', { detail: e.detail }));
 		isContextMenuTrigger = false;
+	}
+
+	function handleOpenStopsTab() {
+		if (activeTab !== 'plan') return;
+		handleTabSwitch();
+		activeTab = 'stops';
 	}
 
 	let hasRestoredSharedTrip = false;
@@ -289,6 +301,9 @@
 			// Mirror a real Plan tab click so the map hides stop markers and enters
 			// trip-plan mode. Dispatched after tick so MapView's listener is ready.
 			window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+			// On mobile, TripPlan remounts inside the plan sheet after this event —
+			// wait one more tick so its listeners exist before loadSharedTrip.
+			await tick();
 			if (trip) {
 				window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: trip }));
 			} else {
@@ -309,6 +324,7 @@
 
 		window.addEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
 		window.addEventListener('contextMenuTripPlan', handleContextMenuTripPlan);
+		window.addEventListener('openStopsTab', handleOpenStopsTab);
 	});
 
 	onDestroy(() => {
@@ -318,6 +334,7 @@
 		if (browser) {
 			window.removeEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
 			window.removeEventListener('contextMenuTripPlan', handleContextMenuTripPlan);
+			window.removeEventListener('openStopsTab', handleOpenStopsTab);
 		}
 		if (currentIntervalId) {
 			clearInterval(currentIntervalId);
@@ -420,7 +437,9 @@
 				}}
 				disabled={!mapLoaded}
 			>
-				<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
+				{#if embedTripPlan}
+					<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
+				{/if}
 			</TabItem>
 		{/if}
 

@@ -127,6 +127,20 @@
 	let stopSheetOpen = $derived(selectedStopId != null);
 	let showCollapsedSearch = $derived(stopSheetOpen && searchCollapsed);
 
+	// Mobile plan mode: Plan tab UI lives in the bottom sheet (form + recent +
+	// results) instead of stacking a tall SearchPane card above itineraries (#577).
+	const NARROW_VIEWPORT_MQ = '(max-width: 767px)';
+	let planTabActive = $state(false);
+	let isNarrowViewport = $state(browser ? window.matchMedia(NARROW_VIEWPORT_MQ).matches : false);
+	let mobilePlanSheetOpen = $derived(planTabActive && isNarrowViewport);
+	// Hide the top SearchPane on mobile while the plan sheet owns the UI (desktop
+	// keeps the existing left-rail SearchPane + results sheet).
+	let hideSearchForMobilePlan = $derived(mobilePlanSheetOpen);
+	let mediaQueryList = null;
+	function syncNarrowViewport(event) {
+		isNarrowViewport = event.matches;
+	}
+
 	function handleStopMarkerSelect(stopData) {
 		// Instant: the marker already carries the stop, so push it into history state
 		// (no fetch). The selection effect reacts to the URL change and frames the map.
@@ -378,6 +392,16 @@
 		clearTripItineraries();
 	}
 
+	/** Exit mobile plan-sheet mode: clear results and return SearchPane to Stops. */
+	function closeMobilePlanSheet() {
+		if (browser) {
+			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
+			window.dispatchEvent(new CustomEvent('openStopsTab'));
+		}
+		planTabActive = false;
+		clearTripItineraries();
+	}
+
 	async function loadAlerts() {
 		try {
 			const response = await fetch('/api/oba/alerts');
@@ -414,10 +438,12 @@
 
 	function handleTabSwitched() {
 		// SearchPane owns trip-plan teardown when leaving the Plan tab (it dispatches tripPlanModalClosed and calls clearTripItineraries). Here we just close any open modal for the generic tab switch.
+		planTabActive = false;
 		currentModal = null;
 	}
 
 	function handlePlanTripTabClicked() {
+		planTabActive = true;
 		closePane();
 	}
 
@@ -431,6 +457,10 @@
 		if (browser) {
 			window.addEventListener('tabSwitched', handleTabSwitched);
 			window.addEventListener('planTripTabClicked', handlePlanTripTabClicked);
+
+			mediaQueryList = window.matchMedia(NARROW_VIEWPORT_MQ);
+			isNarrowViewport = mediaQueryList.matches;
+			mediaQueryList.addEventListener('change', syncNarrowViewport);
 
 			// Clean URL params after coordinates have been captured
 			if (initialCoords) {
@@ -468,6 +498,9 @@
 		if (browser) {
 			window.removeEventListener('tabSwitched', handleTabSwitched);
 			window.removeEventListener('planTripTabClicked', handlePlanTripTabClicked);
+			if (mediaQueryList) {
+				mediaQueryList.removeEventListener('change', syncNarrowViewport);
+			}
 			if (themeChangeHandler) {
 				window.removeEventListener('themeChange', themeChangeHandler);
 			}
@@ -511,7 +544,8 @@
 				<SearchPane
 					{mapProvider}
 					cssClasses="pointer-events-auto"
-					collapsed={showCollapsedSearch}
+					collapsed={showCollapsedSearch || hideSearchForMobilePlan}
+					embedTripPlan={!mobilePlanSheetOpen}
 					{handleRouteSelected}
 					{handleViewAllRoutes}
 					{clearPolylines}
@@ -541,6 +575,18 @@
 					<RouteModal {closePane} {mapProvider} {stops} {selectedRoute} bind:snap={sheetSnap} />
 				{:else if currentModal === Modal.ALL_ROUTES}
 					<ViewAllRoutesModal {closePane} {handleModalRouteClick} bind:snap={sheetSnap} />
+				{:else if mobilePlanSheetOpen}
+					<TripPlanModal
+						{mapProvider}
+						showForm={true}
+						{handleTripPlan}
+						{clearTripItineraries}
+						itineraries={tripItineraries}
+						error={tripPlanError}
+						loading={loadingItineraries}
+						closePane={closeMobilePlanSheet}
+						bind:snap={sheetSnap}
+					/>
 				{:else if currentModal === Modal.TRIP_PLANNER}
 					<TripPlanModal
 						{mapProvider}
