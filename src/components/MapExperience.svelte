@@ -28,6 +28,7 @@
 	import SurveyLauncher from '$components/surveys/SurveyLauncher.svelte';
 	import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
 	import { hasTripParams } from '$lib/urlState';
+	import { notifications } from '$stores/notificationStore';
 	import { env } from '$env/dynamic/public';
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
@@ -191,6 +192,10 @@
 				tripPlanError = null;
 			}
 			currentModal = null;
+			// The stop now owns the map, so any route/trip toast still on screen is
+			// stale — and tapping its Retry would tear down the stop's own markers
+			// and polylines. Unscoped: this supersedes whichever component raised it.
+			notifications.dismiss();
 
 			searchCollapsed = true;
 			if (browser && window.innerWidth >= 768) sheetSnap = 'full';

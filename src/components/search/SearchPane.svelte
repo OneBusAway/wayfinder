@@ -17,6 +17,8 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { parseTripParams, hasTripParams } from '$lib/urlState';
+	import { notifyRouteLoadFailed, notifyPartialRouteShape } from '$lib/routeNotifications';
+	import { notifications } from '$stores/notificationStore';
 
 	let {
 		handleRouteSelected,
@@ -44,6 +46,9 @@
 	// click took over (after one of its awaits) and bail instead of fighting the
 	// newer route for the camera, stop markers, and vehicle polling.
 	let routeLoadToken = 0;
+	// Id of the toast the current route load raised, so we only ever clear our
+	// own and never one owned by another component.
+	let notificationId = null;
 	let mapLoaded = $state(false);
 	let isSurveyAnswered = $state(false);
 	let activeTab = $state('stops');
@@ -114,6 +119,10 @@
 
 	async function handleRouteClick(route) {
 		const loadToken = ++routeLoadToken;
+		// Drop our prior retriable toast so a stale Retry for a previous route
+		// can't wipe markers/polylines after the user has moved on.
+		notifications.dismiss(notificationId);
+		notificationId = null;
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
 		mapProvider.clearVehicleMarkers();
@@ -125,6 +134,7 @@
 
 			if (!response.ok) {
 				console.error(`Failed to fetch route data: ${response.status}`);
+				notificationId = notifyRouteLoadFailed(() => handleRouteClick(route));
 				return;
 			}
 
@@ -145,6 +155,7 @@
 			// Reset the collection so each route click rebuilds it from scratch
 			// rather than accumulating stale references from previous selections.
 			polylines = [];
+			const segmentCount = polylinesData?.length ?? 0;
 			for (const polylineData of polylinesData) {
 				const polyline = await mapProvider.createPolyline(polylineData.points);
 				if (loadToken !== routeLoadToken) return;
@@ -152,6 +163,12 @@
 				// provider); skip it so one bad segment degrades the route instead
 				// of leaving a null hole in the polylines array.
 				if (polyline) polylines.push(polyline);
+			}
+
+			if (loadToken !== routeLoadToken) return;
+
+			if (segmentCount > 0 && polylines.length < segmentCount) {
+				notificationId = notifyPartialRouteShape();
 			}
 
 			// Fit the view to the full route so it's always centered and visible
@@ -195,6 +212,9 @@
 			handleRouteSelected(routeData);
 		} catch (error) {
 			console.error('Error fetching route data:', error);
+			if (loadToken === routeLoadToken) {
+				notificationId = notifyRouteLoadFailed(() => handleRouteClick(route));
+			}
 		}
 	}
 
@@ -328,6 +348,7 @@
 	});
 
 	onDestroy(() => {
+		notifications.dismiss(notificationId);
 		if (unsubscribeMapLoaded) {
 			unsubscribeMapLoaded();
 		}

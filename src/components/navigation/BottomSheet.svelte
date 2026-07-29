@@ -7,6 +7,7 @@
     the extremes.
 
     @prop {('peek'|'half'|'full')} snap - Bindable current snap point
+    @prop {HTMLElement | null} element - Bindable reference to the sheet DOM node (for measuring occlusion)
     @prop {import('svelte').Snippet} header - Condensed header rendered inside the drag-handle row
     @prop {import('svelte').Snippet} children - Scrollable sheet body
 -->
@@ -15,7 +16,7 @@
 	import '$lib/i18n.js';
 	import { t } from 'svelte-i18n';
 
-	let { snap = $bindable('half'), header, children } = $props();
+	let { snap = $bindable('half'), element = $bindable(null), header, children } = $props();
 
 	const SNAP_ORDER = ['peek', 'half', 'full'];
 	const PEEK_HEIGHT = 150;
@@ -88,6 +89,7 @@
 
 <div class="pointer-events-none absolute inset-0" bind:clientHeight={containerHeight}>
 	<div
+		bind:this={element}
 		class="pointer-events-auto absolute inset-x-0 bottom-0 flex flex-col overflow-hidden rounded-t-[14px] border border-b-0 border-gray-400 bg-surface/95 shadow-[0_-8px_24px_rgba(0,0,0,.18)] backdrop-blur dark:border-gray-600 dark:bg-surface-dark/95 dark:text-surface-foreground-dark"
 		style:height="{sheetHeight}px"
 		style:transition={dragging ? 'none' : 'height .28s cubic-bezier(0,0,.2,1)'}

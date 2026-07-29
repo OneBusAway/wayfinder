@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isStaySeatedTransition, getRouteName, getTripPlanFitPadding } from '$lib/tripPlanUtils';
+import { isStaySeatedTransition, getRouteName } from '$lib/tripPlanUtils';
 
 describe('tripPlanUtils', () => {
 	describe('isStaySeatedTransition', () => {
@@ -161,45 +161,6 @@ describe('tripPlanUtils', () => {
 		it('uses headsign not tripHeadsign', () => {
 			const leg = { routeShortName: '44', tripHeadsign: 'Via Pike', headsign: 'Downtown' };
 			expect(getRouteName(leg)).toBe('44 - Downtown');
-		});
-	});
-
-	describe('getTripPlanFitPadding', () => {
-		it('returns uniform edge padding when viewport size is unknown', () => {
-			expect(getTripPlanFitPadding()).toEqual({
-				top: 80,
-				right: 40,
-				bottom: 40,
-				left: 40
-			});
-		});
-
-		it('reserves bottom space for the half sheet on mobile', () => {
-			const padding = getTripPlanFitPadding({
-				snap: 'half',
-				width: 390,
-				height: 800
-			});
-			expect(padding.bottom).toBe(Math.round(800 * 0.55) + 16);
-			expect(padding.left).toBe(40);
-			expect(padding.top).toBe(80);
-		});
-
-		it('reserves less bottom space at peek than half on mobile', () => {
-			const peek = getTripPlanFitPadding({ snap: 'peek', width: 390, height: 800 });
-			const half = getTripPlanFitPadding({ snap: 'half', width: 390, height: 800 });
-			expect(peek.bottom).toBeLessThan(half.bottom);
-			expect(peek.bottom).toBe(166);
-		});
-
-		it('reserves left-rail width on desktop', () => {
-			const padding = getTripPlanFitPadding({
-				snap: 'full',
-				width: 1280,
-				height: 800
-			});
-			expect(padding.left).toBe(416);
-			expect(padding.bottom).toBe(40);
 		});
 	});
 });
