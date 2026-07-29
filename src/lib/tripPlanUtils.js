@@ -97,4 +97,3 @@ export function getRouteName(leg) {
 	if (leg.headsign) return name ? `${name} - ${leg.headsign}` : leg.headsign;
 	return name ?? '';
 }
-

@@ -214,9 +214,7 @@
 		}
 	});
 
-	let headerTitle = $derived(
-		showForm ? $t('tabs.plan_trip') : $t('trip-planner.trip_itineraries')
-	);
+	let headerTitle = $derived(showForm ? $t('tabs.plan_trip') : $t('trip-planner.trip_itineraries'));
 	let hasResults = $derived(itineraries.length > 0);
 	// "No itineraries" empty state only after a plan attempt, not while editing.
 	let showEmptyState = $derived(!loading && !hasResults && (!showForm || error));
