@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest';
 import ErrorPage from '$src/routes/+error.svelte';
 import { locale, __setTranslatorMode } from 'svelte-i18n';
 import { page } from '$app/stores';
@@ -128,6 +128,10 @@ describe('ErrorPage', () => {
 		page.__setError({ message: 'Not Found' });
 	});
 
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	test('renders the 404 status code', () => {
 		render(ErrorPage);
 
@@ -210,12 +214,18 @@ describe('ErrorPage', () => {
 		});
 
 		test('renders hardcoded fallbacks when $_ throws an error', () => {
+			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 			__setTranslatorMode('throws');
 			render(ErrorPage);
 
 			expect(screen.getByText('Page not found')).toBeInTheDocument();
 			expect(screen.getByText('Go home')).toBeInTheDocument();
 			expect(screen.getByText('Go back')).toBeInTheDocument();
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('[i18n fallback]'),
+				'Translator error'
+			);
 		});
 
 		test('renders hardcoded fallbacks when translator returns the key unchanged', () => {
@@ -231,20 +241,17 @@ describe('ErrorPage', () => {
 	describe('Go back button behavior', () => {
 		test('calls history.back() when there is browser history (length > 1)', async () => {
 			const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {});
-			const lengthSpy = vi.spyOn(window.history, 'length', 'get').mockReturnValue(5);
+			vi.spyOn(window.history, 'length', 'get').mockReturnValue(5);
 
 			render(ErrorPage);
 			await fireEvent.click(screen.getByRole('button', { name: /Go back/i }));
 
 			expect(backSpy).toHaveBeenCalledOnce();
-
-			backSpy.mockRestore();
-			lengthSpy.mockRestore();
 		});
 
 		test('navigates to / when there is no browser history (length <= 1)', async () => {
 			const backSpy = vi.spyOn(window.history, 'back').mockImplementation(() => {});
-			const lengthSpy = vi.spyOn(window.history, 'length', 'get').mockReturnValue(1);
+			vi.spyOn(window.history, 'length', 'get').mockReturnValue(1);
 
 			// Stub window.location to capture the href assignment without triggering
 			const originalLocation = window.location;
@@ -261,18 +268,18 @@ describe('ErrorPage', () => {
 				}
 			});
 
-			render(ErrorPage);
-			await fireEvent.click(screen.getByRole('button', { name: /Go back/i }));
+			try {
+				render(ErrorPage);
+				await fireEvent.click(screen.getByRole('button', { name: /Go back/i }));
 
-			expect(backSpy).not.toHaveBeenCalled();
-			expect(hrefValue).toBe('/');
-
-			Object.defineProperty(window, 'location', {
-				configurable: true,
-				value: originalLocation
-			});
-			backSpy.mockRestore();
-			lengthSpy.mockRestore();
+				expect(backSpy).not.toHaveBeenCalled();
+				expect(hrefValue).toBe('/');
+			} finally {
+				Object.defineProperty(window, 'location', {
+					configurable: true,
+					value: originalLocation
+				});
+			}
 		});
 	});
 
