@@ -145,9 +145,9 @@ export const mockStopsForRouteData = [
 	}
 ];
 
-// Real OBA Situation shape (allAffects + TranslatedString wrappers). Includes a
-// stop-specific, a route-specific, and an agency-wide alert so relevance
-// ordering and severity styling can be exercised end to end.
+// Real OBA Situation shape (allAffects + TranslatedString wrappers). Reasons /
+// consequences use the GTFS vocabulary Puget Sound (and most OBA servers) emit
+// — e.g. CONSTRUCTION / DETOUR — not the TPEG spellings in the SDK typings.
 export const mockServiceAlertsData = [
 	{
 		id: 'alert_1',
@@ -158,7 +158,7 @@ export const mockServiceAlertsData = [
 				'Route 10 is experiencing a detour due to construction on Pine Street. Buses will use alternative routing via Pike Street.'
 		},
 		severity: 'warning',
-		reason: 'environmentReason',
+		reason: 'CONSTRUCTION',
 		url: { lang: 'en', value: 'https://metro.kingcounty.gov/alerts/route-10-detour' },
 		activeWindows: [
 			{
@@ -166,7 +166,7 @@ export const mockServiceAlertsData = [
 				to: Date.now() + 604800000 // 1 week from now
 			}
 		],
-		consequences: [{ condition: 'diversion' }],
+		consequences: [{ condition: 'DETOUR' }],
 		allAffects: [
 			{
 				agencyId: '1',
@@ -186,7 +186,7 @@ export const mockServiceAlertsData = [
 				'The Downtown Seattle Transit Tunnel is temporarily closed for maintenance. All bus routes are operating on surface streets.'
 		},
 		severity: 'severe',
-		reason: 'equipmentReason',
+		reason: 'MAINTENANCE',
 		url: { lang: 'en', value: 'https://metro.kingcounty.gov/alerts/tunnel-closure' },
 		activeWindows: [
 			{
@@ -194,7 +194,7 @@ export const mockServiceAlertsData = [
 				to: Date.now() + 7200000 // 2 hours from now
 			}
 		],
-		consequences: [{ condition: 'diversion' }],
+		consequences: [{ condition: 'DETOUR' }],
 		allAffects: [
 			{
 				agencyId: '1',
@@ -212,8 +212,8 @@ export const mockServiceAlertsData = [
 			lang: 'en',
 			value: 'Pine St & 3rd Ave boardings have moved one block north during sidewalk work.'
 		},
-		severity: 'info',
-		reason: 'miscellaneousReason',
+		severity: 'noImpact',
+		reason: 'CONSTRUCTION',
 		url: { lang: 'en', value: 'https://metro.kingcounty.gov/alerts/stop-relocate' },
 		activeWindows: [
 			{
@@ -221,7 +221,7 @@ export const mockServiceAlertsData = [
 				to: Date.now() + 86400000
 			}
 		],
-		consequences: [{ condition: 'stopMoved' }],
+		consequences: [{ condition: 'STOP_MOVED' }],
 		allAffects: [
 			{
 				agencyId: '1',

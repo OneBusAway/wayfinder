@@ -4,9 +4,11 @@ import {
 	normalizeSeverity,
 	SEVERITY_RANK,
 	alertAffects,
-	isAgencyWideAlert,
 	orderAlertsByRelevance,
-	activeWindowRange
+	activeWindowRange,
+	formatCauseLabel,
+	formatEffectLabel,
+	formatActiveWindowLabel
 } from '$components/service-alerts/serviceAlertsHelper';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
@@ -149,20 +151,6 @@ describe('alertAffects', () => {
 	});
 });
 
-describe('isAgencyWideAlert', () => {
-	it('is true when allAffects is missing or only has agencyId', () => {
-		expect(isAgencyWideAlert({})).toBe(true);
-		expect(isAgencyWideAlert({ allAffects: [] })).toBe(true);
-		expect(isAgencyWideAlert({ allAffects: [{ agencyId: '1' }] })).toBe(true);
-	});
-
-	it('is false when any entry names a stop, route, or trip', () => {
-		expect(isAgencyWideAlert({ allAffects: [{ stopId: '1_1' }] })).toBe(false);
-		expect(isAgencyWideAlert({ allAffects: [{ routeId: '1_1' }] })).toBe(false);
-		expect(isAgencyWideAlert({ allAffects: [{ tripId: '1_1' }] })).toBe(false);
-	});
-});
-
 describe('orderAlertsByRelevance', () => {
 	const stopId = '1_75403';
 	const routeIds = ['1_100479'];
@@ -253,5 +241,73 @@ describe('activeWindowRange', () => {
 			activeWindows: [{ from: fixedTime - 1000 }]
 		});
 		expect(range).toEqual({ from: fixedTime - 1000, to: null });
+	});
+
+	it('treats a missing start as open-ended (from: null), not epoch 0', () => {
+		const range = activeWindowRange({
+			activeWindows: [{ to: fixedTime + 5000 }]
+		});
+		expect(range).toEqual({ from: null, to: fixedTime + 5000 });
+	});
+});
+
+describe('cause / effect labels', () => {
+	const translate = (key) => `t:${key}`;
+
+	it('resolves GTFS uppercase causes and TPEG reasons to the same i18n key', () => {
+		expect(formatCauseLabel('CONSTRUCTION', translate)).toBe('t:service_alerts.cause_construction');
+		expect(formatCauseLabel('MAINTENANCE', translate)).toBe('t:service_alerts.cause_maintenance');
+		expect(formatCauseLabel('environmentReason', translate)).toBe(
+			't:service_alerts.cause_environment'
+		);
+		expect(formatCauseLabel('equipmentReason', translate)).toBe('t:service_alerts.cause_equipment');
+	});
+
+	it('resolves GTFS effects and maps diversion onto detour', () => {
+		expect(formatEffectLabel('DETOUR', translate)).toBe('t:service_alerts.effect_detour');
+		expect(formatEffectLabel('STOP_MOVED', translate)).toBe('t:service_alerts.effect_stop_moved');
+		expect(formatEffectLabel('diversion', translate)).toBe('t:service_alerts.effect_detour');
+	});
+
+	it('humanizes unknown enums instead of requesting a missing translation', () => {
+		expect(formatCauseLabel('SOME_NEW_CAUSE', translate)).toBe('Some New Cause');
+		expect(formatEffectLabel('stopMoved2', translate)).toBe('Stop Moved2');
+	});
+
+	it('returns null for blank values so the UI can omit the row', () => {
+		expect(formatCauseLabel('', translate)).toBeNull();
+		expect(formatCauseLabel(null, translate)).toBeNull();
+		expect(formatEffectLabel('', translate)).toBeNull();
+		expect(formatEffectLabel('   ', translate)).toBeNull();
+	});
+});
+
+describe('formatActiveWindowLabel', () => {
+	const fixedTime = new Date('2025-02-23T12:00:00Z').getTime();
+	const translate = (key, opts) => {
+		if (key === 'service_alerts.active_until') return `Until ${opts.values.date}`;
+		if (key === 'service_alerts.active_from') return `From ${opts.values.date}`;
+		if (key === 'service_alerts.active_range') {
+			return `${opts.values.from} – ${opts.values.to}`;
+		}
+		return key;
+	};
+
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(fixedTime);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('uses the Until branch for open-start windows', () => {
+		const label = formatActiveWindowLabel(
+			{ from: null, to: fixedTime + 3600000 },
+			translate,
+			'UTC'
+		);
+		expect(label).toMatch(/^Until /);
 	});
 });

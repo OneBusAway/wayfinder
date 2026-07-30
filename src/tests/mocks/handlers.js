@@ -142,7 +142,7 @@ export const handlers = [
 								value: 'Route 10 is experiencing a detour due to construction on Pine Street.'
 							},
 							severity: 'warning',
-							reason: 'environmentReason',
+							reason: 'CONSTRUCTION',
 							url: {
 								lang: 'en',
 								value: 'https://metro.kingcounty.gov/alerts/route-10-detour'
@@ -153,7 +153,7 @@ export const handlers = [
 									to: Date.now() + 604800000
 								}
 							],
-							consequences: [{ condition: 'diversion' }],
+							consequences: [{ condition: 'DETOUR' }],
 							allAffects: [
 								{
 									agencyId: '1',
@@ -172,7 +172,7 @@ export const handlers = [
 								value: 'The Downtown Seattle Transit Tunnel is temporarily closed for maintenance.'
 							},
 							severity: 'severe',
-							reason: 'equipmentReason',
+							reason: 'MAINTENANCE',
 							url: {
 								lang: 'en',
 								value: 'https://metro.kingcounty.gov/alerts/tunnel-closure'
@@ -183,7 +183,7 @@ export const handlers = [
 									to: Date.now() + 7200000
 								}
 							],
-							consequences: [{ condition: 'diversion' }],
+							consequences: [{ condition: 'DETOUR' }],
 							allAffects: [
 								{
 									agencyId: '1',
@@ -202,8 +202,8 @@ export const handlers = [
 								value:
 									'Pine St & 3rd Ave boardings have moved one block north during sidewalk work.'
 							},
-							severity: 'info',
-							reason: 'miscellaneousReason',
+							severity: 'noImpact',
+							reason: 'CONSTRUCTION',
 							url: {
 								lang: 'en',
 								value: 'https://metro.kingcounty.gov/alerts/stop-relocate'
@@ -214,7 +214,7 @@ export const handlers = [
 									to: Date.now() + 86400000
 								}
 							],
-							consequences: [{ condition: 'stopMoved' }],
+							consequences: [{ condition: 'STOP_MOVED' }],
 							allAffects: [
 								{
 									agencyId: '1',

@@ -10,7 +10,8 @@
 	import { env } from '$env/dynamic/public';
 	import {
 		normalizeSeverity,
-		activeWindowRange
+		activeWindowRange,
+		formatActiveWindowLabel
 	} from '$components/service-alerts/serviceAlertsHelper';
 
 	let { alert = $bindable({}), openModal } = $props();
@@ -41,34 +42,7 @@
 	let summaryText = $derived(
 		alert?.summary?.value || alert?.description?.value || $t('service_alerts.service_alert')
 	);
-	let windowRange = $derived(activeWindowRange(alert));
-
-	function formatAlertDate(ms) {
-		if (!Number.isFinite(ms)) return null;
-		return new Intl.DateTimeFormat(undefined, {
-			month: 'short',
-			day: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit',
-			timeZone: regionTz
-		}).format(new Date(ms));
-	}
-
-	let activeLabel = $derived.by(() => {
-		if (!windowRange) return null;
-		const from = formatAlertDate(windowRange.from);
-		const to = windowRange.to != null ? formatAlertDate(windowRange.to) : null;
-		if (from && to) {
-			return $t('service_alerts.active_range', { values: { from, to } });
-		}
-		if (to) {
-			return $t('service_alerts.active_until', { values: { date: to } });
-		}
-		if (from) {
-			return $t('service_alerts.active_from', { values: { date: from } });
-		}
-		return null;
-	});
+	let activeLabel = $derived(formatActiveWindowLabel(activeWindowRange(alert), $t, regionTz));
 </script>
 
 <button

@@ -12,7 +12,10 @@
 	import {
 		orderAlertsByRelevance,
 		activeWindowRange,
-		normalizeSeverity
+		normalizeSeverity,
+		formatActiveWindowLabel,
+		formatCauseLabel,
+		formatEffectLabel
 	} from '$components/service-alerts/serviceAlertsHelper';
 
 	/**
@@ -44,41 +47,11 @@
 
 	let modalSeverity = $derived(modalAlert ? normalizeSeverity(modalAlert) : null);
 	let modalWindow = $derived(modalAlert ? activeWindowRange(modalAlert) : null);
-	let modalEffect = $derived(modalAlert?.consequences?.[0]?.condition ?? null);
-
-	function formatAlertDate(ms) {
-		if (!Number.isFinite(ms)) return null;
-		return new Intl.DateTimeFormat(undefined, {
-			month: 'short',
-			day: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit',
-			timeZone: regionTz
-		}).format(new Date(ms));
-	}
-
-	let modalActiveLabel = $derived.by(() => {
-		if (!modalWindow) return null;
-		const from = formatAlertDate(modalWindow.from);
-		const to = modalWindow.to != null ? formatAlertDate(modalWindow.to) : null;
-		if (from && to) {
-			return $t('service_alerts.active_range', { values: { from, to } });
-		}
-		if (to) {
-			return $t('service_alerts.active_until', { values: { date: to } });
-		}
-		if (from) {
-			return $t('service_alerts.active_from', { values: { date: from } });
-		}
-		return null;
-	});
-
-	function reasonLabel(reason) {
-		if (!reason) return null;
-		const key = `service_alerts.reason_${reason}`;
-		const translated = $t(key);
-		return translated === key ? reason : translated;
-	}
+	let modalActiveLabel = $derived(formatActiveWindowLabel(modalWindow, $t, regionTz));
+	let modalCause = $derived(modalAlert ? formatCauseLabel(modalAlert.reason, $t) : null);
+	let modalEffect = $derived(
+		modalAlert ? formatEffectLabel(modalAlert?.consequences?.[0]?.condition, $t) : null
+	);
 
 	function openModal(alert) {
 		modalAlert = alert;
@@ -214,7 +187,7 @@
 				{$t('service_alerts.no_description')}
 			</p>
 		{/if}
-		{#if modalActiveLabel || modalAlert?.reason || modalEffect}
+		{#if modalActiveLabel || modalCause || modalEffect}
 			<dl class="mt-4 space-y-2 text-sm text-gray-700 dark:text-gray-300">
 				{#if modalActiveLabel}
 					<div>
@@ -224,14 +197,12 @@
 						<dd class="ml-1 inline">{modalActiveLabel}</dd>
 					</div>
 				{/if}
-				{#if modalAlert?.reason}
+				{#if modalCause}
 					<div>
 						<dt class="inline font-medium text-gray-500 dark:text-gray-400">
 							{$t('service_alerts.cause')}:
 						</dt>
-						<dd class="ml-1 inline">
-							{reasonLabel(modalAlert.reason)}
-						</dd>
+						<dd class="ml-1 inline">{modalCause}</dd>
 					</div>
 				{/if}
 				{#if modalEffect}

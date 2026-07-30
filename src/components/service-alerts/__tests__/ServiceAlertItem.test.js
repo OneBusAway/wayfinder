@@ -7,12 +7,44 @@ vi.mock('@fortawesome/svelte-fontawesome', () => ({
 	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
 }));
 
+// Local i18n mock that interpolates {values} so we can assert severity lands
+// in the accessible name (the global vitest-setup mock returns the bare key).
+vi.mock('svelte-i18n', () => {
+	const translate = (key, options) => {
+		let str = key;
+		for (const [k, v] of Object.entries(options?.values ?? {})) {
+			str = str.replace(`{${k}}`, String(v));
+		}
+		// Resolve nested severity_* lookups the component makes first.
+		if (key.startsWith('service_alerts.severity_')) {
+			return key.replace('service_alerts.severity_', '');
+		}
+		if (key === 'service_alerts.open_alert') {
+			return `Open ${options?.values?.severity} service alert details: ${options?.values?.summary}`;
+		}
+		if (key === 'service_alerts.active_range') {
+			return `${options?.values?.from} – ${options?.values?.to}`;
+		}
+		if (key === 'service_alerts.service_alert') return 'Service Alert';
+		return str;
+	};
+	return {
+		t: {
+			subscribe: (fn) => {
+				fn(translate);
+				return () => {};
+			}
+		}
+	};
+});
+
 function makeAlert(overrides = {}) {
 	return {
 		id: 'alert_1',
 		summary: { lang: 'en', value: 'Route 10 Detour' },
 		description: { lang: 'en', value: 'Buses reroute via Pike Street.' },
 		severity: 'warning',
+		reason: 'CONSTRUCTION',
 		activeWindows: [
 			{
 				from: Date.now() - 3600000,
@@ -40,8 +72,12 @@ describe('ServiceAlertItem', () => {
 			props: { alert: makeAlert({ severity: 'severe' }), openModal }
 		});
 
-		expect(screen.getByText('service_alerts.severity_severe')).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: 'service_alerts.open_alert' })).toBeInTheDocument();
+		expect(screen.getByText('severe')).toBeInTheDocument();
+		expect(
+			screen.getByRole('button', {
+				name: 'Open severe service alert details: Route 10 Detour'
+			})
+		).toBeInTheDocument();
 	});
 
 	it('renders the active date range when a window exists', () => {
@@ -49,8 +85,7 @@ describe('ServiceAlertItem', () => {
 			props: { alert: makeAlert(), openModal }
 		});
 
-		// i18n mock returns the key; the date-range string uses active_range.
-		expect(screen.getByText('service_alerts.active_range')).toBeInTheDocument();
+		expect(screen.getByText(/–/)).toBeInTheDocument();
 	});
 
 	it('activates via Enter and Space as a real button', async () => {
@@ -59,7 +94,9 @@ describe('ServiceAlertItem', () => {
 			props: { alert: makeAlert(), openModal }
 		});
 
-		const button = screen.getByRole('button', { name: 'service_alerts.open_alert' });
+		const button = screen.getByRole('button', {
+			name: /Open warning service alert details/
+		});
 		button.focus();
 		await user.keyboard('{Enter}');
 		expect(openModal).toHaveBeenCalledTimes(1);
@@ -73,7 +110,7 @@ describe('ServiceAlertItem', () => {
 		const alert = makeAlert();
 		render(ServiceAlertItem, { props: { alert, openModal } });
 
-		await user.click(screen.getByRole('button', { name: 'service_alerts.open_alert' }));
+		await user.click(screen.getByRole('button', { name: /Open warning service alert details/ }));
 		expect(openModal).toHaveBeenCalledWith(alert);
 	});
 });
