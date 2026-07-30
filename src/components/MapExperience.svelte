@@ -73,6 +73,7 @@
 
 	let tripItineraries = $state([]);
 	let tripPlanError = $state(null);
+	let tripPlanAttempted = $state(false);
 	let loadingItineraries = false;
 	let currentHighlightedStopId = null;
 
@@ -386,6 +387,7 @@
 			tripItineraries.length > 0 || tripPlanError != null || currentModal === Modal.TRIP_PLANNER;
 		tripItineraries = [];
 		tripPlanError = null;
+		tripPlanAttempted = false;
 		currentModal = null;
 		mapProvider.clearAllPolylines();
 		// Back to edit height when the rider clears results but stays on the mobile plan sheet.
@@ -439,6 +441,7 @@
 		const tripData = tripPlanData.data;
 		tripItineraries = tripData.plan?.itineraries || [];
 		tripPlanError = tripData.error || null;
+		tripPlanAttempted = true;
 		currentModal = Modal.TRIP_PLANNER;
 		// Desktop: sheet fills the left rail. Mobile: stay at half when results land so
 		// the map stays visible; riders can drag to full or scroll inside the sheet.
@@ -597,6 +600,7 @@
 					<TripPlanModal
 						{mapProvider}
 						showForm={true}
+						hasPlanned={tripPlanAttempted}
 						{handleTripPlan}
 						{clearTripItineraries}
 						itineraries={tripItineraries}

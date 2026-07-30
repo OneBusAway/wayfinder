@@ -281,8 +281,11 @@
 		activeTab = 'plan';
 		await tick();
 		// Enter trip-plan mode the same way a Plan tab click does (mobile sheet,
-		// map chrome). Dispatched before setTripPlanLocation so listeners are ready.
+		// map chrome).
 		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+		// On mobile, TripPlan remounts inside the plan sheet after this event —
+		// wait one tick so its listeners exist before setTripPlanLocation.
+		await tick();
 		window.dispatchEvent(new CustomEvent('setTripPlanLocation', { detail: e.detail }));
 		isContextMenuTrigger = false;
 	}

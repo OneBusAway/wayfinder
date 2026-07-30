@@ -24,6 +24,7 @@
 	 * @property {Function} closePane
 	 * @property {('peek'|'half'|'full')} [snap]
 	 * @property {boolean} [showForm] - When true (mobile plan sheet), embed From/To form in this sheet
+	 * @property {boolean} [hasPlanned] - True after the rider submits a plan (even if zero results)
 	 * @property {Function} [handleTripPlan] - Required when showForm is true
 	 * @property {Function} [clearTripItineraries] - Required when showForm is true
 	 */
@@ -37,6 +38,7 @@
 		closePane,
 		snap = $bindable('half'),
 		showForm = false,
+		hasPlanned = false,
 		handleTripPlan = null,
 		clearTripItineraries = null
 	} = $props();
@@ -217,7 +219,7 @@
 	let headerTitle = $derived(showForm ? $t('tabs.plan_trip') : $t('trip-planner.trip_itineraries'));
 	let hasResults = $derived(itineraries.length > 0);
 	// "No itineraries" empty state only after a plan attempt, not while editing.
-	let showEmptyState = $derived(!loading && !hasResults && (!showForm || error));
+	let showEmptyState = $derived(!loading && !hasResults && (!showForm || hasPlanned));
 </script>
 
 <BottomSheet bind:snap bind:element={sheetElement}>

@@ -473,4 +473,26 @@ describe('TripPlanModal showForm embedding', () => {
 
 		unmount();
 	});
+
+	it('shows the empty state on mobile after a plan returns zero itineraries', async () => {
+		const mapProvider = makeMapProvider();
+		const { getByText, unmount } = render(TripPlanModal, {
+			props: {
+				mapProvider,
+				itineraries: [],
+				closePane: vi.fn(),
+				snap: 'half',
+				showForm: true,
+				hasPlanned: true,
+				handleTripPlan: vi.fn(),
+				clearTripItineraries: vi.fn()
+			}
+		});
+
+		await vi.waitFor(() => {
+			expect(getByText('trip-planner.no_itineraries_found')).toBeInTheDocument();
+		});
+
+		unmount();
+	});
 });
