@@ -114,6 +114,7 @@
 	}
 
 	let notificationId = null;
+	let isMounted = true;
 
 	async function drawRoutes(routes, colors, token) {
 		if (token !== loadToken) return;
@@ -171,20 +172,27 @@
 				// turn trip-expansion into a full redraw.
 				const promoted = untrack(() => promotedRouteId);
 				const isPromoted = promoted != null && route.id === promoted;
-				const polyline = await mapProvider.createPolyline(shape.points, {
-					color,
-					casing: true,
-					weight: weightFor(index),
-					pane: isPromoted ? ROUTE_PANE.PROMOTED : ROUTE_PANE.LINE,
-					casingPane: ROUTE_PANE.CASING
-				});
+				let polyline = null;
+
+				try {
+					polyline = await mapProvider.createPolyline(shape.points, {
+						color,
+						casing: true,
+						weight: weightFor(index),
+						pane: isPromoted ? ROUTE_PANE.PROMOTED : ROUTE_PANE.LINE,
+						casingPane: ROUTE_PANE.CASING
+					});
+				} catch (error) {
+					console.error('StopRoutesLayer: could not create polyline', route.id, error);
+					return;
+				}
+
 				if (token !== loadToken) {
 					// A supersede ran clearAllPolylines() before this create resolved
 					// (Google's createPolyline is async, awaiting importLibrary), so
 					// the polyline this call just attached to the map is an orphan of
 					// the selection that's already gone — take it back off.
 					mapProvider.removePolyline(polyline);
-					attemptedRoutes--;
 					return;
 				}
 				if (!polyline) {
@@ -241,6 +249,8 @@
 				routeStopIds = new Map(nextStopIds);
 			})
 		);
+
+		if (token !== loadToken || !isMounted) return;
 
 		if (attemptedRoutes > 0 && drawnRoutes < attemptedRoutes) {
 			notificationId = notifyPartialRouteShape();
@@ -470,6 +480,7 @@
 
 	onDestroy(() => {
 		loadToken++;
+		isMounted = false;
 		teardown();
 	});
 </script>

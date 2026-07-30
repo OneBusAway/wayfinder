@@ -7,11 +7,16 @@ vi.mock('$lib/vehicleUtils.js', () => ({
 	fetchAndUpdateVehiclesForRoutes: vi.fn().mockResolvedValue({ intervalId: 42, tick: vi.fn() }),
 	removeVehicleMarkersForRoutes: vi.fn()
 }));
+vi.mock('$lib/routeNotifications', () => ({
+	notifyPartialRouteShape: vi.fn(() => 'toast-id')
+}));
+
 import {
 	fetchAndUpdateVehiclesForRoutes,
 	removeVehicleMarkersForRoutes
 } from '$lib/vehicleUtils.js';
 import { createLayerBindings } from './support/layerBindings.svelte.js';
+import { notifyPartialRouteShape } from '$lib/routeNotifications';
 
 function makeProvider() {
 	return {
@@ -225,6 +230,7 @@ describe('StopRoutesLayer', () => {
 			'r_22',
 			expect.any(Error)
 		);
+		expect(notifyPartialRouteShape).toHaveBeenCalledTimes(1);
 
 		consoleErrorSpy.mockRestore();
 	});
@@ -458,6 +464,13 @@ describe('StopRoutesLayer', () => {
 		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalled());
 		await flush(20);
 
+		expect(notifyPartialRouteShape).toHaveBeenCalledTimes(1);
+
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			'StopRoutesLayer: could not create polyline',
+			expect.any(String),
+			expect.any(Error)
+		);
 		process.off('unhandledRejection', onUnhandledRejection);
 		consoleErrorSpy.mockRestore();
 		expect(unhandled).toHaveLength(0);
