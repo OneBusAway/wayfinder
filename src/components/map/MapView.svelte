@@ -21,8 +21,8 @@
 	 * @property {any} [selectedRoute]
 	 * @property {boolean} [showRoute]
 	 * @property {boolean} [showRouteMap]
-	 * @property {any} [mapProvider]
-	 * @property {any} [stop] - Currently selected stop to preserve visual context
+	 * @property {import('$lib/types').MapProvider | null} [mapProvider]
+	 * @property {import('$lib/types').Stop | null} [stop] - Currently selected stop to preserve visual context
 	 * @property {{ lat: number, lng: number } | null} [initialCoords] - Optional initial coordinates from URL params
 	 * @property {boolean} [startInTripPlanMode] - Seeds the map's starting mode as trip-plan (not just the initial
 	 *   stop load skip below) so a shared trip link never briefly renders in NORMAL mode before switching.

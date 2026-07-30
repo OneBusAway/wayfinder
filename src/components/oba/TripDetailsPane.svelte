@@ -13,9 +13,9 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} stop
-	 * @property {any} tripId
-	 * @property {any} [serviceDate]
+	 * @property {import('$lib/types').Stop} stop
+	 * @property {string} tripId
+	 * @property {number | null} [serviceDate]
 	 */
 
 	/** @type {Props} */
