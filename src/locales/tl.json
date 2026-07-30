@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "Mga pagdating at pag-alis",
 	"load_more_arrivals": "Mag-load pa ng mga pagdating",
 	"no_arrivals_found_in_next_minutes": "Walang nahanap na pagdating sa susunod na {minutes} minuto",
+	"no_more_arrivals_in_next_minutes": "Wala nang karagdagang pagdating sa susunod na {minutes} minuto",
 	"stop": "Hintuan",
 	"routes": "Mga ruta",
 	"route": "Ruta",

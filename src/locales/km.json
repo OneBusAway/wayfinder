@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "ការមកដល់និងចេញដំណើរ",
 	"load_more_arrivals": "ផ្ទុកការមកដល់បន្ថែម",
 	"no_arrivals_found_in_next_minutes": "រកមិនឃើញការមកដល់ក្នុង {minutes} នាទីខាងមុខទេ",
+	"no_more_arrivals_in_next_minutes": "មិនមានការមកដល់បន្ថែមទៀតទេក្នុង {minutes} នាទីខាងមុខ",
 	"stop": "ចំណត",
 	"routes": "ផ្លូវ",
 	"route": "ផ្លូវ",

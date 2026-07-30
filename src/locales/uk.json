@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "Прибуття та відправлення",
 	"load_more_arrivals": "Завантажити більше прибуттів",
 	"no_arrivals_found_in_next_minutes": "Немає прибуттів протягом наступних {minutes} хвилин",
+	"no_more_arrivals_in_next_minutes": "Немає більше прибуттів протягом наступних {minutes} хвилин",
 	"stop": "Зупинка",
 	"routes": "Маршрути",
 	"route": "маршрут",

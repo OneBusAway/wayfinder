@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import StopPane from '../StopPane.svelte';
 import {
@@ -118,7 +119,8 @@ vi.mock('svelte-i18n', () => ({
 					arrivals_and_departures: 'Arrivals and departures',
 					'schedule_for_stop.view_schedule': 'View Schedule',
 					load_more_arrivals: 'Load more arrivals',
-					no_arrivals_found_in_next_minutes: 'No arrivals found in the next {minutes} minutes'
+					no_arrivals_found_in_next_minutes: 'No arrivals found in the next {minutes} minutes',
+					no_more_arrivals_in_next_minutes: 'No more arrivals in the next {minutes} minutes'
 				};
 				let str = translations[key] || key;
 				if (options?.values) {
@@ -520,6 +522,134 @@ describe('StopPane', () => {
 			expect(headings).toHaveLength(2);
 			expect(headings[0]).toHaveTextContent('Stop #75403');
 			expect(headings[1]).toHaveTextContent('Routes: 10, 11');
+		});
+	});
+
+	test('shows "No more arrivals" message when load-more returns no new results', async () => {
+		// First call returns arrivals
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
+		});
+
+		// Second call (load-more) returns the same data (no new arrivals)
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockArrivalsAndDeparturesResponse
+		});
+
+		await userEvent.click(screen.getByText('Load more arrivals'));
+
+		await waitFor(() => {
+			expect(screen.getByText('No more arrivals in the next 65 minutes')).toBeInTheDocument();
+		});
+	});
+
+	test('does not show "No more arrivals" when load-more surfaces a later arrival', async () => {
+		// Initial window returns the base arrivals.
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
+		});
+
+		// Widened window: the front arrival has departed but a genuinely later
+		// arrival appears, so the count is unchanged while more remains to show.
+		const base = mockArrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures;
+		const widenedResponse = {
+			...mockArrivalsAndDeparturesResponse,
+			data: {
+				...mockArrivalsAndDeparturesResponse.data,
+				entry: {
+					...mockArrivalsAndDeparturesResponse.data.entry,
+					arrivalsAndDepartures: [
+						...base.slice(1),
+						{
+							...base[0],
+							tripId: '1_later_trip',
+							predictedArrivalTime: null,
+							scheduledArrivalTime: Date.now() + 3600000 // 60 minutes from now
+						}
+					]
+				}
+			}
+		};
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => widenedResponse
+		});
+
+		await userEvent.click(screen.getByText('Load more arrivals'));
+
+		await waitFor(() => {
+			expect(global.fetch).toHaveBeenCalledWith(
+				'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=65',
+				expect.any(Object)
+			);
+		});
+
+		// Wait for the widened response to finish processing: the button only
+		// returns from its loading state after loadMoreArrivals resolves and
+		// recomputes the hint in the same tick (the arrival list itself renders
+		// through mocked children, so it exposes no DOM value to wait on).
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: 'Load more arrivals' })).toBeEnabled();
+		});
+
+		expect(screen.queryByText('No more arrivals in the next 65 minutes')).not.toBeInTheDocument();
+	});
+
+	test('calls API with incremented minutesAfter on load-more click', async () => {
+		global.fetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: async () => mockArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
+		});
+
+		await userEvent.click(screen.getByText('Load more arrivals'));
+
+		await waitFor(() => {
+			expect(global.fetch).toHaveBeenCalledWith(
+				'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=65',
+				expect.objectContaining({
+					signal: expect.any(AbortSignal)
+				})
+			);
+		});
+	});
+
+	test('shows "No arrivals found" for truly empty stop', async () => {
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('No arrivals found in the next 35 minutes')).toBeInTheDocument();
 		});
 	});
 

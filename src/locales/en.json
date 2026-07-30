@@ -132,6 +132,7 @@
 	"load_more_arrivals": "Load more arrivals",
 	"refresh": "Refresh",
 	"no_arrivals_found_in_next_minutes": "No arrivals found in the next {minutes} minutes",
+	"no_more_arrivals_in_next_minutes": "No more arrivals in the next {minutes} minutes",
 	"stop": "Stop",
 	"direction_bound": "{direction} bound",
 	"routes": "Routes",

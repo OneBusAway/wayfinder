@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "Taunuʻuga ma alu atu",
 	"load_more_arrivals": "Utaina atili taunuʻuga",
 	"no_arrivals_found_in_next_minutes": "E leai ni taunuʻuga na maua i le {minutes} minute o loʻo sosoo",
+	"no_more_arrivals_in_next_minutes": "Leai ni taunuʻuga faaopoopo i le {minutes} minute o loʻo sosoo",
 	"stop": "Nofoaga Taofi",
 	"routes": "Auala",
 	"route": "auala",

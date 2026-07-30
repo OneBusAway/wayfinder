@@ -90,6 +90,7 @@
 	"arrivals_and_departures": "Llegadas y salidas",
 	"load_more_arrivals": "Cargar más llegadas",
 	"no_arrivals_found_in_next_minutes": "No se encontraron llegadas en los próximos {minutes} minutos",
+	"no_more_arrivals_in_next_minutes": "No hay más llegadas en los próximos {minutes} minutos",
 	"stop": "Parada",
 	"routes": "Rutas",
 	"route": "Ruta",

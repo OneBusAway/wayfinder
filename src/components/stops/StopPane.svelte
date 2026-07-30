@@ -62,7 +62,28 @@
 	let currentStopSurvey = $state(null);
 	let remainingSurveyQuestions = $state([]);
 
+	// Furthest arrival time (ms) observed when we last concluded "no more arrivals".
+	// A later poll that surfaces an arrival beyond this clears the stale hint.
+	let noMoreArrivalsBoundary = 0;
+
 	let abortController = null;
+
+	/**
+	 * Returns the furthest-out arrival time (ms) in the list, preferring the
+	 * predicted time and falling back to the scheduled time. Comparing this
+	 * across window widenings is more robust than a raw count: an arrival
+	 * departing the front of the list no longer masks a genuinely later one.
+	 * @param {any[]} [arrivals]
+	 * @returns {number}
+	 */
+	function furthestArrivalTime(arrivals) {
+		let furthest = 0;
+		for (const arrival of arrivals ?? []) {
+			const time = arrival.predictedArrivalTime || arrival.scheduledArrivalTime || 0;
+			if (time > furthest) furthest = time;
+		}
+		return furthest;
+	}
 	/**
 	 * Fetches arrivals for the stop within the current `minutesAfter` window.
 	 * @returns {Promise<number|null>} the number of arrivals fetched, or `null`
@@ -95,9 +116,13 @@
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
 			error = null; // Clear previous errors if successful
 			const count = arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
-			// A refresh that returns arrivals clears a stale "no more arrivals" hint
-			// (e.g. after a 30s poll surfaces new departures).
-			if (count > 0) {
+			// Clear a stale "no more arrivals" hint only when a refresh actually
+			// surfaces an arrival further out than the window we'd exhausted — a
+			// poll returning the same (or nearer) arrivals must leave the hint up.
+			if (
+				noMoreArrivals &&
+				furthestArrivalTime(arrivalsAndDepartures?.arrivalsAndDepartures) > noMoreArrivalsBoundary
+			) {
 				noMoreArrivals = false;
 			}
 			return count;
@@ -133,7 +158,7 @@
 	// Widen the arrivals window and refetch. If the count doesn't grow, surface a
 	// "no more arrivals found" hint (the server has nothing further to show).
 	async function loadMoreArrivals() {
-		const previousCount = arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
+		const previousFurthest = furthestArrivalTime(arrivalsAndDepartures?.arrivalsAndDepartures);
 
 		loadingMore = true;
 		noMoreArrivals = false;
@@ -146,7 +171,10 @@
 		loadingMore = false;
 		// Only conclude "no more arrivals" from a request that actually completed.
 		if (count !== null) {
-			noMoreArrivals = count === previousCount;
+			const newFurthest = furthestArrivalTime(arrivalsAndDepartures?.arrivalsAndDepartures);
+			// Widening the window surfaced nothing further out → nothing more to show.
+			noMoreArrivals = newFurthest <= previousFurthest;
+			if (noMoreArrivals) noMoreArrivalsBoundary = newFurthest;
 		}
 		analytics.reportArrivalClicked('Loaded more arrivals');
 	}
@@ -326,9 +354,13 @@
 
 				{#snippet loadMoreButton(emptyResults = false)}
 					<div class="flex flex-col items-center gap-2">
-						{#if emptyResults || noMoreArrivals}
+						{#if emptyResults}
 							<p class="text-sm text-gray-600 dark:text-gray-400">
 								{$t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
+							</p>
+						{:else if noMoreArrivals}
+							<p class="text-sm text-gray-600 dark:text-gray-400">
+								{$t('no_more_arrivals_in_next_minutes', { values: { minutes: minutesAfter } })}
 							</p>
 						{/if}
 						<button
