@@ -41,7 +41,7 @@ describe('CompassArrow', () => {
 		expect(span).toHaveClass('hidden');
 	});
 
-	// Regression: verifies the rotation class is applied to the wrapper 
+	// Regression: verifies the rotation class is applied to the wrapper
 	// span we control and updates reactively when `stopDirection` changes,
 	// preventing stale icon rotation in `StopPageHeader`.
 	test('updates the rotation class when stopDirection changes', async () => {
