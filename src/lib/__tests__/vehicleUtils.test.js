@@ -122,8 +122,8 @@ describe('buildVehiclePopupData', () => {
 // wrapper directly. That wrapper had zero production callers (SearchPane and
 // RouteMap both go through `fetchAndUpdateVehicles`) and only duplicated what
 // `fetchAndUpdateVehiclesForRoutes` already does for a single-route array, so
-// it was removed. The behavior under test here — highlighting, marker-keying
-// by vehicleId, routeColor forwarding — lives in the shared
+// it was removed. The behavior under test here ΓÇö highlighting, marker-keying
+// by vehicleId, routeColor forwarding ΓÇö lives in the shared
 // `applyRouteVehicles` helper, which the production path also exercises, so
 // driving it through `fetchAndUpdateVehiclesForRoutes([{ id: 'route-1' }], ...)`
 // preserves the same coverage.
@@ -607,11 +607,11 @@ describe('removeVehicleMarkersForRoutes', () => {
 });
 
 // Task 10b: highlightedTripId used to be captured once, by value, at poll
-// start — so it could never change without restarting the whole poll. It can
+// start ΓÇö so it could never change without restarting the whole poll. It can
 // now also be a getter, re-resolved on every tick, so a trip expansion can
 // move the highlight glow onto a live poll instead of waiting for the next
 // route redraw.
-describe('fetchAndUpdateVehiclesForRoutes — live highlight', () => {
+describe('fetchAndUpdateVehiclesForRoutes ΓÇö live highlight', () => {
 	beforeEach(() => {
 		clearVehicleMarkersMap();
 		vi.useFakeTimers();
@@ -647,7 +647,7 @@ describe('fetchAndUpdateVehiclesForRoutes — live highlight', () => {
 		expect(firstPassCalls.find((c) => c[1].id === 't_r_a')[3]).toBe(true);
 		expect(firstPassCalls.find((c) => c[1].id === 't_r_b')[3]).toBe(false);
 
-		// Change which trip is highlighted, then force a tick — a value
+		// Change which trip is highlighted, then force a tick ΓÇö a value
 		// captured once at poll start could never observe this change.
 		highlighted = 't_r_b';
 		provider.updateVehicleMarker.mockClear();
@@ -674,7 +674,7 @@ describe('fetchAndUpdateVehiclesForRoutes — live highlight', () => {
 		);
 		expect(provider.addVehicleMarker).toHaveBeenCalledTimes(1);
 
-		// A second, distinct vehicle appears — proves this ran a real extra
+		// A second, distinct vehicle appears ΓÇö proves this ran a real extra
 		// fetch/apply cycle, not just a no-op re-invocation.
 		vehicleId = 'v2';
 		await tick();
@@ -774,7 +774,7 @@ describe('fetchAndUpdateVehicles (wrapper)', () => {
 
 	// SearchPane.svelte:174 and RouteMap.svelte:100 both do
 	// `currentIntervalId = await fetchAndUpdateVehicles(...)` and later
-	// `clearInterval(currentIntervalId)` — unlike
+	// `clearInterval(currentIntervalId)` ΓÇö unlike
 	// fetchAndUpdateVehiclesForRoutes, this wrapper must keep resolving to a
 	// bare interval id, not `{ intervalId, tick }`, or both call sites break.
 	test('resolves to a bare interval id, not an { intervalId, tick } object', async () => {
