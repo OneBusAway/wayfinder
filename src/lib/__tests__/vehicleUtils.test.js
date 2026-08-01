@@ -82,7 +82,9 @@ describe('buildVehiclePopupData', () => {
 		};
 		const activeTrip = {
 			tripHeadsign: 'Right Destination',
-			vehicleId: 'wrong-id' // Testing asymmetry
+			vehicleId: 'wrong-id', // Testing asymmetry
+			lastUpdateTime: 999999999,
+			predicted: false
 		};
 		const stopsMap = new Map();
 
