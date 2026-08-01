@@ -22,10 +22,12 @@ vi.mock('svelte-i18n', () => {
 	};
 });
 
-const { mockToggle, mockFavorites } = vi.hoisted(() => {
+const { mockToggle, mockFavorites, mockNotifySaved, mockNotifyRemoved } = vi.hoisted(() => {
 	return {
 		mockToggle: vi.fn(),
-		mockFavorites: { current: [] }
+		mockFavorites: { current: [] },
+		mockNotifySaved: vi.fn(),
+		mockNotifyRemoved: vi.fn()
 	};
 });
 
@@ -37,6 +39,11 @@ vi.mock('$stores/favoritesStore', () => ({
 		}),
 		toggle: mockToggle
 	}
+}));
+
+vi.mock('$lib/favoriteNotifications', () => ({
+	notifyFavoriteSaved: mockNotifySaved,
+	notifyFavoriteRemoved: mockNotifyRemoved
 }));
 
 describe('FavoriteToggle', () => {
@@ -75,7 +82,8 @@ describe('FavoriteToggle', () => {
 		expect(button).toHaveAttribute('aria-pressed', 'true');
 	});
 
-	it('calls favorites.toggle with the entry on click', async () => {
+	it('calls favorites.toggle and notifies when a stop is saved', async () => {
+		mockToggle.mockReturnValue('added');
 		render(FavoriteToggle, { props: stopProps });
 
 		await user.click(screen.getByRole('button', { name: 'Add to favorites' }));
@@ -90,9 +98,25 @@ describe('FavoriteToggle', () => {
 				lon: -122.3363
 			})
 		);
+		expect(mockNotifySaved).toHaveBeenCalledTimes(1);
+		expect(mockNotifyRemoved).not.toHaveBeenCalled();
+	});
+
+	it('notifies when a favorite is removed', async () => {
+		mockFavorites.current = [{ type: 'stop', id: '1_75403' }];
+		mockToggle.mockReturnValue('removed');
+
+		render(FavoriteToggle, { props: stopProps });
+
+		await user.click(screen.getByRole('button', { name: 'Remove from favorites' }));
+
+		expect(mockNotifyRemoved).toHaveBeenCalledTimes(1);
+		expect(mockNotifySaved).not.toHaveBeenCalled();
 	});
 
 	it('toggles a route entry', async () => {
+		mockToggle.mockReturnValue('added');
+
 		render(FavoriteToggle, {
 			props: {
 				type: 'route',
@@ -112,6 +136,17 @@ describe('FavoriteToggle', () => {
 				shortName: '10'
 			})
 		);
+		expect(mockNotifySaved).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not toast when toggle returns null', async () => {
+		mockToggle.mockReturnValue(null);
+		render(FavoriteToggle, { props: stopProps });
+
+		await user.click(screen.getByRole('button', { name: 'Add to favorites' }));
+
+		expect(mockNotifySaved).not.toHaveBeenCalled();
+		expect(mockNotifyRemoved).not.toHaveBeenCalled();
 	});
 
 	it('uses a native button with no onkeydown attribute', () => {

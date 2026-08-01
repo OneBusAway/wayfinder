@@ -152,6 +152,8 @@
 		"route_load_failed": "Couldn't load this route.",
 		"route_shape_failed": "Couldn't draw this route on the map.",
 		"route_shape_partial": "Part of this route couldn't be drawn. The map may be missing a segment.",
+		"favorite_saved": "Saved to favorites.",
+		"favorite_removed": "Removed from favorites.",
 		"tap_to_retry": "Tap to retry.",
 		"dismiss": "Dismiss"
 	},

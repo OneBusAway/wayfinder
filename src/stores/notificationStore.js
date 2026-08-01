@@ -1,7 +1,7 @@
 import { writable, get } from 'svelte/store';
 import { browser } from '$app/environment';
 
-/** @typedef {'error' | 'warning'} NotificationVariant */
+/** @typedef {'error' | 'warning' | 'success'} NotificationVariant */
 
 /**
  * @typedef {Object} Notification

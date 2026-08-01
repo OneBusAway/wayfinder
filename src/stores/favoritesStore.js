@@ -136,27 +136,35 @@ function createFavoritesStore() {
 		/**
 		 * Toggle a favorite on/off.
 		 * @param {Object} entry
+		 * @returns {'added' | 'removed' | null}
 		 */
 		toggle: (entry) => {
 			const type = entry?.type;
 			const id = entry?.id;
 			if ((type !== 'stop' && type !== 'route') || typeof id !== 'string' || !id) {
-				return;
+				return null;
 			}
+
+			/** @type {'added' | 'removed' | null} */
+			let result = null;
 
 			update((favorites) => {
 				const exists = favorites.some((f) => f.type === type && f.id === id);
 				let updated;
 				if (exists) {
 					updated = favorites.filter((f) => !(f.type === type && f.id === id));
+					result = 'removed';
 				} else {
 					const normalized = normalizeFavorite({ ...entry, savedAt: Date.now() });
 					if (!normalized) return favorites;
 					updated = [normalized, ...favorites].slice(0, MAX_FAVORITES);
+					result = 'added';
 				}
 				persist(updated);
 				return updated;
 			});
+
+			return result;
 		},
 
 		/**

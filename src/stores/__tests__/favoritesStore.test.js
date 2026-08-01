@@ -123,10 +123,10 @@ describe('favoritesStore', () => {
 	});
 
 	it('should toggle a favorite on and off', () => {
-		favorites.toggle(makeStop());
+		expect(favorites.toggle(makeStop())).toBe('added');
 		expect(getStoreValue(favorites)).toHaveLength(1);
 
-		favorites.toggle(makeStop());
+		expect(favorites.toggle(makeStop())).toBe('removed');
 		expect(getStoreValue(favorites)).toHaveLength(0);
 	});
 
@@ -224,8 +224,8 @@ describe('favoritesStore', () => {
 
 	it('should ignore add/toggle with invalid type or id', () => {
 		favorites.add({ type: 'place', id: 'x', name: 'Nope', lat: 1, lon: 2 });
-		favorites.toggle({ type: 'stop', id: '' });
-		favorites.toggle(null);
+		expect(favorites.toggle({ type: 'stop', id: '' })).toBeNull();
+		expect(favorites.toggle(null)).toBeNull();
 		expect(getStoreValue(favorites)).toHaveLength(0);
 	});
 });

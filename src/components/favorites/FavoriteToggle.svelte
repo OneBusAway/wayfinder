@@ -21,6 +21,7 @@
 	import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 	import { t } from 'svelte-i18n';
 	import { favorites } from '$stores/favoritesStore';
+	import { notifyFavoriteSaved, notifyFavoriteRemoved } from '$lib/favoriteNotifications';
 
 	let {
 		type,
@@ -44,7 +45,7 @@
 	let icon = $derived(isFav ? faStarSolid : faStarRegular);
 
 	function handleClick() {
-		favorites.toggle({
+		const result = favorites.toggle({
 			type,
 			id,
 			name,
@@ -56,6 +57,12 @@
 			description,
 			routeType
 		});
+
+		if (result === 'added') {
+			notifyFavoriteSaved();
+		} else if (result === 'removed') {
+			notifyFavoriteRemoved();
+		}
 	}
 </script>
 
