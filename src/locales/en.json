@@ -66,6 +66,16 @@
 		"stops-and-stations": "Stops and Stations",
 		"plan_trip": "Plan a Trip"
 	},
+	"favorites": {
+		"title": "Favorites",
+		"add": "Add to favorites",
+		"remove": "Remove from favorites",
+		"clear_all": "Clear All",
+		"empty": "No favorites yet. Tap the star on a stop or route to save it here.",
+		"stop_code": "Code",
+		"open_item": "Open {name}",
+		"remove_item": "Remove {name} from favorites"
+	},
 	"search": {
 		"placeholder": "Search for stops, routes, and places",
 		"results_for": "Search results for",
