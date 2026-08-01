@@ -318,6 +318,20 @@ describe('colorUtils', () => {
 			expect(result).toBe('#808080');
 		});
 
+		test('handles invalid custom fallback gracefully', () => {
+			const result = darkenColor('invalid', 0.15, 'invalid-fallback');
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid", falling back to "invalid-fallback"'
+			);
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid-fallback" and no fallback available'
+			);
+
+			expect(result).toBe('#000000');
+		});
+
 		test('result is always darker than the input', () => {
 			const original = hexToRgb('#486621');
 			const darkened = hexToRgb(darkenColor('#486621', 0.15));
@@ -389,6 +403,20 @@ describe('colorUtils', () => {
 				'Invalid hex color "invalid", falling back to "#000000"'
 			);
 			expect(result).toBe('#808080');
+		});
+
+		test('handles invalid custom fallback gracefully', () => {
+			const result = lightenColor('invalid', 0.15, 'invalid-fallback');
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid", falling back to "invalid-fallback"'
+			);
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid-fallback" and no fallback available'
+			);
+
+			expect(result).toBe('#ffffff');
 		});
 	});
 
