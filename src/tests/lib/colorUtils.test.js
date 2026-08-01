@@ -9,7 +9,8 @@ import {
 	getBrightness,
 	adjustColorForDarkMode,
 	mapContrastColor,
-	polylineArrowColor
+	polylineArrowColor,
+	contrastRatio
 } from '$lib/colorUtils.js';
 
 describe('colorUtils', () => {
@@ -336,6 +337,12 @@ describe('colorUtils', () => {
 			const original = hexToRgb('#486621');
 			const darkened = hexToRgb(darkenColor('#486621', 0.15));
 			expect(getBrightness(darkened)).toBeLessThan(getBrightness(original));
+		});
+
+		test('brand accent hover color maintains AA contrast with white text', () => {
+			const hover = darkenColor(process.env.COLOR_BRAND_ACCENT, 0.15);
+
+			expect(contrastRatio('#ffffff', hover)).toBeGreaterThanOrEqual(4.5);
 		});
 	});
 
