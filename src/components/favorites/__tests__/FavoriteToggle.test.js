@@ -22,11 +22,10 @@ vi.mock('svelte-i18n', () => {
 	};
 });
 
-const { mockToggle, mockFavorites, mockKeys } = vi.hoisted(() => {
+const { mockToggle, mockFavorites } = vi.hoisted(() => {
 	return {
 		mockToggle: vi.fn(),
-		mockFavorites: { current: [] },
-		mockKeys: { current: new Set() }
+		mockFavorites: { current: [] }
 	};
 });
 
@@ -37,12 +36,6 @@ vi.mock('$stores/favoritesStore', () => ({
 			return () => {};
 		}),
 		toggle: mockToggle
-	},
-	favoriteKeys: {
-		subscribe: vi.fn((fn) => {
-			fn(mockKeys.current);
-			return () => {};
-		})
 	}
 }));
 
@@ -62,7 +55,6 @@ describe('FavoriteToggle', () => {
 	beforeEach(() => {
 		user = userEvent.setup();
 		mockFavorites.current = [];
-		mockKeys.current = new Set();
 		vi.clearAllMocks();
 	});
 
@@ -75,7 +67,7 @@ describe('FavoriteToggle', () => {
 	});
 
 	it('renders remove label and aria-pressed when favorited', () => {
-		mockKeys.current = new Set(['stop:1_75403']);
+		mockFavorites.current = [{ type: 'stop', id: '1_75403' }];
 
 		render(FavoriteToggle, { props: stopProps });
 

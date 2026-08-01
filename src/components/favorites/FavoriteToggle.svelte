@@ -1,7 +1,7 @@
 <!--
 	@component
 	Star button that toggles a stop or route in the favorites store.
-	Membership is derived from `favoriteKeys` — no local isFavorite state.
+	Membership is derived from `$favorites` — no local isFavorite state.
 
 	@prop {'stop'|'route'} type
 	@prop {string} id - Full agency-prefixed OBA id
@@ -20,7 +20,7 @@
 	import { faStar as faStarSolid } from '@fortawesome/free-solid-svg-icons';
 	import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
 	import { t } from 'svelte-i18n';
-	import { favorites, favoriteKeys } from '$stores/favoritesStore';
+	import { favorites } from '$stores/favoritesStore';
 
 	let {
 		type,
@@ -36,10 +36,12 @@
 		class: className = ''
 	} = $props();
 
-	let key = $derived(`${type}:${id}`);
-	let isFav = $derived($favoriteKeys.has(key));
+	// Read membership from the writable array (not a Set derived store) so the
+	// auto-subscription always invalidates when favorites.toggle() writes.
+	let isFav = $derived($favorites.some((f) => f.type === type && f.id === id));
 
 	let label = $derived(isFav ? $t('favorites.remove') : $t('favorites.add'));
+	let icon = $derived(isFav ? faStarSolid : faStarRegular);
 
 	function handleClick() {
 		favorites.toggle({
@@ -63,9 +65,11 @@
 	aria-pressed={isFav}
 	aria-label={label}
 	title={label}
-	class="flex h-10 w-12 flex-none items-center justify-center rounded-xl border border-gray-300 text-black hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 {isFav
-		? 'text-brand-accent dark:text-brand-accent'
-		: ''} {className}"
+	class="flex h-10 w-12 flex-none items-center justify-center rounded-xl border border-gray-300 text-black hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 {className}"
 >
-	<FontAwesomeIcon icon={isFav ? faStarSolid : faStarRegular} />
+	<!-- {#key} remounts FontAwesome when the glyph swaps; the SVG component
+	     does not always update in place when only the icon prop changes. -->
+	{#key isFav}
+		<FontAwesomeIcon {icon} class={isFav ? 'text-black dark:text-white' : ''} />
+	{/key}
 </button>

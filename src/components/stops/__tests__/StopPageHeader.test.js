@@ -29,7 +29,9 @@ vi.mock('svelte-i18n', () => ({
 					'schedule_for_stop.direction': 'Direction',
 					'arrivals_and_departures_for_stop.title': 'Arrivals & Departures',
 					'schedule_for_stop.route_schedules': 'Route Schedules',
-					'navigation.back_to_map': 'Back to Map'
+					'navigation.back_to_map': 'Back to Map',
+					'favorites.add': 'Add to favorites',
+					'favorites.remove': 'Remove from favorites'
 				};
 				return translations[key] || key;
 			});
@@ -60,8 +62,29 @@ describe('StopPageHeader', () => {
 	const defaultProps = {
 		stopName: 'Pine St & 3rd Ave',
 		stopId: '1_75403',
-		stopDirection: 'N'
+		stopDirection: 'N',
+		stopLat: 47.6105,
+		stopLon: -122.3363,
+		stopCode: '75403'
 	};
+
+	test('renders a favorite toggle next to the stop name when coords are present', () => {
+		render(StopPageHeader, { props: defaultProps });
+
+		expect(screen.getByRole('button', { name: 'Add to favorites' })).toBeInTheDocument();
+	});
+
+	test('hides the favorite toggle when stop coordinates are missing', () => {
+		render(StopPageHeader, {
+			props: {
+				stopName: 'Pine St & 3rd Ave',
+				stopId: '1_75403',
+				stopDirection: 'N'
+			}
+		});
+
+		expect(screen.queryByRole('button', { name: 'Add to favorites' })).not.toBeInTheDocument();
+	});
 
 	test('displays stop name as main heading', () => {
 		render(StopPageHeader, { props: defaultProps });
