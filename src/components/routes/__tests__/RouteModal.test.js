@@ -14,6 +14,9 @@ vi.mock('svelte-i18n', () => ({
 				const translations = {
 					show_more: 'Show more',
 					show_less: 'Show less',
+					'sheet.close': 'Close',
+					'favorites.add': 'Add to favorites',
+					'favorites.remove': 'Remove from favorites',
 					route_modal_title: options?.values?.name
 						? `Route ${options.values.name}`
 						: 'route_modal_title'
@@ -213,6 +216,32 @@ describe('RouteModal', () => {
 		await user.click(closeButton);
 
 		expect(mockClosePane).toHaveBeenCalledTimes(1);
+	});
+
+	test('renders a favorite toggle for the selected route', () => {
+		render(RouteModal, {
+			props: {
+				selectedRoute: mockRoute,
+				stops: mockStops,
+				mapProvider: mockMapProvider,
+				closePane: mockClosePane
+			}
+		});
+
+		expect(screen.getByRole('button', { name: 'Add to favorites' })).toBeInTheDocument();
+	});
+
+	test('hides the favorite toggle when no route is selected', () => {
+		render(RouteModal, {
+			props: {
+				selectedRoute: null,
+				stops: mockStops,
+				mapProvider: mockMapProvider,
+				closePane: mockClosePane
+			}
+		});
+
+		expect(screen.queryByRole('button', { name: 'Add to favorites' })).not.toBeInTheDocument();
 	});
 
 	test('is keyboard accessible', async () => {
