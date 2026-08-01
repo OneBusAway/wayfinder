@@ -62,7 +62,10 @@ vi.mock('svelte-i18n', () => {
 		'search.clear_results': 'Clear Results',
 		'search.results_for': 'Results for',
 		'tabs.stops-and-stations': 'Stops & Stations',
-		'tabs.plan_trip': 'Plan Trip'
+		'tabs.plan_trip': 'Plan Trip',
+		'favorites.title': 'Favorites',
+		'favorites.empty': 'No favorites yet',
+		'favorites.clear_all': 'Clear All'
 	};
 
 	return {
@@ -169,6 +172,13 @@ describe('SearchPane', () => {
 			// Verify basic components are present instead
 			expect(screen.getByText('Stops & Stations')).toBeInTheDocument();
 			expect(screen.getByRole('textbox')).toBeInTheDocument();
+		});
+
+		test('shows favorites section when the search query is empty', () => {
+			render(SearchPane, { props: mockProps });
+
+			expect(screen.getByRole('heading', { level: 2, name: 'Favorites' })).toBeInTheDocument();
+			expect(screen.getByText('No favorites yet')).toBeInTheDocument();
 		});
 	});
 
