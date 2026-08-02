@@ -26,6 +26,8 @@
 	// provider here would pull its whole map stack into the bundle regardless of
 	// which one PUBLIC_OBA_MAP_PROVIDER selects.
 	import { ROUTE_PANE } from '$lib/mapPanes.js';
+	import { notifyPartialRouteShape } from '$lib/routeNotifications';
+	import { notifications } from '$stores/notificationStore';
 
 	let {
 		mapProvider,
@@ -111,6 +113,9 @@
 		return { points: shapeData?.data?.entry?.points, stopIds };
 	}
 
+	let notificationId = null;
+	let isMounted = true;
+
 	async function drawRoutes(routes, colors, token) {
 		if (token !== loadToken) return;
 
@@ -134,6 +139,8 @@
 		// order createPolyline resolved, which is shape-fetch race order, not
 		// activeRoutes order.
 		const drawnPolylines = [];
+		let attemptedRoutes = 0;
+		let drawnRoutes = 0;
 
 		await Promise.all(
 			routes.map(async (route, index) => {
@@ -146,9 +153,17 @@
 					// other routes still draw, and this one is simply absent from the
 					// lines, the legend, and the ring dots.
 					console.error('StopRoutesLayer: could not load shape', route.id, error);
+					attemptedRoutes++;
 					return;
 				}
-				if (token !== loadToken || !shape.points) return;
+				if (token !== loadToken) return;
+
+				attemptedRoutes++;
+
+				if (!shape.points) {
+					console.error('StopRoutesLayer: route shape contains no points', route.id);
+					return;
+				}
 
 				// untrack: this read happens after an await, so Svelte would not treat
 				// it as an effect dependency anyway — but reading it explicitly through
@@ -157,13 +172,21 @@
 				// turn trip-expansion into a full redraw.
 				const promoted = untrack(() => promotedRouteId);
 				const isPromoted = promoted != null && route.id === promoted;
-				const polyline = await mapProvider.createPolyline(shape.points, {
-					color,
-					casing: true,
-					weight: weightFor(index),
-					pane: isPromoted ? ROUTE_PANE.PROMOTED : ROUTE_PANE.LINE,
-					casingPane: ROUTE_PANE.CASING
-				});
+				let polyline = null;
+
+				try {
+					polyline = await mapProvider.createPolyline(shape.points, {
+						color,
+						casing: true,
+						weight: weightFor(index),
+						pane: isPromoted ? ROUTE_PANE.PROMOTED : ROUTE_PANE.LINE,
+						casingPane: ROUTE_PANE.CASING
+					});
+				} catch (error) {
+					console.error('StopRoutesLayer: could not create polyline', route.id, error);
+					return;
+				}
+
 				if (token !== loadToken) {
 					// A supersede ran clearAllPolylines() before this create resolved
 					// (Google's createPolyline is async, awaiting importLibrary), so
@@ -172,7 +195,12 @@
 					mapProvider.removePolyline(polyline);
 					return;
 				}
-				if (!polyline) return;
+				if (!polyline) {
+					console.error('StopRoutesLayer: could not create polyline', route.id);
+					return;
+				}
+
+				drawnRoutes++;
 
 				// Retained so the promotion effect can re-pane this route later
 				// without redrawing it. isPromoted was already decided above (from
@@ -221,6 +249,12 @@
 				routeStopIds = new Map(nextStopIds);
 			})
 		);
+
+		if (token !== loadToken || !isMounted) return;
+
+		if (attemptedRoutes > 0 && drawnRoutes < attemptedRoutes) {
+			notificationId = notifyPartialRouteShape();
+		}
 	}
 
 	function stopVehiclePolling() {
@@ -232,6 +266,7 @@
 	}
 
 	function teardown() {
+		notifications.dismiss(notificationId);
 		stopVehiclePolling();
 		// mapProvider can be null: a cold deep-link whose arrivals land before
 		// initMap() resolves mounts this layer with no provider yet, and
@@ -445,6 +480,7 @@
 
 	onDestroy(() => {
 		loadToken++;
+		isMounted = false;
 		teardown();
 	});
 </script>
