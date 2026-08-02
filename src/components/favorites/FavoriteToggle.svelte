@@ -13,7 +13,7 @@
 	@prop {string} [shortName] - Required for type=route
 	@prop {string|null} [description]
 	@prop {number|null} [routeType]
-	@prop {string} [class] - Extra classes on the button
+	@prop {string} [class] - Extra classes on the button (include h-/w- to override default size)
 -->
 <script>
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
@@ -43,6 +43,9 @@
 
 	let label = $derived(isFav ? $t('favorites.remove') : $t('favorites.add'));
 	let icon = $derived(isFav ? faStarSolid : faStarRegular);
+	// Omit default size when the caller passes size classes — Tailwind cannot
+	// override conflicting utilities by HTML class order.
+	let sizeClass = $derived(className ? '' : 'h-10 w-12');
 
 	function handleClick() {
 		const result = favorites.toggle({
@@ -72,7 +75,7 @@
 	aria-pressed={isFav}
 	aria-label={label}
 	title={label}
-	class="flex h-10 w-12 flex-none items-center justify-center rounded-xl border border-gray-300 text-black hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 {className}"
+	class="flex {sizeClass} flex-none items-center justify-center rounded-xl border border-gray-300 text-black hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 {className}"
 >
 	<!-- {#key} remounts FontAwesome when the glyph swaps; the SVG component
 	     does not always update in place when only the icon prop changes. -->

@@ -83,8 +83,10 @@
 	{:else}
 		<div class="space-y-2">
 			{#each items as item (`${item.type}:${item.id}`)}
+				{@const subtitle = itemSubtitle(item)}
+				{@const title = itemTitle(item)}
 				<div
-					class="dark:hover:bg-gray-750 group relative flex items-stretch rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+					class="group relative flex items-stretch rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
 				>
 					<button
 						type="button"
@@ -97,11 +99,11 @@
 						</div>
 						<div class="min-w-0 flex-1 text-left">
 							<div class="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-								{itemTitle(item)}
+								{title}
 							</div>
-							{#if itemSubtitle(item)}
+							{#if subtitle}
 								<div class="truncate text-xs text-gray-500 dark:text-gray-400">
-									{itemSubtitle(item)}
+									{subtitle}
 								</div>
 							{/if}
 						</div>
@@ -111,7 +113,7 @@
 						type="button"
 						class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-red-500 group-hover:opacity-100 dark:hover:bg-gray-600"
 						onclick={() => handleRemove(item)}
-						aria-label={$t('favorites.remove_item', { values: { name: itemTitle(item) } })}
+						aria-label={$t('favorites.remove_item', { values: { name: title } })}
 					>
 						<FontAwesomeIcon icon={faTimes} class="h-3 w-3" />
 					</button>

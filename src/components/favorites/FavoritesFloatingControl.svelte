@@ -7,6 +7,7 @@
 	@prop {Function} [onRouteClick] - Called with a route favorite when selected
 -->
 <script>
+	import { tick } from 'svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faStar } from '@fortawesome/free-solid-svg-icons';
 	import { t } from 'svelte-i18n';
@@ -17,26 +18,38 @@
 
 	let open = $state(false);
 	let rootEl = $state(null);
+	let toggleBtn = $state(null);
+	let panelEl = $state(null);
+
+	const panelId = `favorites-floating-panel-${crypto.randomUUID()}`;
 
 	let count = $derived($favorites.length);
 	let toggleLabel = $derived(open ? $t('favorites.close_panel') : $t('favorites.open_panel'));
 
-	function toggle(event) {
+	async function toggle(event) {
 		event.stopPropagation();
 		open = !open;
+		if (open) {
+			await tick();
+			panelEl?.focus();
+		}
 	}
 
-	function close() {
+	function close({ restoreFocus = true } = {}) {
+		if (!open) return;
 		open = false;
+		if (restoreFocus) {
+			tick().then(() => toggleBtn?.focus());
+		}
 	}
 
 	function handleStopClick(item) {
-		close();
+		close({ restoreFocus: false });
 		onStopClick?.(item);
 	}
 
 	function handleRouteClick(item) {
-		close();
+		close({ restoreFocus: false });
 		onRouteClick?.(item);
 	}
 
@@ -49,6 +62,7 @@
 
 	function handleKeydown(event) {
 		if (event.key === 'Escape' && open) {
+			event.preventDefault();
 			close();
 		}
 	}
@@ -58,10 +72,11 @@
 
 <div bind:this={rootEl} class="relative">
 	<button
+		bind:this={toggleBtn}
 		type="button"
 		onclick={toggle}
 		aria-expanded={open}
-		aria-controls="favorites-floating-panel"
+		aria-controls={panelId}
 		aria-label={toggleLabel}
 		title={toggleLabel}
 		class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-300 bg-white/95 text-black shadow-md backdrop-blur-sm hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800/95 dark:text-white dark:hover:bg-gray-700"
@@ -77,11 +92,15 @@
 	</button>
 
 	{#if open}
+		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 		<div
-			id="favorites-floating-panel"
+			bind:this={panelEl}
+			id={panelId}
 			role="dialog"
+			aria-modal="true"
 			aria-label={$t('favorites.title')}
-			class="absolute right-0 top-full z-40 mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 p-3 shadow-lg backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800/95"
+			tabindex="-1"
+			class="absolute right-0 top-full z-40 mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 p-3 shadow-lg backdrop-blur-sm outline-none dark:border-gray-600 dark:bg-gray-800/95"
 		>
 			<FavoritesList onStopClick={handleStopClick} onRouteClick={handleRouteClick} />
 		</div>

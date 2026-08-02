@@ -1,4 +1,4 @@
-import { writable, derived } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 const MAX_FAVORITES = 50;
@@ -184,9 +184,3 @@ function createFavoritesStore() {
 }
 
 export const favorites = createFavoritesStore();
-
-/** Set of `${type}:${id}` keys for O(1) membership checks in components. */
-export const favoriteKeys = derived(
-	favorites,
-	($favorites) => new Set($favorites.map((f) => `${f.type}:${f.id}`))
-);

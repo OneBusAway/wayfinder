@@ -155,4 +155,18 @@ describe('FavoriteToggle', () => {
 		expect(button.tagName).toBe('BUTTON');
 		expect(button.getAttribute('onkeydown')).toBeNull();
 	});
+
+	it('applies default size classes when no class prop is passed', () => {
+		render(FavoriteToggle, { props: stopProps });
+		const button = screen.getByRole('button', { name: 'Add to favorites' });
+		expect(button).toHaveClass('h-10', 'w-12');
+	});
+
+	it('omits default size classes when a class prop provides sizing', () => {
+		render(FavoriteToggle, { props: { ...stopProps, class: 'h-8 w-8' } });
+		const button = screen.getByRole('button', { name: 'Add to favorites' });
+		expect(button).toHaveClass('h-8', 'w-8');
+		expect(button).not.toHaveClass('h-10');
+		expect(button).not.toHaveClass('w-12');
+	});
 });

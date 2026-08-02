@@ -74,11 +74,19 @@ describe('FavoritesFloatingControl', () => {
 
 		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
 
-		expect(screen.getByRole('dialog', { name: 'Favorites' })).toBeInTheDocument();
+		const dialog = screen.getByRole('dialog', { name: 'Favorites' });
+		expect(dialog).toBeInTheDocument();
+		expect(dialog).toHaveAttribute('aria-modal', 'true');
+		expect(dialog).toHaveAttribute('id');
+		expect(dialog).toHaveFocus();
 		expect(screen.getByText('No favorites yet')).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Close favorites' })).toHaveAttribute(
 			'aria-expanded',
 			'true'
+		);
+		expect(screen.getByRole('button', { name: 'Close favorites' })).toHaveAttribute(
+			'aria-controls',
+			dialog.getAttribute('id')
 		);
 	});
 
@@ -116,13 +124,15 @@ describe('FavoritesFloatingControl', () => {
 		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 
-	it('closes on Escape', async () => {
+	it('closes on Escape and restores focus to the toggle', async () => {
 		render(FavoritesFloatingControl);
 
-		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		await user.click(toggle);
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
 
 		await user.keyboard('{Escape}');
 		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(toggle).toHaveFocus();
 	});
 });

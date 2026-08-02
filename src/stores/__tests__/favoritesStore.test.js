@@ -8,7 +8,6 @@ vi.mock('$app/environment', () => ({
 
 describe('favoritesStore', () => {
 	let favorites;
-	let favoriteKeys;
 
 	beforeEach(async () => {
 		localStorage.getItem.mockReset();
@@ -20,7 +19,6 @@ describe('favoritesStore', () => {
 		vi.resetModules();
 		const mod = await import('../../stores/favoritesStore.js');
 		favorites = mod.favorites;
-		favoriteKeys = mod.favoriteKeys;
 	});
 
 	function getStoreValue(store) {
@@ -138,17 +136,6 @@ describe('favoritesStore', () => {
 
 		expect(getStoreValue(favorites)).toHaveLength(0);
 		expect(localStorage.removeItem).toHaveBeenCalledWith('wayfinder_favorites');
-	});
-
-	it('should expose favoriteKeys as a Set of type:id', () => {
-		favorites.add(makeStop());
-		favorites.add(makeRoute());
-
-		const keys = getStoreValue(favoriteKeys);
-		expect(keys).toBeInstanceOf(Set);
-		expect(keys.has('stop:1_75403')).toBe(true);
-		expect(keys.has('route:1_100479')).toBe(true);
-		expect(keys.has('stop:missing')).toBe(false);
 	});
 
 	it('should reject stop entries with missing or non-finite coordinates', () => {
