@@ -1,7 +1,6 @@
 <script>
 	import SearchField from '$components/search/SearchField.svelte';
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
-	import FavoritesList from '$components/favorites/FavoritesList.svelte';
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
@@ -75,32 +74,6 @@
 		setTimeout(() => {
 			handleStopMarkerSelect(stop);
 		}, 100);
-	}
-
-	/**
-	 * Open a favorited stop once the map is ready. Favorites store denormalized
-	 * stop fields that match what handleStopClick already expects.
-	 * @param {Object} favorite
-	 */
-	function handleFavoriteStopClick(favorite) {
-		if (!mapLoaded || !mapProvider) return;
-		handleStopClick(favorite);
-	}
-
-	/**
-	 * Open a favorited route. Map stored `routeType`/`shortName` onto the shape
-	 * handleRouteClick and vehicle polling expect from search results.
-	 * @param {Object} favorite
-	 */
-	function handleFavoriteRouteClick(favorite) {
-		if (!mapLoaded || !mapProvider) return;
-		handleRouteClick({
-			id: favorite.id,
-			shortName: favorite.shortName,
-			nullSafeShortName: favorite.shortName,
-			description: favorite.description,
-			type: favorite.routeType
-		});
 	}
 
 	/**
@@ -401,13 +374,6 @@
 				<div class="mt-2">
 					{@render childContent()}
 				</div>
-			{/if}
-
-			{#if !query}
-				<FavoritesList
-					onStopClick={handleFavoriteStopClick}
-					onRouteClick={handleFavoriteRouteClick}
-				/>
 			{/if}
 
 			{#if query}

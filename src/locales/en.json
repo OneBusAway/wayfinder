@@ -71,6 +71,8 @@
 		"add": "Add to favorites",
 		"remove": "Remove from favorites",
 		"clear_all": "Clear All",
+		"open_panel": "Open favorites",
+		"close_panel": "Close favorites",
 		"empty": "No favorites yet. Tap the star on a stop or route to save it here.",
 		"stop_code": "Code",
 		"open_item": "Open {name}",

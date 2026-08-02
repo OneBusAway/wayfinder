@@ -14,7 +14,7 @@
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { removeAgencyPrefix } from '$lib/utils';
 
-	let { onStopClick = null, onRouteClick = null } = $props();
+	let { onStopClick = null, onRouteClick = null, class: className = '' } = $props();
 
 	let items = $derived($favorites);
 
@@ -61,7 +61,7 @@
 	}
 </script>
 
-<div class="mt-4">
+<div class={className}>
 	<div class="mb-2 flex items-center justify-between">
 		<h2 class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400">
 			<FontAwesomeIcon icon={faStar} class="h-3.5 w-3.5" />

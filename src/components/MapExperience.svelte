@@ -6,6 +6,7 @@
 	import MapContainer from '$components/MapContainer.svelte';
 	import RouteModal from '$components/routes/RouteModal.svelte';
 	import ViewAllRoutesModal from '$components/routes/ViewAllRoutesModal.svelte';
+	import FavoritesFloatingControl from '$components/favorites/FavoritesFloatingControl.svelte';
 	import { isLoading } from 'svelte-i18n';
 	import AlertsModal from '$components/navigation/AlertsModal.svelte';
 	import { onMount, onDestroy } from 'svelte';
@@ -135,6 +136,44 @@
 		// structured-clones its state argument (DataCloneError on a proxy). Snapshot
 		// yields a plain, clone-safe copy.
 		pushState(mapStopPath(stopData.id), { stopData: $state.snapshot(stopData) });
+	}
+
+	/**
+	 * Open a favorited stop from the map floating control.
+	 * @param {Object} favorite
+	 */
+	function handleFavoriteStopClick(favorite) {
+		if (!mapProvider) return;
+		mapProvider.addMarker({
+			stop: favorite,
+			position: { lat: favorite.lat, lng: favorite.lon },
+			onClick: () => handleStopMarkerSelect(favorite)
+		});
+		mapProvider.flyTo(favorite.lat, favorite.lon, 20);
+		setTimeout(() => {
+			handleStopMarkerSelect(favorite);
+		}, 100);
+	}
+
+	/**
+	 * Open a favorited route via the same event ViewAllRoutesModal uses, so
+	 * SearchPane's existing handleRouteClick path loads shapes and vehicles.
+	 * @param {Object} favorite
+	 */
+	function handleFavoriteRouteClick(favorite) {
+		window.dispatchEvent(
+			new CustomEvent('routeSelectedFromModal', {
+				detail: {
+					route: {
+						id: favorite.id,
+						shortName: favorite.shortName,
+						nullSafeShortName: favorite.shortName,
+						description: favorite.description,
+						type: favorite.routeType
+					}
+				}
+			})
+		);
 	}
 
 	$effect(() => {
@@ -504,6 +543,10 @@
 {:else}
 	<h1 class="sr-only">{PUBLIC_OBA_REGION_NAME}</h1>
 	<div class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 z-40">
+		<FavoritesFloatingControl
+			onStopClick={handleFavoriteStopClick}
+			onRouteClick={handleFavoriteRouteClick}
+		/>
 		<!-- Top spacing is padding (not margin) so h-full keeps the column's bottom
 		     edge — where the sheet anchors — exactly at the viewport bottom. Below md,
 		     horizontal margins live on the search wrapper and on each pane (not the
