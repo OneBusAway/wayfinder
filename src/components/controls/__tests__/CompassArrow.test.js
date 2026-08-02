@@ -41,10 +41,9 @@ describe('CompassArrow', () => {
 		expect(span).toHaveClass('hidden');
 	});
 
-	// Regression: prior to wrapping the icon in a span we control, the
-	// rotation class could become stale after `stopDirection` updated
-	// (icon visible but pointing in the wrong direction on the Route
-	// Schedules tab once the async stop data resolved).
+	// Regression: verifies the rotation class is applied to the wrapper
+	// span we control and updates reactively when `stopDirection` changes,
+	// preventing stale icon rotation in `StopPageHeader`.
 	test('updates the rotation class when stopDirection changes', async () => {
 		const { container, rerender } = render(CompassArrow, {
 			props: { stopDirection: '' }
