@@ -543,10 +543,6 @@
 {:else}
 	<h1 class="sr-only">{PUBLIC_OBA_REGION_NAME}</h1>
 	<div class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 z-40">
-		<FavoritesFloatingControl
-			onStopClick={handleFavoriteStopClick}
-			onRouteClick={handleFavoriteRouteClick}
-		/>
 		<!-- Top spacing is padding (not margin) so h-full keeps the column's bottom
 		     edge — where the sheet anchors — exactly at the viewport bottom. Below md,
 		     horizontal margins live on the search wrapper and on each pane (not the
@@ -572,6 +568,17 @@
 						<SurveyLauncher />
 					{/snippet}
 				</SearchPane>
+			</div>
+
+			<!-- Mobile: sit in flow below the search pane. Desktop: pin to the map's
+			     top-right (absolute against the full-screen overlay ancestor). -->
+			<div
+				class="pointer-events-auto relative z-30 mx-2 mt-2 flex justify-end md:absolute md:right-4 md:top-4 md:mx-0 md:mt-0"
+			>
+				<FavoritesFloatingControl
+					onStopClick={handleFavoriteStopClick}
+					onRouteClick={handleFavoriteRouteClick}
+				/>
 			</div>
 
 			<div class="relative mt-2 flex-1 md:mt-4">
