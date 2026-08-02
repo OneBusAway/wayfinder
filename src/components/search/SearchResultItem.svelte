@@ -5,9 +5,9 @@
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} [icon]
-	 * @property {any} [title]
-	 * @property {any} [subtitle]
+	 * @property {import('@fortawesome/fontawesome-svg-core').IconDefinition | null} [icon]
+	 * @property {string | null} [title]
+	 * @property {string | null} [subtitle]
 	 */
 
 	/** @type {Props} */

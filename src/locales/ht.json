@@ -88,7 +88,9 @@
 		"close": "Fèmen"
 	},
 	"arrivals_and_departures": "Arive ak depa",
-	"no_arrivals_or_departures_in_next_30_minutes": "Pa gen arive oswa depa nan 30 minit kap vini yo",
+	"load_more_arrivals": "Chaje plis arive",
+	"no_arrivals_found_in_next_minutes": "Pa gen arive nan {minutes} minit kap vini yo",
+	"no_more_arrivals_in_next_minutes": "Pa gen plis arive nan {minutes} minit kap vini yo",
 	"stop": "Arè",
 	"routes": "Wout",
 	"route": "wout",
@@ -125,7 +127,8 @@
 		"route_schedules": "Orè Wout",
 		"no_schedules_available": "Pa gen orè disponib pou dat ou chwazi a.",
 		"stop_id": "ID Arè",
-		"direction": "Direksyon"
+		"direction": "Direksyon",
+		"schedule_table_caption": "Lè depa pou {route}"
 	},
 	"direction": {
 		"N": "Nò",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "Kòmanse isit",
 		"end_here": "Fini isit"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Aksè refize",
+			"description": "Ou pa gen pèmisyon pou wè paj sa a."
+		},
+		"404": {
+			"title": "Paj la pa jwenn",
+			"description": "Paj ou ap chèche a pa egziste oswa li te deplase."
+		},
+		"500": {
+			"title": "Erè sèvè",
+			"description": "Yon bagay mal pase nan bò pa nou. Tanpri eseye ankò pita."
+		},
+		"generic": {
+			"title": "Yon bagay mal pase",
+			"description": "Yon erè inatandi rive."
+		},
+		"go_home": "Ale lakay",
+		"go_back": "Tounen"
+	},
+	"skip_to_main_content": "Sote nan kontni prensipal la"
 }

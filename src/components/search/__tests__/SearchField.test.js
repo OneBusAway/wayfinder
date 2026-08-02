@@ -4,7 +4,7 @@ import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import SearchField from '../SearchField.svelte';
 
 // Mock analytics
-vi.mock('$lib/Analytics/PlausibleAnalytics', () => ({
+vi.mock('$lib/Insights', () => ({
 	default: {
 		reportSearchQuery: vi.fn()
 	}
@@ -35,7 +35,7 @@ describe('SearchField', () => {
 		mockHandleSearchResults = vi.fn();
 
 		// Get analytics mock
-		analytics = (await import('$lib/Analytics/PlausibleAnalytics')).default;
+		analytics = (await import('$lib/Insights')).default;
 
 		// Mock fetch globally
 		mockFetch = vi.fn().mockResolvedValue({

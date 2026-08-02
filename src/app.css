@@ -21,15 +21,15 @@
 	}
 
 	.tab-container {
-		@apply flex border-b border-gray-300;
+		@apply flex border-b border-gray-300 dark:border-gray-700;
 	}
 
 	.tab-container__item {
-		@apply -mb-px px-4 py-2 font-semibold text-gray-500;
+		@apply -mb-px px-4 py-2 font-semibold text-gray-500 dark:text-gray-400;
 	}
 
 	.tab-container__item--active {
-		@apply border-b-2 border-brand-accent text-brand-accent;
+		@apply border-b-2 border-brand-accent text-brand-accent dark:border-brand dark:text-brand;
 	}
 
 	/* Pill-style itinerary tabs */
@@ -56,9 +56,14 @@
 	}
 
 	.itinerary-tab--active {
-		@apply bg-brand text-brand-foreground shadow-md;
-		@apply hover:bg-brand;
-		@apply dark:bg-brand dark:text-brand-foreground dark:hover:bg-brand;
+		@apply bg-brand-accent text-white shadow-md;
+		@apply hover:bg-brand-accent-dark;
+		@apply dark:bg-brand-accent dark:text-white dark:hover:bg-brand-accent-dark;
+	}
+
+	.close-button {
+		@apply rounded px-4 py-2;
+		@apply transition duration-300 ease-in-out hover:bg-neutral-200 dark:hover:bg-neutral-700;
 	}
 
 	.button {
@@ -66,7 +71,7 @@
 	}
 
 	.button--primary {
-		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
+		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
 	}
 
 	.rtl {

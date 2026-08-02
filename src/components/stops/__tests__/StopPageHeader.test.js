@@ -276,7 +276,7 @@ describe('StopPageHeader', () => {
 			'items-center',
 			'gap-2',
 			'rounded-md',
-			'bg-brand',
+			'bg-brand-accent',
 			'px-4',
 			'py-2',
 			'text-sm',

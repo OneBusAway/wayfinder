@@ -4,7 +4,7 @@ import { expect, test, describe, vi, beforeEach } from 'vitest';
 import RouteModal from '../RouteModal.svelte';
 import { mockRoutesListData, mockStopsForRouteData } from '../../../tests/fixtures/obaData.js';
 
-// Allow ModalPane and StopItem to render naturally - they should be properly implemented
+// Allow BottomSheet and StopItem to render naturally - they should be properly implemented
 
 // Mock svelte-i18n
 vi.mock('svelte-i18n', () => ({
@@ -109,7 +109,9 @@ describe('RouteModal', () => {
 		}
 
 		// Should call map provider methods
-		expect(mockMapProvider.flyTo).toHaveBeenCalledWith(mockStops[0].lat, mockStops[0].lon, 18);
+		expect(mockMapProvider.flyTo).toHaveBeenCalledWith(mockStops[0].lat, mockStops[0].lon, 18, {
+			animate: false
+		});
 		expect(mockMapProvider.openStopMarker).toHaveBeenCalledWith(mockStops[0]);
 	});
 
@@ -206,7 +208,7 @@ describe('RouteModal', () => {
 			}
 		});
 
-		// Find close button (typically rendered by ModalPane)
+		// Find close button (rendered in the BottomSheet header)
 		const closeButton = screen.getByRole('button', { name: /close/i });
 		await user.click(closeButton);
 
@@ -508,7 +510,9 @@ describe('RouteModal', () => {
 		for (let i = 0; i < stopButtons.length && i < mockStops.length; i++) {
 			await user.click(stopButtons[i]);
 
-			expect(mockMapProvider.flyTo).toHaveBeenCalledWith(mockStops[i].lat, mockStops[i].lon, 18);
+			expect(mockMapProvider.flyTo).toHaveBeenCalledWith(mockStops[i].lat, mockStops[i].lon, 18, {
+				animate: false
+			});
 			expect(mockMapProvider.openStopMarker).toHaveBeenCalledWith(mockStops[i]);
 		}
 	});

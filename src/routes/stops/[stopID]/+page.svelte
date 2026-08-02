@@ -7,8 +7,8 @@
 	import { onMount } from 'svelte';
 	import { loadSurveys } from '$lib/Surveys/surveyUtils.js';
 	import { getUserId } from '$lib/utils/user.js';
-	import analytics from '$lib/Analytics/PlausibleAnalytics.js';
-	import { analyticsDistanceToStop } from '$lib/Analytics/plausibleUtils.js';
+	import analytics from '$lib/Insights';
+	import { analyticsDistanceToStop } from '$lib/Insights/insightsUtils.js';
 	import { userLocation } from '$src/stores/userLocationStore.js';
 
 	let { data } = $props();

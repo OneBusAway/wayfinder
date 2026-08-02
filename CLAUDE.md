@@ -99,7 +99,7 @@ Configured in `src/lib/i18n.js`. English loaded synchronously as fallback; 24 ot
 - Setup file: `vitest-setup.js` (mocks for env vars, i18n, SvelteKit stores, browser APIs)
 - Coverage threshold: 70% for branches, functions, lines, statements
 
-When writing tests, the setup file already mocks `$env/static/public`, `$env/static/private`, `$env/dynamic/public`, `svelte-i18n`, `$app/stores`, and common browser APIs (ResizeObserver, IntersectionObserver, geolocation, localStorage, matchMedia). Tests that need to mutate dynamic env values should declare their own `vi.mock('$env/dynamic/public', ...)` with a getter pattern (see `LanguageSwitcher.test.js` or `PlausibleAnalytics.test.js` for examples).
+When writing tests, the setup file already mocks `$env/static/public`, `$env/static/private`, `$env/dynamic/public`, `svelte-i18n`, `$app/stores`, and common browser APIs (ResizeObserver, IntersectionObserver, geolocation, localStorage, matchMedia). Tests that need to mutate dynamic env values should declare their own `vi.mock('$env/dynamic/public', ...)` with a getter pattern (see `LanguageSwitcher.test.js`, `src/tests/api/events.test.js`, or `src/tests/lib/Insights/Insights.test.js` for examples).
 
 ## Styling
 
@@ -119,4 +119,5 @@ See `.env.example` for full list. Key variables:
 - `PUBLIC_OBA_REGION_CENTER_LAT/LNG` - Region center coordinates
 - `PUBLIC_OBA_MAP_PROVIDER` - "osm" or "google"
 - `PUBLIC_OTP_SERVER_URL` - OpenTripPlanner server (optional, for trip planning)
+- `PUBLIC_OBA_TIMEZONE` - IANA timezone for the transit region (e.g. "America/Los_Angeles"), required
 - `PRIVATE_OBA_GEOCODER_PROVIDER` - Geocoding provider (currently "google" only)

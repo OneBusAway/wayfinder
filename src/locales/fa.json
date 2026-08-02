@@ -88,7 +88,9 @@
 		"close": "بستن"
 	},
 	"arrivals_and_departures": "ورود و خروج",
-	"no_arrivals_or_departures_in_next_30_minutes": "ورود یا خروجی در ۳۰ دقیقه آینده وجود ندارد",
+	"load_more_arrivals": "بارگذاری ورودی‌های بیشتر",
+	"no_arrivals_found_in_next_minutes": "هیچ ورودی در {minutes} دقیقه آینده یافت نشد",
+	"no_more_arrivals_in_next_minutes": "هیچ ورودی بیشتری در {minutes} دقیقه آینده وجود ندارد",
 	"stop": "ایستگاه",
 	"routes": "خطوط",
 	"route": "خط",
@@ -125,7 +127,8 @@
 		"route_schedules": "برنامه زمانی خطوط",
 		"no_schedules_available": "برنامه‌ای برای تاریخ انتخاب شده موجود نیست.",
 		"stop_id": "شناسه ایستگاه",
-		"direction": "جهت"
+		"direction": "جهت",
+		"schedule_table_caption": "زمان‌های حرکت برای {route}"
 	},
 	"direction": {
 		"N": "شمال",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "شروع از اینجا",
 		"end_here": "پایان در اینجا"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "دسترسی ممنوع",
+			"description": "شما اجازه مشاهده این صفحه را ندارید."
+		},
+		"404": {
+			"title": "صفحه پیدا نشد",
+			"description": "صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است."
+		},
+		"500": {
+			"title": "خطای سرور",
+			"description": "مشکلی از سمت ما رخ داده است. لطفاً بعداً دوباره تلاش کنید."
+		},
+		"generic": {
+			"title": "مشکلی پیش آمد",
+			"description": "یک خطای غیرمنتظره رخ داد."
+		},
+		"go_home": "رفتن به خانه",
+		"go_back": "بازگشت"
+	},
+	"skip_to_main_content": "رفتن به محتوای اصلی"
 }

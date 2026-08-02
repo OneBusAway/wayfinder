@@ -88,7 +88,9 @@
 		"close": "Fermer"
 	},
 	"arrivals_and_departures": "Arrivées et départs",
-	"no_arrivals_or_departures_in_next_30_minutes": "Aucune arrivée ni départ dans les 30 prochaines minutes",
+	"load_more_arrivals": "Charger plus d'arrivées",
+	"no_arrivals_found_in_next_minutes": "Aucune arrivée trouvée dans les {minutes} prochaines minutes",
+	"no_more_arrivals_in_next_minutes": "Aucune autre arrivée dans les {minutes} prochaines minutes",
 	"stop": "Arrêt",
 	"routes": "Lignes",
 	"route": "ligne",
@@ -125,7 +127,8 @@
 		"route_schedules": "Horaires des lignes",
 		"no_schedules_available": "Aucun horaire disponible pour la date sélectionnée.",
 		"stop_id": "ID de l'arrêt",
-		"direction": "Direction"
+		"direction": "Direction",
+		"schedule_table_caption": "Heures de départ pour {route}"
 	},
 	"direction": {
 		"N": "Nord",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "Partir d'ici",
 		"end_here": "Arriver ici"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Accès refusé",
+			"description": "Vous n'avez pas la permission de voir cette page."
+		},
+		"404": {
+			"title": "Page non trouvée",
+			"description": "La page que vous recherchez n'existe pas ou a été déplacée."
+		},
+		"500": {
+			"title": "Erreur serveur",
+			"description": "Un problème est survenu de notre côté. Veuillez réessayer plus tard."
+		},
+		"generic": {
+			"title": "Quelque chose a mal tourné",
+			"description": "Une erreur inattendue s'est produite."
+		},
+		"go_home": "Retour à l'accueil",
+		"go_back": "Retour"
+	},
+	"skip_to_main_content": "Aller au contenu principal"
 }

@@ -88,7 +88,9 @@
 		"close": "إغلاق"
 	},
 	"arrivals_and_departures": "الوصول والمغادرة",
-	"no_arrivals_or_departures_in_next_30_minutes": "لا يوجد وصول أو مغادرة خلال الثلاثين دقيقة القادمة",
+	"load_more_arrivals": "تحميل المزيد من الوصولات",
+	"no_arrivals_found_in_next_minutes": "لا توجد وصولات في الدقائق {minutes} القادمة",
+	"no_more_arrivals_in_next_minutes": "لا يوجد المزيد من الوصولات في الدقائق {minutes} القادمة",
 	"stop": "المحطة",
 	"routes": "المسارات",
 	"route": "المسار",
@@ -125,7 +127,8 @@
 		"route_schedules": "جداول المسارات",
 		"no_schedules_available": "لا توجد جداول متاحة للتاريخ المحدد.",
 		"stop_id": "رقم المحطة",
-		"direction": "الاتجاه"
+		"direction": "الاتجاه",
+		"schedule_table_caption": "أوقات المغادرة لـ {route}"
 	},
 	"direction": {
 		"N": "شمال",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "ابدأ من هنا",
 		"end_here": "انتهِ هنا"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "تم رفض الوصول",
+			"description": "ليس لديك صلاحية لعرض هذه الصفحة."
+		},
+		"404": {
+			"title": "الصفحة غير موجودة",
+			"description": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها."
+		},
+		"500": {
+			"title": "خطأ في الخادم",
+			"description": "حدث خطأ من جانبنا. يرجى المحاولة مرة أخرى لاحقاً."
+		},
+		"generic": {
+			"title": "حدث خطأ ما",
+			"description": "حدث خطأ غير متوقع."
+		},
+		"go_home": "الذهاب للرئيسية",
+		"go_back": "العودة"
+	},
+	"skip_to_main_content": "انتقل إلى المحتوى الرئيسي"
 }

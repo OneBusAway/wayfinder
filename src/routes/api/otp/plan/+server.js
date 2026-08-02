@@ -8,10 +8,11 @@ let regionTimeZone;
 
 /**
  * Returns the IANA timezone for this transit region (e.g. "America/Los_Angeles").
- * Falls back to the server's local timezone when PUBLIC_OBA_TIMEZONE is not set.
- * Valid timezones and the "not set" default are cached for the lifetime of the
- * process. Invalid values are NOT cached, so fixing the env var takes effect
- * on the next request without a restart.
+ * PUBLIC_OBA_TIMEZONE is required; falls back to the server's local timezone
+ * only as a safety net if the variable is missing or invalid.
+ * Valid timezones are cached for the lifetime of the process. Invalid values
+ * are NOT cached, so fixing the env var takes effect on the next request
+ * without a restart.
  */
 function getRegionTimeZone() {
 	if (regionTimeZone) return regionTimeZone;
@@ -31,8 +32,11 @@ function getRegionTimeZone() {
 			return getLocalTimeZone();
 		}
 	}
-	regionTimeZone = getLocalTimeZone();
-	return regionTimeZone;
+	console.error(
+		'PUBLIC_OBA_TIMEZONE is not set. This variable is required. Falling back to server timezone.'
+	);
+	// Don't cache — let the operator add the env var without a restart
+	return getLocalTimeZone();
 }
 
 /**

@@ -88,7 +88,9 @@
 		"close": "關閉"
 	},
 	"arrivals_and_departures": "到站與發車",
-	"no_arrivals_or_departures_in_next_30_minutes": "未來 30 分鐘內沒有到站或發車班次",
+	"load_more_arrivals": "載入更多到站班次",
+	"no_arrivals_found_in_next_minutes": "未來 {minutes} 分鐘內沒有到站班次",
+	"no_more_arrivals_in_next_minutes": "未來{minutes}分鐘內沒有更多到站班次",
 	"stop": "站牌",
 	"routes": "路線",
 	"route": "路線",
@@ -125,7 +127,8 @@
 		"route_schedules": "路線時刻表",
 		"no_schedules_available": "所選日期沒有班次。",
 		"stop_id": "站牌編號",
-		"direction": "方向"
+		"direction": "方向",
+		"schedule_table_caption": "{route} 的發車時間"
 	},
 	"direction": {
 		"N": "北",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "從這裡出發",
 		"end_here": "到這裡結束"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "拒絕存取",
+			"description": "您沒有查看此頁面的權限。"
+		},
+		"404": {
+			"title": "找不到頁面",
+			"description": "您尋找的頁面不存在或已被移動。"
+		},
+		"500": {
+			"title": "伺服器錯誤",
+			"description": "我們這邊出了問題。請稍後再試。"
+		},
+		"generic": {
+			"title": "發生問題",
+			"description": "發生了意外錯誤。"
+		},
+		"go_home": "回首頁",
+		"go_back": "返回"
+	},
+	"skip_to_main_content": "跳至主要內容"
 }

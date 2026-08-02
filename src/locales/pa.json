@@ -88,7 +88,9 @@
 		"close": "ਬੰਦ ਕਰੋ"
 	},
 	"arrivals_and_departures": "ਆਗਮਨ ਅਤੇ ਰਵਾਨਗੀਆਂ",
-	"no_arrivals_or_departures_in_next_30_minutes": "ਅਗਲੇ 30 ਮਿੰਟਾਂ ਵਿੱਚ ਕੋਈ ਆਗਮਨ ਜਾਂ ਰਵਾਨਗੀ ਨਹੀਂ",
+	"load_more_arrivals": "ਹੋਰ ਆਗਮਨ ਲੋਡ ਕਰੋ",
+	"no_arrivals_found_in_next_minutes": "ਅਗਲੇ {minutes} ਮਿੰਟਾਂ ਵਿੱਚ ਕੋਈ ਆਗਮਨ ਨਹੀਂ ਮਿਲਿਆ",
+	"no_more_arrivals_in_next_minutes": "ਅਗਲੇ {minutes} ਮਿੰਟਾਂ ਵਿੱਚ ਹੋਰ ਕੋਈ ਆਗਮਨ ਨਹੀਂ",
 	"stop": "ਸਟਾਪ",
 	"routes": "ਰੂਟ",
 	"route": "ਰੂਟ",
@@ -125,7 +127,8 @@
 		"route_schedules": "ਰੂਟ ਸਮਾਂ-ਸਾਰਣੀਆਂ",
 		"no_schedules_available": "ਚੁਣੀ ਗਈ ਤਾਰੀਖ ਲਈ ਕੋਈ ਸਮਾਂ-ਸਾਰਣੀ ਉਪਲਬਧ ਨਹੀਂ।",
 		"stop_id": "ਸਟਾਪ ID",
-		"direction": "ਦਿਸ਼ਾ"
+		"direction": "ਦਿਸ਼ਾ",
+		"schedule_table_caption": "{route} ਲਈ ਰਵਾਨਗੀ ਸਮੇਂ"
 	},
 	"direction": {
 		"N": "ਉੱਤਰ",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "ਇੱਥੋਂ ਸ਼ੁਰੂ ਕਰੋ",
 		"end_here": "ਇੱਥੇ ਖ਼ਤਮ ਕਰੋ"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "ਪਹੁੰਚ ਤੋਂ ਇਨਕਾਰ",
+			"description": "ਤੁਹਾਨੂੰ ਇਹ ਪੰਨਾ ਦੇਖਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ।"
+		},
+		"404": {
+			"title": "ਪੰਨਾ ਨਹੀਂ ਮਿਲਿਆ",
+			"description": "ਤੁਸੀਂ ਜੋ ਪੰਨਾ ਲੱਭ ਰਹੇ ਹੋ ਉਹ ਮੌਜੂਦ ਨਹੀਂ ਹੈ ਜਾਂ ਮੂਵ ਕੀਤਾ ਗਿਆ ਹੈ।"
+		},
+		"500": {
+			"title": "ਸਰਵਰ ਗਲਤੀ",
+			"description": "ਸਾਡੇ ਵੱਲੋਂ ਕੁਝ ਗਲਤ ਹੋਇਆ। ਕਿਰਪਾ ਕਰਕੇ ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+		},
+		"generic": {
+			"title": "ਕੁਝ ਗਲਤ ਹੋਇਆ",
+			"description": "ਇੱਕ ਅਣਕਿਆਸੀ ਗਲਤੀ ਹੋਈ।"
+		},
+		"go_home": "ਘਰ ਜਾਓ",
+		"go_back": "ਵਾਪਸ ਜਾਓ"
+	},
+	"skip_to_main_content": "ਮੁੱਖ ਸਮੱਗਰੀ ਤੇ ਜਾਓ"
 }

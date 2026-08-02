@@ -88,7 +88,9 @@
 		"close": "Zamknij"
 	},
 	"arrivals_and_departures": "Przyjazdy i odjazdy",
-	"no_arrivals_or_departures_in_next_30_minutes": "Brak przyjazdów lub odjazdów w ciągu najbliższych 30 minut",
+	"load_more_arrivals": "Załaduj więcej przyjazdów",
+	"no_arrivals_found_in_next_minutes": "Brak przyjazdów w ciągu najbliższych {minutes} minut",
+	"no_more_arrivals_in_next_minutes": "Brak dalszych przyjazdów w ciągu najbliższych {minutes} minut",
 	"stop": "Przystanek",
 	"routes": "Trasy",
 	"route": "trasa",
@@ -125,7 +127,8 @@
 		"route_schedules": "Rozkłady tras",
 		"no_schedules_available": "Brak dostępnych rozkładów na wybraną datę.",
 		"stop_id": "ID przystanku",
-		"direction": "Kierunek"
+		"direction": "Kierunek",
+		"schedule_table_caption": "Godziny odjazdów dla {route}"
 	},
 	"direction": {
 		"N": "Północ",
@@ -159,5 +162,26 @@
 	"context-menu": {
 		"start_here": "Rozpocznij tutaj",
 		"end_here": "Zakończ tutaj"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Brak dostępu",
+			"description": "Nie masz uprawnień do wyświetlenia tej strony."
+		},
+		"404": {
+			"title": "Strona nie znaleziona",
+			"description": "Strona, której szukasz, nie istnieje lub została przeniesiona."
+		},
+		"500": {
+			"title": "Błąd serwera",
+			"description": "Coś poszło nie tak po naszej stronie. Spróbuj ponownie później."
+		},
+		"generic": {
+			"title": "Coś poszło nie tak",
+			"description": "Wystąpił nieoczekiwany błąd."
+		},
+		"go_home": "Strona główna",
+		"go_back": "Wróć"
+	},
+	"skip_to_main_content": "Przejdź do głównej treści"
 }

@@ -1,33 +1,52 @@
 <script>
 	import { t } from 'svelte-i18n';
 	import { msToLocalArrivalDepartureTimeString } from '$lib/dateTimeFormat';
-	let { arrivalDeparture, includeArrivalDepartureInStatusLabel = true } = $props();
+	import RouteBadge from '$components/RouteBadge.svelte';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faClock, faRss } from '@fortawesome/free-solid-svg-icons';
+	let {
+		arrivalDeparture,
+		includeArrivalDepartureInStatusLabel = true,
+		route = null,
+		expanded = false,
+		// Resolved by the map layer so the badge, the polyline, the vehicle markers,
+		// and the legend all use one color per route. mapContrastColor adjusts most
+		// GTFS colors for the basemap, so without this the badge and the line would
+		// differ for nearly every route in dark mode.
+		routeColors = null
+	} = $props();
 
 	const MS_IN_MINS = 60000;
 
-	let routeShortName = arrivalDeparture.routeShortName;
-	let tripHeadsign = arrivalDeparture.tripHeadsign;
-	let scheduledArrivalTime = arrivalDeparture.scheduledArrivalTime;
-	let predictedArrivalTime = arrivalDeparture.predictedArrivalTime;
-	let scheduledDepartureTime = arrivalDeparture.scheduledDepartureTime;
-	let predictedDepartureTime = arrivalDeparture.predictedDepartureTime;
-	let tripStatus = arrivalDeparture.tripStatus;
-	let frequency = arrivalDeparture.frequency;
-	let stopSequence = arrivalDeparture.stopSequence || 1; // Default to 1 if not provided
+	let routeShortName = $derived(arrivalDeparture.routeShortName);
+	let tripHeadsign = $derived(arrivalDeparture.tripHeadsign);
+	let scheduledArrivalTime = $derived(arrivalDeparture.scheduledArrivalTime);
+	let predictedArrivalTime = $derived(arrivalDeparture.predictedArrivalTime);
+	let scheduledDepartureTime = $derived(arrivalDeparture.scheduledDepartureTime);
+	let predictedDepartureTime = $derived(arrivalDeparture.predictedDepartureTime);
+	let tripStatus = $derived(arrivalDeparture.tripStatus);
+	let frequency = $derived(arrivalDeparture.frequency);
+	let stopSequence = $derived(arrivalDeparture.stopSequence || 1); // Default to 1 if not provided
 
 	function computeColor(scheduledMins, predictedMins, isPredicted) {
-		// If this is a scheduled (non-real-time) arrival, always show in blue
+		// Each colored branch returns the 600 shade for light mode (passes WCAG AA
+		// on white) paired with the 400 shade in dark mode (passes on gray-800).
+		// The colored 500 shades fail 4.5:1 in both modes for normal-size status
+		// text — the neutral gray-500/400 below is the exception (gray-500 ≈ 4.8:1
+		// on white, gray-400 passes on gray-800), so it's safe here.
 		if (!isPredicted) {
-			return 'text-blue-500';
+			// Scheduled (no real-time) arrivals read fully muted, per the mockup.
+			// gray-500 passes WCAG AA on white; gray-400 passes on the dark gray-800 surface.
+			return 'text-gray-500 dark:text-gray-400';
 		}
 
 		const delay = predictedMins - scheduledMins;
 		if (delay > 0) {
-			return 'text-violet-600';
+			return 'text-violet-600 dark:text-violet-400';
 		} else if (delay < -1) {
-			return 'text-red-500';
+			return 'text-red-600 dark:text-red-400';
 		} else {
-			return 'text-green-500';
+			return 'text-green-600 dark:text-green-400';
 		}
 	}
 
@@ -187,15 +206,11 @@
 	}
 
 	function computeTimeLabel(eta) {
-		if (eta < 0) {
-			return `${eta} ${$t('time.min')}`;
-		} else if (eta === 0) {
+		if (eta === 0) {
 			return $t('time.now');
-		} else if (eta === 1) {
-			return `1 ${$t('time.min')}`;
-		} else {
-			return `${eta} ${$t('time.mins')}`;
 		}
+		// Compact minute form (e.g. "19m", "1m", "-3m"). Unit is localizable.
+		return $t('time.min_compact', { values: { n: eta } });
 	}
 
 	let currentTime = $state(Date.now());
@@ -211,19 +226,44 @@
 	let arrivalInfo = $derived(computeArrivalInfo(currentTime));
 </script>
 
-<div class="flex flex-col gap-1">
-	<p class="text-left text-xl font-semibold text-black dark:text-white">
-		{routeShortName} - {tripHeadsign}
-	</p>
-	<p class="text-left font-semibold text-black dark:text-white">
-		<span class="text-md">{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime)}</span> -
-		<span class={arrivalInfo.color}>
-			{arrivalInfo.statusText}
-		</span>
-	</p>
-</div>
-<div>
-	<p class="text-lg font-semibold {arrivalInfo.color}">
-		{arrivalInfo.timeText}
-	</p>
+<div class="flex w-full min-w-0 items-center gap-3 pr-1">
+	<RouteBadge
+		shortName={routeShortName}
+		color={routeColors?.badgeBg ?? route?.color}
+		textColor={routeColors?.badgeFg ?? route?.textColor}
+	/>
+
+	<div class="min-w-0 flex-1">
+		<p class="line-clamp-2 text-lg font-semibold text-gray-900 dark:text-white">
+			{tripHeadsign}
+		</p>
+		<p class="truncate text-sm">
+			<span class="text-gray-500 dark:text-gray-400"
+				>{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime)} ·</span
+			>
+			<span class={arrivalInfo.color}>{arrivalInfo.statusText}</span>
+		</p>
+	</div>
+
+	<div class="flex shrink-0 flex-col items-center gap-1">
+		<div class="flex items-start gap-0.5">
+			<span class="text-xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
+			<FontAwesomeIcon
+				icon={arrivalInfo.isPredicted ? faRss : faClock}
+				class="text-xs {arrivalInfo.color}"
+			/>
+		</div>
+		<!-- Expand/collapse chevron, stacked under the ETA (AccordionItem's own
+		     chevron is hidden via hideChevron). -->
+		<svg
+			class="h-5 w-5 text-gray-500 transition-transform dark:text-gray-400"
+			class:rotate-180={expanded}
+			fill="none"
+			stroke="currentColor"
+			viewBox="0 0 24 24"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+		</svg>
+	</div>
 </div>

@@ -1,8 +1,8 @@
 {
 	"units": {
-		"meters": "m",
-		"kilometers": "km",
-		"feet": "ft",
+		"meters": "मी",
+		"kilometers": "किमी",
+		"feet": "फीट",
 		"mile": "मील",
 		"miles": "मील"
 	},
@@ -88,7 +88,9 @@
 		"close": "बंद करें"
 	},
 	"arrivals_and_departures": "आगमन और प्रस्थान",
-	"no_arrivals_or_departures_in_next_30_minutes": "अगले 30 मिनट में कोई आगमन या प्रस्थान नहीं",
+	"load_more_arrivals": "और आगमन लोड करें",
+	"no_arrivals_found_in_next_minutes": "अगले {minutes} मिनट में कोई आगमन नहीं मिला",
+	"no_more_arrivals_in_next_minutes": "अगले {minutes} मिनट में कोई और आगमन नहीं",
 	"stop": "स्टॉप",
 	"routes": "मार्ग",
 	"route": "मार्ग",
@@ -125,7 +127,8 @@
 		"route_schedules": "मार्ग समय सारणी",
 		"no_schedules_available": "चयनित तिथि के लिए कोई समय सारणी उपलब्ध नहीं।",
 		"stop_id": "स्टॉप आईडी",
-		"direction": "दिशा"
+		"direction": "दिशा",
+		"schedule_table_caption": "{route} के लिए प्रस्थान समय"
 	},
 	"direction": {
 		"N": "उत्तर",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "यहाँ से शुरू करें",
 		"end_here": "यहाँ समाप्त करें"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "पहुँच अस्वीकृत",
+			"description": "आपको यह पृष्ठ देखने की अनुमति नहीं है।"
+		},
+		"404": {
+			"title": "पृष्ठ नहीं मिला",
+			"description": "आप जिस पृष्ठ की तलाश कर रहे हैं वह मौजूद नहीं है या स्थानांतरित हो गया है।"
+		},
+		"500": {
+			"title": "सर्वर त्रुटि",
+			"description": "हमारी ओर से कुछ गलत हुआ। कृपया बाद में पुनः प्रयास करें।"
+		},
+		"generic": {
+			"title": "कुछ गलत हुआ",
+			"description": "एक अप्रत्याशित त्रुटि हुई।"
+		},
+		"go_home": "होम पर जाएँ",
+		"go_back": "वापस जाएँ"
+	},
+	"skip_to_main_content": "मुख्य सामग्री पर जाएं"
 }

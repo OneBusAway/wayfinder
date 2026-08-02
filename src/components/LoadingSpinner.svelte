@@ -3,6 +3,9 @@
 </script>
 
 <div
+	aria-label={$t('loading')}
+	role="status"
+	aria-live="polite"
 	class="absolute inset-0 z-50 flex items-center justify-center bg-neutral-800 bg-opacity-80 md:rounded-lg"
 >
 	<div class="flex items-center text-white">
@@ -11,6 +14,7 @@
 			xmlns="http://www.w3.org/2000/svg"
 			fill="none"
 			viewBox="0 0 24 24"
+			aria-hidden="true"
 		>
 			<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
 			></circle>

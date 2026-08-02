@@ -88,7 +88,9 @@
 		"close": "Xidh"
 	},
 	"arrivals_and_departures": "Imaatinka iyo baxsashada",
-	"no_arrivals_or_departures_in_next_30_minutes": "Ma jiraan soo gaadhis ama bixitaan 30-ka daqiiqo ee soo socda",
+	"load_more_arrivals": "Soo rar imaatinno dheeraad ah",
+	"no_arrivals_found_in_next_minutes": "Lama helin soo gaadhis {minutes} daqiiqo ee soo socda",
+	"no_more_arrivals_in_next_minutes": "Ma jiraan soo gaadhis dheeraad ah {minutes} daqiiqo ee soo socda",
 	"stop": "Joogsi",
 	"routes": "Jidadka",
 	"route": "Jidka",
@@ -125,7 +127,8 @@
 		"route_schedules": "Jadwalka waddooyinka",
 		"no_schedules_available": "Jadwal lama heli karo taariikhda la doortay.",
 		"stop_id": "Aqoonsiga joogsiga",
-		"direction": "Jihada"
+		"direction": "Jihada",
+		"schedule_table_caption": "Waqtiyada bixitaanka ee {route}"
 	},
 	"direction": {
 		"N": "Waqooyi",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "Halkan ka bilow",
 		"end_here": "Halkan ku dhamee"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Gelitaanka waa la diiday",
+			"description": "Ma haysatid ogolaansho aad ku aragto boggan."
+		},
+		"404": {
+			"title": "Bogga lama helin",
+			"description": "Bogga aad raadineyso ma jiro ama waa la wareejiyay."
+		},
+		"500": {
+			"title": "Qalad server-ka",
+			"description": "Wax qalad ah baa dhacay dhinaceenna. Fadlan mar kale isku day."
+		},
+		"generic": {
+			"title": "Wax qalad ah baa dhacay",
+			"description": "Qalad aan la filayn baa dhacay."
+		},
+		"go_home": "Aad guriga",
+		"go_back": "Ku noqo"
+	},
+	"skip_to_main_content": "U bood waxa muhiimka ah"
 }

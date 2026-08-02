@@ -174,8 +174,13 @@ export function skipSurvey(survey) {
 	const now = Date.now();
 
 	if (survey.allows_multiple_responses && survey.always_visible) {
+		// For recurring surveys: only set timestamp (temporary skip for one week)
+		// Also clear any stale permanent skip flag from old buggy behavior
+		localStorage.removeItem(`survey_${survey.id}_skipped`);
 		localStorage.setItem(`survey_${survey.id}_skipped_timestamp`, now);
+	} else {
+		// For one-time surveys: set permanent skip flag
+		localStorage.setItem(`survey_${survey.id}_skipped`, true);
 	}
-	localStorage.setItem(`survey_${survey.id}_skipped`, true);
 	showSurveyModal.set(false);
 }

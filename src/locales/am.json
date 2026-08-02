@@ -88,7 +88,9 @@
 		"close": "ዝጋ"
 	},
 	"arrivals_and_departures": "መግቢያዎችና መውጫዎች",
-	"no_arrivals_or_departures_in_next_30_minutes": "በሚቀጥሉት 30 ደቂቃዎች ውስጥ ምንም መድረሻ ወይም ለቆ መሄድ የለም",
+	"load_more_arrivals": "ተጨማሪ መድረሻዎችን ጫን",
+	"no_arrivals_found_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም መድረሻ አልተገኘም",
+	"no_more_arrivals_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም ተጨማሪ መድረሻ የለም",
 	"stop": "ቆሻሻ",
 	"routes": "መንገዶች",
 	"route": "መንገድ",
@@ -125,7 +127,8 @@
 		"route_schedules": "የመንገድ ጊዜ ሰንጠረዦች",
 		"no_schedules_available": "ምንም ጊዜ ሰንጠረዦች ለተመረጠው ቀን አልተገኙም።",
 		"stop_id": "የማቆሚያ መታወቂያ",
-		"direction": "አቅጣጫ"
+		"direction": "አቅጣጫ",
+		"schedule_table_caption": "የመነሻ ሰዓቶች ለ{route}"
 	},
 	"direction": {
 		"N": "ሰሜን",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "ከዚህ ጀምር",
 		"end_here": "ዚህ ጨርስ"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "ፈቃድ ተከልክሏል",
+			"description": "ይህን ገጽ ለማየት ፈቃድ የለዎትም።"
+		},
+		"404": {
+			"title": "ገጹ አልተገኘም",
+			"description": "የሚፈልጉት ገጽ የለም ወይም ተዛውሯል።"
+		},
+		"500": {
+			"title": "የአገልጋይ ስህተት",
+			"description": "ከእኛ ጎን የሆነ ችግር ተፈጥሯል። እባክዎ ቆየት ብለው ይሞክሩ።"
+		},
+		"generic": {
+			"title": "የሆነ ችግር ተፈጥሯል",
+			"description": "ያልተጠበቀ ስህተት ተፈጥሯል።"
+		},
+		"go_home": "ወደ መነሻ ይሂዱ",
+		"go_back": "ወደ ኋላ ይመለሱ"
+	},
+	"skip_to_main_content": "ወደ ዋና ይዘቱ ዝለል"
 }

@@ -18,6 +18,9 @@ const RouteType = {
 	UNKNOWN: 999
 };
 
+// Stop markers show their route-name labels at this map zoom level and closer.
+const SHOW_ROUTE_LABELS_AT_ZOOM = 17;
+
 const routePriorities = [
 	RouteType.FERRY,
 	RouteType.LIGHT_RAIL,
@@ -68,5 +71,6 @@ export {
 	RouteType,
 	routePriorities,
 	prioritizedRouteTypeForDisplay,
-	generateRouteTypeSvgForDisplay
+	generateRouteTypeSvgForDisplay,
+	SHOW_ROUTE_LABELS_AT_ZOOM
 };

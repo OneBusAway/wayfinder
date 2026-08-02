@@ -125,6 +125,23 @@ export function getWalkDistanceOptions(unit) {
 }
 
 /**
+ * Resolve a walk distance to a value that matches one of the unit's select options.
+ * If the distance already matches an option, it is returned unchanged; otherwise the
+ * closest option value is used.
+ *
+ * @param {number} meters - Distance in meters
+ * @param {string} unit - Target unit system ('metric' or 'imperial')
+ * @returns {number} - Matching or snapped option value
+ */
+export function resolveWalkDistanceForUnit(meters, unit) {
+	const options = getWalkDistanceOptions(unit);
+	if (options.some((option) => option.value === meters)) {
+		return meters;
+	}
+	return snapToClosestOption(meters, unit);
+}
+
+/**
  * Snap a distance value to the closest option in the given unit system.
  * Useful when switching between unit systems to find the closest equivalent.
  *

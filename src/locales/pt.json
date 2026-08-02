@@ -88,7 +88,9 @@
 		"close": "Fechar"
 	},
 	"arrivals_and_departures": "Chegadas e partidas",
-	"no_arrivals_or_departures_in_next_30_minutes": "Nenhuma chegada ou partida nos próximos 30 minutos",
+	"load_more_arrivals": "Carregar mais chegadas",
+	"no_arrivals_found_in_next_minutes": "Nenhuma chegada encontrada nos próximos {minutes} minutos",
+	"no_more_arrivals_in_next_minutes": "Nenhuma chegada adicional nos próximos {minutes} minutos",
 	"stop": "Parada",
 	"routes": "Linhas",
 	"route": "linha",
@@ -125,7 +127,8 @@
 		"route_schedules": "Horários das Linhas",
 		"no_schedules_available": "Nenhum horário disponível para a data selecionada.",
 		"stop_id": "ID da Parada",
-		"direction": "Direção"
+		"direction": "Direção",
+		"schedule_table_caption": "Horários de partida para {route}"
 	},
 	"direction": {
 		"N": "Norte",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "Começar aqui",
 		"end_here": "Terminar aqui"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Acesso negado",
+			"description": "Você não tem permissão para ver esta página."
+		},
+		"404": {
+			"title": "Página não encontrada",
+			"description": "A página que você procura não existe ou foi movida."
+		},
+		"500": {
+			"title": "Erro do servidor",
+			"description": "Algo deu errado do nosso lado. Tente novamente mais tarde."
+		},
+		"generic": {
+			"title": "Algo deu errado",
+			"description": "Ocorreu um erro inesperado."
+		},
+		"go_home": "Ir para o início",
+		"go_back": "Voltar"
+	},
+	"skip_to_main_content": "Pular para o conteúdo principal"
 }

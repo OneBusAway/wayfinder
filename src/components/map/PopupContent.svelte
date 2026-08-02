@@ -4,19 +4,19 @@
 	let { stopName, arrivalTime, handleStopMarkerSelect } = $props();
 </script>
 
-<div class="transform rounded-lg bg-white p-4 shadow-lg">
-	<h3 class="text-xl font-bold text-gray-900">{stopName}</h3>
+<div class="transform rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800">
+	<h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">{stopName}</h3>
 
 	{#if arrivalTime != null}
-		<p class="my-4 flex items-center text-gray-700">
-			<span class="mr-2 rounded-md bg-purple-600 px-2 py-1 text-white">Arrival time:</span>
-			<span>{formatSecondsFromMidnight(arrivalTime)}</span>
+		<p class="my-4 flex items-center">
+			<span class="mr-2 rounded-md bg-purple-600 px-2 py-1 text-white">Arrival time</span>
+			<span class="dark:text-gray-100">{formatSecondsFromMidnight(arrivalTime)}</span>
 		</p>
 	{/if}
 	<div class="mt-auto flex justify-center">
 		<button
 			type="button"
-			class="inline-block rounded-lg border border-brand bg-brand px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent"
+			class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
 			onclick={handleStopMarkerSelect}
 		>
 			{$t('view_stop_information')}

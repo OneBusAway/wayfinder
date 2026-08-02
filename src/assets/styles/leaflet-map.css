@@ -25,3 +25,42 @@
 .leaflet-control {
 	background-color: #fff;
 }
+
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+	background: #1f2937;
+	color: #f3f4f6;
+}
+
+/* Fade route stop markers in so they appear gently with the route reveal.
+   Only opacity is animated — Leaflet drives the marker position via transform. */
+.route-stop-marker {
+	animation: route-stop-marker-fade-in 0.3s ease-in;
+}
+
+@keyframes route-stop-marker-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* Basemap dim for stop selection. Scoped to the tile pane, which holds only the
+   MapLibre GL canvas — routes (overlayPane and the oba route panes) and markers
+   (markerPane) keep full contrast. Transitioned so selecting a stop doesn't
+   snap. */
+.leaflet-container.oba-dim-basemap .leaflet-tile-pane {
+	filter: saturate(0.55) brightness(1.05) opacity(0.72);
+}
+
+.leaflet-container .leaflet-tile-pane {
+	transition: filter 220ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.leaflet-container .leaflet-tile-pane {
+		transition: none;
+	}
+}

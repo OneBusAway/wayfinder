@@ -88,7 +88,9 @@
 		"close": "閉じる"
 	},
 	"arrivals_and_departures": "到着・出発",
-	"no_arrivals_or_departures_in_next_30_minutes": "今後30分以内の到着・出発はありません",
+	"load_more_arrivals": "さらに到着を読み込む",
+	"no_arrivals_found_in_next_minutes": "今後{minutes}分以内に到着はありません",
+	"no_more_arrivals_in_next_minutes": "今後{minutes}分以内にこれ以上の到着はありません",
 	"stop": "停留所",
 	"routes": "路線",
 	"route": "路線",
@@ -125,7 +127,8 @@
 		"route_schedules": "路線時刻表",
 		"no_schedules_available": "選択した日付の時刻表はありません。",
 		"stop_id": "停留所ID",
-		"direction": "方面"
+		"direction": "方面",
+		"schedule_table_caption": "{route} の発車時刻"
 	},
 	"direction": {
 		"N": "北",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "ここから出発",
 		"end_here": "ここに到着"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "アクセス拒否",
+			"description": "このページを表示する権限がありません。"
+		},
+		"404": {
+			"title": "ページが見つかりません",
+			"description": "お探しのページは存在しないか、移動されました。"
+		},
+		"500": {
+			"title": "サーバーエラー",
+			"description": "サーバー側で問題が発生しました。しばらくしてからもう一度お試しください。"
+		},
+		"generic": {
+			"title": "問題が発生しました",
+			"description": "予期しないエラーが発生しました。"
+		},
+		"go_home": "ホームへ",
+		"go_back": "戻る"
+	},
+	"skip_to_main_content": "メインコンテンツへスキップ"
 }

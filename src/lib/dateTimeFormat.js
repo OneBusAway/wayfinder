@@ -2,6 +2,34 @@ export function getLocalTimeZone() {
 	return new Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
+/**
+ * Convert a Temporal.PlainTime to a local Date object.
+ * This lets us pass the result to Intl.DateTimeFormat.format() without relying
+ * on the temporal-polyfill's Intl patch, which breaks when the browser ships
+ * native Temporal but not native Intl–Temporal integration.
+ *
+ * Uses local time (not UTC) so the formatted output matches the PlainTime's
+ * hour/minute when used with formatters that have no timeZone specified.
+ * WARNING: Do not pass the result to a formatter with timeZone: 'UTC' — the
+ * local-time Date will be re-interpreted in UTC, shifting the displayed hour
+ * by the local UTC offset. For UTC formatters, use Date.UTC() directly instead
+ * (see formatSecondsFromMidnight for an example).
+ *
+ * @param {Temporal.PlainTime} plainTime
+ * @returns {Date}
+ */
+export function plainTimeToDate(plainTime) {
+	return new Date(
+		1970,
+		0,
+		1,
+		plainTime.hour,
+		plainTime.minute,
+		plainTime.second,
+		plainTime.millisecond
+	);
+}
+
 // Time formats
 export const utcTimeFormat = new Intl.DateTimeFormat(undefined, {
 	hour: 'numeric',
@@ -45,8 +73,8 @@ export const apiTimeFormat = new Intl.DateTimeFormat('en-US', {
  * msToTimeString(1705395900000, 'America/New_York', fourDigitTimeFormat)  // Returns '04:05 AM'
  *
  * @param {number} ms - Milliseconds since Unix epoch
- * @param {string} [timeZone] - IANA timezone. Defaults to the local timezone.
- * @param {Intl.DateTimeFormat} [dateTimeFormat] - Intl.DateTimeFormat to use for formatting. Defaults to localTimeFormat.
+ * @param {string} [timeZone=getLocalTimeZone()] - IANA timezone
+ * @param {Intl.DateTimeFormat} [dateTimeFormat=localTimeFormat] - Intl.DateTimeFormat to use for formatting
  * @returns {string} Time in the given format
  */
 export function msToTimeString(
@@ -58,12 +86,12 @@ export function msToTimeString(
 	const instant = Temporal.Instant.fromEpochMilliseconds(ms);
 	try {
 		const plainTime = instant.toZonedDateTimeISO(timeZone).toPlainTime();
-		return dateTimeFormat.format(plainTime);
+		return dateTimeFormat.format(plainTimeToDate(plainTime));
 	} catch (err) {
 		if (err instanceof RangeError) {
 			console.error(`msToTimeString: invalid timezone "${timeZone}", falling back to local`);
 			const plainTime = instant.toZonedDateTimeISO(getLocalTimeZone()).toPlainTime();
-			return dateTimeFormat.format(plainTime);
+			return dateTimeFormat.format(plainTimeToDate(plainTime));
 		}
 		throw err;
 	}
@@ -99,7 +127,9 @@ export function formatSecondsFromMidnight(secondsSinceMidnight) {
 	const midnight = new Temporal.PlainTime();
 	const time = midnight.add({ seconds: secondsSinceMidnight });
 
-	return utcTimeFormat.format(time);
+	// Use Date.UTC so the hour/minute values survive unchanged when
+	// utcTimeFormat (timeZone: 'UTC') re-interprets the timestamp in UTC
+	return utcTimeFormat.format(new Date(Date.UTC(1970, 0, 1, time.hour, time.minute, time.second)));
 }
 
 /**
@@ -110,13 +140,14 @@ export function formatSecondsFromMidnight(secondsSinceMidnight) {
  * @param {string} [opts.departureTime] - Departure time in 'HH:mm' format
  * @param {string} [opts.departureDate] - Departure date in 'YYYY-MM-DD' format
  * @param {Function} [translator] - Optional translator function for i18n support
+ * @param {string} [timeZone] - IANA timezone (e.g. "America/Los_Angeles") for Today/Tomorrow logic. Defaults to browser's local timezone.
  * @returns {string|null} Formatted departure time string, or null if departureType is 'now'
  *
  * @example
  * formatDepartureDisplay({ departureType: 'departAt', departureTime: '09:00', departureDate: null })  // Returns 'Depart 9:00 AM'
  * formatDepartureDisplay({ departureType: 'arriveBy', departureTime: '17:00', departureDate: '2025-06-15' }, translator)  // Returns 'Arrive 5:00 PM, Today' (assuming today is 2025-06-15)
  */
-export function formatDepartureDisplay(opts, translator = null) {
+export function formatDepartureDisplay(opts, translator = null, timeZone = undefined) {
 	if (opts.departureType === 'now') return null;
 
 	const timeStr = opts.departureTime || '';
@@ -138,7 +169,19 @@ export function formatDepartureDisplay(opts, translator = null) {
 
 		let dateSuffix = '';
 		if (dateStr) {
-			const today = Temporal.Now.plainDateISO();
+			let today;
+			try {
+				today = Temporal.Now.plainDateISO(timeZone);
+			} catch (err) {
+				if (err instanceof RangeError) {
+					console.error(
+						`formatDepartureDisplay: invalid timezone "${timeZone}", falling back to local`
+					);
+					today = Temporal.Now.plainDateISO();
+				} else {
+					throw err;
+				}
+			}
 			const tomorrow = today.add({ days: 1 });
 
 			if (dateStr === today.toJSON()) {
@@ -192,7 +235,7 @@ export function parseTimeInput(timeString) {
 
 	try {
 		const time = Temporal.PlainTime.from(timeString);
-		return apiTimeFormat.format(time);
+		return apiTimeFormat.format(plainTimeToDate(time));
 	} catch (err) {
 		if (err instanceof RangeError) return null;
 		throw err;
@@ -226,7 +269,9 @@ export function parseDateInput(dateString) {
 		if (dateTime.year < 2000 || dateTime.year > 2100) {
 			return null;
 		}
-		return apiDateFormat.format(dateTime).replaceAll('/', '-');
+		// Local Date (not UTC) because apiDateFormat has no timeZone specified
+		const date = new Date(dateTime.year, dateTime.month - 1, dateTime.day);
+		return apiDateFormat.format(date).replaceAll('/', '-');
 	} catch (err) {
 		if (err instanceof RangeError) return null;
 		throw err;
@@ -236,7 +281,7 @@ export function parseDateInput(dateString) {
 /**
  * Format a 24-hour hour to 12-hour format
  *
- * @param {number} hour - Hour in 24-hour format
+ * @param {number|string} hour - Hour in 24-hour format (numeric strings are coerced to numbers)
  * @returns {number|null} Hour in 12-hour format, or null if invalid
  *
  * @example
@@ -244,6 +289,7 @@ export function parseDateInput(dateString) {
  * convert24HourTo12Hour(12)  // Returns 12
  * convert24HourTo12Hour(14)  // Returns 2
  * convert24HourTo12Hour(23)  // Returns 11
+ * convert24HourTo12Hour('14')  // Returns 2
  */
 export function convert24HourTo12Hour(hour) {
 	const hourNum = typeof hour === 'string' ? Number(hour) : hour;
@@ -306,15 +352,17 @@ export function formatDateForOTP(date, timeZone) {
  *
  * @param {number} timestamp - Timestamp in milliseconds since Unix epoch
  * @param {Object} translations - Object containing translation strings for minutes, seconds, and ago
- * @param {string} translations.min - Translation string for minutes
- * @param {string} translations.sec - Translation string for seconds
+ * @param {string} translations.min - Singular translation for minutes
+ * @param {string} [translations.mins] - Plural translation for minutes (falls back to min)
+ * @param {string} translations.sec - Singular translation for seconds
+ * @param {string} [translations.secs] - Plural translation for seconds (falls back to sec)
  * @param {string} translations.ago - Translation string for ago
  * @returns {string} Formatted last updated string
  *
  * @example
  * Note: The actual output of these examples depends on the current time
- * formatLastUpdated(1715894400000, { min: 'min', sec: 'sec', ago: 'ago' })  // Returns '1 min 30 sec ago'
- * formatLastUpdated(1715894400000, { min: 'minute', sec: 'second', ago: 'ago' })  // Returns '1 minute 30 second ago'
+ * formatLastUpdated(1715894400000, { min: 'min', mins: 'mins', sec: 'sec', secs: 'secs', ago: 'ago' })  // Returns '1 min 30 secs ago'
+ * formatLastUpdated(1715894400000, { min: 'minute', mins: 'minutes', sec: 'second', secs: 'seconds', ago: 'ago' })  // Returns '1 minute 30 seconds ago'
  */
 export function formatLastUpdated(timestamp, translations) {
 	if (!Number.isFinite(timestamp)) return 'N/A';
@@ -322,8 +370,10 @@ export function formatLastUpdated(timestamp, translations) {
 	const now = Temporal.Now.instant();
 	const { minutes, seconds } = now.since(date).round({ largestUnit: 'minute' });
 
-	const minutesStr = minutes > 0 ? `${minutes} ${translations.min} ` : '';
-	return `${minutesStr}${seconds} ${translations.sec} ${translations.ago}`;
+	const minutesLabel = minutes === 1 ? translations.min : (translations.mins ?? translations.min);
+	const secondsLabel = seconds === 1 ? translations.sec : (translations.secs ?? translations.sec);
+	const minutesStr = minutes > 0 ? `${minutes} ${minutesLabel} ` : '';
+	return `${minutesStr}${seconds} ${secondsLabel} ${translations.ago}`;
 }
 
 /**

@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import LanguageSwitcher from '../LanguageSwitcher.svelte';
+import { __setTranslatorMode } from 'svelte-i18n';
 
 // Mock languages array - must be defined inline in mock factory
 vi.mock('$lib/i18n', () => ({
@@ -20,7 +21,30 @@ let currentLocale = 'en';
 const localeSubscribers = [];
 
 vi.mock('svelte-i18n', () => {
-	// Create the mock locale object inside the factory
+	let translatorMode = 'normal';
+	const tSubscribers = [];
+
+	const normalT = (key, options) => {
+		if (key === 'language_switcher.select_language') {
+			return `Select language: ${options?.values?.language || ''}`;
+		}
+		if (key === 'language_switcher.available_languages') {
+			return 'Available languages';
+		}
+		return key;
+	};
+
+	const getTranslator = () => {
+		if (translatorMode === 'non-function') return null;
+		if (translatorMode === 'throws') {
+			return () => {
+				throw new Error('Translator error');
+			};
+		}
+		if (translatorMode === 'returns-key') return (key) => key;
+		return normalT;
+	};
+
 	const mockLocale = {
 		subscribe: vi.fn((fn) => {
 			fn(currentLocale);
@@ -32,26 +56,26 @@ vi.mock('svelte-i18n', () => {
 			localeSubscribers.forEach((fn) => fn(newLocale));
 		})
 	};
-	// Mock t function that returns the key with interpolated values
-	const mockT = vi.fn((key, options) => {
-		if (key === 'language_switcher.select_language') {
-			return `Select language: ${options?.values?.language || ''}`;
-		}
-		if (key === 'language_switcher.available_languages') {
-			return 'Available languages';
-		}
-		return key;
-	});
-	// Create a mock svelte store for t
+
 	const mockTStore = {
 		subscribe: vi.fn((fn) => {
-			fn(mockT);
-			return { unsubscribe: () => {} };
+			tSubscribers.push(fn);
+			fn(getTranslator());
+			return () => {
+				const index = tSubscribers.indexOf(fn);
+				if (index !== -1) tSubscribers.splice(index, 1);
+			};
 		})
 	};
+
 	return {
 		locale: mockLocale,
-		t: mockTStore
+		t: mockTStore,
+		__setTranslatorMode: (mode) => {
+			translatorMode = mode;
+			const translator = getTranslator();
+			tSubscribers.forEach((fn) => fn(translator));
+		}
 	};
 });
 
@@ -80,6 +104,7 @@ describe('LanguageSwitcher', () => {
 
 		currentLocale = 'en';
 		localeSubscribers.length = 0;
+		__setTranslatorMode('normal');
 		mockEnvValue = {
 			PUBLIC_LANGUAGE_SWITCHER_ENABLED: 'true',
 			PUBLIC_LANGUAGE_SWITCHER_BUTTON_FORMAT: undefined,
@@ -569,6 +594,49 @@ describe('LanguageSwitcher', () => {
 			await waitFor(() => {
 				expect(screen.getByText('Español')).toBeInTheDocument();
 			});
+		});
+	});
+
+	describe('safeTranslate fallbacks', () => {
+		test('returns the raw key when $t resolves to a non-function', () => {
+			__setTranslatorMode('non-function');
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button');
+			// safeTranslate returns the key itself when the translator is not callable
+			expect(button).toHaveAttribute('aria-label', 'language_switcher.select_language');
+		});
+
+		test('returns the raw key and logs a warning when $t throws', async () => {
+			const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			__setTranslatorMode('throws');
+
+			const user = userEvent.setup();
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button');
+			expect(button).toHaveAttribute('aria-label', 'language_switcher.select_language');
+
+			await user.click(button);
+			expect(screen.getByRole('listbox')).toHaveAttribute(
+				'aria-label',
+				'language_switcher.available_languages'
+			);
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				expect.stringContaining('[i18n fallback]'),
+				'Translator error'
+			);
+			consoleWarnSpy.mockRestore();
+		});
+
+		test('returns the raw key when the translator returns the key unchanged', () => {
+			__setTranslatorMode('returns-key');
+			render(LanguageSwitcher);
+
+			const button = screen.getByRole('button');
+			// Translator passes the key through, so the aria-label is the raw key
+			expect(button).toHaveAttribute('aria-label', 'language_switcher.select_language');
 		});
 	});
 

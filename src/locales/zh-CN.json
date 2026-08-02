@@ -88,7 +88,9 @@
 		"close": "关闭"
 	},
 	"arrivals_and_departures": "到站与发车",
-	"no_arrivals_or_departures_in_next_30_minutes": "未来30分钟内无到站或发车信息",
+	"load_more_arrivals": "加载更多到站信息",
+	"no_arrivals_found_in_next_minutes": "未来{minutes}分钟内无到站信息",
+	"no_more_arrivals_in_next_minutes": "未来{minutes}分钟内无更多到站信息",
 	"stop": "站点",
 	"routes": "线路",
 	"route": "线路",
@@ -125,7 +127,8 @@
 		"route_schedules": "线路时刻表",
 		"no_schedules_available": "所选日期暂无时刻表。",
 		"stop_id": "站点编号",
-		"direction": "方向"
+		"direction": "方向",
+		"schedule_table_caption": "{route} 的发车时间"
 	},
 	"direction": {
 		"N": "北",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "从这里出发",
 		"end_here": "到这里结束"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "拒绝访问",
+			"description": "您没有查看此页面的权限。"
+		},
+		"404": {
+			"title": "页面未找到",
+			"description": "您查找的页面不存在或已被移动。"
+		},
+		"500": {
+			"title": "服务器错误",
+			"description": "我们这边出了问题。请稍后再试。"
+		},
+		"generic": {
+			"title": "出了点问题",
+			"description": "发生了意外错误。"
+		},
+		"go_home": "返回首页",
+		"go_back": "返回"
+	},
+	"skip_to_main_content": "跳转至主要内容"
 }

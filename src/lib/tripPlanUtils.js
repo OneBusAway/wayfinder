@@ -47,3 +47,53 @@ export function swapTripLocations({
 		toMarker: newToMarker
 	};
 }
+
+/**
+ * Removes the From/To pin markers from the map without touching the form
+ * inputs or selected coordinates. Used when the itineraries modal closes so the
+ * map clears (matching Google/Apple Maps) while the search stays populated for a
+ * quick re-plan. The pins are recreated the next time the user plans a trip.
+ * @param {Object} params
+ * @param {Object|null} params.fromMarker - Origin map marker
+ * @param {Object|null} params.toMarker - Destination map marker
+ * @param {Object} params.mapProvider - Map provider instance
+ * @returns {{ fromMarker: null, toMarker: null }} Nulled marker references
+ */
+export function clearTripPlanPins({ fromMarker, toMarker, mapProvider }) {
+	if (mapProvider) {
+		if (fromMarker) mapProvider.removePinMarker(fromMarker);
+		if (toMarker) mapProvider.removePinMarker(toMarker);
+	}
+
+	return { fromMarker: null, toMarker: null };
+}
+
+/**
+ * Determines if there is a stay-seated transition between two legs. That occurs when a
+ * passenger stays on the same vehicle and it continues under a different id.
+ * @see https://github.com/opentripplanner/OpenTripPlanner/pull/4264
+ *
+ * @param {Array} legs - The array of all legs in the trip
+ * @param {number} index - The index of the current leg to check
+ * @returns {boolean} True if the next leg is a stay-seated interline transition
+ */
+export function isStaySeatedTransition(legs, index) {
+	const prev = legs[index];
+	const next = legs[index + 1];
+	if (!prev || !next) return false;
+	if (prev.mode === 'WALK' || next.mode === 'WALK') return false;
+	return prev.mode === next.mode && next.interlineWithPreviousLeg === true;
+}
+
+/**
+ * Format a route name for display (e.g. in "stay on board" interline messages).
+ *
+ * @param {Object|null|undefined} leg - An OTP leg object
+ * @returns {string} Formatted route name
+ */
+export function getRouteName(leg) {
+	if (!leg) return '';
+	const name = leg.routeShortName ?? leg.routeLongName;
+	if (leg.headsign) return name ? `${name} - ${leg.headsign}` : leg.headsign;
+	return name ?? '';
+}

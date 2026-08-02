@@ -88,7 +88,9 @@
 		"close": "Tapuni"
 	},
 	"arrivals_and_departures": "Taunuʻuga ma alu atu",
-	"no_arrivals_or_departures_in_next_30_minutes": "E leai ni taunuʻuga poʻo ni alu atu i le 30 minute o loʻo sosoo",
+	"load_more_arrivals": "Utaina atili taunuʻuga",
+	"no_arrivals_found_in_next_minutes": "E leai ni taunuʻuga na maua i le {minutes} minute o loʻo sosoo",
+	"no_more_arrivals_in_next_minutes": "Leai ni taunuʻuga faaopoopo i le {minutes} minute o loʻo sosoo",
 	"stop": "Nofoaga Taofi",
 	"routes": "Auala",
 	"route": "auala",
@@ -125,7 +127,8 @@
 		"route_schedules": "Fuataga o Auala",
 		"no_schedules_available": "E leai ni fuataga o loʻo avanoa mo le aso na filifilia.",
 		"stop_id": "Numera o le Nofoaga Taofi",
-		"direction": "Itu"
+		"direction": "Itu",
+		"schedule_table_caption": "Taimi e malaga ai mo {route}"
 	},
 	"direction": {
 		"N": "Matu",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "Amata mai iinei",
 		"end_here": "Fa'ai'u iinei"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Ua teena le avanoa",
+			"description": "E leai sau aia e va'ai ai i lenei itulau."
+		},
+		"404": {
+			"title": "E le'i maua le itulau",
+			"description": "O le itulau o lo'o e su'esu'e mo e le o iai pe ua si'itia."
+		},
+		"500": {
+			"title": "Mea sese a le 'au'aunaga",
+			"description": "Na tupu se mea sese i lo matou itu. Fa'amolemole toe taumafai mulimuli ane."
+		},
+		"generic": {
+			"title": "Na tupu se mea sese",
+			"description": "Na tupu se sese e le'i fa'amoemoeina."
+		},
+		"go_home": "Toe fo'i i le amataga",
+		"go_back": "Toe fo'i i tua"
+	},
+	"skip_to_main_content": "Alu i le mea autu"
 }

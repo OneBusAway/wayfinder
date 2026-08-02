@@ -88,7 +88,9 @@
 		"close": "Đóng"
 	},
 	"arrivals_and_departures": "Đến và đi",
-	"no_arrivals_or_departures_in_next_30_minutes": "Không có chuyến đến hoặc đi trong 30 phút tới",
+	"load_more_arrivals": "Tải thêm chuyến đến",
+	"no_arrivals_found_in_next_minutes": "Không tìm thấy chuyến đến trong {minutes} phút tới",
+	"no_more_arrivals_in_next_minutes": "Không có thêm chuyến đến trong {minutes} phút tới",
 	"stop": "Trạm dừng",
 	"routes": "Tuyến đường",
 	"route": "Tuyến đường",
@@ -125,7 +127,8 @@
 		"route_schedules": "Lịch trình tuyến đường",
 		"no_schedules_available": "Không có lịch trình nào khả dụng cho ngày đã chọn.",
 		"stop_id": "Mã điểm dừng",
-		"direction": "Hướng"
+		"direction": "Hướng",
+		"schedule_table_caption": "Giờ khởi hành cho {route}"
 	},
 	"direction": {
 		"N": "Bắc",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "Bắt đầu từ đây",
 		"end_here": "Kết thúc tại đây"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Truy cập bị từ chối",
+			"description": "Bạn không có quyền xem trang này."
+		},
+		"404": {
+			"title": "Không tìm thấy trang",
+			"description": "Trang bạn đang tìm kiếm không tồn tại hoặc đã được chuyển."
+		},
+		"500": {
+			"title": "Lỗi máy chủ",
+			"description": "Đã xảy ra sự cố ở phía chúng tôi. Vui lòng thử lại sau."
+		},
+		"generic": {
+			"title": "Đã xảy ra sự cố",
+			"description": "Đã xảy ra lỗi không mong muốn."
+		},
+		"go_home": "Về trang chủ",
+		"go_back": "Quay lại"
+	},
+	"skip_to_main_content": "Bỏ qua đến nội dung chính"
 }

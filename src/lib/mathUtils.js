@@ -9,20 +9,28 @@
  */
 
 export function toDirection(orientation) {
+	if (!Number.isFinite(orientation)) {
+		return null;
+	}
 	let direction = (-orientation + 90) % 360;
 	if (direction < 0) {
 		direction += 360;
 	}
 
-	return direction === 0 ? 0 : direction;
+	return Math.abs(direction);
 }
 
 /**
  * calculate midpoint of a list of stops so we can show the route on the map
- * @param  list of stops
- * @returns
+ * @param {Array} stops - List of stops with {lat, lon}
+ * @returns {Object} Midpoint with {lat, lon}
  */
 export function calculateMidpoint(stops) {
+	// return null if stops is null or empty
+	if (!Array.isArray(stops) || stops.length === 0) {
+		return null;
+	}
+
 	let totalLat = 0;
 	let totalLon = 0;
 
@@ -34,7 +42,7 @@ export function calculateMidpoint(stops) {
 	const midpointLat = totalLat / stops.length;
 	const midpointLon = totalLon / stops.length;
 
-	return { lat: midpointLat, lng: midpointLon };
+	return { lat: midpointLat, lon: midpointLon };
 }
 
 /**

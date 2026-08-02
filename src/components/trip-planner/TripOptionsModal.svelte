@@ -6,12 +6,18 @@
 		effectiveDistanceUnit,
 		getWalkDistanceOptions,
 		snapToClosestOption,
+		resolveWalkDistanceForUnit,
+		canonicalizeWalkDistance,
+		DEFAULT_TRIP_OPTIONS,
 		UNIT_METRIC,
 		UNIT_IMPERIAL
 	} from '$stores/tripOptionsStore';
 	import { getTodayDateForInput, getCurrentTimeForInput } from '$lib/dateTimeInput';
+	import { env } from '$env/dynamic/public';
 
 	let { onClose, onDone } = $props();
+
+	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
 	// Local state for editing (copy from store)
 	let departureType = $state($tripOptions.departureType);
@@ -19,7 +25,9 @@
 	let departureDate = $state($tripOptions.departureDate || '');
 	let wheelchair = $state($tripOptions.wheelchair);
 	let optimize = $state($tripOptions.optimize);
-	let maxWalkDistance = $state($tripOptions.maxWalkDistance);
+	let maxWalkDistance = $state(
+		resolveWalkDistanceForUnit($tripOptions.maxWalkDistance, $effectiveDistanceUnit)
+	);
 	let distanceUnit = $state($tripOptions.distanceUnit); // null = auto, 'metric', or 'imperial'
 
 	// Get the effective unit for display (resolves null to actual unit)
@@ -56,7 +64,10 @@
 		// Update persisted values
 		tripOptions.setPersisted('wheelchair', wheelchair);
 		tripOptions.setPersisted('optimize', optimize);
-		tripOptions.setPersisted('maxWalkDistance', maxWalkDistance);
+		tripOptions.setPersisted(
+			'maxWalkDistance',
+			canonicalizeWalkDistance(maxWalkDistance, displayUnit)
+		);
 		tripOptions.setPersisted('distanceUnit', distanceUnit);
 
 		onDone();
@@ -66,9 +77,25 @@
 		departureType = type;
 		// Set default time/date when switching from 'now'
 		if (type !== 'now' && !departureTime) {
-			departureTime = getCurrentTimeForInput();
-			departureDate = getTodayDateForInput();
+			departureTime = getCurrentTimeForInput(regionTz);
+			departureDate = getTodayDateForInput(regionTz);
 		}
+	}
+
+	// Reset the local editing copies back to defaults. Like every other control
+	// in this modal, this is draft-only: nothing is persisted until handleDone()
+	// runs, so Cancel still discards the reset and keeps the saved preferences.
+	function handleReset() {
+		departureType = DEFAULT_TRIP_OPTIONS.departureType;
+		departureTime = DEFAULT_TRIP_OPTIONS.departureTime || '';
+		departureDate = DEFAULT_TRIP_OPTIONS.departureDate || '';
+		wheelchair = DEFAULT_TRIP_OPTIONS.wheelchair;
+		optimize = DEFAULT_TRIP_OPTIONS.optimize;
+		distanceUnit = DEFAULT_TRIP_OPTIONS.distanceUnit;
+		maxWalkDistance = resolveWalkDistanceForUnit(
+			DEFAULT_TRIP_OPTIONS.maxWalkDistance,
+			distanceUnit ?? $effectiveDistanceUnit
+		);
 	}
 </script>
 
@@ -192,12 +219,14 @@
 						<input
 							type="time"
 							bind:value={departureTime}
+							aria-label={$t('trip-planner.departure_time')}
 							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
 						/>
 						<input
 							type="date"
 							bind:value={departureDate}
-							min={getTodayDateForInput()}
+							min={getTodayDateForInput(regionTz)}
+							aria-label={$t('trip-planner.departure_date')}
 							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
 						/>
 					</div>
@@ -305,6 +334,7 @@
 						</div>
 						<select
 							bind:value={maxWalkDistance}
+							aria-label={$t('trip-planner.max_walking_distance')}
 							class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 						>
 							{#each walkDistanceOptions as option (option.value)}
@@ -384,6 +414,17 @@
 						{/if}
 					</button>
 				</div>
+			</div>
+
+			<!-- Reset to defaults -->
+			<div class="mt-4 flex justify-center">
+				<button
+					type="button"
+					onclick={handleReset}
+					class="rounded text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-400 dark:hover:text-gray-200"
+				>
+					{$t('trip-planner.reset_to_defaults')}
+				</button>
 			</div>
 		</div>
 	</div>

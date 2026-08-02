@@ -5,7 +5,7 @@ import { createMockStore } from '../../../tests/helpers/test-utils.js';
 import SearchPane from '../SearchPane.svelte';
 
 // Mock dependencies
-vi.mock('$lib/Analytics/PlausibleAnalytics', () => ({
+vi.mock('$lib/Insights', () => ({
 	default: {
 		reportSearchQuery: vi.fn()
 	}
@@ -17,7 +17,7 @@ vi.mock('$lib/vehicleUtils', () => ({
 }));
 
 vi.mock('$lib/mathUtils', () => ({
-	calculateMidpoint: vi.fn().mockReturnValue({ lat: 47.6062, lng: -122.3321 })
+	calculateMidpoint: vi.fn().mockReturnValue({ lat: 47.6062, lon: -122.3321 })
 }));
 
 vi.mock('$config/routeConfig', () => ({
@@ -33,9 +33,22 @@ vi.mock('$stores/surveyStore', () => ({
 	answeredSurveys: createMockStore({ 'survey-1': false })
 }));
 
+// Mutable so individual tests can simulate opening the app with a shared-trip
+// URL (?from=...&to=...) without re-declaring the mock per test file.
+let mockPublicEnv = { PUBLIC_OTP_SERVER_URL: 'https://otp.example.com' };
 vi.mock('$env/dynamic/public', () => ({
-	env: {
-		PUBLIC_OTP_SERVER_URL: 'https://otp.example.com'
+	get env() {
+		return mockPublicEnv;
+	}
+}));
+
+let mockPageUrl = new URL('https://example.com/');
+vi.mock('$app/stores', () => ({
+	page: {
+		subscribe: vi.fn((fn) => {
+			fn({ url: mockPageUrl });
+			return () => {};
+		})
 	}
 }));
 
@@ -68,6 +81,9 @@ describe('SearchPane', () => {
 	let mockFetch;
 
 	beforeEach(() => {
+		mockPageUrl = new URL('https://example.com/');
+		mockPublicEnv = { PUBLIC_OTP_SERVER_URL: 'https://otp.example.com' };
+
 		// Mock map provider
 		mockMapProvider = {
 			panTo: vi.fn(),
@@ -84,6 +100,7 @@ describe('SearchPane', () => {
 		// Mock props
 		mockProps = {
 			clearPolylines: vi.fn(),
+			clearTripItineraries: vi.fn(),
 			handleRouteSelected: vi.fn(),
 			handleViewAllRoutes: vi.fn(),
 			handleTripPlan: vi.fn(),
@@ -172,6 +189,26 @@ describe('SearchPane', () => {
 			await user.click(tripTab);
 			expect(global.dispatchEvent).toHaveBeenCalledWith(
 				expect.objectContaining({ type: 'planTripTabClicked' })
+			);
+		});
+
+		test('clears trip plan map state when leaving the plan tab', async () => {
+			const user = userEvent.setup();
+
+			render(SearchPane, { props: mockProps });
+
+			await user.click(screen.getByRole('tab', { name: 'Plan Trip' }));
+			vi.mocked(global.dispatchEvent).mockClear();
+			mockProps.clearTripItineraries.mockClear();
+
+			await user.click(screen.getByRole('tab', { name: 'Stops & Stations' }));
+
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'tripPlanModalClosed' })
+			);
+			expect(mockProps.clearTripItineraries).toHaveBeenCalled();
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'tabSwitched' })
 			);
 		});
 
@@ -318,6 +355,121 @@ describe('SearchPane', () => {
 			});
 
 			consoleSpy.mockRestore();
+		});
+	});
+
+	describe('collapse button', () => {
+		test('renders a collapse button that calls onCollapse when provided', async () => {
+			const user = userEvent.setup();
+			const onCollapse = vi.fn();
+			render(SearchPane, { props: { ...mockProps, onCollapse } });
+
+			const collapseButton = screen.getByRole('button', { name: 'search.collapse' });
+			await user.click(collapseButton);
+
+			expect(onCollapse).toHaveBeenCalledTimes(1);
+		});
+
+		test('does not render a collapse button when onCollapse is not provided', () => {
+			render(SearchPane, { props: mockProps });
+
+			expect(screen.queryByRole('button', { name: 'search.collapse' })).not.toBeInTheDocument();
+		});
+
+		test('hides the pane below the md breakpoint when collapsed', () => {
+			const { container } = render(SearchPane, { props: { ...mockProps, collapsed: true } });
+
+			expect(container.querySelector('.modal-pane')).toHaveClass('hidden', 'md:flex');
+		});
+
+		test('does not hide the pane when not collapsed', () => {
+			const { container } = render(SearchPane, { props: mockProps });
+
+			expect(container.querySelector('.modal-pane')).not.toHaveClass('hidden');
+		});
+	});
+
+	describe('Shared trip URL restore', () => {
+		test('dispatches planTripTabClicked and loadSharedTrip when the URL has valid trip params', async () => {
+			mockPageUrl = new URL(
+				'https://example.com/?from=47.6,-122.3&to=47.7,-122.4&fromName=Home&toName=Work'
+			);
+
+			render(SearchPane, { props: mockProps });
+
+			await waitFor(() => {
+				expect(global.dispatchEvent).toHaveBeenCalledWith(
+					expect.objectContaining({ type: 'planTripTabClicked' })
+				);
+			});
+
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({
+					type: 'loadSharedTrip',
+					detail: {
+						selectedFrom: { lat: 47.6, lng: -122.3 },
+						selectedTo: { lat: 47.7, lng: -122.4 },
+						fromPlace: 'Home',
+						toPlace: 'Work'
+					}
+				})
+			);
+		});
+
+		test('dispatches invalidSharedTrip when trip params are present but unparsable', async () => {
+			mockPageUrl = new URL('https://example.com/?from=bad&to=also-bad');
+
+			render(SearchPane, { props: mockProps });
+
+			await waitFor(() => {
+				expect(global.dispatchEvent).toHaveBeenCalledWith(
+					expect.objectContaining({ type: 'planTripTabClicked' })
+				);
+			});
+
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'invalidSharedTrip' })
+			);
+			expect(global.dispatchEvent).not.toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'loadSharedTrip' })
+			);
+		});
+
+		test('does nothing when the URL has no trip params', async () => {
+			mockPageUrl = new URL('https://example.com/');
+			vi.mocked(global.dispatchEvent).mockClear();
+
+			render(SearchPane, { props: mockProps });
+
+			await waitFor(() => {
+				expect(screen.getByText('Stops & Stations')).toBeInTheDocument();
+			});
+
+			const sharedTripEvents = vi
+				.mocked(global.dispatchEvent)
+				.mock.calls.filter(([event]) =>
+					['planTripTabClicked', 'loadSharedTrip', 'invalidSharedTrip'].includes(event.type)
+				);
+			expect(sharedTripEvents).toHaveLength(0);
+		});
+
+		test('does nothing when OTP is not configured', async () => {
+			mockPublicEnv = { PUBLIC_OTP_SERVER_URL: '' };
+			mockPageUrl = new URL('https://example.com/?from=47.6,-122.3&to=47.7,-122.4');
+			vi.mocked(global.dispatchEvent).mockClear();
+
+			render(SearchPane, { props: mockProps });
+
+			await waitFor(() => {
+				expect(screen.getByText('Stops & Stations')).toBeInTheDocument();
+			});
+
+			const sharedTripEvents = vi
+				.mocked(global.dispatchEvent)
+				.mock.calls.filter(([event]) =>
+					['planTripTabClicked', 'loadSharedTrip', 'invalidSharedTrip'].includes(event.type)
+				);
+			expect(sharedTripEvents).toHaveLength(0);
 		});
 	});
 });

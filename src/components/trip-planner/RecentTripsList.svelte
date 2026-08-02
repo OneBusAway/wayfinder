@@ -19,13 +19,13 @@
 {#if $recentTrips.length > 0}
 	<div class="mt-4">
 		<div class="mb-2 flex items-center justify-between">
-			<h3 class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400">
+			<h2 class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400">
 				<FontAwesomeIcon icon={faClockRotateLeft} class="h-3.5 w-3.5" />
 				{$t('trip-planner.recent_searches')}
-			</h3>
+			</h2>
 			<button
 				type="button"
-				class="text-xs text-gray-400 transition-colors hover:text-red-500"
+				class="text-xs text-gray-600 transition-colors hover:text-red-500 dark:text-gray-400"
 				onclick={() => recentTrips.clearAll()}
 			>
 				{$t('trip-planner.clear_all')}
@@ -35,29 +35,29 @@
 		<div class="space-y-2">
 			{#each $recentTrips as trip (trip.id)}
 				<div
-					role="button"
-					tabindex="0"
-					class="dark:hover:bg-gray-750 group relative flex w-full items-center rounded-lg border border-gray-200 bg-white p-2.5 shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
-					onclick={() => handleTripClick(trip)}
-					onkeydown={(e) => {
-						if (e.key === 'Enter' || e.key === ' ') {
-							e.preventDefault();
-							handleTripClick(trip);
-						}
-					}}
+					class="dark:hover:bg-gray-750 group relative rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
 				>
-					<div class="mr-3 text-gray-400">
-						<FontAwesomeIcon icon={faClockRotateLeft} class="h-3.5 w-3.5" />
-					</div>
+					<button
+						type="button"
+						aria-label={$t('trip-planner.recent_trip', {
+							values: { from: trip.fromPlace, to: trip.toPlace }
+						})}
+						class="flex w-full items-center rounded-lg p-2.5 text-left"
+						onclick={() => handleTripClick(trip)}
+					>
+						<div class="mr-3 text-gray-400">
+							<FontAwesomeIcon icon={faClockRotateLeft} class="h-3.5 w-3.5" />
+						</div>
 
-					<div class="min-w-0 flex-1 text-left">
-						<div class="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
-							{trip.fromPlace}
+						<div class="min-w-0 flex-1 text-left">
+							<div class="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+								{trip.fromPlace}
+							</div>
+							<div class="truncate text-xs text-gray-500 dark:text-gray-400">
+								{trip.toPlace}
+							</div>
 						</div>
-						<div class="truncate text-xs text-gray-500 dark:text-gray-400">
-							{trip.toPlace}
-						</div>
-					</div>
+					</button>
 
 					<button
 						type="button"

@@ -34,7 +34,9 @@
 		"trip_options": "Trip Options",
 		"cancel": "Cancel",
 		"done": "Done",
+		"reset_to_defaults": "Reset to defaults",
 		"departure_time": "Departure Time",
+		"departure_date": "Departure date",
 		"leave_now": "Leave Now",
 		"depart_at": "Depart At",
 		"arrive_by": "Arrive By",
@@ -44,6 +46,7 @@
 		"route_optimization": "Route Optimization",
 		"fastest_trip": "Fastest Trip",
 		"fewest_transfers": "Fewest Transfers",
+		"stay_on_board": "Remain on board. This trip continues as Route {route}.",
 		"walking_distance": "Walking Distance",
 		"max_walking_distance": "Maximum walking distance",
 		"distance_unit": "Distance Unit",
@@ -53,8 +56,11 @@
 		"swap_locations": "Swap From and To locations",
 		"error_code": "Error code",
 		"remove_recent_trip": "Remove recent trip",
+		"recent_trip": "Use recent trip from {from} to {to}",
 		"recent_searches": "Recent Searches",
-		"clear_all": "Clear All"
+		"clear_all": "Clear All",
+		"request_failed": "We couldn't reach the trip planning service. Please try again.",
+		"invalid_shared_link": "This shared trip link looks broken. Try planning the trip again."
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",
@@ -69,7 +75,19 @@
 		"for_a_list_of_available_routes": "for a list of available routes",
 		"search_for_routes": "Search for routes...",
 		"no_routes_found": "No routes found",
-		"all_routes": "All Routes"
+		"all_routes": "All Routes",
+		"clear": "Clear",
+		"collapse": "Collapse search"
+	},
+	"sheet": {
+		"close": "Close",
+		"resize_handle": "Resize panel",
+		"snap_full": "Full height",
+		"snap_half": "Half height",
+		"snap_peek": "Collapsed"
+	},
+	"survey": {
+		"required_question": "Required question"
 	},
 	"header": {
 		"home": "Home",
@@ -111,11 +129,22 @@
 	"arrivals_and_departures": "Arrivals and departures",
 	"show_more": "Show more",
 	"show_less": "Show less",
-	"no_arrivals_or_departures_in_next_30_minutes": "No arrivals or departures in the next 30 minutes",
+	"load_more_arrivals": "Load more arrivals",
+	"refresh": "Refresh",
+	"no_arrivals_found_in_next_minutes": "No arrivals found in the next {minutes} minutes",
+	"no_more_arrivals_in_next_minutes": "No more arrivals in the next {minutes} minutes",
 	"stop": "Stop",
+	"direction_bound": "{direction} bound",
 	"routes": "Routes",
 	"route": "route",
 	"route_modal_title": "Route {name}",
+	"notifications": {
+		"route_load_failed": "Couldn't load this route.",
+		"route_shape_failed": "Couldn't draw this route on the map.",
+		"route_shape_partial": "Part of this route couldn't be drawn. The map may be missing a segment.",
+		"tap_to_retry": "Tap to retry.",
+		"dismiss": "Dismiss"
+	},
 	"loading": "Loading",
 	"arrives": "arrives",
 	"NA": "N/A",
@@ -126,13 +155,16 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n}m"
 	},
 	"vehicle": {
 		"number": "Vehicle #",
 		"data_updated": "Data updated",
 		"no_real_time_data": "We don't have real-time data for this vehicle now.",
-		"next_stop": "Next stop:"
+		"next_stop": "Next stop:",
+		"label": "Vehicle",
+		"to_headsign": "Vehicle to {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Arrivals and Departures"
@@ -148,7 +180,8 @@
 		"route_schedules": "Route Schedules",
 		"no_schedules_available": "No schedules available for the selected date.",
 		"stop_id": "Stop ID",
-		"direction": "Direction"
+		"direction": "Direction",
+		"schedule_table_caption": "Departure times for {route}"
 	},
 	"direction": {
 		"N": "North",
@@ -170,21 +203,92 @@
 		"no_description": "No detailed description available for this alert",
 		"page": "Page",
 		"show": "Show",
-		"hide": "Hide"
+		"hide": "Hide",
+		"open_alert": "Open {severity} service alert details: {summary}",
+		"affects_this_stop": "Affects this stop",
+		"other_alerts": "Other alerts",
+		"severity_severe": "Severe",
+		"severity_warning": "Warning",
+		"severity_info": "Info",
+		"cause": "Cause",
+		"effect": "Effect",
+		"active": "Active",
+		"active_until": "Until {date}",
+		"active_from": "From {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Unknown",
+		"cause_other": "Other",
+		"cause_technical": "Technical problem",
+		"cause_strike": "Strike",
+		"cause_demonstration": "Demonstration",
+		"cause_accident": "Accident",
+		"cause_holiday": "Holiday",
+		"cause_weather": "Weather",
+		"cause_maintenance": "Maintenance",
+		"cause_construction": "Construction",
+		"cause_police": "Police activity",
+		"cause_medical": "Medical emergency",
+		"cause_equipment": "Equipment",
+		"cause_environment": "Environment",
+		"cause_personnel": "Personnel",
+		"cause_miscellaneous": "Miscellaneous",
+		"cause_security": "Security alert",
+		"effect_no_service": "No service",
+		"effect_reduced_service": "Reduced service",
+		"effect_significant_delays": "Significant delays",
+		"effect_detour": "Detour",
+		"effect_additional_service": "Additional service",
+		"effect_modified_service": "Modified service",
+		"effect_other": "Other effect",
+		"effect_unknown": "Unknown effect",
+		"effect_stop_moved": "Stop moved",
+		"effect_no_effect": "No effect",
+		"effect_accessibility": "Accessibility issue"
 	},
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
-		"view_details": "View Details"
+		"view_details": "View Details",
+		"stop_info": "Stop Info"
 	},
 	"language_switcher": {
 		"select_language": "Select language: {language}",
 		"available_languages": "Available languages"
 	},
 	"map": {
-		"find_my_location": "Find My Location"
+		"find_my_location": "Find My Location",
+		"routes_shown": "Routes shown",
+		"live_vehicle_count": "{count} live"
 	},
 	"context-menu": {
 		"start_here": "Start Here",
 		"end_here": "End Here"
-	}
+	},
+	"error": {
+		"404": {
+			"title": "Page not found",
+			"description": "The page you're looking for doesn't exist or has been moved."
+		},
+		"403": {
+			"title": "Access denied",
+			"description": "You don't have permission to view this page."
+		},
+		"500": {
+			"title": "Server error",
+			"description": "Something went wrong on our end. Please try again later."
+		},
+		"generic": {
+			"title": "Something went wrong",
+			"description": "An unexpected error occurred."
+		},
+		"go_home": "Go home",
+		"go_back": "Go back"
+	},
+	"trip_details": {
+		"route": "Route",
+		"no_stops": "No stop times available for this trip.",
+		"loading": "Loading trip details...",
+		"live_vehicle": "Live · vehicle {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# stop} other {# stops}}"
+	},
+	"skip_to_main_content": "Skip to main content"
 }

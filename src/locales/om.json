@@ -88,7 +88,9 @@
 		"close": "Cufi"
 	},
 	"arrivals_and_departures": "Dhufaatii fi ka'umsa",
-	"no_arrivals_or_departures_in_next_30_minutes": "Daqiiqaa 30 itti aanu keessatti dhufaatii ykn ka'umsi hin jiru",
+	"load_more_arrivals": "Dhufaatii dabalataa fe'i",
+	"no_arrivals_found_in_next_minutes": "Daqiiqaa {minutes} itti aanu keessatti dhufaatiin hin argamne",
+	"no_more_arrivals_in_next_minutes": "Daqiiqaa {minutes} itti aanu keessatti dhufaataa dabalataa hin jiru",
 	"stop": "Dhaabbii",
 	"routes": "Sararawwan",
 	"route": "sarara",
@@ -125,7 +127,8 @@
 		"route_schedules": "Sagantaa Sararaa",
 		"no_schedules_available": "Guyyaa filatameef sagantaan hin jiru.",
 		"stop_id": "Eenyummaa Dhaabbii",
-		"direction": "Kallattii"
+		"direction": "Kallattii",
+		"schedule_table_caption": "Yeroowwan ka'umsaa kan {route}"
 	},
 	"direction": {
 		"N": "Kaaba",
@@ -163,5 +166,26 @@
 	"context-menu": {
 		"start_here": "As'itti eegali",
 		"end_here": "As'itti xumuri"
-	}
+	},
+	"error": {
+		"403": {
+			"title": "Hayyamni dhorkame",
+			"description": "Fuula kana ilaaluuf hayyama hin qabdu."
+		},
+		"404": {
+			"title": "Fuulni hin argamne",
+			"description": "Fuulni ati barbaaddu hin jiru yookaan jijjiirame."
+		},
+		"500": {
+			"title": "Dogoggora sarvaraa",
+			"description": "Gama keenyaan wanti tokko dogoggoraan ta'e. Maaloo booda irra deebi'ii yaali."
+		},
+		"generic": {
+			"title": "Wanti tokko dogoggoraan ta'e",
+			"description": "Dogoggorri hin eegamne uumame."
+		},
+		"go_home": "Gara manaatti deebi'i",
+		"go_back": "Duubatti deebi'i"
+	},
+	"skip_to_main_content": "Gara qabiyyee jalqabaa darbi"
 }
