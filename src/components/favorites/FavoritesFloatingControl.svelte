@@ -100,7 +100,7 @@
 			aria-modal="true"
 			aria-label={$t('favorites.title')}
 			tabindex="-1"
-			class="absolute right-0 top-full z-40 mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 p-3 shadow-lg backdrop-blur-sm outline-none dark:border-gray-600 dark:bg-gray-800/95"
+			class="absolute right-0 top-full z-40 mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 p-3 shadow-lg outline-none backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800/95"
 		>
 			<FavoritesList onStopClick={handleStopClick} onRouteClick={handleRouteClick} />
 		</div>
