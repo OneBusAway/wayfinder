@@ -43,6 +43,7 @@ describe('colorUtils', () => {
 			expect(hexToRgb('#AABBCC')).toEqual({ r: 170, g: 187, b: 204 });
 			expect(hexToRgb('#aAbBcC')).toEqual({ r: 170, g: 187, b: 204 });
 			expect(hexToRgb('#ABC')).toEqual({ r: 170, g: 187, b: 204 });
+			expect(hexToRgb('#486621FF')).toEqual({ r: 72, g: 102, b: 33 });
 		});
 
 		test('returns null for invalid input', () => {
@@ -58,6 +59,11 @@ describe('colorUtils', () => {
 			expect(hexToRgb(undefined)).toBeNull();
 			expect(hexToRgb(123456)).toBeNull();
 			expect(hexToRgb({})).toBeNull();
+		});
+
+		test('converts 8-digit hex by ignoring alpha channel', () => {
+			expect(hexToRgb('#486621ff')).toEqual({ r: 72, g: 102, b: 33 });
+			expect(hexToRgb('#48662180')).toEqual({ r: 72, g: 102, b: 33 });
 		});
 	});
 
@@ -343,6 +349,10 @@ describe('colorUtils', () => {
 			const hover = darkenColor(process.env.COLOR_BRAND_ACCENT, 0.15);
 
 			expect(contrastRatio('#ffffff', hover)).toBeGreaterThanOrEqual(4.5);
+		});
+
+		test('should accept 8-digit hex colors', () => {
+			expect(darkenColor('#486621ff', 0.15)).toBe('#3d571c');
 		});
 	});
 

@@ -7,7 +7,7 @@ import { COLORS } from './colors.js';
 
 /**
  * Converts a hex color string to RGB object
- * Supports both 3-digit (#fff) and 6-digit (#ffffff) hex formats
+ * Supports 3-digit (#fff), 6-digit (#ffffff) and 8-digit (#ffffffff) hex formats
  * @param {string} hex - Hex color string (with or without #)
  * @returns {{r: number, g: number, b: number} | null} RGB object or null if invalid
  */
@@ -21,6 +21,11 @@ export function hexToRgb(hex) {
 			.map((c) => c + c)
 			.join('');
 	}
+	// ignore alpha channel in 8-digit hex
+	if (hex.length === 8) {
+		hex = hex.slice(0, 6);
+	}
+
 	const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	return result
 		? {
