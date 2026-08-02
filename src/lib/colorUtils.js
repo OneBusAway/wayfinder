@@ -124,11 +124,16 @@ export function generatePalette(baseHex, fallbackHex = '#486621') {
  * @param {number} amount - Amount to darken (0-1, where 1 is pure black)
  * @returns {string} Darkened hex color
  */
-export function darkenColor(hexColor, amount) {
-	if (!hexColor) return '#000000';
-
+export function darkenColor(hexColor, amount, fallbackHex = '#486621') {
 	const rgb = hexToRgb(hexColor);
-	if (!rgb) return '#000000';
+	if (!rgb) {
+		if (fallbackHex === null) {
+			console.error(`Invalid hex color "${hexColor}" and no fallback available`);
+			return '#000000';
+		}
+		console.warn(`Invalid hex color "${hexColor}", falling back to "${fallbackHex}"`);
+		return darkenColor(fallbackHex, amount, null);
+	}
 
 	const black = { r: 0, g: 0, b: 0 };
 	const darkened = mixColors(rgb, black, amount);
@@ -143,11 +148,16 @@ export function darkenColor(hexColor, amount) {
  * @param {number} amount - Amount to lighten (0-1, where 1 is pure white)
  * @returns {string} Lightened hex color
  */
-export function lightenColor(hexColor, amount) {
-	if (!hexColor) return '#ffffff';
-
+export function lightenColor(hexColor, amount, fallbackHex = '#486621') {
 	const rgb = hexToRgb(hexColor);
-	if (!rgb) return '#ffffff';
+	if (!rgb) {
+		if (fallbackHex === null) {
+			console.error(`Invalid hex color "${hexColor}" and no fallback available`);
+			return '#ffffff';
+		}
+		console.warn(`Invalid hex color "${hexColor}", falling back to "${fallbackHex}"`);
+		return lightenColor(fallbackHex, amount, null);
+	}
 
 	const white = { r: 255, g: 255, b: 255 };
 	const lightened = mixColors(rgb, white, amount);
