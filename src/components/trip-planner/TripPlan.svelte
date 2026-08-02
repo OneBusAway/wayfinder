@@ -87,6 +87,10 @@
 	}
 
 	async function handleSearchInput(query, isFrom) {
+		// Retyping a field starts a new trip, so drop any prior results/empty-state
+		// (and the parent's hasPlanned flag) instead of letting "No itineraries
+		// found" linger under the form while the rider edits.
+		clearTripItineraries();
 		if (query.trim() === '') {
 			if (isFrom) fromResults = [];
 			else toResults = [];

@@ -445,7 +445,9 @@
 		currentModal = Modal.TRIP_PLANNER;
 		// Desktop: sheet fills the left rail. Mobile: stay at half when results land so
 		// the map stays visible; riders can drag to full or scroll inside the sheet.
-		if (browser && window.innerWidth >= 768) {
+		// Keyed off isNarrowViewport (the same matchMedia the layout uses) so a
+		// fractional width from browser zoom can't disagree with mobilePlanSheetOpen.
+		if (!isNarrowViewport) {
 			sheetSnap = 'full';
 		} else if (tripItineraries.length > 0) {
 			sheetSnap = 'half';

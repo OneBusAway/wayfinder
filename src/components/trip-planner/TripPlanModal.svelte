@@ -271,7 +271,11 @@
 			{/if}
 		</div>
 	{:else if showEmptyState}
-		<div class="flex h-full flex-col items-center justify-center gap-3 py-12">
+		<!-- On the mobile plan sheet this block sits below the From/To form, so
+		     h-full would push the centered message past the visible body and below
+		     the fold. Let it size to its content there; keep full-height centering
+		     for the standalone desktop results sheet. -->
+		<div class="flex flex-col items-center justify-center gap-3 py-12 {showForm ? '' : 'h-full'}">
 			<p class="text-gray-400 dark:text-gray-500">
 				{$t('trip-planner.no_itineraries_found')}
 			</p>

@@ -489,9 +489,15 @@ describe('TripPlanModal showForm embedding', () => {
 			}
 		});
 
+		let message;
 		await vi.waitFor(() => {
-			expect(getByText('trip-planner.no_itineraries_found')).toBeInTheDocument();
+			message = getByText('trip-planner.no_itineraries_found');
+			expect(message).toBeInTheDocument();
 		});
+
+		// On the mobile sheet the empty state sits below the form, so it must size
+		// to its content — h-full would center it past the visible body.
+		expect(message.closest('div').className).not.toContain('h-full');
 
 		unmount();
 	});
