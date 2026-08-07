@@ -11,7 +11,7 @@
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
 	import { surveyStore, showSurveyModal, markSurveyAnswered } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
-	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
+	import SurveyBanner from '$components/surveys/SurveyBanner.svelte';
 	import analytics from '$lib/Insights';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
@@ -223,18 +223,18 @@
 	let surveyPublicIdentifier = $state(null);
 	let showHeroQuestion = $state(true);
 
+	function heroAnswerIsEmpty() {
+		if (Array.isArray(heroAnswer)) return heroAnswer.length === 0;
+		return !heroAnswer || heroAnswer.trim() === '';
+	}
+
 	async function handleSurveyButtonClick() {
 		let heroQuestion = currentStopSurvey.questions[0];
 		remainingSurveyQuestions = currentStopSurvey.questions.slice(1);
-		if (heroQuestion.content.type !== 'label' && (!heroAnswer || heroAnswer.trim() === '')) {
+
+		if (heroQuestion.content.type !== 'label' && heroAnswerIsEmpty()) {
 			return;
 		}
-
-		// If there are more questions, show the modal
-		if (remainingSurveyQuestions.length > 0) {
-			showSurveyModal.set(true);
-		}
-		nextSurveyQuestion = true;
 
 		let surveyResponse = {
 			survey_id: currentStopSurvey.id,
@@ -252,9 +252,22 @@
 			answer: heroAnswer
 		};
 
-		surveyPublicIdentifier = await submitHeroQuestion(surveyResponse);
-		showHeroQuestion = false;
+		try {
+			surveyPublicIdentifier = await submitHeroQuestion(surveyResponse);
+		} catch (error) {
+			// Rethrow so SurveyBanner can show a retry affordance. The banner
+			// stays mounted because showHeroQuestion is untouched.
+			console.error('Error submitting hero question:', error);
+			throw error;
+		}
 
+		// Only advance the flow once the hero answer is actually recorded.
+		if (remainingSurveyQuestions.length > 0) {
+			showSurveyModal.set(true);
+		}
+		nextSurveyQuestion = true;
+
+		showHeroQuestion = false;
 		markSurveyAnswered(currentStopSurvey.id);
 	}
 
@@ -262,8 +275,11 @@
 		skipSurvey(currentStopSurvey);
 		showHeroQuestion = false;
 	}
-	function handleHeroQuestionChange(event) {
-		heroAnswer = event.target.value;
+
+	// SurveyBanner resolves the answer (string, or string[] for checkboxes)
+	// before reporting it, so this no longer digs into the DOM event.
+	function handleHeroQuestionChange(answer) {
+		heroAnswer = answer;
 	}
 
 	$effect(() => {
@@ -335,13 +351,18 @@
 				{/if}
 
 				{#if showHeroQuestion && currentStopSurvey}
-					<HeroQuestion
-						{currentStopSurvey}
-						{handleSkip}
-						{handleSurveyButtonClick}
-						{handleHeroQuestionChange}
-						remainingQuestionsLength={remainingSurveyQuestions.length}
-					/>
+					<!-- Keyed on the stop: StopBottomSheet is not remounted when the
+					     user selects a different stop, so without this the previous
+					     stop's expanded/answer state would carry over. -->
+					{#key stop.id}
+						<SurveyBanner
+							{currentStopSurvey}
+							{handleSkip}
+							{handleSurveyButtonClick}
+							{handleHeroQuestionChange}
+							remainingQuestionsLength={(currentStopSurvey?.questions?.length ?? 1) - 1}
+						/>
+					{/key}
 				{/if}
 				{#if nextSurveyQuestion}
 					<SurveyModal

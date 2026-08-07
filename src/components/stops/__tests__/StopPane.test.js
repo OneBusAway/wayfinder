@@ -58,7 +58,7 @@ vi.mock('$components/service-alerts/ServiceAlerts.svelte', () => ({
 	}))
 }));
 
-vi.mock('$components/surveys/HeroQuestion.svelte', () => ({
+vi.mock('$components/surveys/SurveyBanner.svelte', () => ({
 	default: vi.fn().mockImplementation(() => ({
 		$set: vi.fn(),
 		$destroy: vi.fn(),
