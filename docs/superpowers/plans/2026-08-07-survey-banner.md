@@ -22,15 +22,15 @@ Spec: `docs/superpowers/specs/2026-08-07-survey-banner-design.md`
 
 ## File Structure
 
-| File | Responsibility |
-| --- | --- |
-| `src/components/surveys/SurveyQuestion.svelte` | **Modify.** Stop self-assigning `error`; i18n the required message. |
-| `src/components/surveys/SurveyBanner.svelte` | **Create.** The collapsible banner. Owns expanded/answer/error/in-flight state. |
-| `src/components/surveys/HeroQuestion.svelte` | **Delete.** Superseded by `SurveyBanner.svelte`. |
-| `src/components/stops/StopPane.svelte` | **Modify.** Wire in the banner; fix answer handler, submit error handling, question count, spacing. |
-| `src/locales/en.json` | **Modify.** New `survey.*` keys. |
-| `src/components/surveys/__tests__/SurveyBanner.test.js` | **Create.** Banner behavior tests. |
-| `src/components/stops/__tests__/StopPane.test.js` | **Modify.** Repoint the component mock. |
+| File                                                    | Responsibility                                                                                      |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `src/components/surveys/SurveyQuestion.svelte`          | **Modify.** Stop self-assigning `error`; i18n the required message.                                 |
+| `src/components/surveys/SurveyBanner.svelte`            | **Create.** The collapsible banner. Owns expanded/answer/error/in-flight state.                     |
+| `src/components/surveys/HeroQuestion.svelte`            | **Delete.** Superseded by `SurveyBanner.svelte`.                                                    |
+| `src/components/stops/StopPane.svelte`                  | **Modify.** Wire in the banner; fix answer handler, submit error handling, question count, spacing. |
+| `src/locales/en.json`                                   | **Modify.** New `survey.*` keys.                                                                    |
+| `src/components/surveys/__tests__/SurveyBanner.test.js` | **Create.** Banner behavior tests.                                                                  |
+| `src/components/stops/__tests__/StopPane.test.js`       | **Modify.** Repoint the component mock.                                                             |
 
 ---
 
@@ -39,11 +39,13 @@ Spec: `docs/superpowers/specs/2026-08-07-survey-banner-design.md`
 `SurveyQuestion.handleInput` reassigns its own `error` prop from `value`, but `value` is `$bindable('')` and nothing ever writes to it — `Radio` gets `group={value}` one-way and `HeroQuestion` never passes `value` at all. The result is that `error` flips to `true` on the first interaction with any required question and the parent never resyncs it. Error must be owned entirely by the parent.
 
 **Files:**
+
 - Modify: `src/components/surveys/SurveyQuestion.svelte:30-33` and `:104-106`
 - Modify: `src/locales/en.json`
 - Test: `src/components/surveys/__tests__/SurveyQuestion.test.js` (create)
 
 **Interfaces:**
+
 - Consumes: nothing.
 - Produces: `SurveyQuestion` props contract used by Task 3 — `{ question, index, value, required, onInputChange, variant, error }`. `error` is a boolean the parent controls; the component never writes to it. `onInputChange` is called as `onInputChange(event, question, index)`.
 
@@ -220,9 +222,11 @@ parent, and the message is internationalized."
 Small and mechanical, but Task 3's tests assert on these key names, so they land first.
 
 **Files:**
+
 - Modify: `src/locales/en.json`
 
 **Interfaces:**
+
 - Consumes: the `survey` object from Task 1.
 - Produces: keys `survey.expand`, `survey.collapse`, `survey.dismiss`, `survey.submit`, `survey.next`, `survey.submit_failed`.
 
@@ -265,10 +269,12 @@ git commit -m "i18n: add survey banner strings"
 The banner's default, collapsed appearance: icon tile, survey name, truncated question, chevron toggle, dismiss button. No question body yet — that is Task 4.
 
 **Files:**
+
 - Create: `src/components/surveys/SurveyBanner.svelte`
 - Test: `src/components/surveys/__tests__/SurveyBanner.test.js` (create)
 
 **Interfaces:**
+
 - Consumes: `survey.*` locale keys from Task 2.
 - Produces: the component `SurveyBanner.svelte` with props
   `{ currentStopSurvey, handleSkip, handleSurveyButtonClick, handleHeroQuestionChange, remainingQuestionsLength }`.
@@ -592,10 +598,12 @@ git commit -m "feat(surveys): add collapsible SurveyBanner component"
 The markup exists from Task 3. This task proves the behavior that markup implies: answer tracking (including checkboxes), the required-error gate, `external_survey` having no Submit button, and in-flight/failure handling.
 
 **Files:**
+
 - Test: `src/components/surveys/__tests__/SurveyBanner.test.js` (extend)
 - Modify: `src/components/surveys/SurveyBanner.svelte` (only if a test exposes a defect)
 
 **Interfaces:**
+
 - Consumes: `SurveyBanner` from Task 3.
 - Produces: nothing new.
 
@@ -713,9 +721,7 @@ describe('SurveyBanner — expanded', () => {
 
 	test('submit is disabled while in flight and the handler is called once', async () => {
 		let release;
-		const handleSurveyButtonClick = vi.fn(
-			() => new Promise((resolve) => (release = resolve))
-		);
+		const handleSurveyButtonClick = vi.fn(() => new Promise((resolve) => (release = resolve)));
 		await renderExpanded({ handleSurveyButtonClick });
 
 		await user.click(screen.getByLabelText('Very Easy'));
@@ -737,9 +743,7 @@ describe('SurveyBanner — expanded', () => {
 		await user.click(screen.getByLabelText('Very Easy'));
 		await user.click(screen.getByRole('button', { name: 'survey.submit' }));
 
-		await vi.waitFor(() =>
-			expect(screen.getByText('survey.submit_failed')).toBeInTheDocument()
-		);
+		await vi.waitFor(() => expect(screen.getByText('survey.submit_failed')).toBeInTheDocument());
 		expect(screen.getByRole('button', { name: 'survey.submit' })).toBeEnabled();
 	});
 });
@@ -767,11 +771,13 @@ git commit -m "test(surveys): cover SurveyBanner expanded behavior"
 Four `StopPane` changes ride along because the banner's contract requires them: the answer handler takes a value instead of an event, the emptiness guard must handle arrays, the submit path needs error handling, and the question count must be derived at render time rather than read from state that is empty until submit runs.
 
 **Files:**
+
 - Modify: `src/components/stops/StopPane.svelte` (imports at :14, handlers at :226-267, markup at :337-345)
 - Delete: `src/components/surveys/HeroQuestion.svelte`
 - Modify: `src/components/stops/__tests__/StopPane.test.js:61`
 
 **Interfaces:**
+
 - Consumes: `SurveyBanner` from Task 3 — `handleSurveyButtonClick` is awaited and may reject; `handleHeroQuestionChange` receives a `string` or `string[]`.
 - Produces: nothing for later tasks.
 
@@ -802,13 +808,13 @@ Expected: FAIL. `StopPane` still imports `HeroQuestion.svelte`, which is no long
 In `src/components/stops/StopPane.svelte`, replace line 14:
 
 ```svelte
-	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
+import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
 ```
 
 with:
 
 ```svelte
-	import SurveyBanner from '$components/surveys/SurveyBanner.svelte';
+import SurveyBanner from '$components/surveys/SurveyBanner.svelte';
 ```
 
 - [ ] **Step 4: Update the handlers**
@@ -876,41 +882,41 @@ In `src/components/stops/StopPane.svelte`, replace the whole of `handleSurveyBut
 	}
 ```
 
-Note this also moves `showSurveyModal.set(true)` and `nextSurveyQuestion = true` to *after* the successful POST — previously the modal opened before the network call, so a failed submit left the modal open over a survey that was never recorded.
+Note this also moves `showSurveyModal.set(true)` and `nextSurveyQuestion = true` to _after_ the successful POST — previously the modal opened before the network call, so a failed submit left the modal open over a survey that was never recorded.
 
 - [ ] **Step 5: Update the markup**
 
 In `src/components/stops/StopPane.svelte`, replace lines 337-345:
 
 ```svelte
-				{#if showHeroQuestion && currentStopSurvey}
-					<HeroQuestion
-						{currentStopSurvey}
-						{handleSkip}
-						{handleSurveyButtonClick}
-						{handleHeroQuestionChange}
-						remainingQuestionsLength={remainingSurveyQuestions.length}
-					/>
-				{/if}
+{#if showHeroQuestion && currentStopSurvey}
+	<HeroQuestion
+		{currentStopSurvey}
+		{handleSkip}
+		{handleSurveyButtonClick}
+		{handleHeroQuestionChange}
+		remainingQuestionsLength={remainingSurveyQuestions.length}
+	/>
+{/if}
 ```
 
 with:
 
 ```svelte
-				{#if showHeroQuestion && currentStopSurvey}
-					<!-- Keyed on the stop: StopBottomSheet is not remounted when the
+{#if showHeroQuestion && currentStopSurvey}
+	<!-- Keyed on the stop: StopBottomSheet is not remounted when the
 					     user selects a different stop, so without this the previous
 					     stop's expanded/answer state would carry over. -->
-					{#key stop.id}
-						<SurveyBanner
-							{currentStopSurvey}
-							{handleSkip}
-							{handleSurveyButtonClick}
-							{handleHeroQuestionChange}
-							remainingQuestionsLength={(currentStopSurvey?.questions?.length ?? 1) - 1}
-						/>
-					{/key}
-				{/if}
+	{#key stop.id}
+		<SurveyBanner
+			{currentStopSurvey}
+			{handleSkip}
+			{handleSurveyButtonClick}
+			{handleHeroQuestionChange}
+			remainingQuestionsLength={(currentStopSurvey?.questions?.length ?? 1) - 1}
+		/>
+	{/key}
+{/if}
 ```
 
 `remainingSurveyQuestions` is only assigned inside `handleSurveyButtonClick`, so reading its length at render time always yielded `0` and the "Next" label was unreachable.
@@ -951,9 +957,11 @@ failed submit opened the follow-up modal anyway."
 `StopPane.svelte:299` wraps the pane contents in `space-y-4`, which puts a 16px gap between the banner and the arrival rows. The banner has to be flush, so the blanket spacing is replaced with explicit margins on the children that still want them.
 
 **Files:**
+
 - Modify: `src/components/stops/StopPane.svelte:299`, and the children inside that wrapper
 
 **Interfaces:**
+
 - Consumes: `SurveyBanner` wired up in Task 5.
 - Produces: nothing.
 
@@ -981,11 +989,11 @@ Still in `src/components/stops/StopPane.svelte`:
 2. The `ServiceAlerts` block — wrap it so it keeps its gap:
 
 ```svelte
-				{#if serviceAlerts}
-					<div class="mb-4">
-						<ServiceAlerts bind:serviceAlerts stopId={stop.id} routeIds={stop.routeIds ?? []} />
-					</div>
-				{/if}
+{#if serviceAlerts}
+	<div class="mb-4">
+		<ServiceAlerts bind:serviceAlerts stopId={stop.id} routeIds={stop.routeIds ?? []} />
+	</div>
+{/if}
 ```
 
 3. The empty-results block — change `<div class="flex flex-col items-center justify-center gap-3">` to `<div class="mt-4 flex flex-col items-center justify-center gap-3">`.
@@ -1021,24 +1029,24 @@ git commit -m "style(stops): sit the survey banner flush with the arrivals list"
 
 Spec coverage check — every spec section maps to a task:
 
-| Spec section | Task |
-| --- | --- |
-| Render guard (empty `questions`) | 3 |
-| Collapsed layout, no headings, `aria-hidden` tile | 3 |
-| Expanded layout, `transition:slide` | 3 |
-| Spacing / removing `space-y-4` | 6 |
-| Full-bleed constraint | 3 (markup), 6 (verification) |
-| State ownership, `handleHeroQuestionChange` signature | 3, 5 |
-| `SurveyQuestion` error self-assignment | 1 |
-| `{#key stop.id}` | 5 |
-| Submit failure, double-submit | 3, 4, 5 |
-| Dismiss | 3, 5 |
-| Question-type table | 3, 4 |
-| Error state | 3, 4 |
-| Theming (`bg-primary-100`) | 3 |
-| Accessibility (no `aria-controls`, no Escape binding) | 3 |
-| i18n keys | 1, 2 |
-| Testing | 1, 3, 4, 5 |
-| `remainingQuestionsLength` derivation | 5 |
+| Spec section                                          | Task                         |
+| ----------------------------------------------------- | ---------------------------- |
+| Render guard (empty `questions`)                      | 3                            |
+| Collapsed layout, no headings, `aria-hidden` tile     | 3                            |
+| Expanded layout, `transition:slide`                   | 3                            |
+| Spacing / removing `space-y-4`                        | 6                            |
+| Full-bleed constraint                                 | 3 (markup), 6 (verification) |
+| State ownership, `handleHeroQuestionChange` signature | 3, 5                         |
+| `SurveyQuestion` error self-assignment                | 1                            |
+| `{#key stop.id}`                                      | 5                            |
+| Submit failure, double-submit                         | 3, 4, 5                      |
+| Dismiss                                               | 3, 5                         |
+| Question-type table                                   | 3, 4                         |
+| Error state                                           | 3, 4                         |
+| Theming (`bg-primary-100`)                            | 3                            |
+| Accessibility (no `aria-controls`, no Escape binding) | 3                            |
+| i18n keys                                             | 1, 2                         |
+| Testing                                               | 1, 3, 4, 5                   |
+| `remainingQuestionsLength` derivation                 | 5                            |
 
 Known deviation: the spec's test list includes "Submit with a required question unanswered shows the required message." Because the Submit button is `disabled` until an answer exists, that path is not reachable by clicking in a jsdom test — the guard in `submit()` is defense in depth. Task 4 asserts the message is absent on first render and stays absent while answering, which is the reachable half of that requirement.

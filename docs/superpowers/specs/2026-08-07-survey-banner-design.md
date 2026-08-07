@@ -21,10 +21,10 @@ in scope because the redesign cannot be built correctly on top of them:
    line 60, and `HeroQuestion` never passes `value` at all). So the child flips `error` to `true`
    on the first interaction with any required question and the parent never resyncs it.
 3. `StopPane.svelte:63` declares `remainingSurveyQuestions = $state([])` and the only assignment
-   is at line 228, *inside* `handleSurveyButtonClick`. At render time the length is therefore
+   is at line 228, _inside_ `handleSurveyButtonClick`. At render time the length is therefore
    always `0`, so the "Next" button label has never been reachable.
 4. `StopPane.svelte:266` sets `heroAnswer = event.target.value`. For a `checkbox` hero question
-   only the last-clicked option is ever submitted, and *unchecking* a box still leaves
+   only the last-clicked option is ever submitted, and _unchecking_ a box still leaves
    `heroAnswer` non-empty.
 
 ## Solution
@@ -41,13 +41,13 @@ accordion.
 
 Props:
 
-| Prop | Purpose |
-| --- | --- |
-| `currentStopSurvey` | The survey object from `surveyStore` |
-| `handleSkip` | Dismiss — calls `skipSurvey` in `StopPane` |
-| `handleSurveyButtonClick` | Submit — POSTs the hero answer in `StopPane`; **awaited** |
+| Prop                       | Purpose                                                         |
+| -------------------------- | --------------------------------------------------------------- |
+| `currentStopSurvey`        | The survey object from `surveyStore`                            |
+| `handleSkip`               | Dismiss — calls `skipSurvey` in `StopPane`                      |
+| `handleSurveyButtonClick`  | Submit — POSTs the hero answer in `StopPane`; **awaited**       |
 | `handleHeroQuestionChange` | Answer change — now receives the resolved answer, not the event |
-| `remainingQuestionsLength` | Drives the Submit vs. Next button label |
+| `remainingQuestionsLength` | Drives the Submit vs. Next button label                         |
 
 `remainingQuestionsLength` must be derived in `StopPane` from
 `(currentStopSurvey?.questions?.length ?? 1) - 1` rather than read from the `remainingSurveyQuestions`
@@ -167,11 +167,11 @@ already passes a real `error` prop and its own `validateAnswers`.
 
 ### Question types
 
-| Type | Banner behavior |
-| --- | --- |
-| `radio`, `checkbox`, `text` | Normal: Submit enabled once `answer` is non-empty |
-| `label` | No answer needed; Submit enabled immediately (matches `StopPane.svelte:229`) |
-| `external_survey` | Expanded body renders the link only, with **no Submit button** |
+| Type                        | Banner behavior                                                              |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `radio`, `checkbox`, `text` | Normal: Submit enabled once `answer` is non-empty                            |
+| `label`                     | No answer needed; Submit enabled immediately (matches `StopPane.svelte:229`) |
+| `external_survey`           | Expanded body renders the link only, with **no Submit button**               |
 
 `external_survey` gets no Submit because it never fires `onInputChange` — `SurveyQuestion.svelte:86-101`
 renders a bare `<a>` with no handler — so `heroAnswer` stays `''` and `StopPane.svelte:229`
@@ -209,15 +209,15 @@ dark background. The icon tile keeps `bg-brand-accent` in both modes.
 
 New keys under `survey` in `src/locales/en.json`:
 
-| Key | English |
-| --- | --- |
-| `survey.expand` | Show question |
-| `survey.collapse` | Hide question |
-| `survey.dismiss` | Dismiss survey |
-| `survey.submit` | Submit |
-| `survey.next` | Next |
-| `survey.required_answer` | This question is required. |
-| `survey.submit_failed` | Couldn't send your answer. Please try again. |
+| Key                      | English                                      |
+| ------------------------ | -------------------------------------------- |
+| `survey.expand`          | Show question                                |
+| `survey.collapse`        | Hide question                                |
+| `survey.dismiss`         | Dismiss survey                               |
+| `survey.submit`          | Submit                                       |
+| `survey.next`            | Next                                         |
+| `survey.required_answer` | This question is required.                   |
+| `survey.submit_failed`   | Couldn't send your answer. Please try again. |
 
 These replace the hardcoded `Submit`, `Next`, and `title="Skip hero question"` in the current
 component, and the hardcoded English at `SurveyQuestion.svelte:105`.
