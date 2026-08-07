@@ -400,7 +400,7 @@
 				{/snippet}
 
 				{#if arrivalsAndDepartures.arrivalsAndDepartures.length === 0}
-					<div class="mt-4 flex flex-col items-center justify-center gap-3">
+					<div class="mt-4 flex flex-col items-center justify-center gap-3 first:mt-0">
 						{@render loadMoreButton(true)}
 					</div>
 				{:else}
@@ -431,7 +431,7 @@
 							{/each}
 						</Accordion>
 					{/key}
-					<div class="mt-4 flex justify-center">
+					<div class="mt-4 flex justify-center first:mt-0">
 						{@render loadMoreButton()}
 					</div>
 				{/if}
