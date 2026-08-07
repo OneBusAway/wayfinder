@@ -312,9 +312,11 @@
 			<p>{error}</p>
 		{/if}
 		{#if arrivalsAndDepartures}
-			<div class="space-y-4">
+			<!-- No space-y here: the survey banner and the arrivals list must sit
+			     flush against each other. Spacing is applied per-child instead. -->
+			<div>
 				{#if showHeroCard}
-					<div>
+					<div class="mb-4">
 						<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent p-4">
 							<h1 class="h1 mb-0 text-white">{stop.name}</h1>
 							<h2 class="h2 mb-0 text-white">
@@ -347,7 +349,9 @@
 				{/if}
 
 				{#if serviceAlerts}
-					<ServiceAlerts bind:serviceAlerts stopId={stop.id} routeIds={stop.routeIds ?? []} />
+					<div class="mb-4">
+						<ServiceAlerts bind:serviceAlerts stopId={stop.id} routeIds={stop.routeIds ?? []} />
+					</div>
 				{/if}
 
 				{#if showHeroQuestion && currentStopSurvey}
@@ -396,7 +400,7 @@
 				{/snippet}
 
 				{#if arrivalsAndDepartures.arrivalsAndDepartures.length === 0}
-					<div class="flex flex-col items-center justify-center gap-3">
+					<div class="mt-4 flex flex-col items-center justify-center gap-3">
 						{@render loadMoreButton(true)}
 					</div>
 				{:else}
@@ -427,7 +431,7 @@
 							{/each}
 						</Accordion>
 					{/key}
-					<div class="flex justify-center">
+					<div class="mt-4 flex justify-center">
 						{@render loadMoreButton()}
 					</div>
 				{/if}
