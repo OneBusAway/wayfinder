@@ -87,7 +87,8 @@
 		"snap_peek": "Collapsed"
 	},
 	"survey": {
-		"required_question": "Required question"
+		"required_question": "Required question",
+		"required_answer": "This question is required."
 	},
 	"header": {
 		"home": "Home",
