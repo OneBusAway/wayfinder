@@ -101,3 +101,139 @@ describe('SurveyBanner — collapsed', () => {
 		expect(props.handleSurveyButtonClick).not.toHaveBeenCalled();
 	});
 });
+
+describe('SurveyBanner — expanded', () => {
+	let user;
+
+	beforeEach(() => {
+		user = userEvent.setup();
+	});
+
+	async function renderExpanded(overrides = {}) {
+		const props = defaultProps(overrides);
+		render(SurveyBanner, { props });
+		await user.click(screen.getByRole('button', { name: /survey.expand/ }));
+		return props;
+	}
+
+	test('submit is disabled until an answer is selected', async () => {
+		await renderExpanded();
+
+		const submitButton = screen.getByRole('button', { name: 'survey.submit' });
+		expect(submitButton).toBeDisabled();
+
+		await user.click(screen.getByLabelText('Very Easy'));
+
+		expect(submitButton).toBeEnabled();
+	});
+
+	test('reports the resolved answer upward, not the event', async () => {
+		const props = await renderExpanded();
+
+		await user.click(screen.getByLabelText('Neutral'));
+
+		expect(props.handleHeroQuestionChange).toHaveBeenCalledWith('Neutral');
+	});
+
+	test('never shows the required message unprompted', async () => {
+		// The disabled Submit button makes the guard in submit() unreachable by
+		// clicking, so what is testable here is the regression this redesign
+		// fixes: the message must not appear on render, nor on first answer.
+		await renderExpanded();
+
+		expect(screen.queryByText('survey.required_answer')).not.toBeInTheDocument();
+
+		await user.click(screen.getByLabelText('Very Easy'));
+		expect(screen.queryByText('survey.required_answer')).not.toBeInTheDocument();
+	});
+
+	test('checkbox answers accumulate and unchecking removes them', async () => {
+		const props = await renderExpanded({
+			currentStopSurvey: surveyWithHero({
+				type: 'checkbox',
+				label_text: 'Which amenities does this stop have?',
+				options: ['Shelter', 'Bench', 'Lighting']
+			})
+		});
+
+		const submitButton = screen.getByRole('button', { name: 'survey.submit' });
+
+		await user.click(screen.getByLabelText('Shelter'));
+		await user.click(screen.getByLabelText('Bench'));
+		expect(props.handleHeroQuestionChange).toHaveBeenLastCalledWith(['Shelter', 'Bench']);
+
+		await user.click(screen.getByLabelText('Shelter'));
+		expect(props.handleHeroQuestionChange).toHaveBeenLastCalledWith(['Bench']);
+		expect(submitButton).toBeEnabled();
+
+		await user.click(screen.getByLabelText('Bench'));
+		expect(props.handleHeroQuestionChange).toHaveBeenLastCalledWith([]);
+		expect(submitButton).toBeDisabled();
+	});
+
+	test('a label question can be submitted with no answer', async () => {
+		const props = await renderExpanded({
+			currentStopSurvey: surveyWithHero(
+				{ type: 'label', label_text: 'Thanks for riding with us.' },
+				{ required: false }
+			)
+		});
+
+		const submitButton = screen.getByRole('button', { name: 'survey.submit' });
+		expect(submitButton).toBeEnabled();
+
+		await user.click(submitButton);
+		expect(props.handleSurveyButtonClick).toHaveBeenCalledTimes(1);
+	});
+
+	test('an external_survey question renders a link and no submit button', async () => {
+		await renderExpanded({
+			currentStopSurvey: surveyWithHero({
+				type: 'external_survey',
+				label_text: 'Take our rider survey',
+				url: 'https://example.com/survey'
+			})
+		});
+
+		expect(screen.getByRole('link', { name: 'Take our rider survey' })).toHaveAttribute(
+			'href',
+			'https://example.com/survey'
+		);
+		expect(screen.queryByRole('button', { name: 'survey.submit' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: 'survey.next' })).not.toBeInTheDocument();
+	});
+
+	test('reads "next" when the survey has more questions', async () => {
+		await renderExpanded({ remainingQuestionsLength: 3 });
+
+		expect(screen.getByRole('button', { name: 'survey.next' })).toBeInTheDocument();
+	});
+
+	test('submit is disabled while in flight and the handler is called once', async () => {
+		let release;
+		const handleSurveyButtonClick = vi.fn(() => new Promise((resolve) => (release = resolve)));
+		await renderExpanded({ handleSurveyButtonClick });
+
+		await user.click(screen.getByLabelText('Very Easy'));
+		const submitButton = screen.getByRole('button', { name: 'survey.submit' });
+
+		await user.click(submitButton);
+		expect(submitButton).toBeDisabled();
+
+		release();
+		await vi.waitFor(() => expect(submitButton).toBeEnabled());
+		expect(handleSurveyButtonClick).toHaveBeenCalledTimes(1);
+	});
+
+	test('a rejected submit shows the failure message and re-enables submit', async () => {
+		await renderExpanded({
+			handleSurveyButtonClick: vi.fn().mockRejectedValue(new Error('network down'))
+		});
+
+		await user.click(screen.getByLabelText('Very Easy'));
+		await user.click(screen.getByRole('button', { name: 'survey.submit' }));
+
+		await vi.waitFor(() => expect(screen.getByText('survey.submit_failed')).toBeInTheDocument());
+		expect(screen.getByRole('button', { name: 'survey.submit' })).toBeEnabled();
+	});
+});
