@@ -136,9 +136,9 @@ describe('SurveyBanner — expanded', () => {
 	});
 
 	test('never shows the required message unprompted', async () => {
-		// The disabled Submit button makes the guard in submit() unreachable by
-		// clicking, so what is testable here is the regression this redesign
-		// fixes: the message must not appear on render, nor on first answer.
+		// Submit stays disabled until answered (canSubmit), so the banner never
+		// passes an error flag to SurveyQuestion -- the required-answer message
+		// is unreachable by design, not just by this test's interactions.
 		await renderExpanded();
 
 		expect(screen.queryByText('survey.required_answer')).not.toBeInTheDocument();

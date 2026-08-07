@@ -34,7 +34,6 @@
 
 	let expanded = $state(false);
 	let answer = $state('');
-	let showRequiredError = $state(false);
 	let submitting = $state(false);
 	let submitFailed = $state(false);
 
@@ -65,18 +64,11 @@
 			answer = event.target.value;
 		}
 
-		if (hasAnswer) {
-			showRequiredError = false;
-		}
-
 		handleHeroQuestionChange(answer);
 	}
 
 	async function submit() {
-		if (needsAnswer && !hasAnswer) {
-			showRequiredError = true;
-			return;
-		}
+		if (submitting) return;
 
 		submitting = true;
 		submitFailed = false;
@@ -92,7 +84,7 @@
 	}
 </script>
 
-{#if heroQuestion}
+{#if heroQuestion?.content}
 	<!-- -mx-4 bleeds to the edges of both containers that host StopPane: the
 	     bottom sheet body (px-4) and StandalonePage (p-4). -->
 	<div
@@ -147,11 +139,10 @@
 					required={heroQuestion.required}
 					onInputChange={handleChange}
 					variant="compact"
-					error={showRequiredError}
 				/>
 
 				{#if submitFailed}
-					<p class="mt-2 text-sm text-red-600 dark:text-red-400">
+					<p role="alert" class="mt-2 text-sm text-red-600 dark:text-red-400">
 						{$t('survey.submit_failed')}
 					</p>
 				{/if}

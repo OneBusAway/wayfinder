@@ -189,6 +189,15 @@
 			noMoreArrivals = false;
 			clearInterval(interval);
 			resetDataFetchInterval(stopID);
+
+			// StopPane is not remounted when the user selects a different stop
+			// (see the {#key stop.id} around SurveyBanner below), so the survey
+			// hero-question flow state must be reset per-stop here or it never
+			// returns after the first submit/dismiss of the session.
+			showHeroQuestion = true;
+			heroAnswer = '';
+			nextSurveyQuestion = false;
+			surveyPublicIdentifier = null;
 		});
 	});
 
