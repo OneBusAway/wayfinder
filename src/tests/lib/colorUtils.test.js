@@ -220,7 +220,7 @@ describe('colorUtils', () => {
 
 		test('works with shorthand hex', () => {
 			const palette = generatePalette('#f00');
-			expect(palette['500']).toBe('#f00');
+			expect(palette['500']).toBe('#ff0000');
 			expect(Object.keys(palette).length).toBe(10);
 		});
 
