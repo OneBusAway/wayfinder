@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { tick } from 'svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import { createMockStore } from '../../../tests/helpers/test-utils.js';
 import SearchPane from '../SearchPane.svelte';
@@ -470,6 +471,39 @@ describe('SearchPane', () => {
 					['planTripTabClicked', 'loadSharedTrip', 'invalidSharedTrip'].includes(event.type)
 				);
 			expect(sharedTripEvents).toHaveLength(0);
+		});
+	});
+
+	describe('Map context menu trip plan', () => {
+		function getContextMenuTripPlanHandler() {
+			const registration = vi
+				.mocked(global.addEventListener)
+				.mock.calls.find(([type]) => type === 'contextMenuTripPlan');
+			expect(registration).toBeDefined();
+			return registration[1];
+		}
+
+		test('waits for the mobile plan sheet to mount before setting the location', async () => {
+			render(SearchPane, { props: mockProps });
+			const handler = getContextMenuTripPlanHandler();
+			const detail = { type: 'from', lat: 47.6, lng: -122.3 };
+
+			const pending = handler({ detail });
+
+			await tick();
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'planTripTabClicked' })
+			);
+			expect(global.dispatchEvent).not.toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'setTripPlanLocation' })
+			);
+
+			await tick();
+			await pending;
+
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'setTripPlanLocation', detail })
+			);
 		});
 	});
 });
