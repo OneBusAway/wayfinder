@@ -87,7 +87,14 @@
 		"snap_peek": "Collapsed"
 	},
 	"survey": {
-		"required_question": "Required question"
+		"required_question": "Required question",
+		"required_answer": "This question is required.",
+		"expand": "Show question",
+		"collapse": "Hide question",
+		"dismiss": "Dismiss survey",
+		"submit": "Submit",
+		"next": "Next",
+		"submit_failed": "Couldn't send your answer. Please try again."
 	},
 	"header": {
 		"home": "Home",
