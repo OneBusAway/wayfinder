@@ -111,7 +111,7 @@
 
 					<button
 						type="button"
-						class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-red-500 group-hover:opacity-100 dark:hover:bg-gray-600"
+						class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 group-hover:opacity-100 dark:hover:bg-gray-600"
 						onclick={() => handleRemove(item)}
 						aria-label={$t('favorites.remove_item', { values: { name: title } })}
 					>

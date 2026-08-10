@@ -571,9 +571,11 @@
 			</div>
 
 			<!-- Mobile: sit in flow below the search pane. Desktop: pin to the map's
-			     top-right (absolute against the full-screen overlay ancestor). -->
+			     top-right (absolute against the full-screen overlay ancestor).
+			     Wrapper stays pointer-events transparent (and shrink-wrapped) so it
+			     cannot steal map pans; the control itself opts back in. -->
 			<div
-				class="pointer-events-auto relative z-30 mx-2 mt-2 flex justify-end md:absolute md:right-4 md:top-4 md:mx-0 md:mt-0"
+				class="relative z-30 mx-2 mt-2 w-fit self-end md:absolute md:right-4 md:top-4 md:mx-0 md:mt-0"
 			>
 				<FavoritesFloatingControl
 					onStopClick={handleFavoriteStopClick}

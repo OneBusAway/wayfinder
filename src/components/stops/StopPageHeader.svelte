@@ -32,8 +32,10 @@
 	</div>
 
 	<div class="text-center">
-		<h1 class="flex items-center justify-center gap-2 text-3xl font-bold text-brand-accent">
-			{stopName}
+		<div class="flex items-center justify-center gap-2">
+			<h1 class="text-3xl font-bold text-brand-accent">
+				{stopName}
+			</h1>
 			{#if stopLat != null && stopLon != null}
 				<FavoriteToggle
 					type="stop"
@@ -46,7 +48,7 @@
 					class="h-9 w-9"
 				/>
 			{/if}
-		</h1>
+		</div>
 		<div class="text-normal mt-2 flex items-center justify-center gap-x-8 text-gray-700">
 			<div class="rounded-md bg-gray-50 px-2 py-1">
 				<FontAwesomeIcon icon={faMapMarkerAlt} />

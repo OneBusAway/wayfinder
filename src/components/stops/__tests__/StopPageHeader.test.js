@@ -74,6 +74,16 @@ describe('StopPageHeader', () => {
 		expect(screen.getByRole('button', { name: 'Add to favorites' })).toBeInTheDocument();
 	});
 
+	test('keeps the favorite toggle outside the heading accessible name', () => {
+		render(StopPageHeader, { props: defaultProps });
+
+		const heading = screen.getByRole('heading', { level: 1 });
+		const toggle = screen.getByRole('button', { name: 'Add to favorites' });
+
+		expect(heading).toHaveAccessibleName('Pine St & 3rd Ave');
+		expect(heading.contains(toggle)).toBe(false);
+	});
+
 	test('hides the favorite toggle when stop coordinates are missing', () => {
 		render(StopPageHeader, {
 			props: {
@@ -114,7 +124,7 @@ describe('StopPageHeader', () => {
 		const mainContainer = screen.getByRole('heading', { level: 1 }).closest('.my-4');
 		expect(mainContainer).toHaveClass('my-4');
 
-		const headerContainer = screen.getByRole('heading', { level: 1 }).parentElement;
+		const headerContainer = screen.getByRole('heading', { level: 1 }).closest('.text-center');
 		expect(headerContainer).toHaveClass('text-center');
 	});
 

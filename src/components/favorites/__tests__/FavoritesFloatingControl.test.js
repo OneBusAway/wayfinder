@@ -76,7 +76,7 @@ describe('FavoritesFloatingControl', () => {
 
 		const dialog = screen.getByRole('dialog', { name: 'Favorites' });
 		expect(dialog).toBeInTheDocument();
-		expect(dialog).toHaveAttribute('aria-modal', 'true');
+		expect(dialog).not.toHaveAttribute('aria-modal');
 		expect(dialog).toHaveAttribute('id');
 		expect(dialog).toHaveFocus();
 		expect(screen.getByText('No favorites yet')).toBeInTheDocument();
