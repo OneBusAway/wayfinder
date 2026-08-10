@@ -3,20 +3,19 @@
 	import { env } from '$env/dynamic/public';
 	import { slide } from 'svelte/transition';
 	import {
-		faWalking,
-		faBus,
-		faTrain,
-		faChevronDown,
-		faChevronUp,
-		faFerry,
-		faTrainSubway,
-		faRulerCombined,
-		faClock,
-		faArrowRight,
-		faArrowAltCircleRight,
-		faArrowLeft
-	} from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+		ArrowLeft,
+		ArrowRight,
+		BusFront,
+		ChevronDown,
+		ChevronUp,
+		CircleArrowRight,
+		Clock,
+		Footprints,
+		Ruler,
+		Ship,
+		TrainFrontTunnel,
+		TramFront
+	} from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 	import { formatDistance } from '$lib/distanceUtils';
 	import { effectiveDistanceUnit } from '$stores/tripOptionsStore';
@@ -43,38 +42,38 @@
 		switch (mode) {
 			case 'WALK':
 				return {
-					icon: faWalking,
+					icon: Footprints,
 					iconColor: 'text-blue-600',
 					bgColor: 'bg-blue-100 dark:bg-blue-900/50'
 				};
 			case 'BUS':
 				return {
-					icon: faBus,
+					icon: BusFront,
 					iconColor: 'text-brand-accent',
 					bgColor: 'bg-green-100 dark:bg-green-900/50'
 				};
 			case 'TRAIN':
 			case 'RAIL':
 				return {
-					icon: faTrain,
+					icon: TramFront,
 					iconColor: 'text-red-600',
 					bgColor: 'bg-red-100 dark:bg-red-900/50'
 				};
 			case 'FERRY':
 				return {
-					icon: faFerry,
+					icon: Ship,
 					iconColor: 'text-cyan-600',
 					bgColor: 'bg-cyan-100 dark:bg-cyan-900/50'
 				};
 			case 'LIGHT_RAIL':
 				return {
-					icon: faTrainSubway,
+					icon: TrainFrontTunnel,
 					iconColor: 'text-purple-600',
 					bgColor: 'bg-purple-100 dark:bg-purple-900/50'
 				};
 			case 'TRAM':
 				return {
-					icon: faTrainSubway,
+					icon: TramFront,
 					iconColor: 'text-orange-600',
 					bgColor: 'bg-orange-100 dark:bg-orange-900/50'
 				};
@@ -88,6 +87,7 @@
 	}
 
 	let modeConfig = $derived(getModeConfig(leg.mode));
+	let ModeIcon = $derived(modeConfig.icon);
 
 	// Computed style/class pairs to avoid template duplication
 	let colorStyles = $derived.by(() => {
@@ -134,10 +134,9 @@
 		class="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full shadow-md ring-4 ring-white dark:ring-gray-900 {colorStyles.iconClass}"
 		style={colorStyles.iconStyle}
 	>
-		{#if modeConfig.icon}
-			<FontAwesomeIcon
-				icon={modeConfig.icon}
-				class="{colorStyles.iconColorClass} text-lg"
+		{#if ModeIcon}
+			<ModeIcon
+				class="{colorStyles.iconColorClass} h-5 w-5"
 				style={colorStyles.iconColor ? `color: ${colorStyles.iconColor}` : ''}
 			/>
 		{/if}
@@ -157,13 +156,13 @@
 
 		<!-- Times -->
 		<div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-			<div class="flex items-center text-gray-600 dark:text-gray-300">
-				<FontAwesomeIcon icon={faClock} class="mr-1.5 h-3 w-3 text-blue-500" />
+			<div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+				<Clock class="h-3.5 w-3.5 shrink-0 text-blue-500" />
 				<span>{$t('trip-planner.start')}:</span>
 				<span class="ml-1 font-semibold">{msToTimeString(leg.startTime, regionTz)}</span>
 			</div>
-			<div class="flex items-center text-gray-600 dark:text-gray-300">
-				<FontAwesomeIcon icon={faClock} class="mr-1.5 h-3 w-3 text-red-500" />
+			<div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+				<Clock class="h-3.5 w-3.5 shrink-0 text-red-500" />
 				<span>{$t('trip-planner.end')}:</span>
 				<span class="ml-1 font-semibold">{msToTimeString(leg.endTime, regionTz)}</span>
 			</div>
@@ -171,32 +170,32 @@
 
 		<!-- Details -->
 		<div class="mt-3 space-y-1.5 text-sm text-gray-600 dark:text-gray-300">
-			<div class="flex items-center">
-				<FontAwesomeIcon icon={faArrowLeft} class="mr-2 h-3 w-3 text-brand" />
+			<div class="flex items-center gap-2.5">
+				<ArrowLeft class="h-3.5 w-3.5 shrink-0 text-brand" />
 				<span>{leg.from.name}</span>
 			</div>
 
-			<div class="flex items-center">
-				<FontAwesomeIcon icon={faArrowRight} class="mr-2 h-3 w-3 text-brand" />
+			<div class="flex items-center gap-2.5">
+				<ArrowRight class="h-3.5 w-3.5 shrink-0 text-brand" />
 				<span>{leg.to.name}</span>
 			</div>
-			<div class="flex items-center">
-				<FontAwesomeIcon icon={faRulerCombined} class="mr-2 h-3 w-3 text-gray-400" />
+			<div class="flex items-center gap-2.5">
+				<Ruler class="h-3.5 w-3.5 shrink-0 text-gray-400" />
 				<span
 					>{$t('trip-planner.distance')}
 					{formatDistance(leg.distance, $effectiveDistanceUnit, $t)}</span
 				>
 			</div>
-			<div class="flex items-center">
-				<FontAwesomeIcon icon={faClock} class="mr-2 h-3 w-3 text-gray-400" />
+			<div class="flex items-center gap-2.5">
+				<Clock class="h-3.5 w-3.5 shrink-0 text-gray-400" />
 				<span
 					>{$t('trip-planner.duration')}: {Math.round(leg.duration / 60)} {$t('time.minutes')}</span
 				>
 			</div>
 			{#if isInterline}
 				<!-- Interline indicator -->
-				<div class="flex items-center text-sm text-amber-900 dark:text-amber-200">
-					<FontAwesomeIcon icon={faArrowAltCircleRight} class="mr-2 h-3 w-3 text-gray-400" />
+				<div class="flex items-center gap-2.5 text-sm text-amber-900 dark:text-amber-200">
+					<CircleArrowRight class="h-3.5 w-3.5 shrink-0 text-gray-400" />
 					<span class="font-medium">
 						{$t('trip-planner.stay_on_board', { values: { route: nextLegRouteName } })}
 					</span>
@@ -210,10 +209,11 @@
 				class="mt-3 flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-brand-accent transition-colors hover:bg-gray-100 dark:text-brand dark:hover:bg-gray-800"
 				onclick={() => toggleSteps(index)}
 			>
-				<FontAwesomeIcon
-					icon={expandedSteps[index] ? faChevronUp : faChevronDown}
-					class="h-3 w-3 transition-transform duration-200"
-				/>
+				{#if expandedSteps[index]}
+					<ChevronUp class="h-3 w-3 transition-transform duration-200" />
+				{:else}
+					<ChevronDown class="h-3 w-3 transition-transform duration-200" />
+				{/if}
 				{expandedSteps[index] ? $t('trip-planner.hide_steps') : $t('trip-planner.show_steps')}
 			</button>
 
@@ -228,12 +228,12 @@
 								{step.relativeDirection} on {step.streetName}
 							</div>
 							<div class="mt-1 flex flex-wrap gap-x-4 text-gray-500 dark:text-gray-400">
-								<span class="flex items-center gap-1">
-									<FontAwesomeIcon icon={faRulerCombined} class="h-3 w-3" />
+								<span class="flex items-center gap-1.5">
+									<Ruler class="h-3.5 w-3.5 shrink-0" />
 									{formatDistance(step.distance, $effectiveDistanceUnit, $t)}
 								</span>
-								<span class="flex items-center gap-1">
-									<FontAwesomeIcon icon={faArrowAltCircleRight} class="h-3 w-3" />
+								<span class="flex items-center gap-1.5">
+									<CircleArrowRight class="h-3.5 w-3.5 shrink-0" />
 									{step.absoluteDirection}
 								</span>
 							</div>

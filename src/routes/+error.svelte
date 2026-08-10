@@ -1,15 +1,7 @@
 <script>
 	import { page } from '$app/stores';
 	import { _ } from 'svelte-i18n';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import {
-		faMap,
-		faBan,
-		faTriangleExclamation,
-		faCircleExclamation,
-		faHome,
-		faArrowLeft
-	} from '@fortawesome/free-solid-svg-icons';
+	import { ArrowLeft, Ban, CircleAlert, House, Map, TriangleAlert } from '@lucide/svelte';
 
 	const status = $derived($page.status);
 	const errorMessage = $derived($page.error?.message || '');
@@ -19,13 +11,13 @@
 	);
 
 	const icons = {
-		404: faMap,
-		403: faBan,
-		500: faTriangleExclamation,
-		generic: faCircleExclamation
+		404: Map,
+		403: Ban,
+		500: TriangleAlert,
+		generic: CircleAlert
 	};
 
-	const icon = $derived(icons[errorKey] || icons.generic);
+	const Icon = $derived(icons[errorKey] || icons.generic);
 
 	// Hardcoded fallback titles for when i18n isn't initialized yet.
 	// NOTE: These English fallbacks duplicate the "error" block in src/locales/en.json.
@@ -77,7 +69,7 @@
 >
 	<div class="flex flex-col items-center px-6 py-12 text-center">
 		<div class="mb-6 flex items-center justify-center">
-			<FontAwesomeIcon {icon} class="text-4xl text-brand-accent dark:text-brand" />
+			<Icon class="h-10 w-10 text-brand-accent dark:text-brand" />
 		</div>
 
 		<p
@@ -109,7 +101,7 @@
 
 		<div class="flex gap-3">
 			<a href="/" class="button--primary inline-flex items-center gap-2" id="error-go-home">
-				<FontAwesomeIcon icon={faHome} class="text-sm" />
+				<House class="h-4 w-4" />
 				{goHomeText}
 			</a>
 			<button
@@ -123,7 +115,7 @@
 				class="button inline-flex items-center gap-2 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-gray-700"
 				id="error-go-back"
 			>
-				<FontAwesomeIcon icon={faArrowLeft} class="text-sm" />
+				<ArrowLeft class="h-4 w-4" />
 				{goBackText}
 			</button>
 		</div>

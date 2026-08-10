@@ -1,16 +1,14 @@
 <script>
 	// @ts-check
-	import { faCaretUp } from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { ChevronUp } from '@lucide/svelte';
 
 	/**
-	 * @typedef {import('@fortawesome/free-solid-svg-icons').IconDefinition} IconDefinition
 	 * @typedef {import('$lib/types').Stop} Stop
 	 *
 	 * @typedef {Object} Props
 	 * @property {Stop} stop
 	 * @property {(event: MouseEvent) => void} onClick
-	 * @property {IconDefinition} icon
+	 * @property {import('svelte').Component} icon - Lucide icon component for the route type
 	 * @property {boolean} [isHighlighted]
 	 * @property {boolean} [showRoutesLabel]
 	 * @property {'full'|'routeDot'|'muted'} [emphasis] - Marker prominence, decided by the map
@@ -22,7 +20,7 @@
 	let {
 		stop,
 		onClick,
-		icon,
+		icon: Icon,
 		isHighlighted = false,
 		showRoutesLabel = false,
 		emphasis = 'full',
@@ -103,10 +101,10 @@
 		{#if isFullPin}
 			<span class="custom-marker dark:border-[#5a2c2c] {isHighlighted ? 'highlight' : ''}">
 				<span class="bus-icon dark:text-white">
-					<FontAwesomeIcon {icon} class=" text-black" />
+					<Icon class="h-6 w-6 text-black" strokeWidth={2.75} />
 					{#if stop.direction}
 						<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
-							<FontAwesomeIcon icon={faCaretUp} />
+							<ChevronUp size={20} />
 						</span>
 					{/if}
 				</span>
@@ -216,7 +214,7 @@
 	}
 
 	.bus-icon {
-		font-size: 20px;
+		font-size: 24px;
 		color: #000;
 	}
 

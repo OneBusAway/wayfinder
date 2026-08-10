@@ -6,10 +6,6 @@ import ServiceAlerts from '../ServiceAlerts.svelte';
 import { modalOpen } from '$src/stores/modalOpen';
 import { mockServiceAlertsData } from '../../../tests/fixtures/obaData.js';
 
-vi.mock('@fortawesome/svelte-fontawesome', () => ({
-	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
-}));
-
 vi.mock('flowbite-svelte', () => ({
 	Modal: vi.fn(() => ({ $$: { component: 'div' } }))
 }));

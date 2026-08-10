@@ -7,8 +7,7 @@
 -->
 
 <script>
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faMagnifyingGlass, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+	import { Search, ArrowRight } from '@lucide/svelte';
 	import '$lib/i18n.js';
 	import { t } from 'svelte-i18n';
 
@@ -20,7 +19,7 @@
 	{onclick}
 	class="pointer-events-auto flex w-full items-center gap-2.5 rounded-lg border border-gray-300 bg-white/95 px-3.5 py-2.5 text-sm text-gray-500 shadow-md backdrop-blur-sm dark:border-gray-600 dark:bg-surface-dark/95 dark:text-gray-400 md:hidden"
 >
-	<FontAwesomeIcon icon={faMagnifyingGlass} class="text-[13px]" />
+	<Search class="h-[13px] w-[13px]" />
 	<span class="flex-1 truncate text-left">{$t('search.placeholder')}</span>
-	<FontAwesomeIcon icon={faArrowRight} class="rotate-rtl text-black dark:text-white" />
+	<ArrowRight class="rotate-rtl h-3.5 w-3.5 text-black dark:text-white" />
 </button>
