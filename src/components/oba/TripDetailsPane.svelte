@@ -1,13 +1,7 @@
 <script>
 	import { _ } from 'svelte-i18n';
 	import { onMount, onDestroy } from 'svelte';
-	import {
-		faBus,
-		faLocationDot,
-		faCheck,
-		faTowerBroadcast
-	} from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { BusFront, Check, MapPin, RadioTower } from '@lucide/svelte';
 	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
 	import { resolveVehicleStopIndex, buildStopSegments } from '$lib/tripDetailsUtils';
 
@@ -113,7 +107,7 @@
 	{:else if tripDetails}
 		{#if tripDetails.status?.vehicleId}
 			<h2 class="flex items-center gap-2 text-sm font-semibold">
-				<FontAwesomeIcon icon={faTowerBroadcast} class="text-brand" />
+				<RadioTower class="h-4 w-4 text-brand" />
 				{$_('trip_details.live_vehicle', { values: { vehicleId: tripDetails.status.vehicleId } })}
 			</h2>
 		{:else if routeInfo}
@@ -176,18 +170,15 @@
 										: ''}"
 								>
 									{#if index === busPosition}
-										<FontAwesomeIcon
-											icon={faBus}
-											class="text-sm text-white dark:text-neutral-900"
-										/>
+										<BusFront class="h-4 w-4 text-white dark:text-neutral-900" />
 										{#if tripStop.stopId === stop.id}
-											<FontAwesomeIcon
-												icon={faCheck}
-												class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
+											<Check
+												class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-0.5 text-white"
+												size={14}
 											/>
 										{/if}
 									{:else if tripStop.stopId === stop.id}
-										<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
+										<MapPin class="h-5 w-5 text-brand-accent" />
 									{:else}
 										<div
 											class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"

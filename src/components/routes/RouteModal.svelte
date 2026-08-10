@@ -15,8 +15,7 @@
 <script>
 	import StopItem from '$components/StopItem.svelte';
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faX } from '@fortawesome/free-solid-svg-icons';
+	import { X } from '@lucide/svelte';
 	import { keybinding } from '$lib/keybinding';
 	import { t } from 'svelte-i18n';
 
@@ -68,7 +67,7 @@
 				use:keybinding={{ code: 'Escape' }}
 				class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-gray-200 text-sm text-black hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
 			>
-				<FontAwesomeIcon icon={faX} />
+				<X class="h-4 w-4" />
 				<span class="sr-only">{$t('sheet.close')}</span>
 			</button>
 		</div>

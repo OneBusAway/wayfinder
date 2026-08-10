@@ -3,10 +3,6 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import ServiceAlertItem from '../ServiceAlertItem.svelte';
 
-vi.mock('@fortawesome/svelte-fontawesome', () => ({
-	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
-}));
-
 // Local i18n mock that interpolates {values} so we can assert severity lands
 // in the accessible name (the global vitest-setup mock returns the bare key).
 vi.mock('svelte-i18n', () => {

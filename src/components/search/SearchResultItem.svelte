@@ -2,16 +2,15 @@
 	import { createBubbler } from 'svelte/legacy';
 
 	const bubble = createBubbler();
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	/**
 	 * @typedef {Object} Props
-	 * @property {import('@fortawesome/fontawesome-svg-core').IconDefinition | null} [icon]
+	 * @property {import('svelte').Component | null} [icon]
 	 * @property {string | null} [title]
 	 * @property {string | null} [subtitle]
 	 */
 
 	/** @type {Props} */
-	let { icon = null, title = null, subtitle = null } = $props();
+	let { icon: Icon = null, title = null, subtitle = null } = $props();
 </script>
 
 <button
@@ -23,7 +22,9 @@
 		<div
 			class="flex h-12 w-12 min-w-12 max-w-12 items-center justify-center rounded-full bg-gray-200"
 		>
-			<FontAwesomeIcon {icon} class="text-2xl text-gray-800" />
+			{#if Icon}
+				<Icon class="h-6 w-6 text-gray-800" />
+			{/if}
 		</div>
 
 		<div>

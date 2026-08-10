@@ -1,10 +1,6 @@
 <script>
 	import { modalOpen } from '$src/stores/modalOpen';
-	import {
-		faChevronLeft,
-		faChevronRight as faChevronRightPagination
-	} from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import { Modal } from 'flowbite-svelte';
 	import ServiceAlertItem from './ServiceAlertItem.svelte';
 	import { t } from 'svelte-i18n';
@@ -133,7 +129,7 @@
 						onclick={() => goToPage(currentPage - 1)}
 						disabled={currentPage === 1}
 					>
-						<FontAwesomeIcon icon={faChevronLeft} class="h-4 w-4" />
+						<ChevronLeft class="h-4 w-4" />
 					</button>
 					<span class="text-sm text-gray-700 dark:text-gray-300">
 						{$t('service_alerts.page')}
@@ -145,7 +141,7 @@
 						onclick={() => goToPage(currentPage + 1)}
 						disabled={currentPage === totalPages}
 					>
-						<FontAwesomeIcon icon={faChevronRightPagination} class="h-4 w-4" />
+						<ChevronRight class="h-4 w-4" />
 					</button>
 				</div>
 			{/if}

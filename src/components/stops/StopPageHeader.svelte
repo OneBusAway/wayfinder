@@ -1,6 +1,5 @@
 <script>
-	import { faMapMarkerAlt, faArrowLeft, faMap } from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { ArrowLeft, Map, MapPin } from '@lucide/svelte';
 	import CompassArrow from '$components/controls/CompassArrow.svelte';
 	import TabContainer from '$components/tabs/TabContainer.svelte';
 	import TabLink from '$components/tabs/TabLink.svelte';
@@ -17,8 +16,8 @@
 			href="/"
 			class="inline-flex items-center gap-2 rounded-md bg-brand-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-accent-dark focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2"
 		>
-			<FontAwesomeIcon icon={faArrowLeft} class="h-4 w-4" />
-			<FontAwesomeIcon icon={faMap} class="h-4 w-4" />
+			<ArrowLeft class="h-4 w-4" />
+			<Map class="h-4 w-4" />
 			{$isLoading ? '' : $t('navigation.back_to_map')}
 		</a>
 	</div>
@@ -29,7 +28,7 @@
 		</h1>
 		<div class="text-normal mt-2 flex items-center justify-center gap-x-8 text-gray-700">
 			<div class="rounded-md bg-gray-50 px-2 py-1">
-				<FontAwesomeIcon icon={faMapMarkerAlt} />
+				<MapPin class="inline h-4 w-4" />
 				<strong>{$isLoading ? '' : $t('schedule_for_stop.stop_id')}:</strong>
 				{removeAgencyPrefix(stopId)}
 			</div>

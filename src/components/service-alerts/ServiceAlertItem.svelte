@@ -1,11 +1,5 @@
 <script>
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import {
-		faCircleExclamation,
-		faTriangleExclamation,
-		faCircleInfo,
-		faChevronRight
-	} from '@fortawesome/free-solid-svg-icons';
+	import { ChevronRight, CircleAlert, Info, TriangleAlert } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';
 	import {
@@ -20,17 +14,17 @@
 
 	const SEVERITY_UI = {
 		severe: {
-			icon: faTriangleExclamation,
+			icon: TriangleAlert,
 			iconClass: 'text-red-600 dark:text-red-400',
 			badgeClass: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
 		},
 		warning: {
-			icon: faCircleExclamation,
+			icon: CircleAlert,
 			iconClass: 'text-amber-600 dark:text-amber-400',
 			badgeClass: 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200'
 		},
 		info: {
-			icon: faCircleInfo,
+			icon: Info,
 			iconClass: 'text-blue-600 dark:text-blue-400',
 			badgeClass: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'
 		}
@@ -38,6 +32,7 @@
 
 	let severity = $derived(normalizeSeverity(alert));
 	let severityUi = $derived(SEVERITY_UI[severity]);
+	let SeverityIcon = $derived(severityUi.icon);
 	let severityLabel = $derived($t(`service_alerts.severity_${severity}`));
 	let summaryText = $derived(
 		alert?.summary?.value || alert?.description?.value || $t('service_alerts.service_alert')
@@ -57,11 +52,7 @@
 	onclick={() => openModal(alert)}
 >
 	<div class="mt-2 flex-shrink-0" aria-hidden="true">
-		<FontAwesomeIcon
-			icon={severityUi.icon}
-			class={severityUi.iconClass}
-			style="width: 1.4rem; height: 1.4rem;"
-		/>
+		<SeverityIcon class="h-[1.4rem] w-[1.4rem] {severityUi.iconClass}" />
 	</div>
 	<div class="min-w-0 flex-1">
 		<div class="flex flex-wrap items-center gap-2">
@@ -84,6 +75,6 @@
 		{/if}
 	</div>
 	<div class="ml-2 flex-shrink-0 self-center" aria-hidden="true">
-		<FontAwesomeIcon icon={faChevronRight} class="h-5 w-5 text-gray-400" />
+		<ChevronRight class="h-5 w-5 text-gray-400" />
 	</div>
 </button>

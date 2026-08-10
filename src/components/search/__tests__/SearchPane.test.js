@@ -20,9 +20,12 @@ vi.mock('$lib/mathUtils', () => ({
 	calculateMidpoint: vi.fn().mockReturnValue({ lat: 47.6062, lon: -122.3321 })
 }));
 
-vi.mock('$config/routeConfig', () => ({
-	prioritizedRouteTypeForDisplay: vi.fn().mockReturnValue('bus')
-}));
+vi.mock('$config/routeConfig', async () => {
+	const { BusFront } = await import('@lucide/svelte');
+	return {
+		prioritizedRouteTypeForDisplay: vi.fn().mockReturnValue(BusFront)
+	};
+});
 
 vi.mock('$stores/mapStore', () => ({
 	isMapLoaded: createMockStore(true)

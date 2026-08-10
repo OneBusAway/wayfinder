@@ -109,10 +109,9 @@ describe('StopPageHeader', () => {
 		expect(directionSection).toHaveClass('rounded-md', 'bg-gray-50', 'px-2', 'py-1');
 	});
 
-	test('includes FontAwesome map marker icon', () => {
+	test('includes map marker icon', () => {
 		render(StopPageHeader, { props: defaultProps });
 
-		// Check if the icon is rendered (FontAwesome icon should be present)
 		const stopIdSection = screen.getByText('Stop ID:').parentElement;
 		expect(stopIdSection.querySelector('svg')).toBeInTheDocument();
 	});

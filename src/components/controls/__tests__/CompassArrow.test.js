@@ -58,7 +58,7 @@ describe('CompassArrow', () => {
 		expect(updatedSpan).not.toHaveClass('hidden');
 	});
 
-	test('renders the FontAwesome arrow SVG inside the wrapper', () => {
+	test('renders the arrow SVG inside the wrapper', () => {
 		const { container } = render(CompassArrow, { props: { stopDirection: 'N' } });
 		const span = getArrowSpan(container);
 
