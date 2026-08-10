@@ -9,26 +9,30 @@ const MS_IN_MINS = 60000;
 
 /**
  * Produces a stable composite key for an arrival, used to identify the same
- * trip across successive poll responses.
+ * trip visit across successive poll responses. stopSequence is required so a
+ * loop/circulator that serves the same stop twice in one trip does not share
+ * a keyed {#each} identity.
  *
- * @param {{ tripId: string, serviceDate: number }} arrival
+ * @param {{ tripId: string, serviceDate: number, stopSequence?: number }} arrival
  * @returns {string} Stable composite key for diffing across polls
  */
 export function makeKey(arrival) {
-	return `${arrival.tripId}_${arrival.serviceDate}`;
+	return `${arrival.tripId}_${arrival.serviceDate}_${arrival.stopSequence}`;
 }
 
 /**
  * Filters out arrivals whose best estimated time of arrival (ETA) is negative,
- * meaning the bus has already departed the stop.
+ * meaning the vehicle has already arrived at the stop (as the row displays it).
  *
  * ETA is computed as:
  *   bestTimeMins - nowMins
- * where bestTime is the predicted time when prediction is available and > 0,
- * otherwise the scheduled time.
+ * where bestTime is the predicted arrival time when prediction is available
+ * and > 0, otherwise the scheduled arrival time.
  *
- * For stopSequence === 0 (first stop in a trip), departure times are used
- * instead of arrival times.
+ * Must stay aligned with ArrivalDeparture.svelte, which defaults
+ * `stopSequence || 1` and therefore always renders an arrival-time ETA.
+ * Do not special-case stopSequence === 0 here or first-stop layover rows
+ * will show "arrived N min ago" while remaining in the list.
  *
  * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
  * @param {number} now - Current time in milliseconds since epoch
@@ -40,29 +44,11 @@ export function filterDeparted(arrivals, now) {
 	const nowMins = Math.floor(now / MS_IN_MINS);
 
 	return arrivals.filter((arrival) => {
-		let bestTime;
+		const predictedArrival = arrival.predictedArrivalTime;
+		const scheduledArrival = arrival.scheduledArrivalTime;
 
-		if (arrival.stopSequence === 0) {
-			// First stop in trip — use departure times
-			const bestPredictedDeparture = arrival.predictedDepartureTime;
-			const scheduledDeparture = arrival.scheduledDepartureTime;
-
-			if (arrival.predicted && bestPredictedDeparture > 0) {
-				bestTime = bestPredictedDeparture;
-			} else {
-				bestTime = scheduledDeparture;
-			}
-		} else {
-			// All other stops — use arrival times
-			const bestPredictedArrival = arrival.predictedArrivalTime;
-			const scheduledArrival = arrival.scheduledArrivalTime;
-
-			if (arrival.predicted && bestPredictedArrival > 0) {
-				bestTime = bestPredictedArrival;
-			} else {
-				bestTime = scheduledArrival;
-			}
-		}
+		const bestTime =
+			arrival.predicted && predictedArrival > 0 ? predictedArrival : scheduledArrival;
 
 		const eta = Math.floor(bestTime / MS_IN_MINS) - nowMins;
 		return eta >= 0;
