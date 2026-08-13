@@ -444,3 +444,57 @@ describe('TripPlanModal partial-shape warnings', () => {
 		expect(get(notifications)?.id).toBe(otherId);
 	});
 });
+
+describe('TripPlanModal showForm embedding', () => {
+	it('embeds the plan form when showForm is true and skips empty state before planning', async () => {
+		const mapProvider = makeMapProvider();
+		const { queryByText, unmount } = render(TripPlanModal, {
+			props: {
+				mapProvider,
+				itineraries: [],
+				closePane: vi.fn(),
+				snap: 'half',
+				showForm: true,
+				handleTripPlan: vi.fn(),
+				clearTripItineraries: vi.fn()
+			}
+		});
+
+		await vi.waitFor(() => {
+			expect(document.querySelector('#from-location-input')).toBeInTheDocument();
+		});
+		expect(document.querySelector('#to-location-input')).toBeInTheDocument();
+		expect(queryByText('trip-planner.no_itineraries_found')).toBeNull();
+		expect(mapProvider.fitToPolylines).not.toHaveBeenCalled();
+
+		unmount();
+	});
+
+	it('shows the empty state on mobile after a plan returns zero itineraries', async () => {
+		const mapProvider = makeMapProvider();
+		const { getByText, unmount } = render(TripPlanModal, {
+			props: {
+				mapProvider,
+				itineraries: [],
+				closePane: vi.fn(),
+				snap: 'half',
+				showForm: true,
+				hasPlanned: true,
+				handleTripPlan: vi.fn(),
+				clearTripItineraries: vi.fn()
+			}
+		});
+
+		let message;
+		await vi.waitFor(() => {
+			message = getByText('trip-planner.no_itineraries_found');
+			expect(message).toBeInTheDocument();
+		});
+
+		// On the mobile sheet the empty state sits below the form, so it must size
+		// to its content — h-full would center it past the visible body.
+		expect(message.closest('div').className).not.toContain('h-full');
+
+		unmount();
+	});
+});

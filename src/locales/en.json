@@ -58,6 +58,7 @@
 		"remove_recent_trip": "Remove recent trip",
 		"recent_trip": "Use recent trip from {from} to {to}",
 		"recent_searches": "Recent Searches",
+		"recents": "Recents",
 		"clear_all": "Clear All",
 		"request_failed": "We couldn't reach the trip planning service. Please try again.",
 		"invalid_shared_link": "This shared trip link looks broken. Try planning the trip again."
@@ -87,7 +88,14 @@
 		"snap_peek": "Collapsed"
 	},
 	"survey": {
-		"required_question": "Required question"
+		"required_question": "Required question",
+		"required_answer": "This question is required.",
+		"expand": "Show question",
+		"collapse": "Hide question",
+		"dismiss": "Dismiss survey",
+		"submit": "Submit",
+		"next": "Next",
+		"submit_failed": "Couldn't send your answer. Please try again."
 	},
 	"header": {
 		"home": "Home",

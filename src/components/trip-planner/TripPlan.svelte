@@ -5,7 +5,7 @@
 	import OptionsPill from './OptionsPill.svelte';
 	import { browser } from '$app/environment';
 	import { t } from 'svelte-i18n';
-	import { ArrowLeftRight } from '@lucide/svelte';
+	import { ArrowLeftRight, History } from '@lucide/svelte';
 	import {
 		tripOptions,
 		showTripOptionsModal,
@@ -40,6 +40,9 @@
 	let loading = $state(false);
 	let fromRequestId = 0;
 	let toRequestId = 0;
+	// Recent trips stay behind a compact control so the plan form doesn't grow
+	// a tall history list under From/To (see #577).
+	let showRecentTrips = $state(false);
 
 	async function fetchAutocompleteResults(query) {
 		const response = await fetch(`/api/oba/place-suggestions?query=${encodeURIComponent(query)}`);
@@ -83,6 +86,10 @@
 	}
 
 	async function handleSearchInput(query, isFrom) {
+		// Retyping a field starts a new trip, so drop any prior results/empty-state
+		// (and the parent's hasPlanned flag) instead of letting "No itineraries
+		// found" linger under the form while the rider edits.
+		clearTripItineraries();
 		if (query.trim() === '') {
 			if (isFrom) fromResults = [];
 			else toResults = [];
@@ -396,6 +403,7 @@
 	});
 
 	async function handleRecentTripSelect(trip) {
+		showRecentTrips = false;
 		fromPlace = trip.fromPlace;
 		toPlace = trip.toPlace;
 		selectedFrom = trip.fromCoords;
@@ -502,14 +510,31 @@
 	{/if}
 
 	<!-- Button Row -->
-	<div class="mt-4 flex items-center gap-2">
+	<div class="mt-4 flex items-stretch gap-2">
 		<button
 			type="button"
 			onclick={() => showTripOptionsModal.set(true)}
-			class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+			class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
 		>
 			{$t('trip-planner.options')}
 		</button>
+		{#if $recentTrips.length > 0}
+			<button
+				type="button"
+				onclick={() => (showRecentTrips = !showRecentTrips)}
+				aria-expanded={showRecentTrips}
+				aria-controls="trip-plan-recent-trips"
+				class="inline-flex items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+				class:border-brand-accent={showRecentTrips}
+				class:text-brand-accent={showRecentTrips}
+				class:dark:border-brand={showRecentTrips}
+				class:dark:text-brand={showRecentTrips}
+			>
+				<History class="h-3.5 w-3.5" />
+				<span class="hidden md:inline">{$t('trip-planner.recents')}</span>
+				<span class="sr-only md:hidden">{$t('trip-planner.recent_searches')}</span>
+			</button>
+		{/if}
 		<div class="flex-1"></div>
 		<button
 			onclick={planTrip}
@@ -535,5 +560,9 @@
 		</button>
 	</div>
 
-	<RecentTripsList onSelect={handleRecentTripSelect} />
+	{#if showRecentTrips && $recentTrips.length > 0}
+		<div id="trip-plan-recent-trips">
+			<RecentTripsList onSelect={handleRecentTripSelect} />
+		</div>
+	{/if}
 </div>

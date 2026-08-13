@@ -16,6 +16,29 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 	disconnect: vi.fn()
 }));
 
+// Mock the Web Animations API. jsdom does not implement `Element.animate()`,
+// but Svelte 5's `transition:` directives (e.g. the `slide` transition used
+// by SurveyBanner.svelte) call it directly to drive the intro/outro
+// lifecycle. This fakes just enough of the returned Animation's surface —
+// `onfinish`, `cancel()`, `effect`, `currentTime` — for that lifecycle to
+// run: assigning `onfinish` schedules it to fire on the next microtask, the
+// same way a real (near-instant, zero/short-duration) animation would, so
+// the transition's introstart/introend callbacks still complete.
+Element.prototype.animate = function () {
+	const animation = {
+		cancel: vi.fn(),
+		effect: null,
+		currentTime: 0,
+		startTime: 0,
+		playbackRate: 1,
+		playState: 'finished',
+		finished: Promise.resolve(),
+		onfinish: null
+	};
+	queueMicrotask(() => animation.onfinish?.());
+	return animation;
+};
+
 // Mock dynamic environment variables (fallback for tests that don't provide their own mock).
 // Test files that need to mutate env values should declare their own vi.mock with a getter pattern.
 vi.mock('$env/dynamic/public', () => ({
