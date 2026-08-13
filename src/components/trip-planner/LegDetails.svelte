@@ -171,12 +171,12 @@
 		<!-- Details -->
 		<div class="mt-3 space-y-1.5 text-sm text-gray-600 dark:text-gray-300">
 			<div class="flex items-center gap-2.5">
-				<ArrowLeft class="h-3.5 w-3.5 shrink-0 text-brand" />
+				<ArrowLeft class="rotate-rtl h-3.5 w-3.5 shrink-0 text-brand" />
 				<span>{leg.from.name}</span>
 			</div>
 
 			<div class="flex items-center gap-2.5">
-				<ArrowRight class="h-3.5 w-3.5 shrink-0 text-brand" />
+				<ArrowRight class="rotate-rtl h-3.5 w-3.5 shrink-0 text-brand" />
 				<span>{leg.to.name}</span>
 			</div>
 			<div class="flex items-center gap-2.5">
@@ -195,7 +195,7 @@
 			{#if isInterline}
 				<!-- Interline indicator -->
 				<div class="flex items-center gap-2.5 text-sm text-amber-900 dark:text-amber-200">
-					<CircleArrowRight class="h-3.5 w-3.5 shrink-0 text-gray-400" />
+					<CircleArrowRight class="rotate-rtl h-3.5 w-3.5 shrink-0 text-gray-400" />
 					<span class="font-medium">
 						{$t('trip-planner.stay_on_board', { values: { route: nextLegRouteName } })}
 					</span>
@@ -233,7 +233,7 @@
 									{formatDistance(step.distance, $effectiveDistanceUnit, $t)}
 								</span>
 								<span class="flex items-center gap-1.5">
-									<CircleArrowRight class="h-3.5 w-3.5 shrink-0" />
+									<CircleArrowRight class="rotate-rtl h-3.5 w-3.5 shrink-0" />
 									{step.absoluteDirection}
 								</span>
 							</div>
