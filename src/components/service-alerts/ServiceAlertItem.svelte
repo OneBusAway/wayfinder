@@ -75,6 +75,6 @@
 		{/if}
 	</div>
 	<div class="ml-2 flex-shrink-0 self-center" aria-hidden="true">
-		<ChevronRight class="h-5 w-5 text-gray-400" />
+		<ChevronRight class="rotate-rtl h-5 w-5 text-gray-400" />
 	</div>
 </button>

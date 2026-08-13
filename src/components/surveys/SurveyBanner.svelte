@@ -109,10 +109,10 @@
 				</span>
 				<span class="flex-none text-gray-500 dark:text-gray-400">
 					{#if expanded}
-					<ChevronUp class="h-4 w-4" />
-				{:else}
-					<ChevronDown class="h-4 w-4" />
-				{/if}
+						<ChevronUp class="h-4 w-4" />
+					{:else}
+						<ChevronDown class="h-4 w-4" />
+					{/if}
 				</span>
 				<span class="sr-only">{expanded ? $t('survey.collapse') : $t('survey.expand')}</span>
 			</button>

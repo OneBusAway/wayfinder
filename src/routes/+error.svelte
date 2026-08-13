@@ -115,7 +115,7 @@
 				class="button inline-flex items-center gap-2 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-gray-700"
 				id="error-go-back"
 			>
-				<ArrowLeft class="h-4 w-4" />
+				<ArrowLeft class="rotate-rtl h-4 w-4" />
 				{goBackText}
 			</button>
 		</div>

@@ -129,7 +129,7 @@
 						onclick={() => goToPage(currentPage - 1)}
 						disabled={currentPage === 1}
 					>
-						<ChevronLeft class="h-4 w-4" />
+						<ChevronLeft class="rotate-rtl h-4 w-4" />
 					</button>
 					<span class="text-sm text-gray-700 dark:text-gray-300">
 						{$t('service_alerts.page')}
@@ -141,7 +141,7 @@
 						onclick={() => goToPage(currentPage + 1)}
 						disabled={currentPage === totalPages}
 					>
-						<ChevronRight class="h-4 w-4" />
+						<ChevronRight class="rotate-rtl h-4 w-4" />
 					</button>
 				</div>
 			{/if}
