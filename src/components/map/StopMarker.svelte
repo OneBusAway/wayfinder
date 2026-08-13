@@ -1,5 +1,5 @@
 <script>
-	import { ChevronUp } from '@lucide/svelte';
+	// No Lucide caret exists; inline SVG matches the old FA faCaretUp filled triangle.
 
 	/**
 	 * @typedef {Object} Props
@@ -94,9 +94,11 @@
 				<span class="bus-icon dark:text-white">
 					<Icon class="h-6 w-6 text-black" strokeWidth={2.75} />
 					{#if stop.direction}
-						<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
-							<ChevronUp size={20} />
-						</span>
+					<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
+						<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+							<polygon points="12,4 22,20 2,20" />
+						</svg>
+					</span>
 					{/if}
 				</span>
 			</span>
