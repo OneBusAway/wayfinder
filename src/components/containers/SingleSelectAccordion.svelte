@@ -1,6 +1,6 @@
 <script>
 	import { setContext } from 'svelte';
-	import { writable, derived } from 'svelte/store';
+	import { get, writable, derived } from 'svelte/store';
 
 	// Create a store to track the active item and data.
 	const activeItem = writable(null);
@@ -25,6 +25,16 @@
 	// Provide context for child AccordionItems
 	setContext('accordion', {
 		registerItem: (id) => {
+			// An item can disappear while selected (for example, when a real-time
+			// arrival is filtered out). Clear its selection so consumers do not
+			// continue acting on data that no longer has a corresponding item.
+			$effect(() => () => {
+				if (get(activeItem) === id) {
+					activeItem.set(null);
+					activeData.set(null);
+				}
+			});
+
 			const isActive = derived(activeItem, ($activeItem) => $activeItem === id);
 			return {
 				isActive,
