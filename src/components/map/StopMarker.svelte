@@ -95,9 +95,12 @@
 					<Icon class="h-6 w-6 text-black" strokeWidth={2.75} />
 					{#if stop.direction}
 						<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
+							<!-- 12.5x20 matches the old faCaretUp element box (0.625em x 1em at
+							     the .direction-arrow font-size: 20px), so the eight positional
+							     offsets below stay correct without retuning them. -->
 							<svg
-								width="12"
-								height="12"
+								width="12.5"
+								height="20"
 								viewBox="0 0 24 24"
 								fill="currentColor"
 								aria-hidden="true"
@@ -213,7 +216,6 @@
 	}
 
 	.bus-icon {
-		font-size: 24px;
 		color: #000;
 	}
 

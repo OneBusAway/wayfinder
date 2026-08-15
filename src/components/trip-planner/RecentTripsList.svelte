@@ -1,7 +1,7 @@
 <script>
 	import { t } from 'svelte-i18n';
 	import { recentTrips } from '$stores/recentTripsStore';
-	import { RotateCcwClock, X } from '@lucide/svelte';
+	import { History, X } from '@lucide/svelte';
 
 	let { onSelect } = $props();
 
@@ -19,7 +19,7 @@
 	<div class="mt-4">
 		<div class="mb-2 flex items-center justify-between">
 			<h2 class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400">
-				<RotateCcwClock class="h-3.5 w-3.5" />
+				<History class="h-3.5 w-3.5" />
 				{$t('trip-planner.recent_searches')}
 			</h2>
 			<button
@@ -45,7 +45,7 @@
 						onclick={() => handleTripClick(trip)}
 					>
 						<div class="mr-3 text-gray-400">
-							<RotateCcwClock class="h-3.5 w-3.5" />
+							<History class="h-3.5 w-3.5" />
 						</div>
 
 						<div class="min-w-0 flex-1 text-left">
