@@ -124,6 +124,39 @@ describe('FavoritesFloatingControl', () => {
 		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 
+	it('stays open when the clicked node was detached by its own handler', async () => {
+		render(FavoritesFloatingControl);
+
+		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		// Removing a row detaches the clicked button before the window listener
+		// runs, so contains() reports it as outside. Simulate that exact shape.
+		const detached = document.createElement('button');
+		document.body.appendChild(detached);
+		detached.remove();
+
+		detached.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+		window.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+	});
+
+	it('closes when a click lands on a node outside the control', async () => {
+		render(FavoritesFloatingControl);
+
+		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		const outside = document.createElement('div');
+		document.body.appendChild(outside);
+
+		await user.click(outside);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		outside.remove();
+	});
+
 	it('closes on Escape and restores focus to the toggle', async () => {
 		render(FavoritesFloatingControl);
 

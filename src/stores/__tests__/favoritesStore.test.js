@@ -159,9 +159,18 @@ describe('favoritesStore', () => {
 		expect(value[0].lon).toBe(0);
 	});
 
-	it('should reject route entries without a shortName', () => {
-		favorites.add(makeRoute({ shortName: '' }));
-		favorites.add(makeRoute({ shortName: null }));
+	it('should keep route entries without a shortName', () => {
+		favorites.add(makeRoute({ id: '1_noshort', shortName: null }));
+		favorites.add(makeRoute({ id: '1_emptyshort', shortName: '' }));
+
+		const value = getStoreValue(favorites);
+		expect(value).toHaveLength(2);
+		expect(value.map((f) => f.id)).toEqual(['1_emptyshort', '1_noshort']);
+	});
+
+	it('should reject route entries without a usable id', () => {
+		favorites.add(makeRoute({ id: '' }));
+		favorites.add(makeRoute({ id: null }));
 		expect(getStoreValue(favorites)).toHaveLength(0);
 	});
 
@@ -178,7 +187,8 @@ describe('favoritesStore', () => {
 			makeStop({ id: '1_good' }),
 			{ type: 'stop', id: '1_bad', name: 'No coords' },
 			{ type: 'route', id: '1_r', shortName: '10' },
-			{ type: 'route', id: '1_bad_route' },
+			{ type: 'route', id: '1_no_short' },
+			{ type: 'route' },
 			null,
 			'invalid'
 		];
@@ -188,8 +198,8 @@ describe('favoritesStore', () => {
 		const mod = await import('../../stores/favoritesStore.js');
 		const value = getStoreValue(mod.favorites);
 
-		expect(value).toHaveLength(2);
-		expect(value.map((f) => f.id)).toEqual(['1_good', '1_r']);
+		expect(value).toHaveLength(3);
+		expect(value.map((f) => f.id)).toEqual(['1_good', '1_r', '1_no_short']);
 	});
 
 	it('should survive corrupted JSON in localStorage', async () => {

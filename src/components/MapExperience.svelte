@@ -34,6 +34,7 @@
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
 	import { mapStopPath } from '$lib/mapStopUrl.js';
+	import { removeAgencyPrefix } from '$lib/utils';
 	import { clearVehicleMarkersMap } from '$lib/vehicleUtils';
 	import { activeRoutesFromArrivals, assignRouteColors } from '$lib/activeRoutes.js';
 
@@ -144,15 +145,14 @@
 	 */
 	function handleFavoriteStopClick(favorite) {
 		if (!mapProvider) return;
+		// Seed the marker so the selection effect has something to highlight, then
+		// hand off. Framing is the effect's job — flying here too would fight it.
 		mapProvider.addMarker({
 			stop: favorite,
 			position: { lat: favorite.lat, lng: favorite.lon },
 			onClick: () => handleStopMarkerSelect(favorite)
 		});
-		mapProvider.flyTo(favorite.lat, favorite.lon, 20);
-		setTimeout(() => {
-			handleStopMarkerSelect(favorite);
-		}, 100);
+		handleStopMarkerSelect(favorite);
 	}
 
 	/**
@@ -161,13 +161,16 @@
 	 * @param {Object} favorite
 	 */
 	function handleFavoriteRouteClick(favorite) {
+		// The listener drives the map straight away (clearAllPolylines et al), so
+		// don't fire before MapContainer has handed us a provider.
+		if (!mapProvider) return;
 		window.dispatchEvent(
 			new CustomEvent('routeSelectedFromModal', {
 				detail: {
 					route: {
 						id: favorite.id,
 						shortName: favorite.shortName,
-						nullSafeShortName: favorite.shortName,
+						nullSafeShortName: favorite.shortName ?? removeAgencyPrefix(favorite.id),
 						description: favorite.description,
 						type: favorite.routeType
 					}

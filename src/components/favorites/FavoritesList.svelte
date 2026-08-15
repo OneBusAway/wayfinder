@@ -32,7 +32,8 @@
 
 	function itemTitle(item) {
 		if (item.type === 'stop') return item.name;
-		return `${$t('route')} ${item.shortName}`;
+		// Mirrors SearchPane: routes without a shortName fall back to the id.
+		return `${$t('route')} ${removeAgencyPrefix(item.shortName || item.id)}`;
 	}
 
 	function itemSubtitle(item) {

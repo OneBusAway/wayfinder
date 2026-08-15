@@ -55,7 +55,18 @@
 
 	function handleWindowClick(event) {
 		if (!open || !rootEl) return;
-		if (!rootEl.contains(event.target)) {
+
+		// contains() throws on a non-Node target (a click dispatched on window).
+		const target = event.target;
+		if (!(target instanceof Node)) return;
+
+		// Removing a row (or Clear All) detaches the very node that was clicked:
+		// Svelte flushes at the microtask checkpoint between listeners, so by the
+		// time this window handler runs the target is gone and contains() would
+		// report it as outside. A disconnected target came from inside the panel.
+		if (!target.isConnected) return;
+
+		if (!rootEl.contains(target)) {
 			close();
 		}
 	}

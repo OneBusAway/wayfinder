@@ -28,8 +28,11 @@ function isValidFavorite(entry) {
 		return true;
 	}
 
-	const { shortName } = /** @type {{ shortName?: unknown }} */ (entry);
-	return typeof shortName === 'string' && !!shortName;
+	// Routes can genuinely lack a shortName (the OBA data carries
+	// nullSafeShortName for exactly this), so the id alone identifies one and the
+	// list falls back to it for display. Requiring shortName here would make the
+	// star silently no-op on those routes.
+	return true;
 }
 
 /**
@@ -60,7 +63,7 @@ function normalizeFavorite(entry) {
 		schemaVersion: SCHEMA_VERSION,
 		type: 'route',
 		id: entry.id,
-		shortName: entry.shortName,
+		shortName: entry.shortName ?? null,
 		description: entry.description ?? null,
 		routeType: entry.routeType ?? null,
 		savedAt
