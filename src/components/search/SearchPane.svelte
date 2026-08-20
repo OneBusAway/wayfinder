@@ -371,14 +371,14 @@
      place there); md and up always shows it, so `collapsed` restores this root's
      own flex display at that breakpoint. -->
 <div
-	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-sm md:w-96 ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
+	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-sm dark:bg-surface-dark md:w-96 ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
 >
 	<Tabs
 		tabStyle="none"
 		role="tablist"
 		activeClasses="bg-none border-b-2 border-brand-accent py-3 px-4"
 		inactiveClasses="py-3 px-4"
-		contentClass="pt-2 pb-4 rounded-lg dark:bg-surface-dark"
+		contentClass="rounded-lg bg-transparent pt-2 pb-4"
 	>
 		<TabItem
 			open={activeTab === 'stops'}

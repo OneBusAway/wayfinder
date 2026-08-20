@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @config '../tailwind.config.js';
-@custom-variant dark (&:where(.dark, .dark *));
+/* Use :is() (not :where()) so dark: keeps specificity and can beat light utilities
+   on the same node — e.g. modal-pane's dark:bg-surface-dark vs bg-white/80. */
+@custom-variant dark (&:is(.dark, .dark *));
 
 @layer components {
 	.h1 {
