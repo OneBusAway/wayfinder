@@ -49,6 +49,13 @@
 	}
 
 	function handleKeydown(event) {
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			activeIndex = -1;
+			onDismiss();
+			return;
+		}
+
 		if (!hasResults) return;
 
 		switch (event.key) {
@@ -64,11 +71,6 @@
 				if (activeIndex < 0) return;
 				event.preventDefault();
 				handleSelect(results[activeIndex]);
-				break;
-			case 'Escape':
-				event.preventDefault();
-				activeIndex = -1;
-				onDismiss();
 				break;
 		}
 	}

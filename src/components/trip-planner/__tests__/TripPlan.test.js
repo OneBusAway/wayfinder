@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import TripPlan from '../TripPlan.svelte';
@@ -95,6 +95,65 @@ describe('TripPlan pin cleanup', () => {
 		expect(mapProvider.removePinMarker).toHaveBeenCalledTimes(2);
 		expect(mapProvider.removePinMarker).toHaveBeenCalledWith(fromMarker);
 		expect(mapProvider.removePinMarker).toHaveBeenCalledWith(toMarker);
+	});
+});
+
+describe('TripPlan autocomplete dismissal', () => {
+	let mapProvider;
+	let props;
+
+	beforeEach(() => {
+		mapProvider = {
+			addPinMarker: vi.fn(),
+			removePinMarker: vi.fn(),
+			clearAllPolylines: vi.fn()
+		};
+		props = {
+			handleTripPlan: vi.fn(),
+			clearTripItineraries: vi.fn(),
+			mapProvider
+		};
+	});
+
+	afterEach(() => {
+		vi.clearAllMocks();
+		vi.useRealTimers();
+		delete global.fetch;
+	});
+
+	it('does not reopen results when a pending response resolves after Escape', async () => {
+		vi.useFakeTimers();
+		let resolveSuggestions;
+		global.fetch = vi.fn(
+			() =>
+				new Promise((resolve) => {
+					resolveSuggestions = () =>
+						resolve({
+							ok: true,
+							json: () =>
+								Promise.resolve({
+									suggestions: [{ displayText: 'Capitol Hill', name: 'Capitol Hill' }]
+								})
+						});
+				})
+		);
+		const { container, unmount } = render(TripPlan, { props });
+		const input = container.querySelector('#from-location-input');
+
+		await fireEvent.input(input, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		expect(global.fetch).toHaveBeenCalledOnce();
+
+		await fireEvent.keyDown(input, { key: 'Escape' });
+		await tick();
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+		resolveSuggestions();
+		await Promise.resolve();
+		await tick();
+
+		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+		unmount();
 	});
 });
 

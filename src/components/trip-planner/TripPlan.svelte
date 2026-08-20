@@ -41,6 +41,8 @@
 	let loading = $state(false);
 	let fromRequestId = 0;
 	let toRequestId = 0;
+	let fromAutocompleteRequestId = 0;
+	let toAutocompleteRequestId = 0;
 	// Recent trips stay behind a compact control so the plan form doesn't grow
 	// a tall history list under From/To (see #577).
 	let showRecentTrips = $state(false);
@@ -56,19 +58,39 @@
 		return data.suggestions;
 	}
 
-	const fetchLocationResults = debounce(async (query, isFrom) => {
+	function invalidateAutocompleteRequest(isFrom) {
+		if (isFrom) {
+			return ++fromAutocompleteRequestId;
+		}
+
+		return ++toAutocompleteRequestId;
+	}
+
+	function isCurrentAutocompleteRequest(isFrom, requestId) {
+		return isFrom ? requestId === fromAutocompleteRequestId : requestId === toAutocompleteRequestId;
+	}
+
+	const fetchLocationResults = debounce(async (query, isFrom, requestId) => {
+		if (!isCurrentAutocompleteRequest(isFrom, requestId)) return;
+
 		isLoadingFrom = isFrom;
 		isLoadingTo = !isFrom;
 
 		try {
 			const results = await fetchAutocompleteResults(query);
 
+			if (!isCurrentAutocompleteRequest(isFrom, requestId)) return;
+
 			isFrom ? (fromResults = results) : (toResults = results);
 		} catch (error) {
-			console.error('Error fetching location results:', error);
+			if (isCurrentAutocompleteRequest(isFrom, requestId)) {
+				console.error('Error fetching location results:', error);
+			}
 		} finally {
-			isLoadingFrom = false;
-			isLoadingTo = false;
+			if (isCurrentAutocompleteRequest(isFrom, requestId)) {
+				isLoadingFrom = false;
+				isLoadingTo = false;
+			}
 		}
 	}, 500);
 
@@ -91,12 +113,18 @@
 		// (and the parent's hasPlanned flag) instead of letting "No itineraries
 		// found" linger under the form while the rider edits.
 		clearTripItineraries();
+		const requestId = invalidateAutocompleteRequest(isFrom);
 		if (query.trim() === '') {
-			if (isFrom) fromResults = [];
-			else toResults = [];
+			if (isFrom) {
+				fromResults = [];
+				isLoadingFrom = false;
+			} else {
+				toResults = [];
+				isLoadingTo = false;
+			}
 			return;
 		}
-		await fetchLocationResults(query, isFrom);
+		await fetchLocationResults(query, isFrom, requestId);
 	}
 
 	async function selectLocation(suggestion, isFrom) {
@@ -140,9 +168,11 @@
 	}
 
 	function clearInput(isFrom) {
+		invalidateAutocompleteRequest(isFrom);
 		if (isFrom) {
 			fromPlace = '';
 			fromResults = [];
+			isLoadingFrom = false;
 			selectedFrom = null;
 			if (fromMarker) {
 				mapProvider.removePinMarker(fromMarker);
@@ -151,6 +181,7 @@
 		} else {
 			toPlace = '';
 			toResults = [];
+			isLoadingTo = false;
 			selectedTo = null;
 			if (toMarker) {
 				mapProvider.removePinMarker(toMarker);
@@ -162,10 +193,13 @@
 	}
 
 	function dismissSearchResults(isFrom) {
+		invalidateAutocompleteRequest(isFrom);
 		if (isFrom) {
 			fromResults = [];
+			isLoadingFrom = false;
 		} else {
 			toResults = [];
+			isLoadingTo = false;
 		}
 	}
 

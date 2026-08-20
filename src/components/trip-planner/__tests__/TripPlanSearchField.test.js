@@ -200,6 +200,18 @@ describe('TripPlanSearchField', () => {
 			expect(onDismiss).toHaveBeenCalledOnce();
 			expect(input).not.toHaveAttribute('aria-activedescendant');
 		});
+
+		it('dismisses while autocomplete results are loading', async () => {
+			const onDismiss = vi.fn();
+			const props = { ...defaultProps, isLoading: true, onDismiss };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByRole('combobox');
+			await user.click(input);
+			await user.keyboard('{Escape}');
+
+			expect(onDismiss).toHaveBeenCalledOnce();
+		});
 	});
 
 	describe('Accessibility', () => {
