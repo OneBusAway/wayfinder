@@ -128,6 +128,8 @@
 </div>
 
 <style lang="postcss">
+	@reference '../../app.css';
+
 	.marker-container {
 		position: relative;
 		display: inline-block;
