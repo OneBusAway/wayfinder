@@ -1,6 +1,6 @@
 import { loadGoogleMapsLibrary, createMap, nightModeStyles } from '$lib/googleMaps';
 import StopMarker from '$components/map/StopMarker.svelte';
-import { faBus } from '@fortawesome/free-solid-svg-icons';
+import { BusFront } from '@lucide/svelte';
 import {
 	RouteType,
 	routePriorities,
@@ -94,7 +94,7 @@ export default class GoogleMapProvider {
 				return this.markersMap.get(options.stop.id);
 			}
 
-			let icon = options.icon || faBus;
+			let icon = options.icon || BusFront;
 
 			if (!options.icon && options.stop.routes && options.stop.routes.length > 0) {
 				const routeTypes = options.stop.routes.map((r) => r.type);

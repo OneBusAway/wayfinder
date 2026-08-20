@@ -18,8 +18,7 @@
 <script>
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import StopPane from '$components/stops/StopPane.svelte';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faCircleInfo, faX, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+	import { Info, RefreshCw, X } from '@lucide/svelte';
 	import { keybinding } from '$lib/keybinding';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
@@ -74,7 +73,7 @@
 					use:keybinding={{ code: 'Escape' }}
 					class="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-gray-200 text-sm text-black hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
 				>
-					<FontAwesomeIcon icon={faX} />
+					<X class="h-4 w-4" />
 					<span class="sr-only">{$isLoading ? '' : $t('sheet.close')}</span>
 				</button>
 			</div>
@@ -90,14 +89,14 @@
 					class="flex h-10 w-12 items-center justify-center rounded-xl border border-gray-300 text-black hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
 				>
 					<span class="flex" class:animate-spin={stopPaneLoading}>
-						<FontAwesomeIcon icon={faArrowsRotate} />
+						<RefreshCw class="h-4 w-4" />
 					</span>
 				</button>
 				<a
 					href={`/stops/${stop.id}`}
 					class="flex h-10 items-center gap-2 rounded-xl border border-gray-300 px-4 text-base font-semibold text-black hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
 				>
-					<FontAwesomeIcon icon={faCircleInfo} />
+					<Info class="h-4 w-4" />
 					{$isLoading ? '' : $t('stop_details.stop_info')}
 				</a>
 			</div>

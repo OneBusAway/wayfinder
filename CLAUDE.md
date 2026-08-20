@@ -104,7 +104,7 @@ When writing tests, the setup file already mocks `$env/static/public`, `$env/sta
 ## Styling
 
 - Tailwind CSS with Flowbite components
-- FontAwesome icons via `@fortawesome/svelte-fontawesome`
+- Lucide icons via `@lucide/svelte`
 - Brand colors configurable via `COLOR_*` env vars (processed at build time)
 - Dark mode support via theme system
 

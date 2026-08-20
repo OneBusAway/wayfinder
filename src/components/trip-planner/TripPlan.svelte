@@ -5,8 +5,7 @@
 	import OptionsPill from './OptionsPill.svelte';
 	import { browser } from '$app/environment';
 	import { t } from 'svelte-i18n';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faRightLeft, faClockRotateLeft } from '@fortawesome/free-solid-svg-icons';
+	import { ArrowLeftRight, History } from '@lucide/svelte';
 	import {
 		tripOptions,
 		showTripOptionsModal,
@@ -484,7 +483,7 @@
 				aria-label={$t('trip-planner.swap_locations')}
 				class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-all hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-600"
 			>
-				<FontAwesomeIcon icon={faRightLeft} class="h-4 w-4 rotate-90" />
+				<ArrowLeftRight class="h-4 w-4 rotate-90" />
 			</button>
 		</div>
 	</div>
@@ -531,7 +530,7 @@
 				class:dark:border-brand={showRecentTrips}
 				class:dark:text-brand={showRecentTrips}
 			>
-				<FontAwesomeIcon icon={faClockRotateLeft} class="h-3.5 w-3.5" />
+				<History class="h-3.5 w-3.5" />
 				<span class="hidden md:inline">{$t('trip-planner.recents')}</span>
 				<span class="sr-only md:hidden">{$t('trip-planner.recent_searches')}</span>
 			</button>

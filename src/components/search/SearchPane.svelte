@@ -3,8 +3,7 @@
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
 	import { onMount, onDestroy, tick } from 'svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faMapPin, faSignsPost, faX } from '@fortawesome/free-solid-svg-icons';
+	import { MapPin, Signpost, X } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
@@ -410,7 +409,7 @@
 					<SearchResultItem
 						on:click={() => handleLocationClick(location)}
 						title={location.formatted_address}
-						icon={faMapPin}
+						icon={MapPin}
 						subtitle={location?.types?.join(', ') || location.name}
 					/>
 				{/if}
@@ -429,7 +428,7 @@
 					{#each stops as stop}
 						<SearchResultItem
 							on:click={() => handleStopClick(stop)}
-							icon={faSignsPost}
+							icon={Signpost}
 							title={stop.name}
 							subtitle={`${stop.direction ? $t(`direction.${stop.direction}`) : ''}; Code: ${stop.code}`}
 						/>
@@ -472,7 +471,7 @@
 			     viewports the pane always stays open. -->
 			<li role="presentation" class="ms-auto self-center md:hidden">
 				<button type="button" onclick={onCollapse} class="close-button">
-					<FontAwesomeIcon icon={faX} class="font-black text-black dark:text-white" />
+					<X class="h-4 w-4 font-black text-black dark:text-white" />
 					<span class="sr-only">{$t('search.collapse')}</span>
 				</button>
 			</li>
