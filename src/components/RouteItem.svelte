@@ -26,7 +26,7 @@
 	onclick={() => handleModalRouteClick(route)}
 >
 	<div
-		class="text-lg font-semibold text-[var(--route-color-light)] dark:text-[var(--route-color-dark)]"
+		class="text-lg font-semibold text-(--route-color-light) dark:text-(--route-color-dark)"
 		style="--route-color-light: {lightModeColor}; --route-color-dark: {darkModeColor}"
 	>
 		{getDisplayRouteName(route)}

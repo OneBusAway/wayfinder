@@ -37,7 +37,7 @@
 <div>
 	<label for="search" class="sr-only">{$t('search.search')}</label>
 	<div class="mt-2 flex rounded-md shadow-sm">
-		<div class="relative flex flex-grow items-stretch focus-within:z-10">
+		<div class="relative flex grow items-stretch focus-within:z-10">
 			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 				<svg
 					class="h-4 w-4 text-gray-500 dark:text-gray-400"
