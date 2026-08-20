@@ -161,6 +161,14 @@
 		clearTripUrl();
 	}
 
+	function dismissSearchResults(isFrom) {
+		if (isFrom) {
+			fromResults = [];
+		} else {
+			toResults = [];
+		}
+	}
+
 	function swapLocations() {
 		const result = swapTripLocations({
 			fromPlace,
@@ -443,6 +451,7 @@
 						onInput={(query) => handleSearchInput(query, true)}
 						onClear={() => clearInput(true)}
 						onSelect={(location) => selectLocation(location, true)}
+						onDismiss={() => dismissSearchResults(true)}
 					/>
 				</div>
 			</div>
@@ -471,6 +480,7 @@
 						onInput={(query) => handleSearchInput(query, false)}
 						onClear={() => clearInput(false)}
 						onSelect={(location) => selectLocation(location, false)}
+						onDismiss={() => dismissSearchResults(false)}
 					/>
 				</div>
 			</div>
