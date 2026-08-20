@@ -60,6 +60,7 @@
 		"gtfs-realtime-bindings": "^1.1.1",
 		"leaflet": "^1.9.4",
 		"leaflet-polylinedecorator": "^1.6.0",
+		"maplibre-gl": "^4.7.1",
 		"onebusaway-sdk": "^1.6.0",
 		"polyline-encoded": "^0.0.9",
 		"prom-client": "^15.1.3",
