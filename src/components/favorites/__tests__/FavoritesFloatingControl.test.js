@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { tick } from 'svelte';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import FavoritesFloatingControl from '../FavoritesFloatingControl.svelte';
@@ -124,20 +125,23 @@ describe('FavoritesFloatingControl', () => {
 		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 
-	it('stays open when the clicked node was detached by its own handler', async () => {
+	it('stays open when a node inside the panel detaches itself in its own handler', async () => {
 		render(FavoritesFloatingControl);
 
 		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-		// Removing a row detaches the clicked button before the window listener
-		// runs, so contains() reports it as outside. Simulate that exact shape.
-		const detached = document.createElement('button');
-		document.body.appendChild(detached);
-		detached.remove();
+		// A row's ✕ removes its own DOM node mid-click. The event path is fixed at
+		// dispatch time, so the click still reaches <svelte:window> — but with a
+		// detached target whose contains() reads false. Without the isConnected
+		// guard the panel would wrongly close; this asserts it does not.
+		const row = document.createElement('button');
+		screen.getByRole('dialog').appendChild(row);
+		row.addEventListener('click', () => row.remove());
 
-		detached.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-		window.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+		row.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+		// Let any (wrongful) close() flush to the DOM before asserting.
+		await tick();
 
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
 	});

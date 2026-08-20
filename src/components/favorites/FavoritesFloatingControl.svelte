@@ -61,9 +61,10 @@
 		if (!(target instanceof Node)) return;
 
 		// Removing a row (or Clear All) detaches the very node that was clicked:
-		// Svelte flushes at the microtask checkpoint between listeners, so by the
-		// time this window handler runs the target is gone and contains() would
-		// report it as outside. A disconnected target came from inside the panel.
+		// the event path is fixed at dispatch time so the click still reaches this
+		// window listener, but with a target contains() reports as outside. A
+		// disconnected target came from inside the panel — don't treat it as an
+		// outside click.
 		if (!target.isConnected) return;
 
 		if (!rootEl.contains(target)) {
