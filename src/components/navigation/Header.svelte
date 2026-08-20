@@ -219,7 +219,7 @@
 </script>
 
 <header
-	class="relative z-[9999] flex items-center justify-between border-b border-gray-500 bg-brand-accent/80 text-brand-foreground backdrop-blur-md dark:bg-surface-dark dark:text-surface-foreground-dark md:flex-row md:px-8"
+	class="relative z-9999 flex items-center justify-between border-b border-gray-500 bg-brand-accent/80 text-brand-foreground backdrop-blur-md dark:bg-surface-dark dark:text-surface-foreground-dark md:flex-row md:px-8"
 	bind:this={navContainer}
 >
 	<div class="logo-container flex items-center gap-2 px-1 py-1 md:gap-4 md:px-2 md:py-2">

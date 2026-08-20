@@ -37,7 +37,7 @@
 	inset edge shadows are the same for every route, so they live in CSS; only the
 	route color and the fitted font size vary per badge. -->
 <div
-	class="route-badge flex h-14 w-16 shrink-0 items-center justify-center break-words rounded-lg px-1 text-center font-bold leading-tight"
+	class="route-badge flex h-14 w-16 shrink-0 items-center justify-center wrap-break-word rounded-lg px-1 text-center font-bold leading-tight"
 	style="background-color: {bg}; color: {fg}; font-size: {fontSize}px;"
 >
 	{shortName}

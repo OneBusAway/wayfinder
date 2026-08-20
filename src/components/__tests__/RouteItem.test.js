@@ -109,7 +109,7 @@ describe('RouteItem', () => {
 		expect(routeNameElement).toHaveStyle('--route-color-light: #0066CC');
 		expect(routeNameElement).toHaveAttribute(
 			'class',
-			expect.stringContaining('text-[var(--route-color-light)]')
+			expect.stringContaining('text-(--route-color-light)')
 		);
 	});
 
@@ -227,7 +227,7 @@ describe('RouteItem', () => {
 		expect(routeNameElement).toHaveStyle('--route-color-light: #0077C0');
 		expect(routeNameElement).toHaveAttribute(
 			'class',
-			expect.stringContaining('text-[var(--route-color-light)]')
+			expect.stringContaining('text-(--route-color-light)')
 		);
 	});
 
@@ -251,7 +251,7 @@ describe('RouteItem', () => {
 		expect(routeNameElement).toHaveStyle('--route-color-light: #018571');
 		expect(routeNameElement).toHaveAttribute(
 			'class',
-			expect.stringContaining('text-[var(--route-color-light)]')
+			expect.stringContaining('text-(--route-color-light)')
 		);
 	});
 
@@ -271,7 +271,7 @@ describe('RouteItem', () => {
 		expect(routeNameElement).toHaveStyle('--route-color-light: #8CC8A0');
 		expect(routeNameElement).toHaveAttribute(
 			'class',
-			expect.stringContaining('text-[var(--route-color-light)]')
+			expect.stringContaining('text-(--route-color-light)')
 		);
 	});
 

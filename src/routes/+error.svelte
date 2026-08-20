@@ -81,7 +81,7 @@
 		</div>
 
 		<p
-			class="mb-2 bg-gradient-to-br from-brand to-brand-accent bg-clip-text text-7xl font-extrabold tracking-tighter text-transparent"
+			class="mb-2 bg-linear-to-br from-brand to-brand-accent bg-clip-text text-7xl font-extrabold tracking-tighter text-transparent"
 			id="error-status-code"
 		>
 			{status}

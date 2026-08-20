@@ -11,7 +11,7 @@
 
 <!-- Summary Card -->
 <div
-	class="mb-6 flex items-stretch justify-between divide-x divide-gray-200 rounded-xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white p-4 shadow-sm dark:divide-gray-700 dark:border-gray-700 dark:from-gray-800/80 dark:to-gray-800/40"
+	class="mb-6 flex items-stretch justify-between divide-x divide-gray-200 rounded-xl border border-gray-200 bg-linear-to-b from-gray-50 to-white p-4 shadow-sm dark:divide-gray-700 dark:border-gray-700 dark:from-gray-800/80 dark:to-gray-800/40"
 >
 	<div class="flex-1 px-3 text-center first:pl-0 last:pr-0">
 		<p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">

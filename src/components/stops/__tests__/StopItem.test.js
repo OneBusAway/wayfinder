@@ -114,7 +114,7 @@ describe('StopItem', () => {
 
 		const stopNameElement = screen.getByText('Pine St & 3rd Ave');
 		expect(stopNameElement).toHaveClass('text-lg', 'font-semibold');
-		expect(stopNameElement).toHaveClass('text-[#000000]', 'dark:text-white');
+		expect(stopNameElement).toHaveClass('text-surface-foreground', 'dark:text-white');
 	});
 
 	test('stop code has proper styling classes', () => {
