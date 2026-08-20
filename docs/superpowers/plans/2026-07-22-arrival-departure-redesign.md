@@ -88,7 +88,7 @@ Create `src/components/RouteBadge.svelte`:
 </script>
 
 <div
-	class="flex h-14 w-16 shrink-0 items-center justify-center break-words rounded-lg px-1 text-center text-sm font-bold leading-tight"
+	class="flex h-14 w-16 shrink-0 items-center justify-center wrap-break-word rounded-lg px-1 text-center text-sm font-bold leading-tight"
 	style="background-color: {bg}; color: {fg};"
 >
 	{shortName}

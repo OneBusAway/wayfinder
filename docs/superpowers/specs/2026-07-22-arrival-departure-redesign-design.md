@@ -51,14 +51,14 @@ A rounded-square colored badge rendering a route short name.
   let bg = $derived(color ? `#${color}` : '#374151'); let fg = $derived(textColor ? `#${textColor}`
   : '#ffffff');
   <div
-  	class="flex h-14 w-16 items-center justify-center break-words rounded-lg text-center font-bold leading-tight"
+  	class="flex h-14 w-16 items-center justify-center wrap-break-word rounded-lg text-center font-bold leading-tight"
   	style="background-color: {bg}; color: {fg};"
   >
   	{shortName}
   </div>
   ```
 - **Layout:** `rounded-lg`, fixed size (~`w-16 h-14`), centered, bold. `leading-tight`
-  - `break-words` so "C Line" stacks onto two lines and longer `shortName` values
+  - `wrap-break-word` so "C Line" stacks onto two lines and longer `shortName` values
     degrade gracefully instead of overflowing the box.
 - **Dark mode:** the badge is a self-colored block with contrasting text, so it
   reads correctly in both light and dark mode without overrides. Raw route colors

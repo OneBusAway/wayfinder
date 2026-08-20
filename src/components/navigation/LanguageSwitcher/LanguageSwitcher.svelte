@@ -152,7 +152,7 @@
 
 		{#if isOpen}
 			<div
-				class="absolute end-0 top-full z-[9999] mt-1 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+				class="absolute inset-e-0 top-full z-9999 mt-1 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 			>
 				<div
 					role="listbox"
