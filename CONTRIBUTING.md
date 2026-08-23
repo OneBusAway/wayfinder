@@ -4,7 +4,19 @@ Thanks for your interest in contributing! Wayfinder is an open source project an
 
 ## Getting Started
 
-Head over to the [README](README.md) for setup instructions — it's just `npm install`, copy `.env.example` to `.env`, and `npm run dev`. If you hit any issues getting things running, open a discussion or ask in the [OneBusAway Slack workspace](https://opentransitsoftwarefoundation.org/join-our-slack).
+Head over to the [README](README.md) for setup. In short:
+
+```bash
+npm install
+cp .env.example .env
+# edit .env, then:
+npm run validate-env
+npm run dev
+```
+
+`npm run validate-env` checks your `.env` against `env-schema.json`. Fix anything it reports before debugging runtime errors.
+
+If you still get stuck, open a discussion or ask in the [OneBusAway Slack workspace](https://opentransitsoftwarefoundation.org/join-our-slack).
 
 ## Finding Something to Work On
 
@@ -16,7 +28,7 @@ If you have an idea for something new, open an issue first to discuss it. This s
 
 - **Link to the issue** your PR addresses (e.g., "Closes #123").
 - **Keep PRs focused and small.** One feature or fix per PR. If you're touching multiple unrelated things, split them up.
-- **Run formatting before pushing:** `npm run format` takes care of Prettier. Run `npm run lint` to catch anything ESLint flags.
+- **Run checks before pushing:** `npm run lint` (Prettier + ESLint). `npm run prepush` also runs the full test suite — use it when you want a single pre-PR pass.
 - **Write a clear description** of what you changed and why. Reviewers shouldn't have to reverse-engineer your intent from the diff.
 - **Make sure tests pass.** Run `npm run test` locally. If you're adding new functionality, add tests for it.
 
