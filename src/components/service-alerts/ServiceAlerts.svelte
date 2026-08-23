@@ -1,7 +1,7 @@
 <script>
 	import { modalOpen } from '$src/stores/modalOpen';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
-	import { Modal } from 'flowbite-svelte';
+	import Modal from 'flowbite-svelte/Modal.svelte';
 	import ServiceAlertItem from './ServiceAlertItem.svelte';
 	import { t, locale } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';

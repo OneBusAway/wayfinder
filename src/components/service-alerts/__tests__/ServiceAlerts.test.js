@@ -6,8 +6,8 @@ import ServiceAlerts from '../ServiceAlerts.svelte';
 import { modalOpen } from '$src/stores/modalOpen';
 import { mockServiceAlertsData } from '../../../tests/fixtures/obaData.js';
 
-vi.mock('flowbite-svelte', () => ({
-	Modal: vi.fn(() => ({ $$: { component: 'div' } }))
+vi.mock('flowbite-svelte/Modal.svelte', () => ({
+	default: vi.fn(() => ({ $$: { component: 'div' } }))
 }));
 
 const STOP_ID = '1_75403';

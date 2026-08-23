@@ -1,5 +1,6 @@
 <script>
-	import { Modal, Button } from 'flowbite-svelte';
+	import Modal from 'flowbite-svelte/Modal.svelte';
+	import Button from 'flowbite-svelte/Button.svelte';
 	import { getLocaleFromNavigator } from 'svelte-i18n';
 	import { t } from 'svelte-i18n';
 
