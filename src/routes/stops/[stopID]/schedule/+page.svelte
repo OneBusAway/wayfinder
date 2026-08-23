@@ -12,7 +12,8 @@
 	} from '$lib/scheduleForStop';
 	import Accordion from '$components/containers/Accordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
-	import { Datepicker } from 'flowbite-svelte';
+	import Datepicker from 'flowbite-svelte/Datepicker.svelte';
+	import { onMount } from 'svelte';
 	import { t, isLoading } from 'svelte-i18n';
 	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
 	import Skeleton from '$components/Skeleton.svelte';
