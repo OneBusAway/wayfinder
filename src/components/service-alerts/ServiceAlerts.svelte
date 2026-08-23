@@ -5,7 +5,7 @@
 		faChevronRight as faChevronRightPagination
 	} from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { Modal } from 'flowbite-svelte';
+	import Modal from 'flowbite-svelte/Modal.svelte';
 	import ServiceAlertItem from './ServiceAlertItem.svelte';
 	import { t } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';

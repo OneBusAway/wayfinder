@@ -8,7 +8,8 @@
 	import { t } from 'svelte-i18n';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
-	import { Tabs, TabItem } from 'flowbite-svelte';
+	import Tabs from 'flowbite-svelte/Tabs.svelte';
+	import TabItem from 'flowbite-svelte/TabItem.svelte';
 	import { env } from '$env/dynamic/public';
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
