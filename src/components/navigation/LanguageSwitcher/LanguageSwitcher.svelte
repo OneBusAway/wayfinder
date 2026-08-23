@@ -131,7 +131,7 @@
 			})}
 			aria-expanded={isOpen}
 			aria-haspopup="listbox"
-			class="flex h-8 items-center justify-center gap-1 rounded-md border bg-surface/80 px-2 font-semibold text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
+			class="bg-surface/80 text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark flex h-8 items-center justify-center gap-1 rounded-md border px-2 font-semibold"
 		>
 			<svg
 				class="h-4 w-4"
@@ -152,7 +152,7 @@
 
 		{#if isOpen}
 			<div
-				class="absolute inset-e-0 top-full z-9999 mt-1 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+				class="bg-surface dark:bg-surface-dark absolute inset-e-0 top-full z-9999 mt-1 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 shadow-lg dark:border-gray-600"
 			>
 				<div
 					role="listbox"
@@ -165,7 +165,7 @@
 							role="option"
 							aria-selected={lang.code === currentLocale}
 							onclick={() => handleLanguageSelect(lang.code)}
-							class="block w-full whitespace-nowrap px-4 py-2 text-left text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
+							class="text-surface-foreground dark:text-surface-foreground-dark block w-full px-4 py-2 text-left text-sm font-semibold whitespace-nowrap hover:bg-gray-100 dark:hover:bg-gray-700 {lang.code ===
 							currentLocale
 								? 'bg-gray-100 dark:bg-gray-700'
 								: ''}"
