@@ -124,7 +124,7 @@
 	<!-- Timeline line -->
 	{#if !isLast}
 		<div
-			class="absolute left-[23px] top-12 h-[calc(100%-40px)] w-0.5 {colorStyles.timelineClass}"
+			class="absolute top-12 left-[23px] h-[calc(100%-40px)] w-0.5 {colorStyles.timelineClass}"
 			style={colorStyles.timelineStyle}
 		></div>
 	{/if}
@@ -172,12 +172,12 @@
 		<!-- Details -->
 		<div class="mt-3 space-y-1.5 text-sm text-gray-600 dark:text-gray-300">
 			<div class="flex items-center">
-				<FontAwesomeIcon icon={faArrowLeft} class="mr-2 h-3 w-3 text-brand" />
+				<FontAwesomeIcon icon={faArrowLeft} class="text-brand mr-2 h-3 w-3" />
 				<span>{leg.from.name}</span>
 			</div>
 
 			<div class="flex items-center">
-				<FontAwesomeIcon icon={faArrowRight} class="mr-2 h-3 w-3 text-brand" />
+				<FontAwesomeIcon icon={faArrowRight} class="text-brand mr-2 h-3 w-3" />
 				<span>{leg.to.name}</span>
 			</div>
 			<div class="flex items-center">
@@ -207,7 +207,7 @@
 		<!-- Walking steps toggle -->
 		{#if isWalking && leg.steps?.length > 0}
 			<button
-				class="mt-3 flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-brand-accent transition-colors hover:bg-gray-100 dark:text-brand dark:hover:bg-gray-800"
+				class="text-brand-accent dark:text-brand mt-3 flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
 				onclick={() => toggleSteps(index)}
 			>
 				<FontAwesomeIcon

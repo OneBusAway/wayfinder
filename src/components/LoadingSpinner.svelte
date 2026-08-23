@@ -6,11 +6,11 @@
 	aria-label={$t('loading')}
 	role="status"
 	aria-live="polite"
-	class="absolute inset-0 z-50 flex items-center justify-center bg-neutral-800 bg-opacity-80 md:rounded-lg"
+	class="bg-opacity-80 absolute inset-0 z-50 flex items-center justify-center bg-neutral-800 md:rounded-lg"
 >
 	<div class="flex items-center text-white">
 		<svg
-			class="-ml-1 mr-3 h-5 w-5 animate-spin text-white"
+			class="mr-3 -ml-1 h-5 w-5 animate-spin text-white"
 			xmlns="http://www.w3.org/2000/svg"
 			fill="none"
 			viewBox="0 0 24 24"

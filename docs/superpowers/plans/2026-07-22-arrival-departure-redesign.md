@@ -88,7 +88,7 @@ Create `src/components/RouteBadge.svelte`:
 </script>
 
 <div
-	class="flex h-14 w-16 shrink-0 items-center justify-center wrap-break-word rounded-lg px-1 text-center text-sm font-bold leading-tight"
+	class="flex h-14 w-16 shrink-0 items-center justify-center rounded-lg px-1 text-center text-sm leading-tight font-bold wrap-break-word"
 	style="background-color: {bg}; color: {fg};"
 >
 	{shortName}
@@ -291,7 +291,7 @@ Replace the entire markup block (lines 216–231, the two `<div>`s after `</scri
 	</div>
 
 	<div class="flex shrink-0 items-start gap-0.5">
-		<span class="text-3xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
+		<span class="text-3xl leading-none font-bold {arrivalInfo.color}">{arrivalInfo.timeText}</span>
 		<FontAwesomeIcon
 			icon={arrivalInfo.isPredicted ? faTowerBroadcast : faClock}
 			class="text-xs {arrivalInfo.color}"
@@ -582,13 +582,13 @@ Replace the marker `<div>` (lines 113–134, the `relative flex size-8 ...` bloc
 		{#if tripStop.stopId === stop.id}
 			<FontAwesomeIcon
 				icon={faCheck}
-				class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
+				class="bg-brand absolute -top-1 -right-1 rounded-full border border-white p-1 text-xs text-white"
 			/>
 		{/if}
 	</div>
 {:else if tripStop.stopId === stop.id}
 	<div class="flex size-8 items-center justify-center">
-		<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
+		<FontAwesomeIcon icon={faLocationDot} class="text-brand-accent text-xl" />
 	</div>
 {:else}
 	<div class="flex size-8 items-center justify-center">

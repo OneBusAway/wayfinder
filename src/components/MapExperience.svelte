@@ -554,7 +554,7 @@
 	<p>Loading...</p>
 {:else}
 	<h1 class="sr-only">{PUBLIC_OBA_REGION_NAME}</h1>
-	<div class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 z-40">
+	<div class="pointer-events-none absolute top-0 right-0 bottom-0 left-0 z-40">
 		<!-- Top spacing is padding (not margin) so h-full keeps the column's bottom
 		     edge — where the sheet anchors — exactly at the viewport bottom. Below md,
 		     horizontal margins live on the search wrapper and on each pane (not the

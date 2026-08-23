@@ -47,7 +47,7 @@
 
 <button
 	type="button"
-	class="flex w-full cursor-pointer items-start gap-3 rounded-lg p-1 text-left transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent dark:hover:bg-gray-700"
+	class="focus-visible:ring-brand-accent flex w-full cursor-pointer items-start gap-3 rounded-lg p-1 text-left transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 dark:hover:bg-gray-700"
 	aria-label={$t('service_alerts.open_alert', {
 		values: {
 			severity: severityLabel,
@@ -66,7 +66,7 @@
 	<div class="min-w-0 flex-1">
 		<div class="flex flex-wrap items-center gap-2">
 			<span
-				class="inline-flex rounded px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide {severityUi.badgeClass}"
+				class="inline-flex rounded px-1.5 py-0.5 text-xs font-semibold tracking-wide uppercase {severityUi.badgeClass}"
 			>
 				{severityLabel}
 			</span>

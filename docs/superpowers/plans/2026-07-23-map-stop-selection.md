@@ -1477,7 +1477,7 @@ Also update `.highlight` to tint the caret, which does not exist today:
 
 ```css
 .highlight {
-	@apply scale-125 border-brand-accent drop-shadow-md;
+	@apply border-brand-accent scale-125 drop-shadow-md;
 }
 
 /* The caret is otherwise hard-coded black; tint it to match the selected
@@ -3153,10 +3153,10 @@ Create `src/components/map/RouteLegend.svelte`:
 
 {#if routes.length > 0}
 	<div
-		class="route-legend pointer-events-auto absolute right-4 top-4 z-30 hidden min-w-44 rounded-lg border border-gray-300 bg-white/95 p-3 shadow-md backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800/95 md:block"
+		class="route-legend pointer-events-auto absolute top-4 right-4 z-30 hidden min-w-44 rounded-lg border border-gray-300 bg-white/95 p-3 shadow-md backdrop-blur-sm md:block dark:border-gray-600 dark:bg-gray-800/95"
 	>
 		<h2
-			class="mb-2 text-[10.5px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+			class="mb-2 text-[10.5px] font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400"
 		>
 			{$isLoading ? '' : $t('map.routes_shown')}
 		</h2>

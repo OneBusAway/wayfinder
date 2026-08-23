@@ -77,7 +77,7 @@
 	{#if stops && selectedRoute}
 		<div class="space-y-4">
 			<div>
-				<div class="min-h-36 rounded-lg bg-brand-accent bg-opacity-80 p-4">
+				<div class="bg-brand-accent bg-opacity-80 min-h-36 rounded-lg p-4">
 					<h1 class="mb-4 text-center text-2xl font-bold text-white">
 						Route: {selectedRoute.shortName}
 					</h1>
@@ -94,7 +94,7 @@
 								type="button"
 								onclick={toggleDescription}
 								aria-expanded={showFullDescription}
-								class="mt-2 w-full rounded text-center text-sm font-semibold text-white underline hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-brand-accent"
+								class="focus:ring-offset-brand-accent mt-2 w-full rounded text-center text-sm font-semibold text-white underline hover:text-gray-200 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:outline-none"
 							>
 								{showFullDescription ? $t('show_less') : $t('show_more')}
 							</button>

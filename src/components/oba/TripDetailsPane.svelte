@@ -163,7 +163,7 @@
 								{#if !(isFirst && isLast)}
 									<div
 										class="absolute w-px bg-neutral-400 {isFirst
-											? 'bottom-0 top-1/2'
+											? 'top-1/2 bottom-0'
 											: isLast
 												? 'top-0 h-1/2'
 												: 'inset-y-0'}"
@@ -183,11 +183,11 @@
 										{#if tripStop.stopId === stop.id}
 											<FontAwesomeIcon
 												icon={faCheck}
-												class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-1 text-xs text-white"
+												class="bg-brand absolute -top-1 -right-1 rounded-full border border-white p-1 text-xs text-white"
 											/>
 										{/if}
 									{:else if tripStop.stopId === stop.id}
-										<FontAwesomeIcon icon={faLocationDot} class="text-xl text-brand-accent" />
+										<FontAwesomeIcon icon={faLocationDot} class="text-brand-accent text-xl" />
 									{:else}
 										<div
 											class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"
@@ -203,7 +203,7 @@
 								>
 									{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 								</div>
-								<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+								<div class="text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 									{formatSecondsFromMidnight(tripStop.arrivalTime)}
 								</div>
 							</div>

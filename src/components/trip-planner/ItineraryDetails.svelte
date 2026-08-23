@@ -14,7 +14,7 @@
 	class="mb-6 flex items-stretch justify-between divide-x divide-gray-200 rounded-xl border border-gray-200 bg-linear-to-b from-gray-50 to-white p-4 shadow-sm dark:divide-gray-700 dark:border-gray-700 dark:from-gray-800/80 dark:to-gray-800/40"
 >
 	<div class="flex-1 px-3 text-center first:pl-0 last:pr-0">
-		<p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+		<p class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
 			{$t('trip-planner.duration')}
 		</p>
 		<p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">
@@ -23,7 +23,7 @@
 		</p>
 	</div>
 	<div class="flex-1 px-3 text-center first:pl-0 last:pr-0">
-		<p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+		<p class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
 			{$t('trip-planner.start_time')}
 		</p>
 		<p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">
@@ -31,7 +31,7 @@
 		</p>
 	</div>
 	<div class="flex-1 px-3 text-center first:pl-0 last:pr-0">
-		<p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+		<p class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
 			{$t('trip-planner.end_time')}
 		</p>
 		<p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">

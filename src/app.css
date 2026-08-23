@@ -6,19 +6,19 @@
 
 @layer components {
 	.h1 {
-		@apply mb-4 text-2xl font-semibold text-surface-foreground dark:text-surface-foreground-dark;
+		@apply text-surface-foreground dark:text-surface-foreground-dark mb-4 text-2xl font-semibold;
 	}
 
 	.h2 {
-		@apply mb-4 text-xl font-semibold text-surface-foreground dark:text-surface-foreground-dark;
+		@apply text-surface-foreground dark:text-surface-foreground-dark mb-4 text-xl font-semibold;
 	}
 
 	.h3 {
-		@apply mb-2 text-lg font-semibold dark:text-surface-foreground-dark;
+		@apply dark:text-surface-foreground-dark mb-2 text-lg font-semibold;
 	}
 
 	.modal-pane {
-		@apply rounded-lg border-gray-500 bg-surface/90 px-3 shadow-lg dark:bg-surface-dark dark:text-surface-foreground-dark dark:shadow-lg dark:shadow-gray-200/10;
+		@apply bg-surface/90 dark:bg-surface-dark dark:text-surface-foreground-dark rounded-lg border-gray-500 px-3 shadow-lg dark:shadow-lg dark:shadow-gray-200/10;
 		@apply md:px-4;
 	}
 
@@ -31,7 +31,7 @@
 	}
 
 	.tab-container__item--active {
-		@apply border-b-2 border-brand-accent text-brand-accent dark:border-brand dark:text-brand;
+		@apply border-brand-accent text-brand-accent dark:border-brand dark:text-brand border-b-2;
 	}
 
 	/* Pill-style itinerary tabs */
@@ -46,7 +46,7 @@
 	}
 
 	.itinerary-tab {
-		@apply flex flex-shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full px-4 py-2;
+		@apply flex flex-shrink-0 cursor-pointer items-center gap-2 rounded-full px-4 py-2 whitespace-nowrap;
 		@apply bg-gray-100 text-sm font-medium text-gray-700;
 		@apply transition-all duration-200 ease-out;
 		@apply hover:bg-gray-200;
@@ -60,7 +60,7 @@
 	.itinerary-tab--active {
 		@apply bg-brand-accent text-white shadow-md;
 		@apply hover:bg-brand-accent-dark;
-		@apply dark:bg-brand-accent dark:text-white dark:hover:bg-brand-accent-dark;
+		@apply dark:bg-brand-accent dark:hover:bg-brand-accent-dark dark:text-white;
 	}
 
 	.close-button {
@@ -69,11 +69,11 @@
 	}
 
 	.button {
-		@apply rounded-md bg-surface px-3 py-2 text-sm font-semibold text-surface-foreground shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
+		@apply bg-surface text-surface-foreground rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50;
 	}
 
 	.button--primary {
-		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
+		@apply bg-brand-accent hover:bg-brand-accent-dark focus-visible:outline-brand-accent rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
 	}
 
 	.rtl {
