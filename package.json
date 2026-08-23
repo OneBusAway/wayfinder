@@ -38,7 +38,6 @@
 		"eslint-plugin-svelte": "^2.45.1",
 		"flowbite": "^2.5.2",
 		"flowbite-svelte": "^0.47.2",
-		"flowbite-svelte-icons": "^1.6.2",
 		"globals": "^15.0.0",
 		"jsdom": "^26.0.0",
 		"msw": "^2.10.2",
