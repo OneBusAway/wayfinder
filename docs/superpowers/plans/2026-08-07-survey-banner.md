@@ -500,12 +500,12 @@ Create `src/components/surveys/SurveyBanner.svelte`. This is the complete file; 
 	<!-- -mx-4 bleeds to the edges of both containers that host StopPane: the
 	     bottom sheet body (px-4) and StandalonePage (p-4). -->
 	<div
-		class="-mx-4 border-y border-gray-200 bg-primary-100 px-4 dark:border-gray-700 dark:bg-gray-800"
+		class="bg-primary-100 -mx-4 border-y border-gray-200 px-4 dark:border-gray-700 dark:bg-gray-800"
 	>
 		<div class="flex items-center gap-3 py-3">
 			<span
 				aria-hidden="true"
-				class="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-brand-accent text-xl text-brand-foreground"
+				class="bg-brand-accent text-brand-foreground flex h-12 w-12 flex-none items-center justify-center rounded-xl text-xl"
 			>
 				<FontAwesomeIcon icon={faCommentDots} />
 			</span>
@@ -566,7 +566,7 @@ Create `src/components/surveys/SurveyBanner.svelte`. This is the complete file; 
 							type="button"
 							onclick={submit}
 							disabled={!canSubmit}
-							class="rounded-lg bg-brand-accent px-6 py-3 text-sm font-semibold text-brand-foreground shadow transition hover:bg-brand-accent-dark disabled:cursor-not-allowed disabled:opacity-50"
+							class="bg-brand-accent text-brand-foreground hover:bg-brand-accent-dark rounded-lg px-6 py-3 text-sm font-semibold shadow transition disabled:cursor-not-allowed disabled:opacity-50"
 						>
 							{remainingQuestionsLength === 0 ? $t('survey.submit') : $t('survey.next')}
 						</button>

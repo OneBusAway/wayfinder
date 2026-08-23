@@ -51,7 +51,7 @@ A rounded-square colored badge rendering a route short name.
   let bg = $derived(color ? `#${color}` : '#374151'); let fg = $derived(textColor ? `#${textColor}`
   : '#ffffff');
   <div
-  	class="flex h-14 w-16 items-center justify-center wrap-break-word rounded-lg text-center font-bold leading-tight"
+  	class="flex h-14 w-16 items-center justify-center rounded-lg text-center leading-tight font-bold wrap-break-word"
   	style="background-color: {bg}; color: {fg};"
   >
   	{shortName}

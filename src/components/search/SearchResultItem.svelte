@@ -22,7 +22,7 @@
 >
 	<div class="flex items-center gap-x-4">
 		<div
-			class="flex h-12 w-12 min-w-12 max-w-12 items-center justify-center rounded-full bg-gray-200"
+			class="flex h-12 w-12 max-w-12 min-w-12 items-center justify-center rounded-full bg-gray-200"
 		>
 			{#if icon}
 				<AppIcon {icon} class="h-6 w-6 text-gray-800" />
