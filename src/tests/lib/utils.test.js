@@ -104,6 +104,17 @@ describe('debounce', () => {
 
 		expect(mockFn).toBeCalledTimes(1);
 	});
+
+	it('cancels a queued invocation', () => {
+		const mockFn = vi.fn();
+		const debouncedFn = debounce(mockFn, 100);
+
+		debouncedFn();
+		debouncedFn.cancel();
+		vi.advanceTimersByTime(100);
+
+		expect(mockFn).not.toHaveBeenCalled();
+	});
 });
 
 describe('removeAgencyPrefix', () => {

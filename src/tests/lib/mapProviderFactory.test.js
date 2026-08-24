@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const providers = vi.hoisted(() => ({ google: vi.fn(), osm: vi.fn(), arcgis: vi.fn() }));
 
-vi.mock('$lib/Provider/GoogleMapProvider.svelte', () => ({ default: providers.google }));
-vi.mock('$lib/Provider/OpenStreetMapProvider.svelte', () => ({ default: providers.osm }));
-vi.mock('$lib/Provider/ArcGISMapProvider.svelte', () => ({ default: providers.arcgis }));
+vi.mock('$lib/Provider/GoogleMapProvider.svelte.js', () => ({ default: providers.google }));
+vi.mock('$lib/Provider/OpenStreetMapProvider.svelte.js', () => ({ default: providers.osm }));
+vi.mock('$lib/Provider/ArcGISMapProvider.svelte.js', () => ({ default: providers.arcgis }));
 
 import { createMapProvider } from '$lib/mapProviderFactory.js';
 

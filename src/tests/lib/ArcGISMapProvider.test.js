@@ -111,6 +111,7 @@ const sdk = vi.hoisted(() => {
 		MapView,
 		reactiveUtils,
 		projection,
+		arcgisConfig: {},
 		webMercatorUtils: {
 			isWebMercator: vi.fn(() => true),
 			webMercatorToGeographic: vi.fn((extent) => ({
@@ -137,7 +138,7 @@ vi.mock('@arcgis/core/symbols/SimpleLineSymbol.js', () => ({ default: sdk.Symbol
 vi.mock('@arcgis/core/symbols/SimpleMarkerSymbol.js', () => ({ default: sdk.Symbol }));
 vi.mock('@arcgis/core/symbols/PictureMarkerSymbol.js', () => ({ default: sdk.Symbol }));
 vi.mock('@arcgis/core/symbols/CIMSymbol.js', () => ({ default: sdk.Symbol }));
-vi.mock('@arcgis/core/config.js', () => ({ default: {} }));
+vi.mock('@arcgis/core/config.js', () => ({ default: sdk.arcgisConfig }));
 vi.mock('@arcgis/core/core/reactiveUtils.js', () => sdk.reactiveUtils);
 vi.mock('@arcgis/core/geometry/support/webMercatorUtils.js', () => sdk.webMercatorUtils);
 vi.mock('@arcgis/core/geometry/projection.js', () => sdk.projection);
@@ -146,8 +147,8 @@ import ArcGISMapProvider from '$lib/Provider/ArcGISMapProvider.svelte.js';
 
 const SHAPE = '_p~iF~ps|U_ulLnnqC_mqNvxq`@';
 
-async function initializedProvider({ customBasemapUrl = '' } = {}) {
-	const provider = new ArcGISMapProvider('key', customBasemapUrl, vi.fn());
+async function initializedProvider({ apiKey = 'key', customBasemapUrl = '' } = {}) {
+	const provider = new ArcGISMapProvider(apiKey, customBasemapUrl, vi.fn());
 	await provider.initMap(document.createElement('div'), { lat: 47.6, lng: -122.3 });
 	return provider;
 }
@@ -157,6 +158,7 @@ describe('ArcGISMapProvider', () => {
 		sdk.MapView.whenResult = Promise.resolve();
 		sdk.reactiveUtils.watch.mockClear();
 		sdk.projection.load.mockClear();
+		delete sdk.arcgisConfig.apiKey;
 	});
 
 	test('initializes optional API key, custom basemap, shared handlers, and overlay', async () => {
@@ -173,6 +175,12 @@ describe('ArcGISMapProvider', () => {
 			collapseButton: false,
 			closeButton: true
 		});
+		expect(sdk.arcgisConfig.apiKey).toBe('key');
+	});
+
+	test('does not set a global ArcGIS API key when none is configured', async () => {
+		await initializedProvider({ apiKey: '' });
+		expect(sdk.arcgisConfig.apiKey).toBeUndefined();
 	});
 
 	test('cleans up partial state when view.when rejects', async () => {
@@ -196,6 +204,28 @@ describe('ArcGISMapProvider', () => {
 		expect(basemap.baseLayers[0].opacity).toBe(0.6);
 		provider.setBasemapDimmed(false);
 		expect(basemap.baseLayers[0].opacity).toBe(1);
+	});
+
+	test('applies dimming after an asynchronously loaded basemap is ready', async () => {
+		const provider = await initializedProvider();
+		const layer = { opacity: 1 };
+		let resolveLoad;
+		provider.map.basemap = {
+			baseLayers: [layer],
+			loadAll: vi.fn(
+				() =>
+					new Promise((resolve) => {
+						resolveLoad = resolve;
+					})
+			)
+		};
+
+		provider.setBasemapDimmed(true);
+		expect(layer.opacity).toBe(1);
+		resolveLoad();
+		await Promise.resolve();
+
+		expect(layer.opacity).toBe(0.6);
 	});
 
 	test('keeps the context menu compact and closes its mounted content cleanly', async () => {
@@ -294,6 +324,8 @@ describe('ArcGISMapProvider', () => {
 
 	test('hides off-screen HTML markers, catches hit-test errors, and safely destroys twice', async () => {
 		const provider = await initializedProvider();
+		provider.eventListeners(provider, vi.fn());
+		provider.enableContextMenu();
 		const marker = provider.addMarker({
 			stop: { id: 's1', name: 'Stop', routes: [] },
 			position: { lat: 47.6, lng: -122.3 }
@@ -309,5 +341,8 @@ describe('ArcGISMapProvider', () => {
 		provider.destroy();
 		provider.destroy();
 		expect(handles.every((handle) => handle.remove.mock.calls.length === 1)).toBe(true);
+		expect(provider.viewportLoadHandle).toBeNull();
+		expect(provider.contextMenuHandle).toBeNull();
+		expect(provider.mapClickHandle).toBeNull();
 	});
 });

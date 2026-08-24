@@ -430,6 +430,11 @@ export default class OpenStreetMapProvider {
 		if (this.globalInfoWindow) {
 			this.globalInfoWindow.close();
 		}
+		if (this.popupContentComponent) {
+			unmount(this.popupContentComponent);
+		}
+		this.popupContentComponent = null;
+		this.globalInfoWindow = null;
 	}
 
 	removeStopMarker(marker) {

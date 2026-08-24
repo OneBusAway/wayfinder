@@ -312,9 +312,7 @@ export default class ArcGISMapProvider {
 		if (!marker) return;
 		if (marker.component) unmount(marker.component);
 		marker.element?.remove();
-		for (const [id, stored] of this.markersMap) {
-			if (stored === marker) this.markersMap.delete(id);
-		}
+		if (this.markersMap.get(marker.id) === marker) this.markersMap.delete(marker.id);
 	}
 
 	hasMarker(stopId) {
@@ -607,17 +605,38 @@ export default class ArcGISMapProvider {
 		this._darkTheme = theme === 'dark';
 		if (!this.map || this.customBasemapUrl) return;
 		this.map.basemap = this._darkTheme ? DARK_BASEMAP : DEFAULT_BASEMAP;
-		this.setBasemapDimmed(this._dimmed);
+		this._basemapLayerOpacities.clear();
+		this._applyBasemapDimmingWhenReady(this.map.basemap);
 	}
 
 	setBasemapDimmed(dimmed) {
 		this._dimmed = dimmed;
-		const layers = this.map?.basemap?.baseLayers;
+		this._applyBasemapDimmingWhenReady(this.map?.basemap);
+	}
+
+	_applyBasemapDimmingWhenReady(basemap) {
+		if (!basemap) return;
+		const apply = () => {
+			if (this.map?.basemap !== basemap) return;
+			this._applyBasemapDimming(basemap.baseLayers);
+		};
+		const loading = basemap.loadAll?.();
+		if (loading?.then) {
+			loading.then(apply).catch(() => {
+				// A failed basemap is surfaced by the ArcGIS view; avoid an unhandled
+				// rejection from this best-effort visual treatment.
+			});
+		} else {
+			apply();
+		}
+	}
+
+	_applyBasemapDimming(layers) {
 		if (!layers) return;
 		layers.forEach((layer) => {
 			if (!this._basemapLayerOpacities.has(layer))
 				this._basemapLayerOpacities.set(layer, layer.opacity ?? 1);
-			layer.opacity = dimmed
+			layer.opacity = this._dimmed
 				? Math.min(this._basemapLayerOpacities.get(layer), 0.6)
 				: this._basemapLayerOpacities.get(layer);
 		});
@@ -693,10 +712,9 @@ export default class ArcGISMapProvider {
 			graphic._casing = new this.Graphic({
 				geometry,
 				symbol: new this.SimpleLineSymbol({
-					color: '#ffffff',
+					color: colorWithOpacity('#ffffff', 0.95),
 					width: weight + 5,
-					style: 'solid',
-					opacity: 0.95
+					style: 'solid'
 				})
 			});
 			this.routeCasingLayer.add(graphic._casing);
@@ -841,6 +859,9 @@ export default class ArcGISMapProvider {
 			cancelAnimationFrame(this._positionFrame);
 		this._positionFrame = null;
 		this._removeHandles();
+		this.viewportLoadHandle = null;
+		this.contextMenuHandle = null;
+		this.mapClickHandle = null;
 		this.cleanupInfoWindow();
 		this.closeContextMenu();
 		this.clearAllStopMarkers();

@@ -92,6 +92,8 @@
 	let mapMode = $state(startInTripPlanMode ? Modes.TRIP_PLAN : Modes.NORMAL);
 	let modeChangeTimeout = null;
 	let pendingMarkerBatch = null;
+	let debouncedLoadMarkers = null;
+	let isDestroyed = false;
 
 	$effect(() => {
 		let newMode;
@@ -217,6 +219,7 @@
 				lat: mapCenterLat,
 				lng: mapCenterLng
 			});
+			if (isDestroyed) return;
 
 			mapInstance = mapProvider;
 
@@ -231,8 +234,8 @@
 				await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
 			}
 
-			const debouncedLoadMarkers = debounce(async () => {
-				if (mapMode !== Modes.NORMAL) {
+			debouncedLoadMarkers = debounce(async () => {
+				if (isDestroyed || mapMode !== Modes.NORMAL || !mapInstance) {
 					return;
 				}
 
@@ -363,7 +366,9 @@
 	let planTripHandler, tabSwitchHandler;
 
 	onMount(async () => {
+		isDestroyed = false;
 		await initMap();
+		if (isDestroyed) return;
 		isMapLoaded.set(true);
 		if (browser) {
 			const darkMode = document.documentElement.classList.contains('dark');
@@ -385,6 +390,10 @@
 	});
 
 	onDestroy(() => {
+		isDestroyed = true;
+		debouncedLoadMarkers?.cancel?.();
+		debouncedLoadMarkers = null;
+
 		if (browser) {
 			window.removeEventListener('themeChange', handleThemeChange);
 

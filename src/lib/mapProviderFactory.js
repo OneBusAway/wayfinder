@@ -1,6 +1,6 @@
-import GoogleMapProvider from '$lib/Provider/GoogleMapProvider.svelte';
-import OpenStreetMapProvider from '$lib/Provider/OpenStreetMapProvider.svelte';
-import ArcGISMapProvider from '$lib/Provider/ArcGISMapProvider.svelte';
+import GoogleMapProvider from '$lib/Provider/GoogleMapProvider.svelte.js';
+import OpenStreetMapProvider from '$lib/Provider/OpenStreetMapProvider.svelte.js';
+import ArcGISMapProvider from '$lib/Provider/ArcGISMapProvider.svelte.js';
 import { MapSource } from '$config/mapSource.js';
 
 /** Creates the configured provider and keeps invalid deployment configuration usable. */
