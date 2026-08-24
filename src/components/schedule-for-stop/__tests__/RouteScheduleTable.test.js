@@ -164,6 +164,25 @@ describe('RouteScheduleTable content', () => {
 		expect(pmMinutesCell).toHaveTextContent('10');
 	});
 
+	test('removes lowercase am and pm suffixes from minute chips', () => {
+		render(RouteScheduleTable, {
+			props: {
+				schedule: {
+					tripHeadsign: 'Lowercase meridiem',
+					stopTimes: {
+						8: [{ arrivalTime: '8:05am' }],
+						15: [{ arrivalTime: '3:10pm' }]
+					}
+				}
+			}
+		});
+
+		expect(screen.getByTitle('Full Time: 8:05')).toHaveTextContent('8');
+		expect(screen.getByTitle('Full Time: 15:10')).toHaveTextContent('3');
+		expect(screen.queryByText(/05 am/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/10 pm/i)).not.toBeInTheDocument();
+	});
+
 	test('clearly identifies short-line trips with their destination', () => {
 		render(RouteScheduleTable, {
 			props: {

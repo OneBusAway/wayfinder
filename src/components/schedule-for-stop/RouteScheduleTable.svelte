@@ -28,7 +28,7 @@
 	}
 
 	function extractMinutes(arrivalTime) {
-		return arrivalTime.replace(/[AP]M/, '').split(':')[1];
+		return arrivalTime.replace(/[AP]M/i, '').split(':')[1];
 	}
 </script>
 
