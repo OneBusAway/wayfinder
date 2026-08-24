@@ -706,11 +706,8 @@ export default class OpenStreetMapProvider {
 	 * Creates a polyline from an encoded shape, returning `null` outside the
 	 * browser, before the map is initialized, or when the shape decodes to empty.
 	 *
-	 * Contract note: this method is synchronous (`Polyline|null`), whereas the
-	 * Google provider's createPolyline is async (`Promise<Polyline|null>`)
-	 * because it lazy-loads its geometry library. Both return `null` on decode
-	 * failure; callers that need provider-agnostic behavior should `await` the
-	 * result and guard against `null`.
+	 * This returns a synchronous `Polyline|null` handle, matching the other map
+	 * providers. It returns `null` on decode failure.
 	 */
 	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
@@ -1149,5 +1146,19 @@ export default class OpenStreetMapProvider {
 			south: sw.lat,
 			west: sw.lng
 		};
+	}
+
+	destroy() {
+		if (!this.map) return;
+		this.clearAllStopMarkers();
+		this.removeStopMarkers();
+		this.clearVehicleMarkers();
+		this.clearAllPolylines();
+		this.removeUserLocationMarker();
+		this.cleanupInfoWindow();
+		this.closeContextMenu();
+		this.map.remove?.();
+		this.map = null;
+		this.maplibreLayer = null;
 	}
 }

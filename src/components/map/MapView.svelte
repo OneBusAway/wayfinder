@@ -179,6 +179,11 @@
 		}
 
 		const boundingBox = getBoundingBox();
+		if (!boundingBox) {
+			// A provider can briefly have no valid extent while initializing or
+			// tearing down. Never turn that into a Null Island stop request.
+			return null;
+		}
 		const key = cacheKey(zoomLevel, boundingBox);
 
 		if (stopsCache.has(key)) {
@@ -252,6 +257,7 @@
 
 	async function loadStopsAndAddMarkers(lat, lng, firstCall = false, zoomLevel = 15) {
 		const stopsData = await loadStopsForLocation(lat, lng, zoomLevel, firstCall);
+		if (!stopsData) return;
 		const newStops = stopsData.data.list;
 		const routeReference = stopsData.data.references.routes || [];
 
@@ -396,6 +402,7 @@
 		}
 
 		clearAllMarkers();
+		mapProvider?.destroy?.();
 
 		allStopsMap.clear();
 		stopsCache.clear();
