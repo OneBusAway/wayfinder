@@ -14,7 +14,11 @@ vi.mock('svelte-i18n', () => ({
 					'schedule_for_stop.minutes': 'Minutes',
 					'schedule_for_stop.no_am_schedules_available': 'No AM schedules available',
 					'schedule_for_stop.no_pm_schedules_available': 'No PM schedules available',
-					'schedule_for_stop.schedule_table_caption': `Departure times for ${options?.values?.route ?? ''}`
+					'schedule_for_stop.schedule_table_caption': `Departure times for ${options?.values?.route ?? ''}`,
+					'schedule_for_stop.short_line': 'Short line',
+					'schedule_for_stop.short_line_to': `Short line to ${options?.values?.destination ?? ''}`,
+					'schedule_for_stop.short_line_notice':
+						'Trips marked Short line end before the route’s usual destination.'
 				};
 				return translations[key] ?? key;
 			});
@@ -158,5 +162,33 @@ describe('RouteScheduleTable content', () => {
 
 		const pmMinutesCell = pmHourCell.closest('tr')?.querySelector('td:last-child');
 		expect(pmMinutesCell).toHaveTextContent('10');
+	});
+
+	test('clearly identifies short-line trips with their destination', () => {
+		render(RouteScheduleTable, {
+			props: {
+				schedule: {
+					tripHeadsign: '120 - Kearny Mesa',
+					stopTimes: {
+						8: [
+							{ arrivalTime: '8:05AM' },
+							{
+								arrivalTime: '8:25AM',
+								isShortLine: true,
+								destination: 'Fashion Valley'
+							}
+						]
+					}
+				}
+			}
+		});
+
+		expect(
+			screen.getByText('Trips marked Short line end before the route’s usual destination.')
+		).toBeInTheDocument();
+		const shortLine = screen.getByText('Short line to Fashion Valley').closest('[data-short-line]');
+		expect(shortLine).toHaveTextContent('25');
+		expect(shortLine).toHaveAttribute('data-short-line', 'true');
+		expect(screen.queryByText('Short line to Kearny Mesa')).not.toBeInTheDocument();
 	});
 });

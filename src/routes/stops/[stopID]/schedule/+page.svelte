@@ -14,6 +14,7 @@
 	let selectedDate = $state(new Date());
 	let prevSelectedDate = $state(null);
 	let emptySchedules = $state(false);
+	let scheduleError = $state(false);
 	let schedules = $state([]);
 	let stopName = $state('');
 	let stopId = $state('');
@@ -30,12 +31,21 @@
 	async function fetchScheduleForStop(stopId, date) {
 		try {
 			emptySchedules = false;
+			scheduleError = false;
 			const response = await fetch(`/api/oba/schedule-for-stop/${stopId}?date=${date}`);
 			if (!response.ok) throw new Error('Failed to fetch schedule for stop');
 			const scheduleForStop = await response.json();
 			handleScheduleForStopResponse(scheduleForStop.data);
 		} catch (error) {
 			console.error('Error fetching schedules:', error);
+			schedules = [];
+			scheduleError = true;
+		}
+	}
+
+	function retryScheduleFetch() {
+		if (stopId && selectedDate) {
+			fetchScheduleForStop(stopId, selectedDate.toISOString().split('T')[0]);
 		}
 	}
 
@@ -74,7 +84,10 @@
 			let stopRouteDirectionSchedules = routeSchedule.stopRouteDirectionSchedules;
 
 			stopRouteDirectionSchedules.forEach((directionSchedule) => {
-				const stopTimesGroupedByHour = groupStopTimesByHour(directionSchedule.scheduleStopTimes);
+				const stopTimesGroupedByHour = groupStopTimesByHour(
+					directionSchedule.scheduleStopTimes,
+					directionSchedule.tripHeadsign
+				);
 				const routeName = getRouteName(routeId, directionSchedule.tripHeadsign);
 
 				schedulesMap.set(routeName, {
@@ -90,14 +103,20 @@
 		return `${route.shortName ?? route.longName} - ${tripHeadsign}`;
 	}
 
-	function groupStopTimesByHour(stopTimes) {
+	function groupStopTimesByHour(stopTimes, directionHeadsign) {
 		const grouped = {};
 		for (let stopTime of stopTimes) {
 			const date = new Date(stopTime.arrivalTime);
 			const hour = date.getHours();
 			if (!grouped[hour]) grouped[hour] = [];
+
+			// The direction headsign describes the route's usual destination. A stop-specific
+			// headsign is supplied for trips that take a different path or terminate early.
+			const destination = stopTime.stopHeadsign?.trim() || directionHeadsign;
 			grouped[hour].push({
-				arrivalTime: msToTimeString(stopTime.arrivalTime)
+				arrivalTime: msToTimeString(stopTime.arrivalTime),
+				destination,
+				isShortLine: destination !== directionHeadsign
 			});
 		}
 		return grouped;
@@ -179,7 +198,19 @@
 			<div
 				class="flex-1 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-black"
 			>
-				{#if emptySchedules}
+				{#if scheduleError}
+					<div
+						role="alert"
+						class="mx-auto flex max-w-lg flex-col items-center gap-3 px-4 py-10 text-center"
+					>
+						<p class="text-gray-700 dark:text-gray-300">
+							{$isLoading ? '' : $t('schedule_for_stop.unable_to_load_schedule')}
+						</p>
+						<button class="button" onclick={retryScheduleFetch}>
+							{$isLoading ? '' : $t('schedule_for_stop.retry')}
+						</button>
+					</div>
+				{:else if emptySchedules}
 					<p class="text-center text-gray-700 dark:text-gray-400">
 						{$isLoading ? '' : $t('schedule_for_stop.no_schedules_available')}
 					</p>

@@ -13,7 +13,7 @@ export async function GET({ url, params }) {
 
 	const response = await oba.scheduleForStop.retrieve(stopId, queryParams);
 
-	if (response.data?.entry?.stopRouteSchedules) {
+	if (response?.data?.entry?.stopRouteSchedules) {
 		response.data.entry.stopRouteSchedules = filterByRouteId(
 			response.data.entry.stopRouteSchedules,
 			getAgencyFilter()
