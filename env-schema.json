@@ -88,8 +88,20 @@
 	"PUBLIC_OBA_MAP_PROVIDER": {
 		"required": true,
 		"type": "enum",
-		"enum": ["osm", "google"],
-		"description": "Map provider: 'osm' for OpenStreetMap/Leaflet, 'google' for Google Maps"
+		"enum": ["osm", "google", "arcgis"],
+		"description": "Map provider: 'osm' for OpenStreetMap/Leaflet, 'google' for Google Maps, or 'arcgis' for ArcGIS"
+	},
+	"PUBLIC_ARCGIS_API_KEY": {
+		"required": false,
+		"type": "string",
+		"allowEmpty": true,
+		"description": "Optional ArcGIS API key; required for secured ArcGIS services"
+	},
+	"PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "Optional ArcGIS vector-tile basemap URL; preserved across theme changes"
 	},
 	"PUBLIC_OBA_REGION_CENTER_LAT": {
 		"required": true,
