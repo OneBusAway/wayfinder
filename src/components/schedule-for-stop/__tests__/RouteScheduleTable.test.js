@@ -14,6 +14,8 @@ vi.mock('svelte-i18n', () => ({
 					'schedule_for_stop.minutes': 'Minutes',
 					'schedule_for_stop.no_am_schedules_available': 'No AM schedules available',
 					'schedule_for_stop.no_pm_schedules_available': 'No PM schedules available',
+					'schedule_for_stop.no_schedules_available':
+						'No schedules available for the selected date.',
 					'schedule_for_stop.schedule_table_caption': `Departure times for ${options?.values?.route ?? ''}`,
 					'schedule_for_stop.short_line': 'Short line',
 					'schedule_for_stop.short_line_to': `Short line to ${options?.values?.destination ?? ''}`,
@@ -87,16 +89,16 @@ describe('RouteScheduleTable accessibility', () => {
 		expect(secondRegion).toHaveAttribute('aria-labelledby', secondCaption.id);
 	});
 
-	test('AM and PM section rows are header cells with rowgroup scope', () => {
+	test('uses each hour as its row header without redundant AM and PM section rows', () => {
 		render(RouteScheduleTable, { props: { schedule } });
 
-		const amHeader = screen.getByRole('rowheader', { name: 'AM' });
-		const pmHeader = screen.getByRole('rowheader', { name: 'PM' });
+		const amHour = screen.getByRole('rowheader', { name: '8 AM' });
+		const pmHour = screen.getByRole('rowheader', { name: '3 PM' });
 
-		expect(amHeader.tagName).toBe('TH');
-		expect(amHeader).toHaveAttribute('scope', 'rowgroup');
-		expect(pmHeader.tagName).toBe('TH');
-		expect(pmHeader).toHaveAttribute('scope', 'rowgroup');
+		expect(amHour).toHaveAttribute('scope', 'row');
+		expect(pmHour).toHaveAttribute('scope', 'row');
+		expect(screen.queryByRole('rowheader', { name: 'AM' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('rowheader', { name: 'PM' })).not.toBeInTheDocument();
 	});
 
 	test('column headers use scope="col"', () => {
@@ -109,13 +111,12 @@ describe('RouteScheduleTable accessibility', () => {
 		expect(minutesHeader).toHaveAttribute('scope', 'col');
 	});
 
-	test('renders empty-state messaging when a section has no times', () => {
+	test('renders empty-state messaging when no times are available', () => {
 		render(RouteScheduleTable, {
 			props: { schedule: { tripHeadsign: 'Empty Route', stopTimes: {} } }
 		});
 
-		expect(screen.getByText('No AM schedules available')).toBeInTheDocument();
-		expect(screen.getByText('No PM schedules available')).toBeInTheDocument();
+		expect(screen.getByText('No schedules available for the selected date.')).toBeInTheDocument();
 	});
 });
 
