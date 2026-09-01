@@ -1,10 +1,12 @@
 import { json } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
 import { buildURL } from '$lib/urls.js';
+import { getSidecarBaseURL, warnSidecarNotConfigured } from '$lib/sidecarConfig.js';
 
 export async function POST({ request, params }) {
-	if (!env.PRIVATE_OBACO_API_BASE_URL) {
-		console.warn('[update-survey] PRIVATE_OBACO_API_BASE_URL not configured');
+	// No region path here: the survey_responses endpoints are not region-scoped.
+	const baseURL = getSidecarBaseURL();
+	if (!baseURL) {
+		warnSidecarNotConfigured('update-survey', ['PRIVATE_SIDECAR_API_BASE_URL']);
 		return json({ error: 'Survey service not configured' }, { status: 503 });
 	}
 
@@ -12,7 +14,7 @@ export async function POST({ request, params }) {
 		const { id } = params;
 		const body = await request.text();
 
-		const url = buildURL(env.PRIVATE_OBACO_API_BASE_URL, `/survey_responses/${id}`);
+		const url = buildURL(baseURL, `/survey_responses/${id}`);
 
 		const response = await fetch(url, {
 			method: 'POST',

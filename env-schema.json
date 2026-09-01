@@ -16,21 +16,25 @@
 		"enum": ["google"],
 		"description": "Geocoding provider (currently only 'google' is supported)"
 	},
-	"PRIVATE_OBACO_API_BASE_URL": {
+	"PRIVATE_SIDECAR_API_BASE_URL": {
 		"required": false,
 		"type": "url",
-		"description": "Base URL for the OneBusAway.co API"
+		"deprecatedNames": ["PRIVATE_OBACO_API_BASE_URL"],
+		"description": "Base URL for the Sidecar API"
 	},
-	"PRIVATE_REGION_ID": {
+	"PRIVATE_SIDECAR_REGION_ID": {
 		"required": false,
 		"type": "string",
 		"allowEmpty": true,
-		"description": "Region ID for OneBusAway.co API"
+		"requiredWith": "PRIVATE_SIDECAR_API_BASE_URL",
+		"deprecatedNames": ["PRIVATE_REGION_ID"],
+		"description": "Region ID for the Sidecar API"
 	},
-	"PRIVATE_OBACO_SHOW_TEST_ALERTS": {
+	"PRIVATE_SIDECAR_SHOW_TEST_ALERTS": {
 		"required": false,
 		"type": "boolean",
-		"description": "Whether to show test alerts from OneBusAway.co"
+		"deprecatedNames": ["PRIVATE_OBACO_SHOW_TEST_ALERTS"],
+		"description": "Whether to show test alerts from Sidecar"
 	},
 	"PRIVATE_OBA_AGENCY_FILTER": {
 		"required": false,
