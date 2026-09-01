@@ -4,7 +4,10 @@ vi.mock('$env/dynamic/public', () => ({
 	env: {}
 }));
 
-import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon.js';
+import {
+	createVehicleIconSvg,
+	getVehicleMarkerContrastColor
+} from '$lib/MapHelpers/generateVehicleIcon.js';
 
 describe('createVehicleIconSvg', () => {
 	it('renders no highlight glow by default', () => {
@@ -28,5 +31,19 @@ describe('createVehicleIconSvg', () => {
 	it('always produces a valid <svg> element', () => {
 		expect(createVehicleIconSvg(90, '#007BFF', undefined, true)).toContain('<svg');
 		expect(createVehicleIconSvg(90)).toContain('<svg');
+	});
+
+	it('uses the most contrasting neutral backing for the route colour', () => {
+		expect(getVehicleMarkerContrastColor('#000000')).toBe('#ffffff');
+		expect(getVehicleMarkerContrastColor('#ffffff')).toBe('#000000');
+		expect(getVehicleMarkerContrastColor('#007BFF')).toBe('#000000');
+	});
+
+	it('adds a contrasting backing and arrow outline for a same-colour route', () => {
+		const svg = createVehicleIconSvg(0, '#000000');
+
+		expect(svg).toContain('<circle cx="0" cy="0" r="16" fill="#ffffff"/>');
+		expect(svg).toContain('stroke="#ffffff" stroke-width="6"');
+		expect(svg).toContain('stroke="#000000" stroke-width="2"');
 	});
 });
