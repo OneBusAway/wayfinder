@@ -451,6 +451,27 @@ describe('setBasemapDimmed / setTheme composition', () => {
 		expect(lastStyles.slice(0, base.length)).toEqual(base);
 		expect(lastStyles.at(-1).stylers.some((v) => 'saturation' in v)).toBe(true);
 	});
+
+	test('refreshes existing vehicle icons for the new theme', () => {
+		const provider = makeProvider();
+		provider.map = { setOptions: vi.fn() };
+		setupGoogleMaps(makeGoogleMarkerMock());
+		const marker = {
+			vehicleIconOptions: {
+				orientation: 90,
+				color: '#007BFF',
+				routeType: 3,
+				isHighlighted: false
+			},
+			setIcon: vi.fn()
+		};
+		provider.vehicleMarkers = [marker];
+
+		provider.setTheme('dark');
+
+		expect(createVehicleIconSvg).toHaveBeenLastCalledWith(90, '#007BFF', 3, false, true);
+		expect(marker.setIcon).toHaveBeenCalledOnce();
+	});
 });
 
 // Shared by both the createPolyline and setPolylineLayer suites below, since

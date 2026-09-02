@@ -476,6 +476,12 @@ export default class OpenStreetMapProvider {
 		});
 
 		this.vehicleMarkers.push(marker);
+		marker.vehicleIconOptions = {
+			orientation: vehicle?.orientation,
+			color,
+			routeType,
+			isHighlighted
+		};
 
 		const vehicleData = $state(buildVehiclePopupData(vehicle, activeTrip, this.stopsMap));
 
@@ -519,19 +525,12 @@ export default class OpenStreetMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const updatedIconSvg = createVehicleIconSvg(
-			vehicleStatus.orientation,
+		marker.vehicleIconOptions = {
+			orientation: vehicleStatus.orientation,
 			color,
 			routeType,
-			isHighlighted,
-			this._darkTheme
-		);
-		const updatedIcon = this.L.divIcon({
-			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
-			iconSize: [iconWidth, iconHeight],
-			iconAnchor: [iconWidth / 2, iconHeight / 2],
-			className: ''
-		});
+			isHighlighted
+		};
 
 		const current = marker.getLatLng();
 		animateMarkerTo(
@@ -541,7 +540,7 @@ export default class OpenStreetMapProvider {
 			(lat, lng) => marker.setLatLng([lat, lng]),
 			{ routePaths: this._getRoutePaths() }
 		);
-		marker.setIcon(updatedIcon);
+		this._setVehicleMarkerIcon(marker);
 		// setIcon doesn't touch stacking order, so update the offset directly to
 		// reflect the current highlight state (divIcon ignores zIndexOffset).
 		marker.setZIndexOffset(isHighlighted ? 2000 : 1000);
@@ -559,6 +558,32 @@ export default class OpenStreetMapProvider {
 			marker.vehicleData,
 			buildVehiclePopupData(vehicleStatus, activeTrip, this.stopsMap)
 		);
+	}
+
+	_setVehicleMarkerIcon(marker) {
+		const { orientation, color, routeType, isHighlighted } = marker.vehicleIconOptions;
+		const vehicleIconSvg = createVehicleIconSvg(
+			orientation,
+			color,
+			routeType,
+			isHighlighted,
+			this._darkTheme
+		);
+		const icon = this.L.divIcon({
+			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" />`,
+			iconSize: [iconWidth, iconHeight],
+			iconAnchor: [iconWidth / 2, iconHeight / 2],
+			className: ''
+		});
+		marker.setIcon(icon);
+	}
+
+	_refreshVehicleMarkerIcons() {
+		for (const marker of this.vehicleMarkers) {
+			if (marker.vehicleIconOptions) {
+				this._setVehicleMarkerIcon(marker);
+			}
+		}
 	}
 	removeVehicleMarker(marker) {
 		if (marker) {
@@ -682,6 +707,7 @@ export default class OpenStreetMapProvider {
 	setTheme(theme) {
 		this._darkTheme = theme === 'dark';
 		if (!browser || !this.map) return;
+		this._refreshVehicleMarkerIcons();
 
 		let styleUrl;
 		if (theme === 'dark') {

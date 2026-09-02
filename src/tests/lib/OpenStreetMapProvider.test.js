@@ -436,6 +436,25 @@ describe('setTheme — avoids redundant layer rebuilds', () => {
 		expect(provider.L.maplibreGL).not.toHaveBeenCalled();
 	});
 
+	test('refreshes existing vehicle icons for the new theme', () => {
+		const marker = {
+			vehicleIconOptions: {
+				orientation: 90,
+				color: '#007BFF',
+				routeType: 3,
+				isHighlighted: false
+			},
+			setIcon: vi.fn()
+		};
+		provider.L.divIcon = vi.fn(() => ({}));
+		provider.vehicleMarkers = [marker];
+
+		provider.setTheme('dark');
+
+		expect(createVehicleIconSvg).toHaveBeenLastCalledWith(90, '#007BFF', 3, false, true);
+		expect(marker.setIcon).toHaveBeenCalledOnce();
+	});
+
 	test('bails out before the map is initialized', () => {
 		provider.map = null;
 		provider.setTheme('dark');
