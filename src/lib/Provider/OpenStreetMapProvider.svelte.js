@@ -77,6 +77,7 @@ export default class OpenStreetMapProvider {
 		this.contextMenuPopup = null;
 		this.contextMenuComponent = null;
 		this.userLocationMarker = null;
+		this._darkTheme = this.maplibreLayer === 'dark';
 		// Incremented on each fitToPolylines() so a superseded route load's
 		// pending reveal can detect it's stale and bail out.
 		this._fitToken = 0;
@@ -448,7 +449,8 @@ export default class OpenStreetMapProvider {
 			vehicle?.orientation,
 			color,
 			routeType,
-			isHighlighted
+			isHighlighted,
+			this._darkTheme
 		);
 		const zIndexOffset = isHighlighted ? 2000 : 1000;
 		const customIcon = this.L.divIcon({
@@ -521,7 +523,8 @@ export default class OpenStreetMapProvider {
 			vehicleStatus.orientation,
 			color,
 			routeType,
-			isHighlighted
+			isHighlighted,
+			this._darkTheme
 		);
 		const updatedIcon = this.L.divIcon({
 			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
@@ -677,6 +680,7 @@ export default class OpenStreetMapProvider {
 	}
 
 	setTheme(theme) {
+		this._darkTheme = theme === 'dark';
 		if (!browser || !this.map) return;
 
 		let styleUrl;

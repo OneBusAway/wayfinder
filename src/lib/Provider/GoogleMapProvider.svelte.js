@@ -410,7 +410,8 @@ export default class GoogleMapProvider {
 			vehicle?.orientation,
 			color,
 			routeType,
-			isHighlighted
+			isHighlighted,
+			this._darkTheme
 		);
 		const icon = {
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}`,
@@ -476,7 +477,8 @@ export default class GoogleMapProvider {
 			vehicleStatus.orientation,
 			color,
 			routeType,
-			isHighlighted
+			isHighlighted,
+			this._darkTheme
 		);
 		marker.setIcon({
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIcon)}`,

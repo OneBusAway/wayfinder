@@ -39,6 +39,15 @@ describe('createVehicleIconSvg', () => {
 		expect(getVehicleMarkerContrastColor('#007BFF')).toBe('#000000');
 	});
 
+	it('keeps a light backing for lightened route colours on a dark basemap', () => {
+		expect(getVehicleMarkerContrastColor('#808080', true)).toBe('#ffffff');
+		expect(getVehicleMarkerContrastColor('#59A9FF', true)).toBe('#ffffff');
+
+		const svg = createVehicleIconSvg(0, '#59A9FF', undefined, false, true);
+		expect(svg).toContain('<circle cx="0" cy="0" r="16" fill="#ffffff"/>');
+		expect(svg).toContain('stroke="#ffffff" stroke-width="6"');
+	});
+
 	it('adds a contrasting backing and arrow outline for a same-colour route', () => {
 		const svg = createVehicleIconSvg(0, '#000000');
 
