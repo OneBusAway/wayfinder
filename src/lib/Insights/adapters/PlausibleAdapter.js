@@ -25,7 +25,9 @@ export class PlausibleAdapter {
 		return `${this.env.PUBLIC_ANALYTICS_API_HOST}/api/event`;
 	}
 
-	async forwardEvent(envelope, requestContext) {
+	async forwardEvent(envelope = {}, requestContext) {
+		// Disabled analytics intentionally ignores malformed events so local development
+		// and tests without a complete analytics configuration remain quiet.
 		if (!this.isEnabled()) {
 			return { status: 'analytics disabled' };
 		}

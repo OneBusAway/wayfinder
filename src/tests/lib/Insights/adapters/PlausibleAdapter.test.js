@@ -102,6 +102,12 @@ describe('PlausibleAdapter.forwardEvent', () => {
 		).rejects.toThrow('forwardEvent requires name and url');
 	});
 
+	it('throws a clear validation error when called without an envelope', async () => {
+		await expect(new PlausibleAdapter(fullEnv).forwardEvent()).rejects.toThrow(
+			'forwardEvent requires name and url'
+		);
+	});
+
 	it('POSTs to {apiHost}/api/event', async () => {
 		await new PlausibleAdapter(fullEnv).forwardEvent(envelope, ctx);
 		expect(global.fetch).toHaveBeenCalledWith(
