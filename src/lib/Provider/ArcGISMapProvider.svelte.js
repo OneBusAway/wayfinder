@@ -19,7 +19,6 @@ import { buildVehiclePopupData } from '$lib/vehicleUtils';
 import { ROUTE_PANE } from '$lib/mapPanes.js';
 import PolylineUtil from 'polyline-encoded';
 import { mount, unmount } from 'svelte';
-import './../../assets/styles/arcgis-map.css';
 
 const DEFAULT_BASEMAP = 'streets-navigation-vector';
 const DARK_BASEMAP = 'dark-gray-vector';
@@ -49,6 +48,23 @@ function colorWithOpacity(color, opacity = 1) {
 		Number.parseInt(expanded.slice(4, 6), 16),
 		alpha
 	];
+}
+
+function toArcGISPadding(padding) {
+	if (padding == null) return { top: 50, right: 50, bottom: 50, left: 50 };
+	if (typeof padding === 'number') {
+		return { top: padding, right: padding, bottom: padding, left: padding };
+	}
+	if (Array.isArray(padding)) {
+		const [horizontal = 50, vertical = horizontal] = padding;
+		return { top: vertical, right: horizontal, bottom: vertical, left: horizontal };
+	}
+	return {
+		top: padding.top ?? 50,
+		right: padding.right ?? 50,
+		bottom: padding.bottom ?? 50,
+		left: padding.left ?? 50
+	};
 }
 
 /** ArcGIS Maps SDK implementation of Wayfinder's map-provider contract. */
@@ -86,6 +102,7 @@ export default class ArcGISMapProvider {
 		this._destroyed = false;
 
 		await import('@arcgis/core/assets/esri/themes/light/main.css');
+		await import('./../../assets/styles/arcgis-map.css');
 		const modules = await Promise.all([
 			import('@arcgis/core/Map.js'),
 			import('@arcgis/core/views/MapView.js'),
@@ -95,7 +112,6 @@ export default class ArcGISMapProvider {
 			import('@arcgis/core/Graphic.js'),
 			import('@arcgis/core/geometry/Point.js'),
 			import('@arcgis/core/geometry/Polyline.js'),
-			import('@arcgis/core/geometry/Extent.js'),
 			import('@arcgis/core/symbols/SimpleLineSymbol.js'),
 			import('@arcgis/core/symbols/SimpleMarkerSymbol.js'),
 			import('@arcgis/core/symbols/PictureMarkerSymbol.js'),
@@ -114,7 +130,6 @@ export default class ArcGISMapProvider {
 			{ default: this.Graphic },
 			{ default: this.Point },
 			{ default: this.Polyline },
-			{ default: this.Extent },
 			{ default: this.SimpleLineSymbol },
 			{ default: this.SimpleMarkerSymbol },
 			{ default: this.PictureMarkerSymbol },
@@ -125,8 +140,10 @@ export default class ArcGISMapProvider {
 			this.projection
 		] = modules;
 
+		if (this._destroyed) return;
 		if (this.apiKey) this.arcgisConfig.apiKey = this.apiKey;
 		await this.projection.load();
+		if (this._destroyed) return;
 
 		try {
 			const basemap = this.customBasemapUrl
@@ -180,9 +197,11 @@ export default class ArcGISMapProvider {
 				constraints: { rotationEnabled: false }
 			});
 			await this.view.when();
+			if (this._destroyed) return;
 			this._ensureOverlayContainer();
 			this._registerSharedHandles();
 		} catch (error) {
+			if (this._destroyed) return;
 			this.destroy();
 			throw error;
 		}
@@ -192,7 +211,10 @@ export default class ArcGISMapProvider {
 		this._trackHandle(
 			this.reactiveUtils.watch(
 				() => [this.view?.extent, this.view?.zoom, this.view?.stationary],
-				() => this._requestPositionUpdate()
+				() => {
+					this.updateMarkersRouteLabelVisibility();
+					this._requestPositionUpdate();
+				}
 			)
 		);
 		this._trackHandle(
@@ -449,7 +471,19 @@ export default class ArcGISMapProvider {
 
 	updatePopupContent(stop, arrivalTime = null) {
 		if (!this.popupContentComponent || !this.view?.popup?.visible) return;
-		this.openStopMarker(stop, { arrivalTime });
+		this._cleanupPopupComponent();
+		const container = document.createElement('div');
+		this.popupContentComponent = mount(PopupContent, {
+			target: container,
+			props: {
+				stopName: stop.name,
+				arrivalTime,
+				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
+			}
+		});
+		this.activePopupComponent = this.popupContentComponent;
+		this.globalInfoWindow = this.view.popup;
+		this.view.popup.content = container;
 	}
 
 	cleanupInfoWindow() {
@@ -593,7 +627,7 @@ export default class ArcGISMapProvider {
 	}
 
 	getCenter() {
-		if (!this.view?.center) return { lat: 0, lng: 0 };
+		if (!this.view?.center) return null;
 		return { lat: this.view.center.latitude, lng: this.view.center.longitude };
 	}
 
@@ -612,6 +646,14 @@ export default class ArcGISMapProvider {
 	setBasemapDimmed(dimmed) {
 		this._dimmed = dimmed;
 		this._applyBasemapDimmingWhenReady(this.map?.basemap);
+	}
+
+	setPadding(padding = 50) {
+		if (this.view) this.view.padding = toArcGISPadding(padding);
+	}
+
+	resetPadding() {
+		if (this.view) this.view.padding = { top: 0, right: 0, bottom: 0, left: 0 };
 	}
 
 	_applyBasemapDimmingWhenReady(basemap) {
@@ -767,7 +809,9 @@ export default class ArcGISMapProvider {
 	}
 
 	async fitToPolylines(options = {}) {
-		if (!this.view || !this.polylines.length) return false;
+		if (!this.view) return false;
+		this.setPadding(options.padding);
+		if (!this.polylines.length) return false;
 		try {
 			await this.view.goTo(this.polylines, { duration: options.duration ?? 700 });
 			if (this.view.zoom > (options.maxZoom ?? 16)) this.view.zoom = options.maxZoom ?? 16;

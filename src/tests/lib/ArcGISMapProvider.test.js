@@ -133,7 +133,6 @@ vi.mock('@arcgis/core/layers/GraphicsLayer.js', () => ({ default: sdk.GraphicsLa
 vi.mock('@arcgis/core/Graphic.js', () => ({ default: sdk.Graphic }));
 vi.mock('@arcgis/core/geometry/Point.js', () => ({ default: sdk.Point }));
 vi.mock('@arcgis/core/geometry/Polyline.js', () => ({ default: sdk.Polyline }));
-vi.mock('@arcgis/core/geometry/Extent.js', () => ({ default: class {} }));
 vi.mock('@arcgis/core/symbols/SimpleLineSymbol.js', () => ({ default: sdk.Symbol }));
 vi.mock('@arcgis/core/symbols/SimpleMarkerSymbol.js', () => ({ default: sdk.Symbol }));
 vi.mock('@arcgis/core/symbols/PictureMarkerSymbol.js', () => ({ default: sdk.Symbol }));
@@ -183,12 +182,48 @@ describe('ArcGISMapProvider', () => {
 		expect(sdk.arcgisConfig.apiKey).toBeUndefined();
 	});
 
+	test('updates stop route labels when the view zoom changes', async () => {
+		const provider = await initializedProvider();
+		provider.showStopsRoutesAtZoom = 15;
+		const marker = provider.addMarker({
+			stop: { id: 'stop-1', name: 'Stop', routes: [] },
+			position: { lat: 47.6, lng: -122.3 }
+		});
+		expect(marker.props.showRoutesLabel).toBe(false);
+
+		provider.view.zoom = 16;
+		const viewportWatch = sdk.reactiveUtils.watch.mock.calls[0][1];
+		viewportWatch();
+
+		expect(marker.props.showRoutesLabel).toBe(true);
+	});
+
 	test('cleans up partial state when view.when rejects', async () => {
 		sdk.MapView.whenResult = Promise.reject(new Error('WebGL unavailable'));
 		const provider = new ArcGISMapProvider('', '', vi.fn());
 		await expect(
 			provider.initMap(document.createElement('div'), { lat: 1, lng: 2 })
 		).rejects.toThrow('WebGL unavailable');
+		expect(provider.view).toBeNull();
+		expect(provider.map).toBeNull();
+	});
+
+	test('does not create a map after destruction during asynchronous initialization', async () => {
+		let finishProjectionLoad;
+		sdk.projection.load.mockImplementationOnce(
+			() =>
+				new Promise((resolve) => {
+					finishProjectionLoad = resolve;
+				})
+		);
+		const provider = new ArcGISMapProvider('', '', vi.fn());
+		const initialization = provider.initMap(document.createElement('div'), { lat: 1, lng: 2 });
+
+		await vi.waitFor(() => expect(sdk.projection.load).toHaveBeenCalled());
+		provider.destroy();
+		finishProjectionLoad();
+		await initialization;
+
 		expect(provider.view).toBeNull();
 		expect(provider.map).toBeNull();
 	});
@@ -243,6 +278,37 @@ describe('ArcGISMapProvider', () => {
 		provider.closeContextMenu();
 		expect(provider.contextMenuComponent).toBeNull();
 		expect(provider.view.popup.close).toHaveBeenCalledTimes(1);
+	});
+
+	test('updates a visible stop popup without closing it', async () => {
+		const provider = await initializedProvider();
+		provider.openStopMarker({ id: 'stop-1', name: 'Old stop', lat: 47.6, lon: -122.3 });
+		const originalContent = provider.view.popup.content;
+
+		provider.updatePopupContent(
+			{ id: 'stop-1', name: 'New stop', lat: 47.6, lon: -122.3 },
+			'12:34'
+		);
+
+		expect(provider.view.popup.close).not.toHaveBeenCalled();
+		expect(provider.view.popup.content).not.toBe(originalContent);
+	});
+
+	test('uses itinerary padding while fitting polylines and clears it on request', async () => {
+		const provider = await initializedProvider();
+		provider.polylines = [{}];
+
+		await provider.fitToPolylines({ padding: { top: 10, right: 20, bottom: 300, left: 40 } });
+
+		expect(provider.view.padding).toEqual({ top: 10, right: 20, bottom: 300, left: 40 });
+		provider.resetPadding();
+		expect(provider.view.padding).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+	});
+
+	test('returns null instead of a Null Island center when the view has no center', async () => {
+		const provider = await initializedProvider();
+		provider.view.center = null;
+		expect(provider.getCenter()).toBeNull();
 	});
 
 	test('returns WGS84 bounds and null when no extent is available', async () => {
