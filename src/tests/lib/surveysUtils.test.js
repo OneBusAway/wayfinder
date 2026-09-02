@@ -15,7 +15,8 @@ beforeEach(() => {
 	vi.stubGlobal('localStorage', {
 		getItem: vi.fn((key) => store[key] || null),
 		setItem: vi.fn((key, value) => {
-			store[key] = value;
+			// Storage coerces on write, so getItem always hands back a string.
+			store[key] = String(value);
 		}),
 		removeItem: vi.fn((key) => {
 			delete store[key];
@@ -337,7 +338,7 @@ describe('skipSurvey', () => {
 
 		skipSurvey(survey);
 
-		expect(localStorage.getItem('survey_1_skipped_timestamp')).toBe(NOW);
+		expect(localStorage.getItem('survey_1_skipped_timestamp')).toBe(String(NOW));
 		expect(localStorage.getItem('survey_1_skipped')).toBeNull();
 	});
 
@@ -346,17 +347,17 @@ describe('skipSurvey', () => {
 
 		skipSurvey(survey);
 
-		expect(localStorage.getItem('survey_2_skipped')).toBe(true);
+		expect(localStorage.getItem('survey_2_skipped')).toBe('true');
 		expect(localStorage.getItem('survey_2_skipped_timestamp')).toBeNull();
 	});
 
 	it('should clear a stale permanent flag when skipping a recurring survey', () => {
 		const survey = { id: 3, allows_multiple_responses: true, always_visible: true };
-		localStorage.setItem('survey_3_skipped', true);
+		localStorage.setItem('survey_3_skipped', 'true');
 
 		skipSurvey(survey);
 
 		expect(localStorage.getItem('survey_3_skipped')).toBeNull();
-		expect(localStorage.getItem('survey_3_skipped_timestamp')).toBe(NOW);
+		expect(localStorage.getItem('survey_3_skipped_timestamp')).toBe(String(NOW));
 	});
 });
