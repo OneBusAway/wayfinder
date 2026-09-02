@@ -267,7 +267,7 @@ export function removeVehicleMarkersForRoutes(routeIds, mapProvider) {
 
 export function buildVehiclePopupData(vehicle, activeTrip, stopsMap) {
 	return {
-		nextDestination: activeTrip.tripHeadsign,
+		nextDestination: activeTrip?.tripHeadsign,
 		vehicleId: vehicle.vehicleId,
 		lastUpdateTime: vehicle.lastUpdateTime,
 		nextStopName: stopsMap.get(vehicle.nextStop)?.name,
