@@ -73,8 +73,11 @@
 	const fetchLocationResults = debounce(async (query, isFrom, requestId) => {
 		if (!isCurrentAutocompleteRequest(isFrom, requestId)) return;
 
-		isLoadingFrom = isFrom;
-		isLoadingTo = !isFrom;
+		if (isFrom) {
+			isLoadingFrom = true;
+		} else {
+			isLoadingTo = true;
+		}
 
 		try {
 			const results = await fetchAutocompleteResults(query);
@@ -88,8 +91,11 @@
 			}
 		} finally {
 			if (isCurrentAutocompleteRequest(isFrom, requestId)) {
-				isLoadingFrom = false;
-				isLoadingTo = false;
+				if (isFrom) {
+					isLoadingFrom = false;
+				} else {
+					isLoadingTo = false;
+				}
 			}
 		}
 	}, 500);
