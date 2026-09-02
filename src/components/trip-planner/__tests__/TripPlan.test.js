@@ -149,7 +149,10 @@ describe('TripPlan autocomplete dismissal', () => {
 		expect(screen.queryByRole('status')).not.toBeInTheDocument();
 
 		resolveSuggestions();
-		await Promise.resolve();
+		await vi.advanceTimersByTimeAsync(0);
+		for (let i = 0; i < 4; i += 1) {
+			await Promise.resolve();
+		}
 		await tick();
 
 		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
