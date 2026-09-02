@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockEnv = vi.hoisted(() => ({
-	PRIVATE_OBACO_API_BASE_URL: ''
+	PRIVATE_SIDECAR_API_BASE_URL: ''
 }));
 
 vi.mock('$env/dynamic/private', () => ({
@@ -18,12 +18,12 @@ import { POST } from '../../routes/api/oba/surveys/update-survey/[id]/+server.js
 
 describe('POST /api/oba/surveys/update-survey/[id]', () => {
 	beforeEach(() => {
-		mockEnv.PRIVATE_OBACO_API_BASE_URL = '';
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = '';
 		vi.restoreAllMocks();
 	});
 
-	it('returns 503 when PRIVATE_OBACO_API_BASE_URL is not set', async () => {
-		mockEnv.PRIVATE_OBACO_API_BASE_URL = '';
+	it('returns 503 when PRIVATE_SIDECAR_API_BASE_URL is not set', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = '';
 
 		const request = new Request('http://localhost/api/oba/surveys/update-survey/42', {
 			method: 'POST',
@@ -38,8 +38,8 @@ describe('POST /api/oba/surveys/update-survey/[id]', () => {
 		expect(data).toEqual({ error: 'Survey service not configured' });
 	});
 
-	it('returns 503 when PRIVATE_OBACO_API_BASE_URL is undefined', async () => {
-		mockEnv.PRIVATE_OBACO_API_BASE_URL = undefined;
+	it('returns 503 when PRIVATE_SIDECAR_API_BASE_URL is undefined', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = undefined;
 
 		const request = new Request('http://localhost/api/oba/surveys/update-survey/42', {
 			method: 'POST',

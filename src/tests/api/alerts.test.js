@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockEnv = vi.hoisted(() => ({
-	PRIVATE_OBACO_API_BASE_URL: '',
-	PRIVATE_REGION_ID: '1',
-	PRIVATE_OBACO_SHOW_TEST_ALERTS: 'false'
+	PRIVATE_SIDECAR_API_BASE_URL: '',
+	PRIVATE_SIDECAR_REGION_ID: '1',
+	PRIVATE_SIDECAR_SHOW_TEST_ALERTS: 'false'
 }));
 
 vi.mock('$env/dynamic/private', () => ({
@@ -38,18 +38,64 @@ vi.mock('gtfs-realtime-bindings', () => ({
 }));
 
 import { GET } from '../../routes/api/oba/alerts/+server.js';
+import { buildURL } from '$lib/urls.js';
 import { isStartDateWithin24Hours, isHighSeverity } from '$lib/alerts.js';
 
 describe('GET /api/oba/alerts', () => {
 	beforeEach(() => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = '';
+		mockEnv.PRIVATE_SIDECAR_REGION_ID = '1';
+		mockEnv.PRIVATE_SIDECAR_SHOW_TEST_ALERTS = 'false';
 		mockEnv.PRIVATE_OBACO_API_BASE_URL = '';
-		mockEnv.PRIVATE_REGION_ID = '1';
-		mockEnv.PRIVATE_OBACO_SHOW_TEST_ALERTS = 'false';
+		mockEnv.PRIVATE_REGION_ID = '';
+		mockEnv.PRIVATE_OBACO_SHOW_TEST_ALERTS = '';
 		vi.restoreAllMocks();
 	});
 
-	it('returns 204 when PRIVATE_OBACO_API_BASE_URL is not set', async () => {
-		mockEnv.PRIVATE_OBACO_API_BASE_URL = '';
+	it('returns 204 without fetching when the base URL is set but no region ID is', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = 'https://sidecar.onebusaway.org/api/v1';
+		mockEnv.PRIVATE_SIDECAR_REGION_ID = '';
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const fetchMock = vi.spyOn(globalThis, 'fetch');
+
+		const response = await GET();
+
+		expect(response.status).toBe(204);
+		// Never request regions/undefined/alerts.pb
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it('requests the region-scoped alerts path', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = 'https://sidecar.onebusaway.org/api/v1';
+		mockEnv.PRIVATE_SIDECAR_REGION_ID = '7';
+		vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(new ArrayBuffer(0)));
+
+		await GET();
+
+		expect(buildURL).toHaveBeenCalledWith(
+			'https://sidecar.onebusaway.org/api/v1',
+			'regions/7/alerts.pb',
+			{}
+		);
+	});
+
+	it('asks Sidecar for test alerts when the test flag is on', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = 'https://sidecar.onebusaway.org/api/v1';
+		mockEnv.PRIVATE_SIDECAR_REGION_ID = '7';
+		mockEnv.PRIVATE_SIDECAR_SHOW_TEST_ALERTS = 'true';
+		vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(new ArrayBuffer(0)));
+
+		await GET();
+
+		expect(buildURL).toHaveBeenCalledWith(
+			'https://sidecar.onebusaway.org/api/v1',
+			'regions/7/alerts.pb',
+			{ test: 1 }
+		);
+	});
+
+	it('returns 204 when PRIVATE_SIDECAR_API_BASE_URL is not set', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = '';
 
 		const response = await GET();
 
@@ -57,8 +103,8 @@ describe('GET /api/oba/alerts', () => {
 		expect(response.headers.get('Content-Type')).toBe('application/json');
 	});
 
-	it('returns 204 when PRIVATE_OBACO_API_BASE_URL is undefined', async () => {
-		mockEnv.PRIVATE_OBACO_API_BASE_URL = undefined;
+	it('returns 204 when PRIVATE_SIDECAR_API_BASE_URL is undefined', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = undefined;
 
 		const response = await GET();
 

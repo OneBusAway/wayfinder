@@ -1,22 +1,32 @@
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
-import { env } from '$env/dynamic/private';
 import { buildURL } from '$lib/urls.js';
 import { getAgencyFilter, alertBelongsToAgency } from '$lib/agencyFilter.js';
 import { isValidAlert } from '$lib/alerts.js';
-
-const REGION_PATH = `regions/${env.PRIVATE_REGION_ID}/`;
+import {
+	getSidecarBaseURL,
+	getSidecarRegionPath,
+	sidecarShowsTestAlerts,
+	warnSidecarNotConfigured
+} from '$lib/sidecarConfig.js';
 
 export async function GET() {
-	if (!env.PRIVATE_OBACO_API_BASE_URL) {
-		console.warn('[alerts] PRIVATE_OBACO_API_BASE_URL not configured, skipping alerts');
+	const baseURL = getSidecarBaseURL();
+	const regionPath = getSidecarRegionPath();
+	const missing = [];
+	if (!baseURL) missing.push('PRIVATE_SIDECAR_API_BASE_URL');
+	if (!regionPath) missing.push('PRIVATE_SIDECAR_REGION_ID');
+	if (missing.length > 0) {
+		warnSidecarNotConfigured('alerts', missing);
 		return new Response(null, { status: 204, headers: { 'Content-Type': 'application/json' } });
 	}
 
+	const showTestAlerts = sidecarShowsTestAlerts();
+
 	try {
 		const alertsURL = buildURL(
-			env.PRIVATE_OBACO_API_BASE_URL,
-			REGION_PATH + 'alerts.pb',
-			env.PRIVATE_OBACO_SHOW_TEST_ALERTS == 'true' ? { test: 1 } : {}
+			baseURL,
+			regionPath + 'alerts.pb',
+			showTestAlerts ? { test: 1 } : {}
 		);
 
 		const response = await fetch(alertsURL);
@@ -29,7 +39,7 @@ export async function GET() {
 		let validAlert = null;
 		for (const entity of feed.entity) {
 			// If we're in test mode, show the alert to test the UI
-			if (env.PRIVATE_OBACO_SHOW_TEST_ALERTS === 'true') {
+			if (showTestAlerts) {
 				validAlert = entity.alert;
 				break;
 			}
