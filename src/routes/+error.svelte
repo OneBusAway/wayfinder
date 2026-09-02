@@ -77,18 +77,18 @@
 >
 	<div class="flex flex-col items-center px-6 py-12 text-center">
 		<div class="mb-6 flex items-center justify-center">
-			<FontAwesomeIcon {icon} class="text-4xl text-brand-accent dark:text-brand" />
+			<FontAwesomeIcon {icon} class="text-brand-accent dark:text-brand text-4xl" />
 		</div>
 
 		<p
-			class="mb-2 bg-gradient-to-br from-brand to-brand-accent bg-clip-text text-7xl font-extrabold tracking-tighter text-transparent"
+			class="from-brand to-brand-accent mb-2 bg-linear-to-br bg-clip-text text-7xl font-extrabold tracking-tighter text-transparent"
 			id="error-status-code"
 		>
 			{status}
 		</p>
 
 		<h1
-			class="mb-3 text-2xl font-bold text-surface-foreground dark:text-surface-foreground-dark"
+			class="text-surface-foreground dark:text-surface-foreground-dark mb-3 text-2xl font-bold"
 			id="error-title"
 		>
 			{title}

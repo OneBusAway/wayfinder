@@ -1,5 +1,7 @@
 <script>
-	import { Radio, Checkbox, Input } from 'flowbite-svelte';
+	import Radio from 'flowbite-svelte/Radio.svelte';
+	import Checkbox from 'flowbite-svelte/Checkbox.svelte';
+	import Input from 'flowbite-svelte/Input.svelte';
 	import { t } from 'svelte-i18n';
 	let {
 		question,

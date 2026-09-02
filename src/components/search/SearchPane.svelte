@@ -8,7 +8,8 @@
 	import { t } from 'svelte-i18n';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
-	import { Tabs, TabItem } from 'flowbite-svelte';
+	import Tabs from 'flowbite-svelte/Tabs.svelte';
+	import TabItem from 'flowbite-svelte/TabItem.svelte';
 	import { env } from '$env/dynamic/public';
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
@@ -371,14 +372,14 @@
      place there); md and up always shows it, so `collapsed` restores this root's
      own flex display at that breakpoint. -->
 <div
-	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-sm md:w-96 ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
+	class={`modal-pane dark:bg-surface-dark flex flex-col justify-between bg-white/80 backdrop-blur-sm md:w-96 ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
 >
 	<Tabs
 		tabStyle="none"
 		role="tablist"
 		activeClasses="bg-none border-b-2 border-brand-accent py-3 px-4"
 		inactiveClasses="py-3 px-4"
-		contentClass="pt-2 pb-4 rounded-lg dark:bg-surface-dark"
+		contentClass="rounded-lg bg-transparent pt-2 pb-4"
 	>
 		<TabItem
 			open={activeTab === 'stops'}
@@ -440,7 +441,7 @@
 			<div class="mt-0 sm:mt-0">
 				<button
 					type="button"
-					class="mt-3 text-sm font-medium text-brand-accent underline hover:text-brand focus:outline-none dark:text-brand dark:hover:text-white"
+					class="text-brand-accent hover:text-brand dark:text-brand mt-3 text-sm font-medium underline focus:outline-none dark:hover:text-white"
 					onclick={handleViewAllRoutes}
 				>
 					{$t('search.click_here')}

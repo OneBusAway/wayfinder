@@ -1,5 +1,6 @@
 <script>
-	import { Modal, Button } from 'flowbite-svelte';
+	import Modal from 'flowbite-svelte/Modal.svelte';
+	import Button from 'flowbite-svelte/Button.svelte';
 	import { getLocaleFromNavigator } from 'svelte-i18n';
 	import { t } from 'svelte-i18n';
 
@@ -46,7 +47,7 @@
 				{$t('alert.close')}
 			</Button>
 			<Button
-				class="bg-brand-accent text-white hover:bg-brand-accent-dark dark:bg-brand-accent dark:text-white dark:hover:bg-brand-accent-dark"
+				class="bg-brand-accent hover:bg-brand-accent-dark dark:bg-brand-accent dark:hover:bg-brand-accent-dark text-white dark:text-white"
 				on:click={() => window.open(getUrlTranslation(), '_blank')}
 			>
 				{$t('alert.more_info')}

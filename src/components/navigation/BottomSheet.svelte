@@ -90,14 +90,14 @@
 <div class="pointer-events-none absolute inset-0" bind:clientHeight={containerHeight}>
 	<div
 		bind:this={element}
-		class="pointer-events-auto absolute inset-x-0 bottom-0 flex flex-col overflow-hidden rounded-t-[14px] border border-b-0 border-gray-400 bg-surface/95 shadow-[0_-8px_24px_rgba(0,0,0,.18)] backdrop-blur dark:border-gray-600 dark:bg-surface-dark/95 dark:text-surface-foreground-dark"
+		class="bg-surface/95 dark:bg-surface-dark/95 dark:text-surface-foreground-dark pointer-events-auto absolute inset-x-0 bottom-0 flex flex-col overflow-hidden rounded-t-[14px] border border-b-0 border-gray-400 shadow-[0_-8px_24px_rgba(0,0,0,.18)] backdrop-blur dark:border-gray-600"
 		style:height="{sheetHeight}px"
 		style:transition={dragging ? 'none' : 'height .28s cubic-bezier(0,0,.2,1)'}
 		data-testid="bottom-sheet"
 	>
 		<div
 			role="presentation"
-			class="flex-none cursor-grab touch-none px-3.5 pb-1.5 pt-2"
+			class="flex-none cursor-grab touch-none px-3.5 pt-2 pb-1.5"
 			onpointerdown={handlePointerDown}
 			onpointermove={handlePointerMove}
 			onpointerup={handlePointerUp}
@@ -123,7 +123,7 @@
 		     `-mx-4` (1rem), line up exactly with this padding instead of spilling 4px
 		     past it. overflow-x-hidden guards against any other incidental overflow. -->
 		<div
-			class="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4"
+			class="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-4"
 			style:padding-bottom="calc(1rem + env(safe-area-inset-bottom))"
 		>
 			{@render children?.()}

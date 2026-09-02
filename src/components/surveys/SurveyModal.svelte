@@ -1,5 +1,6 @@
 <script>
-	import { Modal, Button } from 'flowbite-svelte';
+	import Modal from 'flowbite-svelte/Modal.svelte';
+	import Button from 'flowbite-svelte/Button.svelte';
 	import SurveyQuestion from './SurveyQuestion.svelte';
 	import {
 		submitHeroQuestion as submitHeroQuestionUtil,

@@ -112,7 +112,7 @@
 >
 	<!-- Modal -->
 	<div
-		class="w-full max-w-md rounded-t-2xl bg-white dark:bg-gray-900 sm:rounded-2xl"
+		class="w-full max-w-md rounded-t-2xl bg-white sm:rounded-2xl dark:bg-gray-900"
 		onclick={(e) => e.stopPropagation()}
 		onkeydown={(e) => e.stopPropagation()}
 		role="document"
@@ -146,7 +146,7 @@
 			<!-- Departure Time Section -->
 			<div class="mb-6">
 				<h3
-					class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+					class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
 				>
 					{$t('trip-planner.departure_time')}
 				</h3>
@@ -220,14 +220,14 @@
 							type="time"
 							bind:value={departureTime}
 							aria-label={$t('trip-planner.departure_time')}
-							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white"
 						/>
 						<input
 							type="date"
 							bind:value={departureDate}
 							min={getTodayDateForInput(regionTz)}
 							aria-label={$t('trip-planner.departure_date')}
-							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+							class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white"
 						/>
 					</div>
 				{/if}
@@ -255,7 +255,7 @@
 								: 'bg-gray-300 dark:bg-gray-600'}"
 						>
 							<span
-								class="absolute left-0.5 top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 {wheelchair
+								class="absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 {wheelchair
 									? 'translate-x-5'
 									: 'translate-x-0'}"
 							></span>
@@ -270,7 +270,7 @@
 			<!-- Route Optimization Section -->
 			<div class="mb-6">
 				<h3
-					class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+					class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
 				>
 					{$t('trip-planner.route_optimization')}
 				</h3>
@@ -320,7 +320,7 @@
 			<!-- Walking Distance Section -->
 			<div class="mb-6">
 				<h3
-					class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+					class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
 				>
 					{$t('trip-planner.walking_distance')}
 				</h3>
@@ -335,7 +335,7 @@
 						<select
 							bind:value={maxWalkDistance}
 							aria-label={$t('trip-planner.max_walking_distance')}
-							class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+							class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
 						>
 							{#each walkDistanceOptions as option (option.value)}
 								<option value={option.value}>{option.label}</option>
@@ -348,7 +348,7 @@
 			<!-- Distance Unit Section -->
 			<div class="mb-2">
 				<h3
-					class="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400"
+					class="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
 				>
 					{$t('trip-planner.distance_unit')}
 				</h3>
@@ -421,7 +421,7 @@
 				<button
 					type="button"
 					onclick={handleReset}
-					class="rounded text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-400 dark:hover:text-gray-200"
+					class="rounded text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:text-gray-400 dark:hover:text-gray-200"
 				>
 					{$t('trip-planner.reset_to_defaults')}
 				</button>

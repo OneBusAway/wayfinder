@@ -10,8 +10,8 @@ vi.mock('@fortawesome/svelte-fontawesome', () => ({
 	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
 }));
 
-vi.mock('flowbite-svelte', () => ({
-	Modal: vi.fn(() => ({ $$: { component: 'div' } }))
+vi.mock('flowbite-svelte/Modal.svelte', () => ({
+	default: vi.fn(() => ({ $$: { component: 'div' } }))
 }));
 
 const STOP_ID = '1_75403';

@@ -89,7 +89,7 @@
 
 	{#if routes.length > 0}
 		<div>
-			<div class="sticky top-0 z-10 bg-surface pb-2 dark:bg-surface-dark">
+			<div class="bg-surface dark:bg-surface-dark sticky top-0 z-10 pb-2">
 				<input
 					type="text"
 					placeholder={$t('search.search_for_routes')}
@@ -98,7 +98,7 @@
 					oninput={handleSearch}
 				/>
 				<svg
-					class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-500 dark:text-gray-400"
+					class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-500 dark:text-gray-400"
 					aria-hidden="true"
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
