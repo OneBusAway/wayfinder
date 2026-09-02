@@ -18,6 +18,9 @@
 	let stopName = $state('');
 	let stopId = $state('');
 	let stopDirection = $state('');
+	let stopLat = $state(null);
+	let stopLon = $state(null);
+	let stopCode = $state(null);
 	let accordionComponent = $state();
 	let allRoutesExpanded = $state(false);
 
@@ -66,6 +69,9 @@
 		stopName = stop.name;
 		stopId = stop.id;
 		stopDirection = stop.direction;
+		stopLat = stop.lat ?? null;
+		stopLon = stop.lon ?? null;
+		stopCode = stop.code ?? null;
 	}
 
 	function processRouteSchedules(routeSchedules) {
@@ -148,7 +154,7 @@
 </svelte:head>
 
 <StandalonePage>
-	<StopPageHeader {stopName} {stopId} {stopDirection} />
+	<StopPageHeader {stopName} {stopId} {stopDirection} {stopLat} {stopLon} {stopCode} />
 
 	<div class="flex flex-col">
 		<div class="flex flex-1 flex-col">

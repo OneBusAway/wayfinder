@@ -6,6 +6,7 @@
 	import MapContainer from '$components/MapContainer.svelte';
 	import RouteModal from '$components/routes/RouteModal.svelte';
 	import ViewAllRoutesModal from '$components/routes/ViewAllRoutesModal.svelte';
+	import FavoritesFloatingControl from '$components/favorites/FavoritesFloatingControl.svelte';
 	import { isLoading } from 'svelte-i18n';
 	import AlertsModal from '$components/navigation/AlertsModal.svelte';
 	import { onMount, onDestroy } from 'svelte';
@@ -33,6 +34,7 @@
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
 	import { mapStopPath } from '$lib/mapStopUrl.js';
+	import { removeAgencyPrefix } from '$lib/utils';
 	import { clearVehicleMarkersMap } from '$lib/vehicleUtils';
 	import { activeRoutesFromArrivals, assignRouteColors } from '$lib/activeRoutes.js';
 
@@ -148,6 +150,46 @@
 		// structured-clones its state argument (DataCloneError on a proxy). Snapshot
 		// yields a plain, clone-safe copy.
 		pushState(mapStopPath(stopData.id), { stopData: $state.snapshot(stopData) });
+	}
+
+	/**
+	 * Open a favorited stop from the map floating control.
+	 * @param {Object} favorite
+	 */
+	function handleFavoriteStopClick(favorite) {
+		if (!mapProvider) return;
+		// Seed the marker so the selection effect has something to highlight, then
+		// hand off. Framing is the effect's job — flying here too would fight it.
+		mapProvider.addMarker({
+			stop: favorite,
+			position: { lat: favorite.lat, lng: favorite.lon },
+			onClick: () => handleStopMarkerSelect(favorite)
+		});
+		handleStopMarkerSelect(favorite);
+	}
+
+	/**
+	 * Open a favorited route via the same event ViewAllRoutesModal uses, so
+	 * SearchPane's existing handleRouteClick path loads shapes and vehicles.
+	 * @param {Object} favorite
+	 */
+	function handleFavoriteRouteClick(favorite) {
+		// The listener drives the map straight away (clearAllPolylines et al), so
+		// don't fire before MapContainer has handed us a provider.
+		if (!mapProvider) return;
+		window.dispatchEvent(
+			new CustomEvent('routeSelectedFromModal', {
+				detail: {
+					route: {
+						id: favorite.id,
+						shortName: favorite.shortName,
+						nullSafeShortName: favorite.shortName ?? removeAgencyPrefix(favorite.id),
+						description: favorite.description,
+						type: favorite.routeType
+					}
+				}
+			})
+		);
 	}
 
 	$effect(() => {
@@ -581,6 +623,19 @@
 						<SurveyLauncher />
 					{/snippet}
 				</SearchPane>
+			</div>
+
+			<!-- Mobile: sit in flow below the search pane. Desktop: pin to the map's
+			     top-right (absolute against the full-screen overlay ancestor).
+			     Wrapper stays pointer-events transparent (and shrink-wrapped) so it
+			     cannot steal map pans; the control itself opts back in. -->
+			<div
+				class="relative z-30 mx-2 mt-2 w-fit self-end md:absolute md:right-4 md:top-4 md:mx-0 md:mt-0"
+			>
+				<FavoritesFloatingControl
+					onStopClick={handleFavoriteStopClick}
+					onRouteClick={handleFavoriteRouteClick}
+				/>
 			</div>
 
 			<div class="relative mt-2 flex-1 md:mt-4">

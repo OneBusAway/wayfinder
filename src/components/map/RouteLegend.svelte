@@ -16,7 +16,7 @@
 
 {#if routes.length > 0}
 	<div
-		class="route-legend pointer-events-auto absolute right-4 top-4 z-30 hidden min-w-44 rounded-lg border border-gray-300 bg-white/95 p-3 shadow-md backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800/95 md:block"
+		class="route-legend pointer-events-auto absolute right-4 top-16 z-30 hidden min-w-44 rounded-lg border border-gray-300 bg-white/95 p-3 shadow-md backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800/95 md:block"
 	>
 		<h2
 			class="mb-2 text-[10.5px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"

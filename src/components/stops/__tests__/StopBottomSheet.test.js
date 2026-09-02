@@ -61,6 +61,12 @@ describe('StopBottomSheet', () => {
 		);
 	});
 
+	test('renders a favorite toggle in the action row', () => {
+		render(StopBottomSheet, { props: defaultProps });
+
+		expect(screen.getByRole('button', { name: 'favorites.add' })).toBeInTheDocument();
+	});
+
 	test('does not render a schedule link', () => {
 		render(StopBottomSheet, { props: defaultProps });
 
