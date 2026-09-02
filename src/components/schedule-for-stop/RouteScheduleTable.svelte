@@ -16,15 +16,19 @@
 	);
 
 	function renderScheduleTable(schedule) {
+		const stopTimes = Object.entries(schedule.stopTimes);
+
+		const amTimes = stopTimes.filter(([hour]) => +hour < 12);
+		const pmTimes = stopTimes.filter(([hour]) => +hour >= 12);
+
 		return {
-			times: Object.entries(schedule.stopTimes).sort(
-				([firstHour], [secondHour]) => Number(firstHour) - Number(secondHour)
-			)
+			amTimes,
+			pmTimes
 		};
 	}
 
 	function extractMinutes(arrivalTime) {
-		return arrivalTime.replace(/[AP]M/i, '').split(':')[1];
+		return arrivalTime.replace(/[AP]M/, '').split(':')[1];
 	}
 </script>
 
@@ -65,25 +69,86 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#if scheduleData.times.length === 0}
+			<tr class="bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-600">
+				<th
+					colspan="2"
+					scope="rowgroup"
+					class="px-6 py-3 text-left font-semibold text-gray-700 dark:bg-gray-800 dark:text-white"
+					>AM</th
+				>
+			</tr>
+			{#if scheduleData.amTimes.length === 0}
 				<tr>
 					<td colspan="2" class="border px-6 py-3 text-center text-gray-500 dark:border-gray-700">
-						{$isLoading ? '' : $t('schedule_for_stop.no_schedules_available')}
+						{$isLoading ? '' : $t('schedule_for_stop.no_am_schedules_available')}
 					</td>
 				</tr>
 			{:else}
-				{#each scheduleData.times as [hour, times]}
-					<tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
-						<th
-							scope="row"
+				{#each scheduleData.amTimes as [hour, times]}
+					<tr class="hover:bg-gray-100 dark:hover:bg-gray-900">
+						<td
 							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
 							title="Full Time: {hour}:{extractMinutes(times[0].arrivalTime)}"
 						>
 							{convert24HourTo12Hour(hour)}
-							<span class="text-sm text-gray-600 dark:text-gray-100"
-								>{Number(hour) < 12 ? 'AM' : 'PM'}</span
-							>
-						</th>
+							<span class="text-sm text-gray-600 dark:text-gray-100">AM</span>
+						</td>
+						<td
+							class="flex items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white"
+						>
+							{#each times as stopTime, index (index)}
+								{#if stopTime.isShortLine}
+									<span
+										class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-950 shadow-sm dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100"
+										data-short-line="true"
+									>
+										<span>{extractMinutes(stopTime.arrivalTime)}</span>
+										<span
+											class="border-l border-amber-300 pl-1.5 text-xs font-medium dark:border-amber-700"
+										>
+											{$isLoading
+												? ''
+												: $t('schedule_for_stop.short_line_to', {
+														values: { destination: stopTime.destination }
+													})}
+										</span>
+									</span>
+								{:else}
+									<span class="rounded bg-gray-50 px-2 py-1 dark:bg-gray-800">
+										{extractMinutes(stopTime.arrivalTime)}
+									</span>
+								{/if}
+							{/each}
+						</td>
+					</tr>
+				{/each}
+			{/if}
+		</tbody>
+		<tbody>
+			<tr class="bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-900">
+				<th
+					colspan="2"
+					scope="rowgroup"
+					class="px-6 py-3 text-left font-semibold text-gray-700 dark:bg-gray-800 dark:text-white"
+					>PM</th
+				>
+			</tr>
+			{#if scheduleData.pmTimes.length === 0}
+				<tr>
+					<td colspan="2" class="border px-6 py-3 text-center text-gray-500">
+						{$isLoading ? '' : $t('schedule_for_stop.no_pm_schedules_available')}
+					</td>
+				</tr>
+			{:else}
+				{#each scheduleData.pmTimes as [hour, times]}
+					<tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
+						<td
+							class="border px-6 py-3 text-center text-lg font-semibold dark:border-gray-700 dark:text-white"
+							title="Full Time: {hour}:{extractMinutes(times[0].arrivalTime)}"
+						>
+							{convert24HourTo12Hour(hour)}
+							<span class="text-sm text-gray-600 dark:text-gray-100">PM</span>
+						</td>
 						<td
 							class="flex items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white"
 						>

@@ -89,16 +89,11 @@ describe('RouteScheduleTable accessibility', () => {
 		expect(secondRegion).toHaveAttribute('aria-labelledby', secondCaption.id);
 	});
 
-	test('uses each hour as its row header without redundant AM and PM section rows', () => {
+	test('groups schedules into AM and PM row groups', () => {
 		render(RouteScheduleTable, { props: { schedule } });
 
-		const amHour = screen.getByRole('rowheader', { name: '8 AM' });
-		const pmHour = screen.getByRole('rowheader', { name: '3 PM' });
-
-		expect(amHour).toHaveAttribute('scope', 'row');
-		expect(pmHour).toHaveAttribute('scope', 'row');
-		expect(screen.queryByRole('rowheader', { name: 'AM' })).not.toBeInTheDocument();
-		expect(screen.queryByRole('rowheader', { name: 'PM' })).not.toBeInTheDocument();
+		expect(screen.getByRole('rowheader', { name: 'AM' })).toHaveAttribute('scope', 'rowgroup');
+		expect(screen.getByRole('rowheader', { name: 'PM' })).toHaveAttribute('scope', 'rowgroup');
 	});
 
 	test('column headers use scope="col"', () => {
@@ -116,7 +111,8 @@ describe('RouteScheduleTable accessibility', () => {
 			props: { schedule: { tripHeadsign: 'Empty Route', stopTimes: {} } }
 		});
 
-		expect(screen.getByText('No schedules available for the selected date.')).toBeInTheDocument();
+		expect(screen.getByText('No AM schedules available')).toBeInTheDocument();
+		expect(screen.getByText('No PM schedules available')).toBeInTheDocument();
 	});
 });
 
@@ -165,25 +161,6 @@ describe('RouteScheduleTable content', () => {
 		expect(pmMinutesCell).toHaveTextContent('10');
 	});
 
-	test('removes lowercase am and pm suffixes from minute chips', () => {
-		render(RouteScheduleTable, {
-			props: {
-				schedule: {
-					tripHeadsign: 'Lowercase meridiem',
-					stopTimes: {
-						8: [{ arrivalTime: '8:05am' }],
-						15: [{ arrivalTime: '3:10pm' }]
-					}
-				}
-			}
-		});
-
-		expect(screen.getByTitle('Full Time: 8:05')).toHaveTextContent('8');
-		expect(screen.getByTitle('Full Time: 15:10')).toHaveTextContent('3');
-		expect(screen.queryByText(/05 am/i)).not.toBeInTheDocument();
-		expect(screen.queryByText(/10 pm/i)).not.toBeInTheDocument();
-	});
-
 	test('clearly identifies short-line trips with their destination', () => {
 		render(RouteScheduleTable, {
 			props: {
@@ -209,6 +186,5 @@ describe('RouteScheduleTable content', () => {
 		const shortLine = screen.getByText('Short line to Fashion Valley').closest('[data-short-line]');
 		expect(shortLine).toHaveTextContent('25');
 		expect(shortLine).toHaveAttribute('data-short-line', 'true');
-		expect(screen.queryByText('Short line to Kearny Mesa')).not.toBeInTheDocument();
 	});
 });

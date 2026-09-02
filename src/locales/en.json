@@ -192,9 +192,7 @@
 		"schedule_table_caption": "Departure times for {route}",
 		"short_line": "Short line",
 		"short_line_to": "Short line to {destination}",
-		"short_line_notice": "Trips marked Short line end before the route's usual destination.",
-		"unable_to_load_schedule": "We couldn't load this schedule. Please try again.",
-		"retry": "Try again"
+		"short_line_notice": "Trips marked Short line end before the route's usual destination."
 	},
 	"direction": {
 		"N": "North",
