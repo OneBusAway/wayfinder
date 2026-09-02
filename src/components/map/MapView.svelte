@@ -92,6 +92,8 @@
 	let mapMode = $state(startInTripPlanMode ? Modes.TRIP_PLAN : Modes.NORMAL);
 	let modeChangeTimeout = null;
 	let pendingMarkerBatch = null;
+	let debouncedLoadMarkers = null;
+	let isDestroyed = false;
 
 	$effect(() => {
 		let newMode;
@@ -179,6 +181,11 @@
 		}
 
 		const boundingBox = getBoundingBox();
+		if (!boundingBox) {
+			// A provider can briefly have no valid extent while initializing or
+			// tearing down. Never turn that into a Null Island stop request.
+			return null;
+		}
 		const key = cacheKey(zoomLevel, boundingBox);
 
 		if (stopsCache.has(key)) {
@@ -212,6 +219,7 @@
 				lat: mapCenterLat,
 				lng: mapCenterLng
 			});
+			if (isDestroyed) return;
 
 			mapInstance = mapProvider;
 
@@ -226,8 +234,8 @@
 				await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
 			}
 
-			const debouncedLoadMarkers = debounce(async () => {
-				if (mapMode !== Modes.NORMAL) {
+			debouncedLoadMarkers = debounce(async () => {
+				if (isDestroyed || mapMode !== Modes.NORMAL || !mapInstance) {
 					return;
 				}
 
@@ -252,6 +260,7 @@
 
 	async function loadStopsAndAddMarkers(lat, lng, firstCall = false, zoomLevel = 15) {
 		const stopsData = await loadStopsForLocation(lat, lng, zoomLevel, firstCall);
+		if (!stopsData) return;
 		const newStops = stopsData.data.list;
 		const routeReference = stopsData.data.references.routes || [];
 
@@ -357,7 +366,9 @@
 	let planTripHandler, tabSwitchHandler;
 
 	onMount(async () => {
+		isDestroyed = false;
 		await initMap();
+		if (isDestroyed) return;
 		isMapLoaded.set(true);
 		if (browser) {
 			const darkMode = document.documentElement.classList.contains('dark');
@@ -379,6 +390,10 @@
 	});
 
 	onDestroy(() => {
+		isDestroyed = true;
+		debouncedLoadMarkers?.cancel?.();
+		debouncedLoadMarkers = null;
+
 		if (browser) {
 			window.removeEventListener('themeChange', handleThemeChange);
 
@@ -396,6 +411,7 @@
 		}
 
 		clearAllMarkers();
+		mapProvider?.destroy?.();
 
 		allStopsMap.clear();
 		stopsCache.clear();

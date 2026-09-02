@@ -75,6 +75,9 @@ export default class GoogleMapProvider {
 			lat: options.lat,
 			lng: options.lng
 		});
+		// Keep createPolyline synchronous across providers. The geometry library is
+		// the only Google constructor it needs after map initialization.
+		await window.google.maps.importLibrary('geometry');
 
 		// Update route labels (on stops) visibility on zoom changes
 		this.map.addListener('zoom_changed', () => {
@@ -631,21 +634,16 @@ export default class GoogleMapProvider {
 	 * Creates a polyline from an encoded shape, returning `null` when the shape
 	 * can't be decoded (uniform with the OSM provider).
 	 *
-	 * Contract note: this method is async — it returns a `Promise<Polyline|null>`
-	 * because it lazy-loads the Google geometry library — whereas the OSM
-	 * provider's createPolyline is synchronous (`Polyline|null`). Callers that
-	 * need provider-agnostic behavior should `await` the result and guard
-	 * against `null`.
+	 * The geometry library is loaded in initMap(), so this returns a synchronous
+	 * `Polyline|null` handle like the other providers.
 	 */
-	async createPolyline(shape, options = {}) {
+	createPolyline(shape, options = {}) {
 		// Backward compat: old callers pass a boolean as the second arg
 		if (typeof options === 'boolean') {
 			options = { withArrow: options };
 		}
 
 		const withArrow = options.withArrow !== undefined ? options.withArrow : true;
-
-		await window.google.maps.importLibrary('geometry');
 
 		let decodedPath;
 		try {
@@ -948,5 +946,22 @@ export default class GoogleMapProvider {
 			south: sw.lat(),
 			west: sw.lng()
 		};
+	}
+
+	destroy() {
+		if (!this.map) return;
+		this.clearAllStopMarkers();
+		this.removeStopMarkers();
+		this.clearVehicleMarkers();
+		this.clearAllPolylines();
+		this.removeUserLocationMarker();
+		this.cleanupInfoWindow();
+		this.closeContextMenu();
+		if (this.contextMenuComponent) unmount(this.contextMenuComponent);
+		if (this.popupContentComponent) unmount(this.popupContentComponent);
+		if (window.google?.maps?.event?.clearInstanceListeners) {
+			window.google.maps.event.clearInstanceListeners(this.map);
+		}
+		this.map = null;
 	}
 }

@@ -1,4 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { unmount } from 'svelte';
 import OpenStreetMapProvider, {
 	toLeafletPadding
 } from '$lib/Provider/OpenStreetMapProvider.svelte.js';
@@ -918,5 +919,23 @@ describe('toLeafletPadding / fitToPolylines padding', () => {
 				paddingBottomRight: [20, 300]
 			})
 		);
+	});
+});
+
+describe('destroy', () => {
+	test('unmounts and clears the active stop popup before removing the map', () => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		const popup = { close: vi.fn() };
+		const popupComponent = {};
+		provider.map = { remove: vi.fn() };
+		provider.globalInfoWindow = popup;
+		provider.popupContentComponent = popupComponent;
+
+		provider.destroy();
+
+		expect(popup.close).toHaveBeenCalledOnce();
+		expect(unmount).toHaveBeenCalledWith(popupComponent);
+		expect(provider.globalInfoWindow).toBeNull();
+		expect(provider.popupContentComponent).toBeNull();
 	});
 });
