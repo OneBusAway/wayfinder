@@ -11,6 +11,7 @@
 	 * @property {(value: string) => void} onInput
 	 * @property {() => void} onClear
 	 * @property {any} onSelect
+	 * @property {() => void} [onDismiss]
 	 */
 
 	/** @type {Props} */
@@ -21,10 +22,16 @@
 		isLoading = false,
 		onInput,
 		onClear,
-		onSelect
+		onSelect,
+		onDismiss = () => {}
 	} = $props();
 
+	let activeIndex = $state(-1);
+	let listboxId = $derived(`${inputId}-listbox`);
+	let hasResults = $derived(!isLoading && Array.isArray(results) && results.length > 0);
+
 	function handleInput(event) {
+		activeIndex = -1;
 		onInput(event.target.value);
 	}
 
@@ -33,7 +40,39 @@
 	}
 
 	function handleSelect(result) {
+		activeIndex = -1;
 		onSelect(result);
+	}
+
+	function optionId(index) {
+		return `${listboxId}-option-${index}`;
+	}
+
+	function handleKeydown(event) {
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			activeIndex = -1;
+			onDismiss();
+			return;
+		}
+
+		if (!hasResults) return;
+
+		switch (event.key) {
+			case 'ArrowDown':
+				event.preventDefault();
+				activeIndex = activeIndex < results.length - 1 ? activeIndex + 1 : 0;
+				break;
+			case 'ArrowUp':
+				event.preventDefault();
+				activeIndex = activeIndex > 0 ? activeIndex - 1 : results.length - 1;
+				break;
+			case 'Enter':
+				if (activeIndex < 0) return;
+				event.preventDefault();
+				handleSelect(results[activeIndex]);
+				break;
+		}
 	}
 </script>
 
@@ -43,6 +82,13 @@
 		type="text"
 		bind:value={place}
 		oninput={handleInput}
+		onkeydown={handleKeydown}
+		role="combobox"
+		aria-autocomplete="list"
+		aria-expanded={hasResults}
+		aria-haspopup="listbox"
+		aria-controls={hasResults ? listboxId : undefined}
+		aria-activedescendant={hasResults && activeIndex >= 0 ? optionId(activeIndex) : undefined}
 		placeholder="{$t('trip-planner.search_for_a_place')}..."
 		class="block w-full rounded-md border-gray-300 pr-10 text-sm text-black shadow-sm focus:border-blue-500 focus:ring-blue-500"
 	/>
@@ -58,18 +104,31 @@
 	{/if}
 	{#if isLoading}
 		<p
+			role="status"
 			class="absolute z-10 mt-1 w-full rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-500 shadow-lg"
 		>
 			{$t('trip-planner.loading')}...
 		</p>
 	{:else if results && results.length > 0}
 		<ul
+			id={listboxId}
+			role="listbox"
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg"
 		>
-			{#each results as result}
-				<li>
+			{#each results as result, index}
+				<li role="presentation">
 					<button
-						class="flex w-full cursor-pointer items-center px-4 py-2 text-left hover:bg-gray-100 dark:text-black"
+						id={optionId(index)}
+						type="button"
+						role="option"
+						tabindex="-1"
+						aria-selected={activeIndex === index}
+						aria-posinset={index + 1}
+						aria-setsize={results.length}
+						class="flex w-full cursor-pointer items-center px-4 py-2 text-left hover:bg-gray-100 dark:text-black {activeIndex ===
+						index
+							? 'bg-gray-100'
+							: ''}"
 						onclick={() => handleSelect(result)}
 					>
 						<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 text-gray-400  " />
