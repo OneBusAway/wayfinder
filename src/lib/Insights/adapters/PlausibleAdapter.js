@@ -1,4 +1,4 @@
-import { upstreamError } from '../upstreamError.js';
+import { insightsError, upstreamError } from '../upstreamError.js';
 
 const UPSTREAM_TIMEOUT_MS = 5000;
 
@@ -25,17 +25,20 @@ export class PlausibleAdapter {
 		return `${this.env.PUBLIC_ANALYTICS_API_HOST}/api/event`;
 	}
 
-	async forwardEvent(envelope = {}, requestContext) {
+	async forwardEvent(envelope, requestContext) {
 		// Disabled analytics intentionally ignores malformed events so local development
 		// and tests without a complete analytics configuration remain quiet.
 		if (!this.isEnabled()) {
 			return { status: 'analytics disabled' };
 		}
 
-		const { name, url, referrer = '', props = {} } = envelope;
+		// `??` rather than a default parameter: the endpoint gets this from
+		// `await request.json()`, which returns null for a literal null body and
+		// never undefined, so a default parameter never fires on the reachable case.
+		const { name, url, referrer = '', props = {} } = envelope ?? {};
 
 		if (!name || !url) {
-			throw new Error('forwardEvent requires name and url');
+			throw insightsError('forwardEvent requires name and url', 400);
 		}
 
 		const headers = { 'Content-Type': 'application/json' };

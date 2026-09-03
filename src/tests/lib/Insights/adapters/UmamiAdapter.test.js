@@ -197,6 +197,20 @@ describe('UmamiAdapter.forwardEvent (edge cases)', () => {
 		expect(global.fetch).not.toHaveBeenCalled();
 	});
 
+	it('rejects a null envelope as a 400 rather than a destructuring TypeError', async () => {
+		// /api/events builds the envelope from await request.json(), which returns
+		// null for a literal null body, so this is the reachable malformed case.
+		const err = await new UmamiAdapter(fullEnv).forwardEvent(null, ctx).catch((e) => e);
+		expect(err.message).toBe('forwardEvent requires name and url');
+		expect(err.upstreamStatus).toBe(400);
+	});
+
+	it('rejects a missing envelope as a 400', async () => {
+		const err = await new UmamiAdapter(fullEnv).forwardEvent().catch((e) => e);
+		expect(err.message).toBe('forwardEvent requires name and url');
+		expect(err.upstreamStatus).toBe(400);
+	});
+
 	it('throws when envelope.name is missing', async () => {
 		await expect(new UmamiAdapter(fullEnv).forwardEvent({ url: '/x' }, ctx)).rejects.toThrow(
 			'forwardEvent requires name and url'
