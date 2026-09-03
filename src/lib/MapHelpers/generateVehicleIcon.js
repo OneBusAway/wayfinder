@@ -1,4 +1,5 @@
 import { env } from '$env/dynamic/public';
+import { contrastRatio } from '$lib/colorUtils.js';
 import { toDirection } from '$lib/mathUtils';
 import { generateRouteTypeSvgForDisplay, RouteType } from '$config/routeConfig';
 
@@ -28,18 +29,57 @@ function getDirectionFromOrientation(orientation) {
 // match it to their theme instead of the hardcoded amber.
 const HIGHLIGHT_GLOW_COLOR = env.PUBLIC_COLOR_VEHICLE_HIGHLIGHT || '#FACC15';
 
+/**
+ * Returns the neutral colour with the strongest worst-case contrast against
+ * both the vehicle/route colour and the current basemap. The vehicle marker
+ * deliberately keeps the route colour for recognition, but this backing keeps
+ * it visible where it crosses its route without letting it sink into a dark
+ * basemap.
+ *
+ * @param {string} color
+ * @param {boolean} [dark=false]
+ * @returns {'#ffffff' | '#000000'}
+ */
+function getVehicleMarkerContrastColor(color, dark = false) {
+	// These are representative neutral basemap colours for the two map themes.
+	// Score each candidate by its weaker contrast: a backing that only contrasts
+	// with the route but blends into the map is not useful.
+	const basemapColor = dark ? '#1a1a1a' : '#ffffff';
+	const contrastScore = (candidate) =>
+		Math.min(contrastRatio(color, candidate), contrastRatio(basemapColor, candidate));
+
+	return contrastScore('#ffffff') >= contrastScore('#000000') ? '#ffffff' : '#000000';
+}
+
+/**
+ * Creates the SVG used for a live vehicle marker.
+ *
+ * @param {number} orientation
+ * @param {string} [color='#007BFF']
+ * @param {number} [routeType=RouteType.BUS]
+ * @param {boolean} [highlighted=false]
+ * @param {boolean} [dark=false]
+ * @returns {string}
+ */
 function createVehicleIconSvg(
 	orientation,
 	color = '#007BFF',
 	routeType = RouteType.BUS,
-	highlighted = false
+	highlighted = false,
+	dark = false
 ) {
 	const direction = getDirectionFromOrientation(toDirection(orientation));
 	const angle = DIRECTIONS.find((d) => d.icon === direction).angle;
+	const contrastColor = getVehicleMarkerContrastColor(color, dark);
 
+	// Draw the directional arrow twice: a broad neutral stroke first, then the
+	// route-coloured arrow. This makes the direction indicator legible even
+	// when it lies directly over a route of the same colour.
 	const arrowPath = `
-    <line x1="0" y1="0" x2="0" y2="-15" stroke-width="2" transform="rotate(${angle})"/>
-    <polygon points="0,-25 5,-15 -5, -15" stroke="white" stroke-width="1" transform="rotate(${angle})"/>
+    <line x1="0" y1="0" x2="0" y2="-15" stroke="${contrastColor}" stroke-width="6" stroke-linecap="round" transform="rotate(${angle})"/>
+    <polygon points="0,-25 5,-15 -5,-15" fill="${contrastColor}" stroke="${contrastColor}" stroke-width="4" stroke-linejoin="round" transform="rotate(${angle})"/>
+    <line x1="0" y1="0" x2="0" y2="-15" stroke="${color}" stroke-width="2" stroke-linecap="round" transform="rotate(${angle})"/>
+    <polygon points="0,-25 5,-15 -5,-15" fill="${color}" stroke="${color}" stroke-width="1" stroke-linejoin="round" transform="rotate(${angle})"/>
 `;
 
 	// A soft blurred halo behind the marker for the selected trip. Drawn first so
@@ -48,10 +88,10 @@ function createVehicleIconSvg(
 	const highlightDefs = highlighted
 		? `<defs><filter id="vehicle-highlight-blur" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.5"/></filter></defs>`
 		: '';
-	// A solid halo ring sized well beyond the white circle so it's clearly
+	// A solid halo ring sized well beyond the marker backing so it remains clearly
 	// visible, softened with a blur. Drawn behind so the arrow/icon stay crisp.
 	const highlightGlow = highlighted
-		? `<circle cx="0" cy="0" r="20" fill="${HIGHLIGHT_GLOW_COLOR}" stroke="none" opacity="0.95" filter="url(#vehicle-highlight-blur)"/>`
+		? `<circle cx="0" cy="0" r="23" fill="${HIGHLIGHT_GLOW_COLOR}" stroke="none" opacity="0.95" filter="url(#vehicle-highlight-blur)"/>`
 		: '';
 
 	const vehicleSvg = generateRouteTypeSvgForDisplay(routeType);
@@ -59,15 +99,18 @@ function createVehicleIconSvg(
 	return `
         <svg width="${iconWidth}" height="${iconHeight}" viewBox="-28 -28 56 56" xmlns="http://www.w3.org/2000/svg">
             ${highlightDefs}
-            <g stroke="${color}" fill="${color}">
-                <!-- Highlight glow for the selected vehicle (behind everything) -->
-                ${highlightGlow}
+            <!-- Highlight glow for the selected vehicle (behind everything) -->
+            ${highlightGlow}
 
+            <!-- Mask the route under the vehicle with a contrasting backing. -->
+            <circle cx="0" cy="0" r="16" fill="${contrastColor}"/>
+
+            <g stroke="${color}" fill="${color}">
                 <!-- Directional arrow -->
                 ${arrowPath}
 
-                <!-- Circle background -->
-                <circle cx="0" cy="0" r="13" stroke-width="2" fill="white"/>
+				<!-- Contrasting marker backing -->
+                <circle cx="0" cy="0" r="13" stroke-width="2" fill="${contrastColor}"/>
 
                 <!-- vehicle icon inside the circle -->
                 ${vehicleSvg}
@@ -75,4 +118,4 @@ function createVehicleIconSvg(
         </svg>`;
 }
 
-export { createVehicleIconSvg, iconWidth, iconHeight };
+export { createVehicleIconSvg, getVehicleMarkerContrastColor, iconWidth, iconHeight };

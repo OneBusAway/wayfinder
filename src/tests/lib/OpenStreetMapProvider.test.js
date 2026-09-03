@@ -361,7 +361,7 @@ describe('addVehicleMarker — route color', () => {
 
 	test('passes the route color to the icon for a predicted vehicle', () => {
 		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3, false, '#0a4ea2');
-		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#0a4ea2', 3, false);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#0a4ea2', 3, false, false);
 	});
 
 	test('gray override still wins for a non-predicted vehicle', () => {
@@ -372,12 +372,18 @@ describe('addVehicleMarker — route color', () => {
 			false,
 			'#0a4ea2'
 		);
-		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#808080', 3, false);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#808080', 3, false, false);
 	});
 
 	test('null route color falls back to the icon default', () => {
 		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3, false, null);
-		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false, false);
+	});
+
+	test('passes the current dark-map state to the icon', () => {
+		provider._darkTheme = true;
+		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false, true);
 	});
 });
 
@@ -428,6 +434,25 @@ describe('setTheme — avoids redundant layer rebuilds', () => {
 
 		expect(removeLayer).not.toHaveBeenCalled();
 		expect(provider.L.maplibreGL).not.toHaveBeenCalled();
+	});
+
+	test('refreshes existing vehicle icons for the new theme', () => {
+		const marker = {
+			vehicleIconOptions: {
+				orientation: 90,
+				color: '#007BFF',
+				routeType: 3,
+				isHighlighted: false
+			},
+			setIcon: vi.fn()
+		};
+		provider.L.divIcon = vi.fn(() => ({}));
+		provider.vehicleMarkers = [marker];
+
+		provider.setTheme('dark');
+
+		expect(createVehicleIconSvg).toHaveBeenLastCalledWith(90, '#007BFF', 3, false, true);
+		expect(marker.setIcon).toHaveBeenCalledOnce();
 	});
 
 	test('bails out before the map is initialized', () => {

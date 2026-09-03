@@ -410,7 +410,8 @@ export default class GoogleMapProvider {
 			vehicle?.orientation,
 			color,
 			routeType,
-			isHighlighted
+			isHighlighted,
+			this._darkTheme
 		);
 		const icon = {
 			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}`,
@@ -426,6 +427,12 @@ export default class GoogleMapProvider {
 		});
 
 		this.vehicleMarkers.push(marker);
+		marker.vehicleIconOptions = {
+			orientation: vehicle?.orientation,
+			color,
+			routeType,
+			isHighlighted
+		};
 
 		const vehicleData = $state(buildVehiclePopupData(vehicle, activeTrip, this.stopsMap));
 
@@ -472,23 +479,43 @@ export default class GoogleMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const updatedIcon = createVehicleIconSvg(
-			vehicleStatus.orientation,
+		marker.vehicleIconOptions = {
+			orientation: vehicleStatus.orientation,
 			color,
 			routeType,
 			isHighlighted
-		);
-		marker.setIcon({
-			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIcon)}`,
-			scaledSize: new google.maps.Size(iconWidth, iconHeight),
-			anchor: new google.maps.Point(iconWidth / 2, iconHeight / 2)
-		});
+		};
+		this._setVehicleMarkerIcon(marker);
 		marker.setZIndex(isHighlighted ? 2000 : 1000);
 
 		Object.assign(
 			marker.vehicleData,
 			buildVehiclePopupData(vehicleStatus, activeTrip, this.stopsMap)
 		);
+	}
+
+	_setVehicleMarkerIcon(marker) {
+		const { orientation, color, routeType, isHighlighted } = marker.vehicleIconOptions;
+		const vehicleIconSvg = createVehicleIconSvg(
+			orientation,
+			color,
+			routeType,
+			isHighlighted,
+			this._darkTheme
+		);
+		marker.setIcon({
+			url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}`,
+			scaledSize: new google.maps.Size(iconWidth, iconHeight),
+			anchor: new google.maps.Point(iconWidth / 2, iconHeight / 2)
+		});
+	}
+
+	_refreshVehicleMarkerIcons() {
+		for (const marker of this.vehicleMarkers) {
+			if (marker.vehicleIconOptions) {
+				this._setVehicleMarkerIcon(marker);
+			}
+		}
 	}
 
 	removeVehicleMarker(marker) {
@@ -585,6 +612,7 @@ export default class GoogleMapProvider {
 	setTheme(theme) {
 		this._darkTheme = theme === 'dark';
 		this._applyStyles();
+		this._refreshVehicleMarkerIcons();
 	}
 
 	setBasemapDimmed(dimmed) {
