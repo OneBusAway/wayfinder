@@ -68,7 +68,14 @@
 		if (!target.isConnected) return;
 
 		if (!rootEl.contains(target)) {
-			close();
+			// The browser focuses a clicked element on mousedown, before this click
+			// reaches the window listener, so restoring focus here would yank the
+			// caret back out of whatever the user just clicked onto. Restore only
+			// when the click did not take focus itself: a click on the map leaves
+			// activeElement at <body>, and focus still inside the closing panel
+			// would be stranded when it unmounts.
+			const active = document.activeElement;
+			close({ restoreFocus: !active || active === document.body || rootEl.contains(active) });
 		}
 	}
 
