@@ -109,7 +109,11 @@
 	let arrivalsMatchSelection = $derived(
 		stopArrivals?.data?.entry?.stopId != null && stopArrivals.data.entry.stopId === selectedStopId
 	);
-	let activeRoutes = $derived(arrivalsMatchSelection ? activeRoutesFromArrivals(stopArrivals) : []);
+	// Use the same non-departed arrival set the sheet renders. Keeping the raw
+	// response as the bound value is still useful to StopPane; the map derives a
+	// boardable subset whenever that response refreshes.
+	let boardableRoutes = $derived(activeRoutesFromArrivals(stopArrivals, { now: Date.now() }));
+	let activeRoutes = $derived(arrivalsMatchSelection ? boardableRoutes : []);
 	// Deliberately NOT gated on arrivalsMatchSelection (derived from stopArrivals
 	// directly, not from the gated activeRoutes above). StopPane's rendered rows are
 	// a one-time $state seed that doesn't react to stopArrivals going stale, so
@@ -117,9 +121,7 @@
 	// are the correct colors for them. The map is separately held back from drawing
 	// anything stale by activeRoutes being empty until B's arrivals land. Two
 	// consumers of routeColors, two different staleness semantics, one source.
-	let routeColors = $derived(
-		assignRouteColors(activeRoutesFromArrivals(stopArrivals), { dark: isDarkMode })
-	);
+	let routeColors = $derived(assignRouteColors(boardableRoutes, { dark: isDarkMode }));
 
 	// While a stop's bottom sheet is open, the search pane collapses to a single
 	// floating field below the md breakpoint; on wider viewports the pane stays

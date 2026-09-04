@@ -1,3 +1,7 @@
+import { filterDeparted } from '$lib/arrivalFiltering.js';
+import { mapContrastColor, contrastRatio } from '$lib/colorUtils.js';
+import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';
+
 /**
  * Derives the set of routes a rider can actually board from a stop, from that
  * stop's arrivals-and-departures response.
@@ -13,7 +17,8 @@
  * @property {string} id
  * @property {string} shortName
  * @property {number} type
- * @property {string} tripId
+ * @property {string|null} tripId
+ * @property {{id: string, serviceDate?: number}[]} tripCandidates
  * @property {string|null} gtfsColor
  */
 
@@ -35,46 +40,67 @@ function effectiveArrivalTime(arrival) {
 
 /**
  * @param {Object} response - an /arrivals-and-departures-for-stop response
+ * @param {{now?: number}} options - when supplied, ignore arrivals that have already departed
  * @returns {ActiveRoute[]} distinct routes, soonest arrival first
  */
-export function activeRoutesFromArrivals(response) {
-	const arrivals = response?.data?.entry?.arrivalsAndDepartures;
-	if (!Array.isArray(arrivals)) return [];
+export function activeRoutesFromArrivals(response, { now } = {}) {
+	const rawArrivals = response?.data?.entry?.arrivalsAndDepartures;
+	if (!Array.isArray(rawArrivals)) return [];
+
+	// StopPane filters departed rows before rendering them. Apply the same rule
+	// here when the caller supplies its clock so the map cannot choose a stale,
+	// just-departed trip as the only shape candidate for a route that still has
+	// boardable arrivals.
+	const arrivals = Number.isFinite(now) ? filterDeparted(rawArrivals, now) : rawArrivals;
 
 	const routeRefs = new Map(
 		(response?.data?.references?.routes ?? []).map((route) => [route.id, route])
 	);
 
-	/** @type {Map<string, {arrival: Object, time: number}>} */
-	const soonestByRoute = new Map();
+	/** @type {Map<string, {arrival: Object, time: number, index: number}[]>} */
+	const arrivalsByRoute = new Map();
 
-	for (const arrival of arrivals) {
+	for (const [index, arrival] of arrivals.entries()) {
 		const routeId = arrival?.routeId;
 		if (!routeId) continue;
 
 		const time = effectiveArrivalTime(arrival);
-		const existing = soonestByRoute.get(routeId);
-		if (!existing || time < existing.time) {
-			soonestByRoute.set(routeId, { arrival, time });
-		}
+		if (!arrivalsByRoute.has(routeId)) arrivalsByRoute.set(routeId, []);
+		arrivalsByRoute.get(routeId).push({ arrival, time, index });
 	}
 
-	return [...soonestByRoute.entries()]
-		.sort((a, b) => a[1].time - b[1].time)
-		.map(([routeId, { arrival }]) => {
+	const grouped = [...arrivalsByRoute.entries()].map(([routeId, candidates]) => {
+		candidates.sort((a, b) => a.time - b.time || a.index - b.index);
+		return [routeId, candidates];
+	});
+
+	return grouped
+		.sort((a, b) => a[1][0].time - b[1][0].time || a[1][0].index - b[1][0].index)
+		.map(([routeId, candidates]) => {
+			const arrival = candidates[0].arrival;
 			const ref = routeRefs.get(routeId);
+			const seenTrips = new Set();
+			const tripCandidates = candidates
+				.map(({ arrival: candidate }) => ({
+					id: candidate.tripId,
+					...(candidate.serviceDate != null ? { serviceDate: candidate.serviceDate } : {})
+				}))
+				.filter((candidate) => {
+					const key = `${candidate.id}@${candidate.serviceDate ?? ''}`;
+					if (!candidate.id || seenTrips.has(key)) return false;
+					seenTrips.add(key);
+					return true;
+				});
 			return {
 				id: routeId,
 				shortName: ref?.shortName ?? arrival.routeShortName ?? '',
 				type: ref?.type ?? 3,
-				tripId: arrival.tripId,
+				tripId: tripCandidates[0]?.id ?? null,
+				tripCandidates,
 				gtfsColor: ref?.color || null
 			};
 		});
 }
-
-import { mapContrastColor, contrastRatio } from '$lib/colorUtils.js';
-import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';
 
 /**
  * @typedef {Object} RouteColors
