@@ -96,10 +96,10 @@ export class UmamiAdapter {
 			language = '',
 			screen = '',
 			props = {}
-		} = envelope;
+		} = envelope ?? {};
 
 		if (!name || !url) {
-			throw new Error('forwardEvent requires name and url');
+			throw insightsError('forwardEvent requires name and url', 400);
 		}
 
 		const body = {

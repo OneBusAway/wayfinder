@@ -102,6 +102,21 @@ describe('PlausibleAdapter.forwardEvent', () => {
 		).rejects.toThrow('forwardEvent requires name and url');
 	});
 
+	it('rejects a null envelope as a 400 rather than a destructuring TypeError', async () => {
+		// /api/events builds the envelope from await request.json(), which returns
+		// null for a literal null body, so the default parameter never fires here.
+		const err = await new PlausibleAdapter(fullEnv).forwardEvent(null, ctx).catch((e) => e);
+		expect(err.message).toBe('forwardEvent requires name and url');
+		expect(err.upstreamStatus).toBe(400);
+	});
+
+	it('marks a missing name as a client error', async () => {
+		const err = await new PlausibleAdapter(fullEnv)
+			.forwardEvent({ url: '/x' }, ctx)
+			.catch((e) => e);
+		expect(err.upstreamStatus).toBe(400);
+	});
+
 	it('throws a clear validation error when called without an envelope', async () => {
 		await expect(new PlausibleAdapter(fullEnv).forwardEvent()).rejects.toThrow(
 			'forwardEvent requires name and url'
