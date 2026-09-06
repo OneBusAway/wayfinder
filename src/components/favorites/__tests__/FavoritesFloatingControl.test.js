@@ -161,6 +161,40 @@ describe('FavoritesFloatingControl', () => {
 		outside.remove();
 	});
 
+	it('leaves focus on an outside element that took it', async () => {
+		render(FavoritesFloatingControl);
+
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		await user.click(toggle);
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		const input = document.createElement('input');
+		document.body.appendChild(input);
+
+		await user.click(input);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(input).toHaveFocus();
+		input.remove();
+	});
+
+	it('restores focus to the toggle when the outside click took none', async () => {
+		render(FavoritesFloatingControl);
+
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		await user.click(toggle);
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		const outside = document.createElement('div');
+		document.body.appendChild(outside);
+
+		await user.click(outside);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(toggle).toHaveFocus();
+		outside.remove();
+	});
+
 	it('closes on Escape and restores focus to the toggle', async () => {
 		render(FavoritesFloatingControl);
 
