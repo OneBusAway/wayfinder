@@ -150,6 +150,7 @@ export async function fetchAndUpdateVehiclesForRoutes(
 	const resolveHighlightedTripId = () =>
 		typeof highlightedTripId === 'function' ? highlightedTripId() : highlightedTripId;
 	const lastData = new Map();
+	let tickGeneration = 0;
 	const refresh = () => {
 		for (const route of routes) {
 			const data = lastData.get(route.id);
@@ -167,6 +168,7 @@ export async function fetchAndUpdateVehiclesForRoutes(
 	};
 
 	const tick = async () => {
+		const generation = ++tickGeneration;
 		const results = await Promise.all(
 			routes.map((route) =>
 				fetchVehicles(route.id).catch((error) => {
@@ -175,6 +177,9 @@ export async function fetchAndUpdateVehiclesForRoutes(
 				})
 			)
 		);
+		// Interval and manual ticks can overlap. A superseded response must not
+		// move markers backwards, replace the refresh cache, or sweep newer data.
+		if (generation !== tickGeneration) return;
 
 		const activeKeys = new Set();
 		const polledRouteIds = new Set();

@@ -121,6 +121,72 @@ test('refreshes cached vehicles with new colors without fetching, and retains th
 	}
 });
 
+test.each(['older first', 'newer first'])(
+	'ignores superseded polls and retains the latest positions for refresh (%s)',
+	async (completionOrder) => {
+		clearVehicleMarkersMap();
+		const provider = {
+			addVehicleMarker: vi.fn(() => ({})),
+			updateVehicleMarker: vi.fn(),
+			removeVehicleMarker: vi.fn()
+		};
+		const onCounts = vi.fn();
+		const olderData = tripsResponse('route-1', [{ tripId: 'trip-1', vehicleId: 'v-1' }]);
+		const newerData = tripsResponse('route-1', [
+			{ tripId: 'trip-1', vehicleId: 'v-1' },
+			{ tripId: 'trip-2', vehicleId: 'v-2' }
+		]);
+		newerData.data.list[0].status.position.lat = 48;
+		const response = (data) => ({ ok: true, json: async () => data });
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(olderData)));
+		const poll = await fetchAndUpdateVehiclesForRoutes([{ id: 'route-1' }], provider, { onCounts });
+		try {
+			let finishOlder;
+			let finishNewer;
+			fetch.mockImplementationOnce(
+				() =>
+					new Promise((resolve) => {
+						finishOlder = resolve;
+					})
+			);
+			fetch.mockImplementationOnce(
+				() =>
+					new Promise((resolve) => {
+						finishNewer = resolve;
+					})
+			);
+			const older = poll.tick();
+			const newer = poll.tick();
+			const finishLatest = async () => {
+				finishNewer(response(newerData));
+				await newer;
+				expect(provider.updateVehicleMarker.mock.calls.at(-1)[1].position.lat).toBe(48);
+				expect(onCounts).toHaveBeenLastCalledWith(new Map([['route-1', 2]]));
+			};
+			if (completionOrder === 'newer first') await finishLatest();
+			provider.addVehicleMarker.mockClear();
+			provider.updateVehicleMarker.mockClear();
+			provider.removeVehicleMarker.mockClear();
+			onCounts.mockClear();
+			finishOlder(response(olderData));
+			await older;
+			expect(provider.addVehicleMarker).not.toHaveBeenCalled();
+			expect(provider.updateVehicleMarker).not.toHaveBeenCalled();
+			expect(provider.removeVehicleMarker).not.toHaveBeenCalled();
+			expect(onCounts).not.toHaveBeenCalled();
+			if (completionOrder === 'older first') await finishLatest();
+			provider.updateVehicleMarker.mockClear();
+			poll.refresh();
+			expect(provider.updateVehicleMarker).toHaveBeenCalledTimes(2);
+			expect(provider.updateVehicleMarker.mock.calls[0][1].position.lat).toBe(48);
+		} finally {
+			clearInterval(poll.intervalId);
+			clearVehicleMarkersMap();
+			vi.unstubAllGlobals();
+		}
+	}
+);
+
 // This suite used to drive the now-deleted single-route `updateVehicleMarkers`
 // wrapper directly. That wrapper had zero production callers (SearchPane and
 // RouteMap both go through `fetchAndUpdateVehicles`) and only duplicated what
