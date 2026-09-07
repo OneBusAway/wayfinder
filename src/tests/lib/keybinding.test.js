@@ -41,6 +41,7 @@ describe('keybinding action', () => {
 			shiftKey: keyParams.shift || false,
 			ctrlKey: keyParams.control || false,
 			metaKey: keyParams.control || false,
+			defaultPrevented: keyParams.defaultPrevented || false,
 			preventDefault: vi.fn()
 		};
 
@@ -85,6 +86,14 @@ describe('keybinding action', () => {
 
 		triggerKeydown({ code: 'KeyA' });
 		expect(node.click).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not respond to an event already handled by a child control', () => {
+		keybinding(node, { code: 'Escape' });
+
+		triggerKeydown({ code: 'Escape', defaultPrevented: true });
+
+		expect(node.click).not.toHaveBeenCalled();
 	});
 
 	it('responds to updated key code', () => {

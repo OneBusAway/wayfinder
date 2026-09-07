@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import TripPlanSearchField from '../TripPlanSearchField.svelte';
-import { renderWithUtils, a11yHelpers } from '../../../tests/helpers/test-utils.js';
+import { renderWithUtils } from '../../../tests/helpers/test-utils.js';
 // Mock FontAwesome icons
 vi.mock('@fortawesome/svelte-fontawesome', () => ({
 	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
@@ -149,7 +149,7 @@ describe('TripPlanSearchField', () => {
 			expect(mockOnSelect).toHaveBeenCalledWith(result);
 		});
 
-		it('result buttons are focusable', async () => {
+		it('keeps focus on the input while Arrow keys select an active result', async () => {
 			const results = [
 				{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' },
 				{ displayText: 'University District, Seattle, WA, USA', name: 'University District' }
@@ -157,19 +157,19 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, results };
 			render(TripPlanSearchField, { props });
 
-			const firstResult = screen.getByText('Capitol Hill, Seattle, WA, USA');
-			const secondResult = screen.getByText('University District, Seattle, WA, USA');
+			const input = screen.getByRole('combobox');
+			const options = screen.getAllByRole('option');
 
-			// Results should be focusable
-			expect(firstResult).toBeInTheDocument();
-			expect(secondResult).toBeInTheDocument();
+			await user.click(input);
+			await user.keyboard('{ArrowDown}');
 
-			// Should be able to focus on results
-			firstResult.focus();
-			expect(firstResult).toHaveFocus();
+			expect(input).toHaveFocus();
+			expect(input).toHaveAttribute('aria-activedescendant', options[0].id);
+			expect(options[0]).toHaveAttribute('aria-selected', 'true');
 
-			secondResult.focus();
-			expect(secondResult).toHaveFocus();
+			await user.keyboard('{ArrowUp}');
+			expect(input).toHaveAttribute('aria-activedescendant', options[1].id);
+			expect(options[1]).toHaveAttribute('aria-selected', 'true');
 		});
 
 		it('selects result with Enter key', async () => {
@@ -180,11 +180,37 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, results: [result] };
 			render(TripPlanSearchField, { props });
 
-			const resultButton = screen.getByText('Capitol Hill, Seattle, WA, USA');
-			resultButton.focus();
-			await user.keyboard('{Enter}');
+			const input = screen.getByRole('combobox');
+			await user.click(input);
+			await user.keyboard('{ArrowDown}{Enter}');
 
 			expect(mockOnSelect).toHaveBeenCalledWith(result);
+		});
+
+		it('dismisses the results with Escape', async () => {
+			const onDismiss = vi.fn();
+			const results = [{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' }];
+			const props = { ...defaultProps, results, onDismiss };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByRole('combobox');
+			await user.click(input);
+			await user.keyboard('{ArrowDown}{Escape}');
+
+			expect(onDismiss).toHaveBeenCalledOnce();
+			expect(input).not.toHaveAttribute('aria-activedescendant');
+		});
+
+		it('dismisses while autocomplete results are loading', async () => {
+			const onDismiss = vi.fn();
+			const props = { ...defaultProps, isLoading: true, onDismiss };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByRole('combobox');
+			await user.click(input);
+			await user.keyboard('{Escape}');
+
+			expect(onDismiss).toHaveBeenCalledOnce();
 		});
 	});
 
@@ -207,13 +233,20 @@ describe('TripPlanSearchField', () => {
 			expect(clearButton).toHaveAttribute('type', 'button');
 		});
 
-		it('autocomplete results are keyboard accessible', () => {
+		it('exposes the full combobox/listbox relationship', () => {
 			const results = [{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' }];
 			const props = { ...defaultProps, results };
 			render(TripPlanSearchField, { props });
 
-			const resultButton = screen.getByText('Capitol Hill, Seattle, WA, USA');
-			expect(a11yHelpers.isFocusable(resultButton)).toBe(true);
+			const input = screen.getByRole('combobox');
+			const listbox = screen.getByRole('listbox');
+			const option = screen.getByRole('option');
+
+			expect(input).toHaveAttribute('aria-expanded', 'true');
+			expect(input).toHaveAttribute('aria-controls', listbox.id);
+			expect(input).toHaveAttribute('aria-autocomplete', 'list');
+			expect(option).toHaveAttribute('aria-posinset', '1');
+			expect(option).toHaveAttribute('aria-setsize', '1');
 		});
 
 		it('has proper semantic structure', () => {
@@ -224,13 +257,13 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, results };
 			render(TripPlanSearchField, { props });
 
-			// Results should be in a list
-			const resultsList = screen.getByRole('list', { hidden: true });
+			// Results should be in a listbox.
+			const resultsList = screen.getByRole('listbox');
 			expect(resultsList).toBeInTheDocument();
 
-			// Each result should be a button within the list
-			const resultButtons = screen.getAllByRole('button');
-			expect(resultButtons).toHaveLength(2); // Excluding clear button which is conditional
+			// Each result should be an option within the listbox.
+			const resultOptions = screen.getAllByRole('option');
+			expect(resultOptions).toHaveLength(2);
 		});
 
 		it('supports screen readers with proper labeling', () => {
@@ -248,7 +281,7 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, results: [] };
 			render(TripPlanSearchField, { props });
 
-			const resultsList = screen.queryByRole('list', { hidden: true });
+			const resultsList = screen.queryByRole('listbox');
 			expect(resultsList).not.toBeInTheDocument();
 		});
 

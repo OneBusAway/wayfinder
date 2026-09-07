@@ -22,6 +22,7 @@ export const keybinding = (node, params) => {
 		}
 
 		handler = (e) => {
+			if (e.defaultPrevented) return;
 			if (
 				!!currentParams.alt != e.altKey ||
 				!!currentParams.shift != e.shiftKey ||
