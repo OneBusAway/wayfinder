@@ -294,15 +294,44 @@ describe('ArcGISMapProvider', () => {
 		expect(provider.view.popup.content).not.toBe(originalContent);
 	});
 
-	test('uses itinerary padding while fitting polylines and clears it on request', async () => {
+	test.each([undefined, { top: 10, right: 20, bottom: 300, left: 40 }])(
+		'restores existing view padding after fitting with padding %j',
+		async (padding) => {
+			const provider = await initializedProvider();
+			provider.polylines = [{}];
+			const previousPadding = { top: 5, right: 6, bottom: 7, left: 8 };
+			provider.view.padding = previousPadding;
+			let finishFit;
+			provider.view.goTo.mockImplementation(() => new Promise((resolve) => (finishFit = resolve)));
+
+			const fitting = provider.fitToPolylines({ padding });
+			expect(provider.view.padding).toEqual(
+				padding ?? { top: 50, right: 50, bottom: 50, left: 50 }
+			);
+			finishFit();
+			expect(await fitting).toBe(true);
+			expect(provider.view.padding).toEqual(previousPadding);
+		}
+	);
+
+	test('restores view padding when fitting fails', async () => {
 		const provider = await initializedProvider();
 		provider.polylines = [{}];
-
-		await provider.fitToPolylines({ padding: { top: 10, right: 20, bottom: 300, left: 40 } });
-
-		expect(provider.view.padding).toEqual({ top: 10, right: 20, bottom: 300, left: 40 });
 		provider.resetPadding();
+		provider.view.goTo.mockRejectedValue(new Error('Fit interrupted'));
+
+		expect(await provider.fitToPolylines()).toBe(false);
 		expect(provider.view.padding).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+	});
+
+	test('does not change padding when there are no polylines to fit', async () => {
+		const provider = await initializedProvider();
+		provider.resetPadding();
+		const previousPadding = provider.view.padding;
+
+		expect(await provider.fitToPolylines({ padding: 100 })).toBe(false);
+		expect(provider.view.padding).toBe(previousPadding);
+		expect(provider.view.goTo).not.toHaveBeenCalled();
 	});
 
 	test('returns null instead of a Null Island center when the view has no center', async () => {

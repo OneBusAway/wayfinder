@@ -118,7 +118,9 @@ See `.env.example` for full list. Key variables:
 - `PRIVATE_OBA_API_KEY` - OneBusAway API key
 - `PUBLIC_OBA_SERVER_URL` - OBA server URL
 - `PUBLIC_OBA_REGION_CENTER_LAT/LNG` - Region center coordinates
-- `PUBLIC_OBA_MAP_PROVIDER` - "osm" or "google"
+- `PUBLIC_OBA_MAP_PROVIDER` - "osm", "google", or "arcgis"
+- `PUBLIC_ARCGIS_API_KEY` - ArcGIS API key (optional)
+- `PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL` - Custom ArcGIS vector-tile basemap URL (optional)
 - `PUBLIC_OTP_SERVER_URL` - OpenTripPlanner server (optional, for trip planning)
 - `PUBLIC_OBA_TIMEZONE` - IANA timezone for the transit region (e.g. "America/Los_Angeles"), required
 - `PRIVATE_OBA_GEOCODER_PROVIDER` - Geocoding provider (currently "google" only)

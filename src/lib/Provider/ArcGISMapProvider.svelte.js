@@ -809,15 +809,19 @@ export default class ArcGISMapProvider {
 	}
 
 	async fitToPolylines(options = {}) {
-		if (!this.view) return false;
-		this.setPadding(options.padding);
-		if (!this.polylines.length) return false;
+		if (!this.view || !this.polylines.length) return false;
+		const view = this.view;
+		const previousPadding = { ...view.padding };
 		try {
-			await this.view.goTo(this.polylines, { duration: options.duration ?? 700 });
-			if (this.view.zoom > (options.maxZoom ?? 16)) this.view.zoom = options.maxZoom ?? 16;
+			this.setPadding(options.padding);
+			await view.goTo(this.polylines, { duration: options.duration ?? 700 });
+			if (view.zoom > (options.maxZoom ?? 16)) view.zoom = options.maxZoom ?? 16;
 			return true;
 		} catch {
 			return false;
+		} finally {
+			// Fit padding is temporary; preserve the viewport used for subsequent stop loads.
+			if (this.view === view && !this._destroyed) view.padding = previousPadding;
 		}
 	}
 

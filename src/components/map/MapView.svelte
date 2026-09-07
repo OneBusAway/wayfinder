@@ -141,6 +141,7 @@
 				batchAddMarkers(stops);
 
 				const center = mapInstance.getCenter();
+				if (!center) return;
 				const zoomLevel = mapInstance.getZoom();
 				loadStopsAndAddMarkers(center.lat, center.lng, false, zoomLevel)
 					.then(() => batchAddMarkers(allStops))
@@ -240,6 +241,7 @@
 				}
 
 				const center = mapInstance.getCenter();
+				if (!center) return;
 				const zoomLevel = mapInstance.getZoom();
 				await loadStopsAndAddMarkers(center.lat, center.lng, false, zoomLevel);
 			}, 300);
