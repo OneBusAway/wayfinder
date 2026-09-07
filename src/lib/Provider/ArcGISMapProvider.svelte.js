@@ -93,6 +93,7 @@ export default class ArcGISMapProvider {
 		this._dimmed = false;
 		this._positionFrame = null;
 		this._destroyed = false;
+		this._activeFit = null;
 		this.handles = new Set();
 		this._basemapLayerOpacities = new Map();
 	}
@@ -684,9 +685,13 @@ export default class ArcGISMapProvider {
 		});
 	}
 
-	_createRouteSymbol(color, weight, opacity, withArrow) {
+	_createRouteSymbol(color, weight, opacity, withArrow, dashArray) {
 		const symbolColor = colorWithOpacity(color, opacity);
-		if (!withArrow)
+		const dashTemplate = String(dashArray ?? '')
+			.split(/[ ,]+/)
+			.map(Number)
+			.filter((value) => Number.isFinite(value) && value > 0);
+		if (!withArrow && !dashTemplate.length)
 			return new this.SimpleLineSymbol({ color: symbolColor, width: weight, style: 'solid' });
 		const arrowColor = colorWithOpacity(polylineArrowColor(color), opacity);
 		return new this.CIMSymbol({
@@ -695,10 +700,18 @@ export default class ArcGISMapProvider {
 				data: {
 					type: 'CIMLineSymbol',
 					symbolLayers: [
-						{ type: 'CIMSolidStroke', enable: true, width: weight, color: symbolColor },
+						{
+							type: 'CIMSolidStroke',
+							enable: true,
+							width: weight,
+							color: symbolColor,
+							...(dashTemplate.length
+								? { effects: [{ type: 'CIMGeometricEffectDashes', dashTemplate }] }
+								: {})
+						},
 						{
 							type: 'CIMVectorMarker',
-							enable: true,
+							enable: withArrow,
 							markerPlacement: {
 								type: 'CIMMarkerPlacementAlongLineSameSize',
 								placementTemplate: [50],
@@ -748,7 +761,13 @@ export default class ArcGISMapProvider {
 		const withArrow = options.withArrow ?? true;
 		const graphic = new this.Graphic({
 			geometry,
-			symbol: this._createRouteSymbol(color, weight, options.opacity ?? 1, withArrow)
+			symbol: this._createRouteSymbol(
+				color,
+				weight,
+				options.opacity ?? 1,
+				withArrow,
+				options.dashArray
+			)
 		});
 		if (options.casing) {
 			graphic._casing = new this.Graphic({
@@ -811,17 +830,26 @@ export default class ArcGISMapProvider {
 	async fitToPolylines(options = {}) {
 		if (!this.view || !this.polylines.length) return false;
 		const view = this.view;
-		const previousPadding = { ...view.padding };
+		// Overlapping fits share the original padding, never another fit's temporary inset.
+		const fit = {
+			view,
+			padding: this._activeFit?.view === view ? this._activeFit.padding : { ...view.padding }
+		};
+		this._activeFit = fit;
 		try {
 			this.setPadding(options.padding);
 			await view.goTo(this.polylines, { duration: options.duration ?? 700 });
+			if (this._activeFit !== fit || this.view !== view || this._destroyed) return false;
 			if (view.zoom > (options.maxZoom ?? 16)) view.zoom = options.maxZoom ?? 16;
 			return true;
 		} catch {
 			return false;
 		} finally {
 			// Fit padding is temporary; preserve the viewport used for subsequent stop loads.
-			if (this.view === view && !this._destroyed) view.padding = previousPadding;
+			if (this._activeFit === fit) {
+				if (this.view === view && !this._destroyed) view.padding = fit.padding;
+				this._activeFit = null;
+			}
 		}
 	}
 
@@ -903,6 +931,7 @@ export default class ArcGISMapProvider {
 	destroy() {
 		if (this._destroyed) return;
 		this._destroyed = true;
+		this._activeFit = null;
 		if (this._positionFrame != null && typeof cancelAnimationFrame === 'function')
 			cancelAnimationFrame(this._positionFrame);
 		this._positionFrame = null;

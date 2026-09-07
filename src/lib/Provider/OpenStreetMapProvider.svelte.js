@@ -69,6 +69,7 @@ export default class OpenStreetMapProvider {
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
+		this.pinMarkers = new Set();
 		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || 'positron';
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
@@ -165,7 +166,7 @@ export default class OpenStreetMapProvider {
 			dotColor: options.dotColor ?? null
 		});
 
-		mount(StopMarker, {
+		const component = mount(StopMarker, {
 			target: container,
 			props
 		});
@@ -189,6 +190,7 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 
 		marker.props = props;
+		marker.component = component;
 
 		this.markersMap.set(options.stop.id, marker);
 		return marker;
@@ -216,7 +218,7 @@ export default class OpenStreetMapProvider {
 
 		const container = document.createElement('div');
 
-		mount(TripPlanPinMarker, {
+		const component = mount(TripPlanPinMarker, {
 			target: container,
 			props: {
 				text: text
@@ -234,12 +236,16 @@ export default class OpenStreetMapProvider {
 			this.map
 		);
 
+		marker.component = component;
+		this.pinMarkers.add(marker);
 		return marker;
 	}
 
 	removePinMarker(marker) {
 		if (marker) {
+			this._unmountMarker(marker);
 			marker.remove();
+			this.pinMarkers.delete(marker);
 		}
 	}
 
@@ -651,9 +657,17 @@ export default class OpenStreetMapProvider {
 		return this.map.getZoom();
 	}
 
+	_unmountMarker(marker) {
+		if (marker.component) {
+			unmount(marker.component);
+			marker.component = null;
+		}
+	}
+
 	removeMarker(marker) {
-		if (!browser || !this.map || !marker) return;
-		this.map.removeLayer(marker);
+		if (!marker) return;
+		this._unmountMarker(marker);
+		this.map?.removeLayer(marker);
 
 		for (const [stopId, storedMarker] of this.markersMap.entries()) {
 			if (storedMarker === marker) {
@@ -664,11 +678,10 @@ export default class OpenStreetMapProvider {
 	}
 
 	clearAllStopMarkers() {
-		if (!browser || !this.map) return;
-
-		// Clear the main stop markers
+		// Clear the main stop markers and their mounted Svelte components.
 		for (const marker of this.markersMap.values()) {
-			this.map.removeLayer(marker);
+			this._unmountMarker(marker);
+			this.map?.removeLayer(marker);
 		}
 		this.markersMap.clear();
 	}
@@ -1154,8 +1167,9 @@ export default class OpenStreetMapProvider {
 	}
 
 	destroy() {
-		if (!this.map) return;
 		this.clearAllStopMarkers();
+		for (const marker of this.pinMarkers) this.removePinMarker(marker);
+		if (!this.map) return;
 		this.removeStopMarkers();
 		this.clearVehicleMarkers();
 		this.clearAllPolylines();

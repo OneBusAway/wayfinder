@@ -314,6 +314,52 @@ describe('ArcGISMapProvider', () => {
 		}
 	);
 
+	test.each([true, false])(
+		'overlapping fits restore the baseline (older first: %s)',
+		async (olderFirst) => {
+			const provider = await initializedProvider();
+			provider.polylines = [{}];
+			provider.resetPadding();
+			const baseline = { ...provider.view.padding };
+			const finishes = [];
+			provider.view.goTo.mockImplementation(() => new Promise((resolve) => finishes.push(resolve)));
+			const older = provider.fitToPolylines({ padding: 30 });
+			const newer = provider.fitToPolylines({ padding: 80 });
+			if (olderFirst) {
+				finishes[0]();
+				expect(await older).toBe(false);
+				expect(provider.view.padding).toEqual({ top: 80, right: 80, bottom: 80, left: 80 });
+				finishes[1]();
+				expect(await newer).toBe(true);
+			} else {
+				finishes[1]();
+				expect(await newer).toBe(true);
+				finishes[0]();
+				expect(await older).toBe(false);
+			}
+			expect(provider.view.padding).toEqual(baseline);
+		}
+	);
+
+	test.each([true, false])('preserves walking dashes with arrows %s', async (withArrow) => {
+		const provider = await initializedProvider();
+		const route = provider.createPolyline(SHAPE, {
+			dashArray: '8, 12',
+			withArrow,
+			color: '#123456',
+			weight: 5,
+			opacity: 0.5
+		});
+		const layers = route.symbol.data.data.symbolLayers;
+		expect(layers[0]).toMatchObject({
+			type: 'CIMSolidStroke',
+			width: 5,
+			color: [18, 52, 86, 0.5],
+			effects: [{ type: 'CIMGeometricEffectDashes', dashTemplate: [8, 12] }]
+		});
+		expect(layers[1].enable).toBe(withArrow);
+	});
+
 	test('restores view padding when fitting fails', async () => {
 		const provider = await initializedProvider();
 		provider.polylines = [{}];
