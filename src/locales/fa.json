@@ -30,14 +30,54 @@
 		"trip_itineraries": "مسیرهای سفر",
 		"show_steps": "نمایش مراحل",
 		"hide_steps": "پنهان کردن مراحل",
+		"options": "گزینه‌ها",
+		"trip_options": "گزینه‌های سفر",
+		"cancel": "انصراف",
+		"done": "تمام",
+		"reset_to_defaults": "بازنشانی به پیش‌فرض‌ها",
+		"departure_time": "زمان حرکت",
+		"departure_date": "تاریخ حرکت",
+		"leave_now": "حرکت هم‌اکنون",
+		"depart_at": "حرکت در ساعت",
+		"arrive_by": "رسیدن تا ساعت",
+		"wheelchair_accessible": "مناسب ویلچر",
+		"wheelchair_desc": "یافتن مسیرهای مناسب برای ویلچر و وسایل کمک‌حرکتی",
+		"wheelchair": "ویلچر",
+		"route_optimization": "بهینه‌سازی مسیر",
+		"fastest_trip": "سریع‌ترین سفر",
+		"fewest_transfers": "کمترین تعویض خط",
+		"stay_on_board": "در وسیله نقلیه بمانید. این سفر به‌عنوان خط {route} ادامه می‌یابد.",
+		"walking_distance": "مسافت پیاده‌روی",
+		"max_walking_distance": "حداکثر مسافت پیاده‌روی",
 		"distance_unit": "واحد مسافت",
 		"unit_auto": "تشخیص خودکار",
 		"unit_metric": "متریک (کم، م)",
-		"unit_imperial": "امپراطوری (mi, ft)"
+		"unit_imperial": "امپراطوری (mi, ft)",
+		"swap_locations": "جابه‌جا کردن مبدأ و مقصد",
+		"error_code": "کد خطا",
+		"remove_recent_trip": "حذف سفر اخیر",
+		"recent_trip": "استفاده از سفر اخیر از {from} به {to}",
+		"recent_searches": "جستجوهای اخیر",
+		"recents": "موارد اخیر",
+		"clear_all": "پاک کردن همه",
+		"request_failed": "دسترسی به سرویس برنامه‌ریزی سفر ممکن نشد. لطفاً دوباره تلاش کنید.",
+		"invalid_shared_link": "این پیوند اشتراکی سفر معتبر به نظر نمی‌رسد. لطفاً دوباره سفر را برنامه‌ریزی کنید."
 	},
 	"tabs": {
 		"stops-and-stations": "ایستگاه‌ها",
 		"plan_trip": "برنامه‌ریزی سفر"
+	},
+	"favorites": {
+		"title": "علاقه‌مندی‌ها",
+		"add": "افزودن به علاقه‌مندی‌ها",
+		"remove": "حذف از علاقه‌مندی‌ها",
+		"clear_all": "پاک کردن همه",
+		"open_panel": "باز کردن علاقه‌مندی‌ها",
+		"close_panel": "بستن علاقه‌مندی‌ها",
+		"empty": "هنوز موردی ذخیره نشده است. برای ذخیره یک ایستگاه یا خط، روی ستاره آن ضربه بزنید.",
+		"stop_code": "کد",
+		"open_item": "باز کردن {name}",
+		"remove_item": "حذف {name} از علاقه‌مندی‌ها"
 	},
 	"search": {
 		"placeholder": "جستجوی ایستگاه، خط و مکان",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "برای مشاهده لیست خطوط",
 		"search_for_routes": "جستجوی خطوط...",
 		"no_routes_found": "خطی یافت نشد",
-		"all_routes": "همه خطوط"
+		"all_routes": "همه خطوط",
+		"clear": "پاک کردن",
+		"collapse": "جمع کردن جستجو"
+	},
+	"sheet": {
+		"close": "بستن",
+		"resize_handle": "تغییر اندازه پنل",
+		"snap_full": "ارتفاع کامل",
+		"snap_half": "نصف ارتفاع",
+		"snap_peek": "جمع‌شده"
+	},
+	"survey": {
+		"required_question": "سؤال الزامی",
+		"required_answer": "پاسخ به این سؤال الزامی است.",
+		"expand": "نمایش سؤال",
+		"collapse": "پنهان کردن سؤال",
+		"dismiss": "بستن نظرسنجی",
+		"submit": "ارسال",
+		"next": "بعدی",
+		"submit_failed": "ارسال پاسخ شما ممکن نشد. لطفاً دوباره تلاش کنید."
 	},
 	"header": {
 		"home": "خانه",
@@ -88,13 +147,26 @@
 		"close": "بستن"
 	},
 	"arrivals_and_departures": "ورود و خروج",
+	"show_more": "نمایش بیشتر",
+	"show_less": "نمایش کمتر",
 	"load_more_arrivals": "بارگذاری ورودی‌های بیشتر",
+	"refresh": "به‌روزرسانی",
 	"no_arrivals_found_in_next_minutes": "هیچ ورودی در {minutes} دقیقه آینده یافت نشد",
 	"no_more_arrivals_in_next_minutes": "هیچ ورودی بیشتری در {minutes} دقیقه آینده وجود ندارد",
 	"stop": "ایستگاه",
+	"direction_bound": "به سمت {direction}",
 	"routes": "خطوط",
 	"route": "خط",
 	"route_modal_title": "خط {name}",
+	"notifications": {
+		"route_load_failed": "بارگذاری این خط ممکن نشد.",
+		"route_shape_failed": "ترسیم این خط روی نقشه ممکن نشد.",
+		"route_shape_partial": "بخشی از این خط ترسیم نشد. ممکن است قسمتی از مسیر روی نقشه نمایش داده نشود.",
+		"favorite_saved": "در علاقه‌مندی‌ها ذخیره شد.",
+		"favorite_removed": "از علاقه‌مندی‌ها حذف شد.",
+		"tap_to_retry": "برای تلاش دوباره ضربه بزنید.",
+		"dismiss": "بستن"
+	},
 	"loading": "در حال بارگذاری",
 	"arrives": "می‌رسد",
 	"NA": "نامشخص",
@@ -105,13 +177,16 @@
 		"secs": "ثانیه",
 		"min": "دقیقه",
 		"mins": "دقیقه",
-		"minutes": "دقیقه"
+		"minutes": "دقیقه",
+		"min_compact": "{n} دقیقه"
 	},
 	"vehicle": {
 		"number": "شماره وسیله نقلیه",
 		"data_updated": "آخرین به‌روزرسانی",
 		"no_real_time_data": "اطلاعات لحظه‌ای برای این وسیله نقلیه در دسترس نیست.",
-		"next_stop": "ایستگاه بعدی:"
+		"next_stop": "ایستگاه بعدی:",
+		"label": "وسیله نقلیه",
+		"to_headsign": "وسیله نقلیه به مقصد {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "ورود و خروج"
@@ -150,18 +225,61 @@
 		"no_description": "توضیحات تکمیلی برای این اطلاعیه موجود نیست",
 		"page": "صفحه",
 		"show": "نمایش",
-		"hide": "پنهان"
+		"hide": "پنهان",
+		"open_alert": "باز کردن جزئیات اطلاعیه خدمات ({severity}): {summary}",
+		"affects_this_stop": "مربوط به این ایستگاه",
+		"other_alerts": "سایر اطلاعیه‌ها",
+		"severity_severe": "شدید",
+		"severity_warning": "هشدار",
+		"severity_info": "اطلاع‌رسانی",
+		"cause": "علت",
+		"effect": "تأثیر",
+		"active": "فعال",
+		"active_until": "تا {date}",
+		"active_from": "از {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "نامشخص",
+		"cause_other": "سایر",
+		"cause_technical": "مشکل فنی",
+		"cause_strike": "اعتصاب",
+		"cause_demonstration": "تظاهرات",
+		"cause_accident": "تصادف",
+		"cause_holiday": "تعطیلات",
+		"cause_weather": "شرایط جوی",
+		"cause_maintenance": "تعمیر و نگهداری",
+		"cause_construction": "عملیات عمرانی",
+		"cause_police": "فعالیت پلیس",
+		"cause_medical": "اورژانس پزشکی",
+		"cause_equipment": "تجهیزات",
+		"cause_environment": "شرایط محیطی",
+		"cause_personnel": "مسائل پرسنلی",
+		"cause_miscellaneous": "متفرقه",
+		"cause_security": "هشدار امنیتی",
+		"effect_no_service": "بدون خدمات",
+		"effect_reduced_service": "کاهش خدمات",
+		"effect_significant_delays": "تأخیر قابل‌توجه",
+		"effect_detour": "مسیر انحرافی",
+		"effect_additional_service": "خدمات اضافی",
+		"effect_modified_service": "تغییر در خدمات",
+		"effect_other": "تأثیر دیگر",
+		"effect_unknown": "تأثیر نامشخص",
+		"effect_stop_moved": "جابه‌جایی ایستگاه",
+		"effect_no_effect": "بدون تأثیر",
+		"effect_accessibility": "مشکل دسترس‌پذیری"
 	},
 	"view_stop_information": "مشاهده اطلاعات ایستگاه",
 	"stop_details": {
-		"view_details": "مشاهده جزئیات"
+		"view_details": "مشاهده جزئیات",
+		"stop_info": "اطلاعات ایستگاه"
 	},
 	"language_switcher": {
 		"select_language": "انتخاب زبان: {language}",
 		"available_languages": "زبان‌های موجود"
 	},
 	"map": {
-		"find_my_location": "موقعیت من را پیدا کن"
+		"find_my_location": "موقعیت من را پیدا کن",
+		"routes_shown": "خطوط نمایش‌داده‌شده",
+		"live_vehicle_count": "{count} وسیله لحظه‌ای"
 	},
 	"context-menu": {
 		"start_here": "شروع از اینجا",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "رفتن به خانه",
 		"go_back": "بازگشت"
+	},
+	"trip_details": {
+		"route": "خط",
+		"no_stops": "زمان‌بندی ایستگاه‌ها برای این سفر موجود نیست.",
+		"loading": "در حال بارگذاری جزئیات سفر...",
+		"live_vehicle": "لحظه‌ای · وسیله نقلیه {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# ایستگاه} other {# ایستگاه}}"
 	},
 	"skip_to_main_content": "رفتن به محتوای اصلی"
 }

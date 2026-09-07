@@ -30,14 +30,54 @@
 		"trip_itineraries": "Itinerè Vwayaj",
 		"show_steps": "Montre etap yo",
 		"hide_steps": "Kache etap yo",
+		"options": "Opsyon",
+		"trip_options": "Opsyon Vwayaj",
+		"cancel": "Anile",
+		"done": "Fini",
+		"reset_to_defaults": "Remete valè pa defo yo",
+		"departure_time": "Lè Depa",
+		"departure_date": "Dat depa",
+		"leave_now": "Pati Kounye a",
+		"depart_at": "Pati nan yon lè presi",
+		"arrive_by": "Rive Anvan",
+		"wheelchair_accessible": "Aksesib pou chèz woulant",
+		"wheelchair_desc": "Jwenn wout ki bon pou aparèy mobilite ak chèz woulant",
+		"wheelchair": "Chèz woulant",
+		"route_optimization": "Optimizasyon Wout",
+		"fastest_trip": "Vwayaj Pi Rapid",
+		"fewest_transfers": "Mwens Transfè",
+		"stay_on_board": "Rete nan machin nan. Vwayaj sa a kontinye kòm Wout {route}.",
+		"walking_distance": "Distans Mache",
+		"max_walking_distance": "Distans maksimòm pou mache",
 		"distance_unit": "Inite Distans",
 		"unit_auto": "Detekte otomatik",
 		"unit_metric": "Metrik (km, m)",
-		"unit_imperial": "Enperyyal (mi, ft)"
+		"unit_imperial": "Enperyyal (mi, ft)",
+		"swap_locations": "Chanje plas Soti ak Ale",
+		"error_code": "Kòd erè",
+		"remove_recent_trip": "Retire vwayaj resan an",
+		"recent_trip": "Sèvi ak vwayaj resan an soti nan {from} pou ale nan {to}",
+		"recent_searches": "Rechèch Resan",
+		"recents": "Resan yo",
+		"clear_all": "Efase Tout",
+		"request_failed": "Nou pa t rive kontakte sèvis planifikasyon vwayaj la. Tanpri eseye ankò.",
+		"invalid_shared_link": "Lyen vwayaj pataje sa a sanble kase. Eseye planifye vwayaj la ankò."
 	},
 	"tabs": {
 		"stops-and-stations": "Estasyon ak Arè",
 		"plan_trip": "Planifye yon Vwayaj"
+	},
+	"favorites": {
+		"title": "Favori yo",
+		"add": "Ajoute nan favori yo",
+		"remove": "Retire nan favori yo",
+		"clear_all": "Efase Tout",
+		"open_panel": "Louvri favori yo",
+		"close_panel": "Fèmen favori yo",
+		"empty": "Poko gen favori. Peze zetwal la sou yon arè oswa yon wout pou anrejistre l isit la.",
+		"stop_code": "Kòd",
+		"open_item": "Louvri {name}",
+		"remove_item": "Retire {name} nan favori yo"
 	},
 	"search": {
 		"placeholder": "Chèche arè, wout, ak kote",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "pou yon lis wout ki disponib",
 		"search_for_routes": "Chèche wout...",
 		"no_routes_found": "Pa jwenn okenn wout",
-		"all_routes": "Tout Wout"
+		"all_routes": "Tout Wout",
+		"clear": "Efase",
+		"collapse": "Fèmen rechèch la"
+	},
+	"sheet": {
+		"close": "Fèmen",
+		"resize_handle": "Chanje gwosè panèl la",
+		"snap_full": "Wotè konplè",
+		"snap_half": "Mwatye wotè",
+		"snap_peek": "Wotè minimòm"
+	},
+	"survey": {
+		"required_question": "Kesyon obligatwa",
+		"required_answer": "Kesyon sa a obligatwa.",
+		"expand": "Montre kesyon an",
+		"collapse": "Kache kesyon an",
+		"dismiss": "Fèmen sondaj la",
+		"submit": "Voye",
+		"next": "Pwochen",
+		"submit_failed": "Nou pa t ka voye repons ou an. Tanpri eseye ankò."
 	},
 	"header": {
 		"home": "Akèy",
@@ -88,13 +147,26 @@
 		"close": "Fèmen"
 	},
 	"arrivals_and_departures": "Arive ak depa",
+	"show_more": "Montre plis",
+	"show_less": "Montre mwens",
 	"load_more_arrivals": "Chaje plis arive",
+	"refresh": "Aktyalize",
 	"no_arrivals_found_in_next_minutes": "Pa gen arive nan {minutes} minit kap vini yo",
 	"no_more_arrivals_in_next_minutes": "Pa gen plis arive nan {minutes} minit kap vini yo",
 	"stop": "Arè",
+	"direction_bound": "Direksyon {direction}",
 	"routes": "Wout",
 	"route": "wout",
 	"route_modal_title": "Wout {name}",
+	"notifications": {
+		"route_load_failed": "Nou pa t ka chaje wout sa a.",
+		"route_shape_failed": "Nou pa t ka trase wout sa a sou kat la.",
+		"route_shape_partial": "Nou pa t ka trase yon pati nan wout sa a. Petèt gen yon segman ki manke sou kat la.",
+		"favorite_saved": "Anrejistre nan favori yo.",
+		"favorite_removed": "Retire nan favori yo.",
+		"tap_to_retry": "Peze pou eseye ankò.",
+		"dismiss": "Fèmen"
+	},
 	"loading": "Ap chaje",
 	"arrives": "rive",
 	"NA": "Pa disponib",
@@ -105,13 +177,16 @@
 		"secs": "sek",
 		"min": "min",
 		"mins": "min",
-		"minutes": "minit"
+		"minutes": "minit",
+		"min_compact": "{n} min"
 	},
 	"vehicle": {
 		"number": "Machin #",
 		"data_updated": "Done mete ajou",
 		"no_real_time_data": "Nou pa gen done an tan reyèl pou machin sa a kounye a.",
-		"next_stop": "Pwochen arè:"
+		"next_stop": "Pwochen arè:",
+		"label": "Machin",
+		"to_headsign": "Machin pou {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Arive ak Depa"
@@ -150,18 +225,61 @@
 		"no_description": "Pa gen deskripsyon detaye disponib pou avètisman sa a",
 		"page": "Paj",
 		"show": "Montre",
-		"hide": "Kache"
+		"hide": "Kache",
+		"open_alert": "Louvri detay avètisman sèvis la ({severity}): {summary}",
+		"affects_this_stop": "Afekte arè sa a",
+		"other_alerts": "Lòt avètisman",
+		"severity_severe": "Grav",
+		"severity_warning": "Atansyon",
+		"severity_info": "Enfo",
+		"cause": "Kòz",
+		"effect": "Efè",
+		"active": "Aktif",
+		"active_until": "Jiska {date}",
+		"active_from": "Apati {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Enkoni",
+		"cause_other": "Lòt",
+		"cause_technical": "Pwoblèm teknik",
+		"cause_strike": "Grèv",
+		"cause_demonstration": "Manifestasyon",
+		"cause_accident": "Aksidan",
+		"cause_holiday": "Jou ferye",
+		"cause_weather": "Kondisyon tan",
+		"cause_maintenance": "Antretyen",
+		"cause_construction": "Konstriksyon",
+		"cause_police": "Aktivite polis",
+		"cause_medical": "Ijans medikal",
+		"cause_equipment": "Ekipman",
+		"cause_environment": "Anviwònman",
+		"cause_personnel": "Pèsonèl",
+		"cause_miscellaneous": "Divès",
+		"cause_security": "Avètisman sekirite",
+		"effect_no_service": "Pa gen sèvis",
+		"effect_reduced_service": "Sèvis redwi",
+		"effect_significant_delays": "Gwo reta",
+		"effect_detour": "Detou",
+		"effect_additional_service": "Sèvis anplis",
+		"effect_modified_service": "Sèvis modifye",
+		"effect_other": "Lòt efè",
+		"effect_unknown": "Efè enkoni",
+		"effect_stop_moved": "Arè deplase",
+		"effect_no_effect": "Pa gen efè",
+		"effect_accessibility": "Pwoblèm aksesibilite"
 	},
 	"view_stop_information": "Gade Enfòmasyon Arè",
 	"stop_details": {
-		"view_details": "Gade Detay"
+		"view_details": "Gade Detay",
+		"stop_info": "Enfo Arè"
 	},
 	"language_switcher": {
 		"select_language": "Chwazi lang: {language}",
 		"available_languages": "Lang ki disponib"
 	},
 	"map": {
-		"find_my_location": "Jwenn kote mwen ye"
+		"find_my_location": "Jwenn kote mwen ye",
+		"routes_shown": "Wout ki afiche",
+		"live_vehicle_count": "{count} an tan reyèl"
 	},
 	"context-menu": {
 		"start_here": "Kòmanse isit",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "Ale lakay",
 		"go_back": "Tounen"
+	},
+	"trip_details": {
+		"route": "Wout",
+		"no_stops": "Pa gen lè arè disponib pou vwayaj sa a.",
+		"loading": "Ap chaje detay vwayaj la...",
+		"live_vehicle": "An tan reyèl · machin {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# arè} other {# arè}}"
 	},
 	"skip_to_main_content": "Sote nan kontni prensipal la"
 }

@@ -30,14 +30,54 @@
 		"trip_itineraries": "ລາຍການເດີນທາງ",
 		"show_steps": "ສະແດງຂັ້ນຕອນ",
 		"hide_steps": "ເຊື່ອງຂັ້ນຕອນ",
+		"options": "ຕົວເລືອກ",
+		"trip_options": "ຕົວເລືອກການເດີນທາງ",
+		"cancel": "ຍົກເລີກ",
+		"done": "ຕົກລົງ",
+		"reset_to_defaults": "ຕັ້ງຄືນເປັນຄ່າເລີ່ມຕົ້ນ",
+		"departure_time": "ເວລາອອກເດີນທາງ",
+		"departure_date": "ວັນທີອອກເດີນທາງ",
+		"leave_now": "ອອກເດີນທາງດຽວນີ້",
+		"depart_at": "ອອກເດີນທາງເວລາ",
+		"arrive_by": "ມາຮອດກ່ອນເວລາ",
+		"wheelchair_accessible": "ເຂົ້າເຖິງໄດ້ດ້ວຍລົດເຂັນ",
+		"wheelchair_desc": "ຄົ້ນຫາເສັ້ນທາງທີ່ເໝາະສົມສຳລັບອຸປະກອນຊ່ວຍການເຄື່ອນທີ່ ແລະ ລົດເຂັນ",
+		"wheelchair": "ລົດເຂັນ",
+		"route_optimization": "ການປັບເສັ້ນທາງໃຫ້ເໝາະສົມ",
+		"fastest_trip": "ການເດີນທາງໄວທີ່ສຸດ",
+		"fewest_transfers": "ປ່ຽນລົດໜ້ອຍທີ່ສຸດ",
+		"stay_on_board": "ນັ່ງຢູ່ໃນລົດຄັນເດີມ. ການເດີນທາງນີ້ສືບຕໍ່ເປັນເສັ້ນທາງ {route}.",
+		"walking_distance": "ໄລຍະທາງຍ່າງ",
+		"max_walking_distance": "ໄລຍະທາງຍ່າງສູງສຸດ",
 		"distance_unit": "ຫົວໜ່ວຍໄລຍະທາງ",
 		"unit_auto": "ກວດຫາອັດຕະໂນມັດ",
 		"unit_metric": "ລະບົບເມຕຣິກ (ກມ, ມ)",
-		"unit_imperial": "ລະບົບອິມພີຣຽລ (ໄມລ໌, ຟຸດ)"
+		"unit_imperial": "ລະບົບອິມພີຣຽລ (ໄມລ໌, ຟຸດ)",
+		"swap_locations": "ສະຫຼັບສະຖານທີ່ຕົ້ນທາງ ແລະ ປາຍທາງ",
+		"error_code": "ລະຫັດຂໍ້ຜິດພາດ",
+		"remove_recent_trip": "ລຶບການເດີນທາງລ່າສຸດ",
+		"recent_trip": "ໃຊ້ການເດີນທາງລ່າສຸດຈາກ {from} ໄປ {to}",
+		"recent_searches": "ການຄົ້ນຫາລ່າສຸດ",
+		"recents": "ລ່າສຸດ",
+		"clear_all": "ລຶບທັງໝົດ",
+		"request_failed": "ພວກເຮົາບໍ່ສາມາດເຊື່ອມຕໍ່ຫາບໍລິການວາງແຜນການເດີນທາງໄດ້. ກະລຸນາລອງໃໝ່.",
+		"invalid_shared_link": "ລິ້ງການເດີນທາງທີ່ແບ່ງປັນນີ້ເບິ່ງຄືວ່າໃຊ້ບໍ່ໄດ້. ກະລຸນາວາງແຜນການເດີນທາງໃໝ່ອີກຄັ້ງ."
 	},
 	"tabs": {
 		"stops-and-stations": "ປ້າຍ ແລະ ສະຖານີ",
 		"plan_trip": "ວາງແຜນການເດີນທາງ"
+	},
+	"favorites": {
+		"title": "ລາຍການໂປດ",
+		"add": "ເພີ່ມໃສ່ລາຍການໂປດ",
+		"remove": "ລຶບອອກຈາກລາຍການໂປດ",
+		"clear_all": "ລຶບທັງໝົດ",
+		"open_panel": "ເປີດລາຍການໂປດ",
+		"close_panel": "ປິດລາຍການໂປດ",
+		"empty": "ຍັງບໍ່ມີລາຍການໂປດ. ກົດຮູບດາວຢູ່ປ້າຍ ຫຼື ເສັ້ນທາງ ເພື່ອບັນທຶກໄວ້ບ່ອນນີ້.",
+		"stop_code": "ລະຫັດ",
+		"open_item": "ເປີດ {name}",
+		"remove_item": "ລຶບ {name} ອອກຈາກລາຍການໂປດ"
 	},
 	"search": {
 		"placeholder": "ຄົ້ນຫາປ້າຍ, ເສັ້ນທາງ, ແລະ ສະຖານທີ່",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "ເພື່ອເບິ່ງລາຍການເສັ້ນທາງທີ່ມີ",
 		"search_for_routes": "ຄົ້ນຫາເສັ້ນທາງ...",
 		"no_routes_found": "ບໍ່ພົບເສັ້ນທາງ",
-		"all_routes": "ທຸກເສັ້ນທາງ"
+		"all_routes": "ທຸກເສັ້ນທາງ",
+		"clear": "ລຶບ",
+		"collapse": "ຫຍໍ້ການຄົ້ນຫາ"
+	},
+	"sheet": {
+		"close": "ປິດ",
+		"resize_handle": "ປັບຂະໜາດແຜງ",
+		"snap_full": "ຄວາມສູງເຕັມ",
+		"snap_half": "ຄວາມສູງເຄິ່ງໜຶ່ງ",
+		"snap_peek": "ຫຍໍ້ລົງ"
+	},
+	"survey": {
+		"required_question": "ຄຳຖາມທີ່ຕ້ອງຕອບ",
+		"required_answer": "ຄຳຖາມນີ້ຈຳເປັນຕ້ອງຕອບ.",
+		"expand": "ສະແດງຄຳຖາມ",
+		"collapse": "ເຊື່ອງຄຳຖາມ",
+		"dismiss": "ປິດແບບສຳຫຼວດ",
+		"submit": "ສົ່ງ",
+		"next": "ຕໍ່ໄປ",
+		"submit_failed": "ບໍ່ສາມາດສົ່ງຄຳຕອບຂອງທ່ານໄດ້. ກະລຸນາລອງໃໝ່."
 	},
 	"header": {
 		"home": "ໜ້າຫຼັກ",
@@ -88,13 +147,26 @@
 		"close": "ປິດ"
 	},
 	"arrivals_and_departures": "ການມາຮອດ ແລະ ການອອກເດີນທາງ",
+	"show_more": "ສະແດງເພີ່ມເຕີມ",
+	"show_less": "ສະແດງໜ້ອຍລົງ",
 	"load_more_arrivals": "ໂຫຼດການມາຮອດເພີ່ມເຕີມ",
+	"refresh": "ໂຫຼດຄືນ",
 	"no_arrivals_found_in_next_minutes": "ບໍ່ພົບການມາຮອດໃນ {minutes} ນາທີຕໍ່ໄປ",
 	"no_more_arrivals_in_next_minutes": "ບໍ່ມີການມາຮອດເພີ່ມເຕີມໃນ {minutes} ນາທີຕໍ່ໄປ",
 	"stop": "ປ້າຍ",
+	"direction_bound": "ມຸ່ງໜ້າໄປທາງ {direction}",
 	"routes": "ເສັ້ນທາງ",
 	"route": "ເສັ້ນທາງ",
 	"route_modal_title": "ເສັ້ນທາງ {name}",
+	"notifications": {
+		"route_load_failed": "ບໍ່ສາມາດໂຫຼດເສັ້ນທາງນີ້ໄດ້.",
+		"route_shape_failed": "ບໍ່ສາມາດແຕ້ມເສັ້ນທາງນີ້ໃສ່ແຜນທີ່ໄດ້.",
+		"route_shape_partial": "ບາງສ່ວນຂອງເສັ້ນທາງນີ້ແຕ້ມບໍ່ໄດ້. ແຜນທີ່ອາດຈະຂາດບາງຊ່ວງ.",
+		"favorite_saved": "ບັນທຶກໃສ່ລາຍການໂປດແລ້ວ.",
+		"favorite_removed": "ລຶບອອກຈາກລາຍການໂປດແລ້ວ.",
+		"tap_to_retry": "ກົດເພື່ອລອງໃໝ່.",
+		"dismiss": "ປິດ"
+	},
 	"loading": "ກຳລັງໂຫລດ",
 	"arrives": "ມາຮອດ",
 	"NA": "ບໍ່ມີຂໍ້ມູນ",
@@ -105,13 +177,16 @@
 		"secs": "ວິນາທີ",
 		"min": "ນາທີ",
 		"mins": "ນາທີ",
-		"minutes": "ນາທີ"
+		"minutes": "ນາທີ",
+		"min_compact": "{n} ນາທີ"
 	},
 	"vehicle": {
 		"number": "ລົດເລກ #",
 		"data_updated": "ຂໍ້ມູນອັບເດດແລ້ວ",
 		"no_real_time_data": "ພວກເຮົາບໍ່ມີຂໍ້ມູນເວລາຈິງສຳລັບລົດຄັນນີ້ໃນຕອນນີ້.",
-		"next_stop": "ປ້າຍຕໍ່ໄປ:"
+		"next_stop": "ປ້າຍຕໍ່ໄປ:",
+		"label": "ລົດ",
+		"to_headsign": "ລົດໄປ {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "ການມາຮອດ ແລະ ການອອກເດີນທາງ"
@@ -150,18 +225,61 @@
 		"no_description": "ບໍ່ມີລາຍລະອຽດສຳລັບການແຈ້ງເຕືອນນີ້",
 		"page": "ໜ້າ",
 		"show": "ສະແດງ",
-		"hide": "ເຊື່ອງ"
+		"hide": "ເຊື່ອງ",
+		"open_alert": "ເປີດລາຍລະອຽດການແຈ້ງເຕືອນການບໍລິການ ({severity}): {summary}",
+		"affects_this_stop": "ມີຜົນຕໍ່ປ້າຍນີ້",
+		"other_alerts": "ການແຈ້ງເຕືອນອື່ນໆ",
+		"severity_severe": "ຮ້າຍແຮງ",
+		"severity_warning": "ຄຳເຕືອນ",
+		"severity_info": "ຂໍ້ມູນ",
+		"cause": "ສາເຫດ",
+		"effect": "ຜົນກະທົບ",
+		"active": "ໄລຍະເວລາທີ່ມີຜົນ",
+		"active_until": "ຈົນຮອດ {date}",
+		"active_from": "ຕັ້ງແຕ່ {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "ບໍ່ຮູ້ສາເຫດ",
+		"cause_other": "ອື່ນໆ",
+		"cause_technical": "ບັນຫາທາງເຕັກນິກ",
+		"cause_strike": "ການນັດຢຸດງານ",
+		"cause_demonstration": "ການປະທ້ວງ",
+		"cause_accident": "ອຸປະຕິເຫດ",
+		"cause_holiday": "ວັນພັກ",
+		"cause_weather": "ສະພາບອາກາດ",
+		"cause_maintenance": "ການບຳລຸງຮັກສາ",
+		"cause_construction": "ການກໍ່ສ້າງ",
+		"cause_police": "ການປະຕິບັດງານຂອງຕຳຫຼວດ",
+		"cause_medical": "ເຫດສຸກເສີນທາງການແພດ",
+		"cause_equipment": "ບັນຫາອຸປະກອນ",
+		"cause_environment": "ບັນຫາສິ່ງແວດລ້ອມ",
+		"cause_personnel": "ບັນຫາພະນັກງານ",
+		"cause_miscellaneous": "ບັນຫາເບັດເຕັດ",
+		"cause_security": "ບັນຫາຄວາມປອດໄພ",
+		"effect_no_service": "ບໍ່ມີການບໍລິການ",
+		"effect_reduced_service": "ຫຼຸດການບໍລິການ",
+		"effect_significant_delays": "ຊັກຊ້າຫຼາຍ",
+		"effect_detour": "ອ້ອມທາງ",
+		"effect_additional_service": "ເພີ່ມການບໍລິການ",
+		"effect_modified_service": "ປັບປ່ຽນການບໍລິການ",
+		"effect_other": "ຜົນກະທົບອື່ນໆ",
+		"effect_unknown": "ບໍ່ຮູ້ຜົນກະທົບ",
+		"effect_stop_moved": "ຍ້າຍປ້າຍ",
+		"effect_no_effect": "ບໍ່ມີຜົນກະທົບ",
+		"effect_accessibility": "ບັນຫາການເຂົ້າເຖິງ"
 	},
 	"view_stop_information": "ເບິ່ງຂໍ້ມູນປ້າຍ",
 	"stop_details": {
-		"view_details": "ເບິ່ງລາຍລະອຽດ"
+		"view_details": "ເບິ່ງລາຍລະອຽດ",
+		"stop_info": "ຂໍ້ມູນປ້າຍ"
 	},
 	"language_switcher": {
 		"select_language": "ເລືອກພາສາ: {language}",
 		"available_languages": "ພາສາທີ່ມີ"
 	},
 	"map": {
-		"find_my_location": "ຊອກຫາທີ່ຕັ້ງຂອງຂ້ອຍ"
+		"find_my_location": "ຊອກຫາທີ່ຕັ້ງຂອງຂ້ອຍ",
+		"routes_shown": "ເສັ້ນທາງທີ່ສະແດງ",
+		"live_vehicle_count": "ລົດເວລາຈິງ {count} ຄັນ"
 	},
 	"context-menu": {
 		"start_here": "ເລີ່ມຈາກບ່ອນນີ້",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "ໄປໜ້າຫຼັກ",
 		"go_back": "ກັບຄືນ"
+	},
+	"trip_details": {
+		"route": "ເສັ້ນທາງ",
+		"no_stops": "ບໍ່ມີເວລາຮອດປ້າຍສຳລັບການເດີນທາງນີ້.",
+		"loading": "ກຳລັງໂຫຼດລາຍລະອຽດການເດີນທາງ...",
+		"live_vehicle": "ເວລາຈິງ · ລົດເລກ {vehicleId}",
+		"collapsed_stops": "{count, plural, other {# ປ້າຍ}}"
 	},
 	"skip_to_main_content": "ຂ້າມໄປຍັງເນື້ອຫາຫຼັກ"
 }

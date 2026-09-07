@@ -30,14 +30,54 @@
 		"trip_itineraries": "Plany podróży",
 		"show_steps": "Pokaż kroki",
 		"hide_steps": "Ukryj kroki",
+		"options": "Opcje",
+		"trip_options": "Opcje podróży",
+		"cancel": "Anuluj",
+		"done": "Gotowe",
+		"reset_to_defaults": "Przywróć domyślne",
+		"departure_time": "Godzina odjazdu",
+		"departure_date": "Data odjazdu",
+		"leave_now": "Odjazd teraz",
+		"depart_at": "Odjazd o",
+		"arrive_by": "Przyjazd na",
+		"wheelchair_accessible": "Dostępne dla wózków inwalidzkich",
+		"wheelchair_desc": "Znajdź trasy odpowiednie dla wózków inwalidzkich i urządzeń wspomagających poruszanie się",
+		"wheelchair": "Wózek inwalidzki",
+		"route_optimization": "Optymalizacja trasy",
+		"fastest_trip": "Najszybsza podróż",
+		"fewest_transfers": "Najmniej przesiadek",
+		"stay_on_board": "Pozostań w pojeździe. Ten kurs jest kontynuowany jako trasa {route}.",
+		"walking_distance": "Odległość pieszo",
+		"max_walking_distance": "Maksymalna odległość pieszo",
 		"distance_unit": "Jednostka odległości",
 		"unit_auto": "Wykryj automatycznie",
 		"unit_metric": "Metryczny (km, m)",
-		"unit_imperial": "Imperialny (mi, ft)"
+		"unit_imperial": "Imperialny (mi, ft)",
+		"swap_locations": "Zamień miejscami pola Od i Do",
+		"error_code": "Kod błędu",
+		"remove_recent_trip": "Usuń podróż z historii",
+		"recent_trip": "Użyj podróży z historii: {from} – {to}",
+		"recent_searches": "Ostatnie wyszukiwania",
+		"recents": "Ostatnie",
+		"clear_all": "Wyczyść wszystko",
+		"request_failed": "Nie udało się połączyć z usługą planowania podróży. Spróbuj ponownie.",
+		"invalid_shared_link": "Ten udostępniony link do podróży wygląda na nieprawidłowy. Zaplanuj podróż ponownie."
 	},
 	"tabs": {
 		"stops-and-stations": "Przystanki i stacje",
 		"plan_trip": "Zaplanuj podróż"
+	},
+	"favorites": {
+		"title": "Ulubione",
+		"add": "Dodaj do ulubionych",
+		"remove": "Usuń z ulubionych",
+		"clear_all": "Wyczyść wszystko",
+		"open_panel": "Otwórz ulubione",
+		"close_panel": "Zamknij ulubione",
+		"empty": "Nie masz jeszcze ulubionych. Dotknij gwiazdki przy przystanku lub trasie, aby dodać do tej listy.",
+		"stop_code": "Kod",
+		"open_item": "Otwórz: {name}",
+		"remove_item": "Usuń z ulubionych: {name}"
 	},
 	"search": {
 		"placeholder": "Szukaj przystanków, tras i miejsc",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "dla listy dostępnych tras",
 		"search_for_routes": "Szukaj tras...",
 		"no_routes_found": "Nie znaleziono tras",
-		"all_routes": "Wszystkie trasy"
+		"all_routes": "Wszystkie trasy",
+		"clear": "Wyczyść",
+		"collapse": "Zwiń wyszukiwanie"
+	},
+	"sheet": {
+		"close": "Zamknij",
+		"resize_handle": "Zmień rozmiar panelu",
+		"snap_full": "Pełna wysokość",
+		"snap_half": "Połowa wysokości",
+		"snap_peek": "Zwinięty"
+	},
+	"survey": {
+		"required_question": "Pytanie wymagane",
+		"required_answer": "To pytanie jest wymagane.",
+		"expand": "Pokaż pytanie",
+		"collapse": "Ukryj pytanie",
+		"dismiss": "Zamknij ankietę",
+		"submit": "Wyślij",
+		"next": "Dalej",
+		"submit_failed": "Nie udało się wysłać odpowiedzi. Spróbuj ponownie."
 	},
 	"header": {
 		"home": "Strona główna",
@@ -88,13 +147,26 @@
 		"close": "Zamknij"
 	},
 	"arrivals_and_departures": "Przyjazdy i odjazdy",
+	"show_more": "Pokaż więcej",
+	"show_less": "Pokaż mniej",
 	"load_more_arrivals": "Załaduj więcej przyjazdów",
+	"refresh": "Odśwież",
 	"no_arrivals_found_in_next_minutes": "Brak przyjazdów w ciągu najbliższych {minutes} minut",
 	"no_more_arrivals_in_next_minutes": "Brak dalszych przyjazdów w ciągu najbliższych {minutes} minut",
 	"stop": "Przystanek",
+	"direction_bound": "Kierunek {direction}",
 	"routes": "Trasy",
 	"route": "trasa",
 	"route_modal_title": "Trasa {name}",
+	"notifications": {
+		"route_load_failed": "Nie udało się wczytać tej trasy.",
+		"route_shape_failed": "Nie udało się narysować tej trasy na mapie.",
+		"route_shape_partial": "Nie udało się narysować części tej trasy. Na mapie może brakować odcinka.",
+		"favorite_saved": "Zapisano w ulubionych.",
+		"favorite_removed": "Usunięto z ulubionych.",
+		"tap_to_retry": "Dotknij, aby spróbować ponownie.",
+		"dismiss": "Zamknij"
+	},
 	"loading": "Ładowanie",
 	"arrives": "przyjeżdża",
 	"NA": "N/D",
@@ -105,13 +177,16 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n} min"
 	},
 	"vehicle": {
 		"number": "Pojazd #",
 		"data_updated": "Dane zaktualizowane",
 		"no_real_time_data": "Obecnie nie mamy danych w czasie rzeczywistym dla tego pojazdu.",
-		"next_stop": "Następny przystanek:"
+		"next_stop": "Następny przystanek:",
+		"label": "Pojazd",
+		"to_headsign": "Pojazd, kierunek: {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Przyjazdy i Odjazdy"
@@ -150,14 +225,61 @@
 		"no_description": "Brak szczegółowego opisu dla tego alertu",
 		"page": "Strona",
 		"show": "Pokaż",
-		"hide": "Ukryj"
+		"hide": "Ukryj",
+		"open_alert": "Otwórz szczegóły alertu serwisowego, poziom: {severity}. {summary}",
+		"affects_this_stop": "Dotyczy tego przystanku",
+		"other_alerts": "Pozostałe alerty",
+		"severity_severe": "Poważny",
+		"severity_warning": "Ostrzeżenie",
+		"severity_info": "Informacja",
+		"cause": "Przyczyna",
+		"effect": "Skutek",
+		"active": "Aktywny",
+		"active_until": "Do {date}",
+		"active_from": "Od {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Nieznana",
+		"cause_other": "Inna",
+		"cause_technical": "Problem techniczny",
+		"cause_strike": "Strajk",
+		"cause_demonstration": "Demonstracja",
+		"cause_accident": "Wypadek",
+		"cause_holiday": "Święto",
+		"cause_weather": "Pogoda",
+		"cause_maintenance": "Prace konserwacyjne",
+		"cause_construction": "Roboty budowlane",
+		"cause_police": "Działania policji",
+		"cause_medical": "Nagły przypadek medyczny",
+		"cause_equipment": "Awaria sprzętu",
+		"cause_environment": "Warunki środowiskowe",
+		"cause_personnel": "Problemy kadrowe",
+		"cause_miscellaneous": "Różne",
+		"cause_security": "Alert bezpieczeństwa",
+		"effect_no_service": "Brak kursów",
+		"effect_reduced_service": "Ograniczone kursowanie",
+		"effect_significant_delays": "Znaczne opóźnienia",
+		"effect_detour": "Objazd",
+		"effect_additional_service": "Dodatkowe kursy",
+		"effect_modified_service": "Zmienione kursowanie",
+		"effect_other": "Inny skutek",
+		"effect_unknown": "Nieznany skutek",
+		"effect_stop_moved": "Przystanek przeniesiony",
+		"effect_no_effect": "Brak wpływu",
+		"effect_accessibility": "Problem z dostępnością"
+	},
+	"view_stop_information": "Zobacz informacje o przystanku",
+	"stop_details": {
+		"view_details": "Zobacz szczegóły",
+		"stop_info": "O przystanku"
 	},
 	"language_switcher": {
 		"select_language": "Wybierz język: {language}",
 		"available_languages": "Dostępne języki"
 	},
 	"map": {
-		"find_my_location": "Znajdź moją lokalizację"
+		"find_my_location": "Znajdź moją lokalizację",
+		"routes_shown": "Wyświetlane trasy",
+		"live_vehicle_count": "{count} na żywo"
 	},
 	"context-menu": {
 		"start_here": "Rozpocznij tutaj",
@@ -182,6 +304,13 @@
 		},
 		"go_home": "Strona główna",
 		"go_back": "Wróć"
+	},
+	"trip_details": {
+		"route": "Trasa",
+		"no_stops": "Brak godzin odjazdów dla tego kursu.",
+		"loading": "Ładowanie szczegółów kursu...",
+		"live_vehicle": "Na żywo · pojazd {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# przystanek} few {# przystanki} many {# przystanków} other {# przystanka}}"
 	},
 	"skip_to_main_content": "Przejdź do głównej treści"
 }
