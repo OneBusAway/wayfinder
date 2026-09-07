@@ -2,6 +2,7 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 import GoogleMapProvider from '$lib/Provider/GoogleMapProvider.svelte.js';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 import { nightModeStyles } from '$lib/googleMaps';
+import { polylineArrowColor } from '$lib/colorUtils';
 
 vi.mock('$components/map/StopMarker.svelte', () => ({ default: {} }));
 vi.mock('$components/map/PopupContent.svelte', () => ({ default: {} }));
@@ -20,6 +21,33 @@ vi.mock('$lib/MapHelpers/animateMarker', () => ({
 vi.mock('$lib/vehicleUtils', () => ({
 	buildVehiclePopupData: vi.fn(() => ({}))
 }));
+
+test('recolors a Google route and its arrows without replacing its geometry', () => {
+	const provider = new GoogleMapProvider('test-key', vi.fn());
+	global.google = { maps: { SymbolPath: { FORWARD_CLOSED_ARROW: 'arrow' } } };
+	const icons = [
+		{ icon: { path: 'arrow', scale: 2 }, repeat: '50px' },
+		{ icon: { path: 'M 0,-1 0,1', scale: 5 }, repeat: '20px' }
+	];
+	const polyline = { get: vi.fn(() => icons), setOptions: vi.fn() };
+	for (const color of ['#8099b3', '#003366']) {
+		provider.setPolylineColor(polyline, color);
+		expect(polyline.setOptions).toHaveBeenLastCalledWith({
+			strokeColor: color,
+			icons: [
+				{
+					...icons[0],
+					icon: {
+						...icons[0].icon,
+						strokeColor: polylineArrowColor(color),
+						fillColor: polylineArrowColor(color)
+					}
+				},
+				{ ...icons[1], icon: { ...icons[1].icon, strokeColor: color, fillColor: color } }
+			]
+		});
+	}
+});
 // nightModeStyles is the real implementation (not stubbed to []): the
 // setBasemapDimmed/setTheme composition tests below need a genuinely
 // non-empty base theme to prove _applyStyles actually merges theme + dim,
@@ -452,25 +480,40 @@ describe('setBasemapDimmed / setTheme composition', () => {
 		expect(lastStyles.at(-1).stylers.some((v) => 'saturation' in v)).toBe(true);
 	});
 
-	test('refreshes existing vehicle icons for the new theme', () => {
+	test('refreshes the rendered vehicle SVG in both theme directions', async () => {
 		const provider = makeProvider();
 		provider.map = { setOptions: vi.fn() };
 		setupGoogleMaps(makeGoogleMarkerMock());
 		const marker = {
 			vehicleIconOptions: {
 				orientation: 90,
-				color: '#007BFF',
+				color: '#dddddd',
 				routeType: 3,
-				isHighlighted: false
+				isHighlighted: true
 			},
 			setIcon: vi.fn()
 		};
 		provider.vehicleMarkers = [marker];
 
-		provider.setTheme('dark');
-
-		expect(createVehicleIconSvg).toHaveBeenLastCalledWith(90, '#007BFF', 3, false, true);
-		expect(marker.setIcon).toHaveBeenCalledOnce();
+		const actual = await vi.importActual('$lib/MapHelpers/generateVehicleIcon');
+		createVehicleIconSvg.mockImplementation(actual.createVehicleIconSvg);
+		try {
+			for (const theme of ['dark', 'light']) {
+				provider.setTheme(theme);
+				const url = marker.setIcon.mock.calls.at(-1)[0].url;
+				const svg = new DOMParser().parseFromString(
+					decodeURIComponent(url.split(',')[1]),
+					'image/svg+xml'
+				);
+				expect(svg.querySelector('circle[r="13"]').getAttribute('fill')).toBe('#000000');
+				expect(svg.querySelector('circle[r="16"]').getAttribute('fill')).toBe(
+					theme === 'dark' ? '#ffffff' : '#000000'
+				);
+				expect(svg.querySelector('filter')).not.toBeNull();
+			}
+		} finally {
+			createVehicleIconSvg.mockImplementation(() => '<svg></svg>');
+		}
 	});
 });
 

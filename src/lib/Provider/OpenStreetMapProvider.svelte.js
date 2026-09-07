@@ -814,6 +814,31 @@ export default class OpenStreetMapProvider {
 		return polyline;
 	}
 
+	// Recolor in place so a theme switch preserves the camera, casing and reveal.
+	setPolylineColor(polyline, color) {
+		if (!polyline) return;
+		polyline.setStyle({ color: color || COLORS.POLYLINE });
+		if (polyline.arrowDecorator) {
+			const arrowColor = polylineArrowColor(color);
+			polyline.arrowDecorator.setPatterns([
+				{
+					offset: 0,
+					repeat: 125,
+					symbol: this.L.Symbol.arrowHead({
+						pixelSize: 12,
+						pathOptions: {
+							color: arrowColor,
+							fill: true,
+							fillColor: arrowColor,
+							fillOpacity: 0.85,
+							...(polyline.options.pane ? { pane: polyline.options.pane } : {})
+						}
+					})
+				}
+			]);
+		}
+	}
+
 	/**
 	 * Moves an already-drawn polyline to a different stacking pane — used to
 	 * promote the expanded arrival's route above its peers.

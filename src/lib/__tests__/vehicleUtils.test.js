@@ -74,6 +74,53 @@ describe('buildVehiclePopupData', () => {
 	});
 });
 
+test('refreshes cached vehicles with new colors without fetching, and retains them on later polls', async () => {
+	clearVehicleMarkersMap();
+	const provider = {
+		addVehicleMarker: vi.fn(() => ({})),
+		updateVehicleMarker: vi.fn(),
+		removeVehicleMarker: vi.fn()
+	};
+	const colors = new Map([['route-1', { line: '#003366' }]]);
+	const data = tripsResponse('route-1', [{ tripId: 'trip-1', vehicleId: 'v-1' }]);
+	vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => data }));
+	const poll = await fetchAndUpdateVehiclesForRoutes([{ id: 'route-1' }], provider, {
+		colorsByRouteId: colors,
+		highlightedTripId: 'trip-1'
+	});
+	try {
+		for (const color of ['#8099b3', '#003366']) {
+			colors.set('route-1', { line: color });
+			fetch.mockClear();
+			poll.refresh();
+			expect(fetch).not.toHaveBeenCalled();
+			expect(provider.updateVehicleMarker).toHaveBeenLastCalledWith(
+				provider.addVehicleMarker.mock.results[0].value,
+				expect.objectContaining({ predicted: true }),
+				expect.objectContaining({ id: 'trip-1' }),
+				undefined,
+				true,
+				color
+			);
+			await poll.tick();
+			expect(provider.updateVehicleMarker.mock.calls.at(-1)[5]).toBe(color);
+		}
+		// An empty successful poll must discard the old payload so refreshing
+		// after a theme change cannot resurrect vehicles that have left service.
+		fetch.mockResolvedValue({ ok: true, json: async () => tripsResponse('route-1', []) });
+		await poll.tick();
+		provider.addVehicleMarker.mockClear();
+		provider.updateVehicleMarker.mockClear();
+		poll.refresh();
+		expect(provider.addVehicleMarker).not.toHaveBeenCalled();
+		expect(provider.updateVehicleMarker).not.toHaveBeenCalled();
+	} finally {
+		clearInterval(poll.intervalId);
+		clearVehicleMarkersMap();
+		vi.unstubAllGlobals();
+	}
+});
+
 // This suite used to drive the now-deleted single-route `updateVehicleMarkers`
 // wrapper directly. That wrapper had zero production callers (SearchPane and
 // RouteMap both go through `fetchAndUpdateVehicles`) and only duplicated what

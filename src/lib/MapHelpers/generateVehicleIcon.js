@@ -30,25 +30,14 @@ function getDirectionFromOrientation(orientation) {
 const HIGHLIGHT_GLOW_COLOR = env.PUBLIC_COLOR_VEHICLE_HIGHLIGHT || '#FACC15';
 
 /**
- * Returns the neutral colour with the strongest worst-case contrast against
- * both the vehicle/route colour and the current basemap. The vehicle marker
- * deliberately keeps the route colour for recognition, but this backing keeps
- * it visible where it crosses its route without letting it sink into a dark
- * basemap.
+ * Returns the neutral backing with the strongest contrast against the glyph
+ * and arrow. The outer halo handles basemap contrast separately.
  *
  * @param {string} color
- * @param {boolean} [dark=false]
  * @returns {'#ffffff' | '#000000'}
  */
-function getVehicleMarkerContrastColor(color, dark = false) {
-	// These are representative neutral basemap colours for the two map themes.
-	// Score each candidate by its weaker contrast: a backing that only contrasts
-	// with the route but blends into the map is not useful.
-	const basemapColor = dark ? '#1a1a1a' : '#ffffff';
-	const contrastScore = (candidate) =>
-		Math.min(contrastRatio(color, candidate), contrastRatio(basemapColor, candidate));
-
-	return contrastScore('#ffffff') >= contrastScore('#000000') ? '#ffffff' : '#000000';
+function getVehicleMarkerContrastColor(color) {
+	return contrastRatio(color, '#ffffff') >= contrastRatio(color, '#000000') ? '#ffffff' : '#000000';
 }
 
 /**
@@ -70,12 +59,20 @@ function createVehicleIconSvg(
 ) {
 	const direction = getDirectionFromOrientation(toDirection(orientation));
 	const angle = DIRECTIONS.find((d) => d.icon === direction).angle;
-	const contrastColor = getVehicleMarkerContrastColor(color, dark);
+	const contrastColor = getVehicleMarkerContrastColor(color);
+	// Keep a light silhouette on dark tiles without forcing pale glyphs onto
+	// white. In light mode the route-coloured ring supplies the silhouette.
+	const haloColor = dark ? '#ffffff' : contrastColor;
+	const arrowHalo =
+		haloColor !== contrastColor
+			? `<line x1="0" y1="0" x2="0" y2="-15" stroke="${haloColor}" stroke-width="8" stroke-linecap="round" transform="rotate(${angle})"/>
+    <polygon points="0,-25 5,-15 -5,-15" fill="${haloColor}" stroke="${haloColor}" stroke-width="6" stroke-linejoin="round" transform="rotate(${angle})"/>`
+			: '';
 
-	// Draw the directional arrow twice: a broad neutral stroke first, then the
-	// route-coloured arrow. This makes the direction indicator legible even
-	// when it lies directly over a route of the same colour.
+	// Draw the route-coloured arrow over a contrasting outline, with an extra
+	// outer halo when needed to distinguish that outline from the basemap.
 	const arrowPath = `
+    ${arrowHalo}
     <line x1="0" y1="0" x2="0" y2="-15" stroke="${contrastColor}" stroke-width="6" stroke-linecap="round" transform="rotate(${angle})"/>
     <polygon points="0,-25 5,-15 -5,-15" fill="${contrastColor}" stroke="${contrastColor}" stroke-width="4" stroke-linejoin="round" transform="rotate(${angle})"/>
     <line x1="0" y1="0" x2="0" y2="-15" stroke="${color}" stroke-width="2" stroke-linecap="round" transform="rotate(${angle})"/>
@@ -103,13 +100,13 @@ function createVehicleIconSvg(
             ${highlightGlow}
 
             <!-- Mask the route under the vehicle with a contrasting backing. -->
-            <circle cx="0" cy="0" r="16" fill="${contrastColor}"/>
+            <circle cx="0" cy="0" r="16" fill="${haloColor}"/>
 
             <g stroke="${color}" fill="${color}">
                 <!-- Directional arrow -->
                 ${arrowPath}
 
-				<!-- Contrasting marker backing -->
+                <!-- Route-coloured ring; the fill masks the arrow shaft beneath the glyph. -->
                 <circle cx="0" cy="0" r="13" stroke-width="2" fill="${contrastColor}"/>
 
                 <!-- vehicle icon inside the circle -->

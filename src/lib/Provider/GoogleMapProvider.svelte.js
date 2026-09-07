@@ -772,6 +772,17 @@ export default class GoogleMapProvider {
 		return polyline;
 	}
 
+	// Recolor in place so a theme switch preserves the camera, casing and reveal.
+	setPolylineColor(polyline, color) {
+		if (!polyline) return;
+		const icons = (polyline.get('icons') || []).map((entry) => {
+			const isArrow = entry.icon.path === google.maps.SymbolPath.FORWARD_CLOSED_ARROW;
+			const iconColor = isArrow ? polylineArrowColor(color) : color || COLORS.POLYLINE;
+			return { ...entry, icon: { ...entry.icon, strokeColor: iconColor, fillColor: iconColor } };
+		});
+		polyline.setOptions({ strokeColor: color || COLORS.POLYLINE, icons });
+	}
+
 	/**
 	 * Moves an already-drawn polyline to a different stacking layer — used to
 	 * promote the expanded arrival's route above its peers. Uniform in intent
