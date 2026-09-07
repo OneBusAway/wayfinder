@@ -8,7 +8,7 @@
 	import { page } from '$app/stores';
 
 	import { t, isLoading } from 'svelte-i18n';
-	import { removeAgencyPrefix } from '$lib/utils';
+	import { removeAgencyPrefix, directionLabel } from '$lib/utils';
 	let {
 		stopName,
 		stopId,
@@ -58,7 +58,7 @@
 			<div class="rounded-md bg-gray-50 px-2 py-1">
 				<CompassArrow {stopDirection} />
 				<strong>{$isLoading ? '' : $t('schedule_for_stop.direction')}:</strong>
-				{stopDirection}
+				{directionLabel(stopDirection, $t) ?? ''}
 			</div>
 		</div>
 		<TabContainer>

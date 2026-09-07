@@ -12,7 +12,7 @@
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faStar, faSignsPost, faTimes } from '@fortawesome/free-solid-svg-icons';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
-	import { removeAgencyPrefix } from '$lib/utils';
+	import { removeAgencyPrefix, stopSubtitle } from '$lib/utils';
 
 	let { onStopClick = null, onRouteClick = null, class: className = '' } = $props();
 
@@ -38,16 +38,7 @@
 
 	function itemSubtitle(item) {
 		if (item.type === 'stop') {
-			const parts = [];
-			if (item.direction) {
-				parts.push($t(`direction.${item.direction}`));
-			}
-			if (item.code) {
-				parts.push(`${$t('favorites.stop_code')}: ${item.code}`);
-			} else {
-				parts.push(`${$t('favorites.stop_code')}: ${removeAgencyPrefix(item.id)}`);
-			}
-			return parts.join(' · ');
+			return stopSubtitle(item, $t);
 		}
 		return item.description ?? '';
 	}

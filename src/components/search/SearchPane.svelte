@@ -13,7 +13,7 @@
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
-	import { removeAgencyPrefix } from '$lib/utils';
+	import { removeAgencyPrefix, stopSubtitle } from '$lib/utils';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { parseTripParams, hasTripParams } from '$lib/urlState';
@@ -431,7 +431,7 @@
 							on:click={() => handleStopClick(stop)}
 							icon={faSignsPost}
 							title={stop.name}
-							subtitle={`${stop.direction ? $t(`direction.${stop.direction}`) : ''}; Code: ${stop.code}`}
+							subtitle={stopSubtitle(stop, $t)}
 						/>
 					{/each}
 				{/if}

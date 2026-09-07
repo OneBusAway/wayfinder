@@ -173,11 +173,11 @@
 	"time": {
 		"ago": "hore",
 		"now": "hadda",
-		"sec": "sec",
-		"secs": "secs",
-		"min": "min",
-		"mins": "mins",
-		"minutes": "minutes",
+		"sec": "ilbiriqsi",
+		"secs": "ilbiriqsi",
+		"min": "daqiiqo",
+		"mins": "daqiiqo",
+		"minutes": "daqiiqo",
 		"min_compact": "{n} daq"
 	},
 	"vehicle": {

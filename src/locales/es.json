@@ -176,7 +176,7 @@
 		"sec": "seg",
 		"secs": "segs",
 		"min": "min",
-		"mins": "mins",
+		"mins": "min",
 		"minutes": "minutos",
 		"min_compact": "{n} min"
 	},
