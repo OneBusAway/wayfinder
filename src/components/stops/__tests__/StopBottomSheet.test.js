@@ -11,13 +11,23 @@ import {
 vi.mock('svelte-i18n', () => ({
 	t: {
 		subscribe: vi.fn((fn) => {
-			fn((key) => key);
+			// Echoes keys, except direction_bound, which mirrors its real en.json
+			// template so the assertion below can observe what {direction} resolved to.
+			fn((key, options) =>
+				key === 'direction_bound' ? `${options?.values?.direction} bound` : key
+			);
 			return { unsubscribe: () => {} };
 		})
 	},
 	isLoading: {
 		subscribe: vi.fn((fn) => {
 			fn(false);
+			return { unsubscribe: () => {} };
+		})
+	},
+	locale: {
+		subscribe: vi.fn((fn) => {
+			fn('en');
 			return { unsubscribe: () => {} };
 		})
 	}
@@ -47,8 +57,8 @@ describe('StopBottomSheet', () => {
 		expect(screen.getByText(mockStopData.name)).toBeInTheDocument();
 
 		await waitFor(() => {
-			// The i18n mock echoes keys, so the direction segment renders as its key.
-			expect(screen.getByText('stop #75403 · direction_bound · 10, 11')).toBeInTheDocument();
+			// "direction.N", not "N" -- the raw compass code must not reach the sentence.
+			expect(screen.getByText('stop #75403 · direction.N bound · 10, 11')).toBeInTheDocument();
 		});
 	});
 

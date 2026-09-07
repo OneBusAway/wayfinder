@@ -31,7 +31,10 @@ vi.mock('svelte-i18n', () => ({
 					'schedule_for_stop.route_schedules': 'Route Schedules',
 					'navigation.back_to_map': 'Back to Map',
 					'favorites.add': 'Add to favorites',
-					'favorites.remove': 'Remove from favorites'
+					'favorites.remove': 'Remove from favorites',
+					// The header must render these, not the raw "N"/"S" compass codes.
+					'direction.N': 'North',
+					'direction.S': 'South'
 				};
 				return translations[key] || key;
 			});
@@ -115,7 +118,7 @@ describe('StopPageHeader', () => {
 		render(StopPageHeader, { props: defaultProps });
 
 		expect(screen.getByText('Direction:')).toBeInTheDocument();
-		expect(screen.getByText('N')).toBeInTheDocument();
+		expect(screen.getByText('North')).toBeInTheDocument();
 	});
 
 	test('has proper header styling classes', () => {
@@ -206,7 +209,7 @@ describe('StopPageHeader', () => {
 		render(StopPageHeader, { props: propsWithSouthDirection });
 
 		expect(screen.getByText('Direction:')).toBeInTheDocument();
-		expect(screen.getByText('S')).toBeInTheDocument();
+		expect(screen.getByText('South')).toBeInTheDocument();
 	});
 
 	test('handles different stop IDs', () => {

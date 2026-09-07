@@ -52,7 +52,7 @@
 		"distance_unit": "Yunit ng Distansya",
 		"unit_auto": "Awtomatikong tukuyin",
 		"unit_metric": "Metriko (km, m)",
-		"unit_imperial": "Imperyalismo (mi, ft)",
+		"unit_imperial": "Imperyal (mi, ft)",
 		"swap_locations": "Ipagpalit ang mga lokasyong Mula sa at Patungo sa",
 		"error_code": "Code ng error",
 		"remove_recent_trip": "Alisin ang kamakailang biyahe",
@@ -173,11 +173,11 @@
 	"time": {
 		"ago": "nakaraan",
 		"now": "ngayon",
-		"sec": "sec",
-		"secs": "secs",
+		"sec": "seg",
+		"secs": "seg",
 		"min": "min",
-		"mins": "mins",
-		"minutes": "minutes",
+		"mins": "min",
+		"minutes": "minuto",
 		"min_compact": "{n} min"
 	},
 	"vehicle": {

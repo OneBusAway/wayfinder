@@ -173,11 +173,11 @@
 	"time": {
 		"ago": "temu",
 		"now": "teraz",
-		"sec": "sec",
-		"secs": "secs",
+		"sec": "sek",
+		"secs": "sek",
 		"min": "min",
-		"mins": "mins",
-		"minutes": "minutes",
+		"mins": "min",
+		"minutes": "min",
 		"min_compact": "{n} min"
 	},
 	"vehicle": {

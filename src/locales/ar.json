@@ -173,11 +173,11 @@
 	"time": {
 		"ago": "منذ",
 		"now": "الآن",
-		"sec": "sec",
-		"secs": "secs",
-		"min": "min",
-		"mins": "mins",
-		"minutes": "minutes",
+		"sec": "ثانية",
+		"secs": "ثانية",
+		"min": "دقيقة",
+		"mins": "دقيقة",
+		"minutes": "دقيقة",
 		"min_compact": "{n} د"
 	},
 	"vehicle": {

@@ -80,7 +80,7 @@
 		"remove_item": "ከተወዳጆች አስወግድ: {name}"
 	},
 	"search": {
-		"placeholder": "ቆሻሻዎችን፣ መንገዶችን እና ቦታዎችን ይፈልጉ",
+		"placeholder": "ማቆሚያዎችን፣ መንገዶችን እና ቦታዎችን ይፈልጉ",
 		"results_for": "የፍለጋ ውጤቶች ለ",
 		"clear_results": "ውጤቶችን አጥፋ",
 		"search": "ፈልግ",
@@ -153,7 +153,7 @@
 	"refresh": "አድስ",
 	"no_arrivals_found_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም መድረሻ አልተገኘም",
 	"no_more_arrivals_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም ተጨማሪ መድረሻ የለም",
-	"stop": "ቆሻሻ",
+	"stop": "ማቆሚያ",
 	"direction_bound": "ወደ {direction} አቅጣጫ",
 	"routes": "መንገዶች",
 	"route": "መንገድ",
@@ -173,11 +173,11 @@
 	"time": {
 		"ago": "በፊት",
 		"now": "አሁን",
-		"sec": "sec",
-		"secs": "secs",
-		"min": "min",
-		"mins": "mins",
-		"minutes": "minutes",
+		"sec": "ሰከንድ",
+		"secs": "ሰከንድ",
+		"min": "ደቂቃ",
+		"mins": "ደቂቃ",
+		"minutes": "ደቂቃ",
 		"min_compact": "{n} ደቂቃ"
 	},
 	"vehicle": {

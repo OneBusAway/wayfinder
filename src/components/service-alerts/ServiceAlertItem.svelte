@@ -6,7 +6,7 @@
 		faCircleInfo,
 		faChevronRight
 	} from '@fortawesome/free-solid-svg-icons';
-	import { t } from 'svelte-i18n';
+	import { t, locale } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';
 	import {
 		normalizeSeverity,
@@ -42,7 +42,9 @@
 	let summaryText = $derived(
 		alert?.summary?.value || alert?.description?.value || $t('service_alerts.service_alert')
 	);
-	let activeLabel = $derived(formatActiveWindowLabel(activeWindowRange(alert), $t, regionTz));
+	let activeLabel = $derived(
+		formatActiveWindowLabel(activeWindowRange(alert), $t, regionTz, $locale)
+	);
 </script>
 
 <button

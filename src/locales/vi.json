@@ -173,11 +173,11 @@
 	"time": {
 		"ago": "trước",
 		"now": "bây giờ",
-		"sec": "sec",
-		"secs": "secs",
-		"min": "min",
-		"mins": "mins",
-		"minutes": "minutes",
+		"sec": "giây",
+		"secs": "giây",
+		"min": "phút",
+		"mins": "phút",
+		"minutes": "phút",
 		"min_compact": "{n} phút"
 	},
 	"vehicle": {
