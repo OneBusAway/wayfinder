@@ -3,6 +3,7 @@ import OpenStreetMapProvider, {
 	toLeafletPadding
 } from '$lib/Provider/OpenStreetMapProvider.svelte.js';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
+import { polylineArrowColor } from '$lib/colorUtils';
 
 // Minimal Svelte component stubs — only imported by the module, never called
 // during these unit tests because we mock openStopMarker directly and never
@@ -25,6 +26,31 @@ vi.mock('$lib/MapHelpers/animateMarker', () => ({
 	animateMarkerTo: vi.fn(),
 	cancelMarkerAnimation: vi.fn()
 }));
+
+test('recolors a Leaflet route and its arrows while preserving the pane', () => {
+	const provider = new OpenStreetMapProvider(vi.fn());
+	provider.L = { Symbol: { arrowHead: vi.fn((options) => options) } };
+	const polyline = {
+		setStyle: vi.fn(),
+		options: { pane: 'promoted-route' },
+		arrowDecorator: { setPatterns: vi.fn() }
+	};
+	for (const color of ['#8099b3', '#003366']) {
+		provider.setPolylineColor(polyline, color);
+		expect(polyline.setStyle).toHaveBeenLastCalledWith({ color });
+		expect(polyline.arrowDecorator.setPatterns).toHaveBeenLastCalledWith([
+			expect.objectContaining({
+				symbol: expect.objectContaining({
+					pathOptions: expect.objectContaining({
+						color: polylineArrowColor(color),
+						fillColor: polylineArrowColor(color),
+						pane: 'promoted-route'
+					})
+				})
+			})
+		]);
+	}
+});
 
 vi.mock('polyline-encoded', () => ({
 	default: {
@@ -361,7 +387,7 @@ describe('addVehicleMarker — route color', () => {
 
 	test('passes the route color to the icon for a predicted vehicle', () => {
 		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3, false, '#0a4ea2');
-		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#0a4ea2', 3, false);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#0a4ea2', 3, false, false);
 	});
 
 	test('gray override still wins for a non-predicted vehicle', () => {
@@ -372,12 +398,18 @@ describe('addVehicleMarker — route color', () => {
 			false,
 			'#0a4ea2'
 		);
-		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#808080', 3, false);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, '#808080', 3, false, false);
 	});
 
 	test('null route color falls back to the icon default', () => {
 		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3, false, null);
-		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false, false);
+	});
+
+	test('passes the current dark-map state to the icon', () => {
+		provider._darkTheme = true;
+		provider.addVehicleMarker(VEHICLE, { tripHeadsign: 'Northgate' }, 3);
+		expect(createVehicleIconSvg).toHaveBeenCalledWith(90, undefined, 3, false, true);
 	});
 });
 
@@ -428,6 +460,44 @@ describe('setTheme — avoids redundant layer rebuilds', () => {
 
 		expect(removeLayer).not.toHaveBeenCalled();
 		expect(provider.L.maplibreGL).not.toHaveBeenCalled();
+	});
+
+	test('refreshes the rendered vehicle SVG in both theme directions', async () => {
+		const marker = {
+			vehicleIconOptions: {
+				orientation: 90,
+				color: '#dddddd',
+				routeType: 3,
+				isHighlighted: true
+			},
+			setIcon: vi.fn()
+		};
+		provider.L.divIcon = vi.fn(() => ({}));
+		provider.vehicleMarkers = [marker];
+
+		const actual = await vi.importActual('$lib/MapHelpers/generateVehicleIcon');
+		createVehicleIconSvg.mockImplementation(actual.createVehicleIconSvg);
+		try {
+			for (const theme of ['dark', 'light']) {
+				provider.setTheme(theme);
+				const html = provider.L.divIcon.mock.calls.at(-1)[0].html;
+				const url = new DOMParser()
+					.parseFromString(html, 'text/html')
+					.querySelector('img')
+					.getAttribute('src');
+				const svg = new DOMParser().parseFromString(
+					decodeURIComponent(url.split(',')[1]),
+					'image/svg+xml'
+				);
+				expect(svg.querySelector('circle[r="13"]').getAttribute('fill')).toBe('#000000');
+				expect(svg.querySelector('circle[r="16"]').getAttribute('fill')).toBe(
+					theme === 'dark' ? '#ffffff' : '#000000'
+				);
+				expect(svg.querySelector('filter')).not.toBeNull();
+			}
+		} finally {
+			createVehicleIconSvg.mockImplementation(() => '<svg></svg>');
+		}
 	});
 
 	test('bails out before the map is initialized', () => {

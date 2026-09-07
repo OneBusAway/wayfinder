@@ -135,10 +135,12 @@ const VEHICLE_POLL_INTERVAL_MS = 30000;
  * per route-set redraw, but the highlighted trip changes independently of
  * that redraw (see StopRoutesLayer's second effect), so a value captured at
  * start time would go stale until the next redraw.
- * @returns {Promise<{intervalId: number, tick: () => Promise<void>}>} the
+ * @returns {Promise<{intervalId: number, tick: () => Promise<void>, refresh: () => void}>} the
  * poll's interval id, plus `tick` so a caller can force an immediate refresh
  * (e.g. to move the highlight glow right away) instead of waiting up to
- * VEHICLE_POLL_INTERVAL_MS for the next scheduled one.
+ * VEHICLE_POLL_INTERVAL_MS for the next scheduled one. `refresh` reapplies the
+ * last successful data with the current colors/highlight without a network
+ * request, so theme changes remain immediate even when offline.
  */
 export async function fetchAndUpdateVehiclesForRoutes(
 	routes,
@@ -147,8 +149,26 @@ export async function fetchAndUpdateVehiclesForRoutes(
 ) {
 	const resolveHighlightedTripId = () =>
 		typeof highlightedTripId === 'function' ? highlightedTripId() : highlightedTripId;
+	const lastData = new Map();
+	let tickGeneration = 0;
+	const refresh = () => {
+		for (const route of routes) {
+			const data = lastData.get(route.id);
+			if (data) {
+				applyRouteVehicles(
+					data,
+					route.id,
+					mapProvider,
+					route.type,
+					resolveHighlightedTripId(),
+					colorsByRouteId.get(route.id)?.line
+				);
+			}
+		}
+	};
 
 	const tick = async () => {
+		const generation = ++tickGeneration;
 		const results = await Promise.all(
 			routes.map((route) =>
 				fetchVehicles(route.id).catch((error) => {
@@ -157,6 +177,9 @@ export async function fetchAndUpdateVehiclesForRoutes(
 				})
 			)
 		);
+		// Interval and manual ticks can overlap. A superseded response must not
+		// move markers backwards, replace the refresh cache, or sweep newer data.
+		if (generation !== tickGeneration) return;
 
 		const activeKeys = new Set();
 		const polledRouteIds = new Set();
@@ -180,6 +203,7 @@ export async function fetchAndUpdateVehiclesForRoutes(
 					resolveHighlightedTripId(),
 					colorsByRouteId.get(route.id)?.line
 				);
+				lastData.set(route.id, data);
 				polledRouteIds.add(route.id);
 				routeKeys.forEach((key) => activeKeys.add(key));
 				counts.set(route.id, routeKeys.size);
@@ -208,17 +232,17 @@ export async function fetchAndUpdateVehiclesForRoutes(
 		});
 	}, VEHICLE_POLL_INTERVAL_MS);
 
-	return { intervalId, tick };
+	return { intervalId, tick, refresh };
 }
 
 /**
- * Single-route wrapper, kept so SearchPane and RouteMap run through the same
+ * Single-route wrapper, kept so SearchPane runs through the same
  * code path. Signature and behavior are unchanged: unlike
  * `fetchAndUpdateVehiclesForRoutes`, this still resolves to a bare interval
- * id — SearchPane.svelte and RouteMap.svelte both do
+ * id — SearchPane.svelte does
  * `currentIntervalId = await fetchAndUpdateVehicles(...)` and later
  * `clearInterval(currentIntervalId)`, so returning `{ intervalId, tick }`
- * here instead would silently break both.
+ * here instead would silently break that caller.
  */
 export async function fetchAndUpdateVehicles(
 	routeId,
