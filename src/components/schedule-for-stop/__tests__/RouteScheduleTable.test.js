@@ -92,8 +92,12 @@ describe('RouteScheduleTable accessibility', () => {
 	test('groups schedules into AM and PM row groups', () => {
 		render(RouteScheduleTable, { props: { schedule } });
 
-		expect(screen.getByRole('rowheader', { name: 'AM' })).toHaveAttribute('scope', 'rowgroup');
-		expect(screen.getByRole('rowheader', { name: 'PM' })).toHaveAttribute('scope', 'rowgroup');
+		const amHeader = screen.getByRole('rowheader', { name: 'AM' });
+		const pmHeader = screen.getByRole('rowheader', { name: 'PM' });
+		expect(amHeader.tagName).toBe('TH');
+		expect(pmHeader.tagName).toBe('TH');
+		expect(amHeader).toHaveAttribute('scope', 'rowgroup');
+		expect(pmHeader).toHaveAttribute('scope', 'rowgroup');
 	});
 
 	test('column headers use scope="col"', () => {

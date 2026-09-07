@@ -1,4 +1,5 @@
 import oba, { handleOBAResponse } from '$lib/obaSdk';
+import { getTripHeadsigns } from '$lib/server/tripHeadsigns.js';
 import { getAgencyFilter, filterByRouteId } from '$lib/agencyFilter.js';
 
 /** @type {import('./$types').RequestHandler} */
@@ -19,45 +20,41 @@ export async function GET({ url, params }) {
 			getAgencyFilter()
 		);
 		response.data.entry.stopRouteSchedules = routeSchedules;
-		await addTripHeadsigns(routeSchedules, queryParams);
+		await addTripHeadsigns(routeSchedules, queryParams, response.data.entry.scheduleDate);
 	}
 
 	return handleOBAResponse(response, 'stop-for-schedule');
 }
 
-async function addTripHeadsigns(routeSchedules, queryParams) {
-	const routeSchedulesWithMultipleTrips = routeSchedules.filter((routeSchedule) =>
-		routeSchedule.stopRouteDirectionSchedules.some(
-			(directionSchedule) =>
-				new Set(directionSchedule.scheduleStopTimes.map(({ tripId }) => tripId)).size > 1
-		)
-	);
+async function addTripHeadsigns(routeSchedules, queryParams, scheduleDate) {
+	await Promise.all(
+		routeSchedules.map(async (routeSchedule) => {
+			const directions = routeSchedule?.stopRouteDirectionSchedules;
+			if (!routeSchedule?.routeId || !Array.isArray(directions)) return;
+			const stopTimesByDirection = directions.map((direction) =>
+				Array.isArray(direction?.scheduleStopTimes)
+					? direction.scheduleStopTimes.filter((stopTime) => stopTime?.tripId)
+					: []
+			);
+			if (
+				!stopTimesByDirection.some((times) => new Set(times.map((time) => time.tripId)).size > 1)
+			) {
+				return;
+			}
 
-	const routeResponses = await Promise.all(
-		routeSchedulesWithMultipleTrips.map(async ({ routeId }) => {
 			try {
-				return await oba.scheduleForRoute.retrieve(routeId, queryParams);
+				const tripHeadsigns = await getTripHeadsigns(
+					routeSchedule.routeId,
+					queryParams,
+					scheduleDate
+				);
+				for (const stopTime of stopTimesByDirection.flat()) {
+					const tripHeadsign = tripHeadsigns.get(stopTime.tripId);
+					if (tripHeadsign) stopTime.tripHeadsign = tripHeadsign;
+				}
 			} catch (error) {
-				console.error(`Unable to load trip headsigns for route ${routeId}:`, error);
-				return null;
+				console.error(`Unable to load trip headsigns for route ${routeSchedule.routeId}:`, error);
 			}
 		})
 	);
-
-	const tripHeadsigns = new Map(
-		routeResponses.flatMap((routeResponse) =>
-			(routeResponse?.data?.entry?.trips ?? []).flatMap(({ id, tripHeadsign }) =>
-				tripHeadsign ? [[id, tripHeadsign]] : []
-			)
-		)
-	);
-
-	for (const routeSchedule of routeSchedulesWithMultipleTrips) {
-		for (const directionSchedule of routeSchedule.stopRouteDirectionSchedules) {
-			for (const stopTime of directionSchedule.scheduleStopTimes) {
-				const tripHeadsign = tripHeadsigns.get(stopTime.tripId);
-				if (tripHeadsign) stopTime.tripHeadsign = tripHeadsign;
-			}
-		}
-	}
 }
