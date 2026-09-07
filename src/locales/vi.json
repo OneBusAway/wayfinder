@@ -30,14 +30,54 @@
 		"trip_itineraries": "Lịch trình chuyến đi",
 		"show_steps": "Hiện các bước",
 		"hide_steps": "Ẩn các bước",
+		"options": "Tùy chọn",
+		"trip_options": "Tùy chọn chuyến đi",
+		"cancel": "Hủy",
+		"done": "Xong",
+		"reset_to_defaults": "Đặt lại mặc định",
+		"departure_time": "Thời gian khởi hành",
+		"departure_date": "Ngày khởi hành",
+		"leave_now": "Khởi hành ngay",
+		"depart_at": "Khởi hành lúc",
+		"arrive_by": "Đến trước",
+		"wheelchair_accessible": "Hỗ trợ xe lăn",
+		"wheelchair_desc": "Tìm các tuyến đường phù hợp với thiết bị hỗ trợ di chuyển và xe lăn",
+		"wheelchair": "Xe lăn",
+		"route_optimization": "Tối ưu hóa tuyến đường",
+		"fastest_trip": "Chuyến đi nhanh nhất",
+		"fewest_transfers": "Ít lần chuyển tuyến nhất",
+		"stay_on_board": "Tiếp tục ở trên xe. Chuyến đi này tiếp tục với Tuyến đường {route}.",
+		"walking_distance": "Khoảng cách đi bộ",
+		"max_walking_distance": "Khoảng cách đi bộ tối đa",
 		"distance_unit": "Đơn vị khoảng cách",
 		"unit_auto": "Tự động phát hiện",
 		"unit_metric": "Hệ mét (km, m)",
-		"unit_imperial": "Hệ Anh (mi, ft)"
+		"unit_imperial": "Hệ Anh (mi, ft)",
+		"swap_locations": "Hoán đổi địa điểm Từ và Đến",
+		"error_code": "Mã lỗi",
+		"remove_recent_trip": "Xóa chuyến đi gần đây",
+		"recent_trip": "Dùng chuyến đi gần đây từ {from} đến {to}",
+		"recent_searches": "Tìm kiếm gần đây",
+		"recents": "Gần đây",
+		"clear_all": "Xóa tất cả",
+		"request_failed": "Không thể kết nối tới dịch vụ lập kế hoạch chuyến đi. Vui lòng thử lại.",
+		"invalid_shared_link": "Liên kết chuyến đi được chia sẻ này có vẻ bị lỗi. Vui lòng lập kế hoạch lại chuyến đi."
 	},
 	"tabs": {
 		"stops-and-stations": "Trạm dừng và nhà ga",
 		"plan_trip": "Lập kế hoạch chuyến đi"
+	},
+	"favorites": {
+		"title": "Yêu thích",
+		"add": "Thêm vào yêu thích",
+		"remove": "Xóa khỏi yêu thích",
+		"clear_all": "Xóa tất cả",
+		"open_panel": "Mở danh sách yêu thích",
+		"close_panel": "Đóng danh sách yêu thích",
+		"empty": "Chưa có mục yêu thích nào. Nhấn vào biểu tượng ngôi sao trên một trạm dừng hoặc tuyến đường để lưu vào đây.",
+		"stop_code": "Mã",
+		"open_item": "Mở {name}",
+		"remove_item": "Xóa {name} khỏi yêu thích"
 	},
 	"search": {
 		"placeholder": "Tìm kiếm trạm dừng, tuyến đường và địa điểm",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "cho danh sách các tuyến đường có sẵn",
 		"search_for_routes": "Tìm kiếm tuyến đường...",
 		"no_routes_found": "Không tìm thấy tuyến đường",
-		"all_routes": "Tất cả các tuyến đường"
+		"all_routes": "Tất cả các tuyến đường",
+		"clear": "Xóa",
+		"collapse": "Thu gọn tìm kiếm"
+	},
+	"sheet": {
+		"close": "Đóng",
+		"resize_handle": "Thay đổi kích thước bảng",
+		"snap_full": "Toàn màn hình",
+		"snap_half": "Nửa màn hình",
+		"snap_peek": "Thu gọn"
+	},
+	"survey": {
+		"required_question": "Câu hỏi bắt buộc",
+		"required_answer": "Câu hỏi này là bắt buộc.",
+		"expand": "Hiện câu hỏi",
+		"collapse": "Ẩn câu hỏi",
+		"dismiss": "Bỏ qua khảo sát",
+		"submit": "Gửi",
+		"next": "Tiếp theo",
+		"submit_failed": "Không thể gửi câu trả lời. Vui lòng thử lại."
 	},
 	"header": {
 		"home": "Trang chủ",
@@ -88,13 +147,26 @@
 		"close": "Đóng"
 	},
 	"arrivals_and_departures": "Đến và đi",
+	"show_more": "Xem thêm",
+	"show_less": "Ẩn bớt",
 	"load_more_arrivals": "Tải thêm chuyến đến",
+	"refresh": "Làm mới",
 	"no_arrivals_found_in_next_minutes": "Không tìm thấy chuyến đến trong {minutes} phút tới",
 	"no_more_arrivals_in_next_minutes": "Không có thêm chuyến đến trong {minutes} phút tới",
 	"stop": "Trạm dừng",
+	"direction_bound": "Hướng {direction}",
 	"routes": "Tuyến đường",
 	"route": "Tuyến đường",
 	"route_modal_title": "Tuyến đường {name}",
+	"notifications": {
+		"route_load_failed": "Không thể tải tuyến đường này.",
+		"route_shape_failed": "Không thể vẽ tuyến đường này trên bản đồ.",
+		"route_shape_partial": "Không thể vẽ một phần của tuyến đường này. Bản đồ có thể bị thiếu một đoạn.",
+		"favorite_saved": "Đã lưu vào yêu thích.",
+		"favorite_removed": "Đã xóa khỏi yêu thích.",
+		"tap_to_retry": "Nhấn để thử lại.",
+		"dismiss": "Bỏ qua"
+	},
 	"loading": "Đang tải",
 	"arrives": "Đến",
 	"NA": "KAD",
@@ -105,13 +177,16 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n} phút"
 	},
 	"vehicle": {
 		"number": "Xe #",
 		"data_updated": "Dữ liệu đã cập nhật",
 		"no_real_time_data": "Hiện tại không có dữ liệu thời gian thực cho xe này.",
-		"next_stop": "Trạm dừng tiếp theo:"
+		"next_stop": "Trạm dừng tiếp theo:",
+		"label": "Xe",
+		"to_headsign": "Xe đi {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Lịch Đến và Đi"
@@ -150,18 +225,61 @@
 		"no_description": "Không có mô tả chi tiết cho thông báo này",
 		"page": "Trang",
 		"show": "Hiển thị",
-		"hide": "Ẩn"
+		"hide": "Ẩn",
+		"open_alert": "Mở chi tiết thông báo dịch vụ mức {severity}: {summary}",
+		"affects_this_stop": "Ảnh hưởng đến trạm dừng này",
+		"other_alerts": "Thông báo khác",
+		"severity_severe": "Nghiêm trọng",
+		"severity_warning": "Cảnh báo",
+		"severity_info": "Thông tin",
+		"cause": "Nguyên nhân",
+		"effect": "Ảnh hưởng",
+		"active": "Thời gian hiệu lực",
+		"active_until": "Đến {date}",
+		"active_from": "Từ {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Không xác định",
+		"cause_other": "Khác",
+		"cause_technical": "Sự cố kỹ thuật",
+		"cause_strike": "Đình công",
+		"cause_demonstration": "Biểu tình",
+		"cause_accident": "Tai nạn",
+		"cause_holiday": "Ngày lễ",
+		"cause_weather": "Thời tiết",
+		"cause_maintenance": "Bảo trì",
+		"cause_construction": "Thi công",
+		"cause_police": "Hoạt động của cảnh sát",
+		"cause_medical": "Cấp cứu y tế",
+		"cause_equipment": "Thiết bị",
+		"cause_environment": "Môi trường",
+		"cause_personnel": "Nhân sự",
+		"cause_miscellaneous": "Lý do khác",
+		"cause_security": "Cảnh báo an ninh",
+		"effect_no_service": "Không có dịch vụ",
+		"effect_reduced_service": "Giảm dịch vụ",
+		"effect_significant_delays": "Chậm trễ đáng kể",
+		"effect_detour": "Đổi lộ trình",
+		"effect_additional_service": "Bổ sung dịch vụ",
+		"effect_modified_service": "Thay đổi dịch vụ",
+		"effect_other": "Ảnh hưởng khác",
+		"effect_unknown": "Ảnh hưởng không xác định",
+		"effect_stop_moved": "Trạm dừng đã di dời",
+		"effect_no_effect": "Không ảnh hưởng",
+		"effect_accessibility": "Vấn đề về khả năng tiếp cận"
 	},
 	"view_stop_information": "Xem thông tin trạm dừng",
 	"stop_details": {
-		"view_details": "Xem chi tiết"
+		"view_details": "Xem chi tiết",
+		"stop_info": "Thông tin trạm dừng"
 	},
 	"language_switcher": {
 		"select_language": "Chọn ngôn ngữ: {language}",
 		"available_languages": "Ngôn ngữ có sẵn"
 	},
 	"map": {
-		"find_my_location": "Tìm vị trí của tôi"
+		"find_my_location": "Tìm vị trí của tôi",
+		"routes_shown": "Tuyến đường đang hiển thị",
+		"live_vehicle_count": "{count} xe trực tiếp"
 	},
 	"context-menu": {
 		"start_here": "Bắt đầu từ đây",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "Về trang chủ",
 		"go_back": "Quay lại"
+	},
+	"trip_details": {
+		"route": "Tuyến đường",
+		"no_stops": "Không có giờ dừng nào cho chuyến đi này.",
+		"loading": "Đang tải chi tiết chuyến đi...",
+		"live_vehicle": "Trực tiếp · xe {vehicleId}",
+		"collapsed_stops": "{count, plural, other {# trạm dừng}}"
 	},
 	"skip_to_main_content": "Bỏ qua đến nội dung chính"
 }

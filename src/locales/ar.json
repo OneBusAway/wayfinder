@@ -30,14 +30,54 @@
 		"trip_itineraries": "مسارات الرحلة",
 		"show_steps": "عرض الخطوات",
 		"hide_steps": "إخفاء الخطوات",
+		"options": "خيارات",
+		"trip_options": "خيارات الرحلة",
+		"cancel": "إلغاء",
+		"done": "تم",
+		"reset_to_defaults": "استعادة الإعدادات الافتراضية",
+		"departure_time": "وقت المغادرة",
+		"departure_date": "تاريخ المغادرة",
+		"leave_now": "المغادرة الآن",
+		"depart_at": "المغادرة في",
+		"arrive_by": "الوصول بحلول",
+		"wheelchair_accessible": "مناسب للكراسي المتحركة",
+		"wheelchair_desc": "البحث عن مسارات مناسبة لأجهزة التنقّل والكراسي المتحركة",
+		"wheelchair": "كرسي متحرك",
+		"route_optimization": "تحسين المسار",
+		"fastest_trip": "أسرع رحلة",
+		"fewest_transfers": "أقل عدد تبديلات",
+		"stay_on_board": "ابقَ على متن المركبة. تستمر هذه الرحلة كالمسار {route}.",
+		"walking_distance": "مسافة المشي",
+		"max_walking_distance": "أقصى مسافة مشي",
 		"distance_unit": "وحدة المسافة",
 		"unit_auto": "اكتشاف تلقائي",
 		"unit_metric": "متري (كم، م)",
-		"unit_imperial": "إمبراطوري (mi, ft)"
+		"unit_imperial": "إمبراطوري (mi, ft)",
+		"swap_locations": "تبديل موقعي «من» و«إلى»",
+		"error_code": "رمز الخطأ",
+		"remove_recent_trip": "إزالة الرحلة الأخيرة",
+		"recent_trip": "استخدام الرحلة الأخيرة من {from} إلى {to}",
+		"recent_searches": "عمليات البحث الأخيرة",
+		"recents": "الأخيرة",
+		"clear_all": "مسح الكل",
+		"request_failed": "تعذّر الوصول إلى خدمة تخطيط الرحلات. يرجى المحاولة مرة أخرى.",
+		"invalid_shared_link": "يبدو أن رابط الرحلة المشترَك غير صالح. حاول تخطيط الرحلة مرة أخرى."
 	},
 	"tabs": {
 		"stops-and-stations": "المحطات والمواقف",
 		"plan_trip": "خطط لرحلة"
+	},
+	"favorites": {
+		"title": "المفضلة",
+		"add": "إضافة إلى المفضلة",
+		"remove": "إزالة من المفضلة",
+		"clear_all": "مسح الكل",
+		"open_panel": "فتح المفضلة",
+		"close_panel": "إغلاق المفضلة",
+		"empty": "لا توجد عناصر مفضلة بعد. اضغط على النجمة في أي محطة أو مسار لحفظه هنا.",
+		"stop_code": "الرمز",
+		"open_item": "فتح {name}",
+		"remove_item": "إزالة {name} من المفضلة"
 	},
 	"search": {
 		"placeholder": "ابحث عن المحطات، المسارات، والأماكن",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "لقائمة المسارات المتاحة",
 		"search_for_routes": "ابحث عن المسارات...",
 		"no_routes_found": "لم يتم العثور على مسارات",
-		"all_routes": "جميع المسارات"
+		"all_routes": "جميع المسارات",
+		"clear": "مسح",
+		"collapse": "طي البحث"
+	},
+	"sheet": {
+		"close": "إغلاق",
+		"resize_handle": "تغيير حجم اللوحة",
+		"snap_full": "ارتفاع كامل",
+		"snap_half": "نصف الارتفاع",
+		"snap_peek": "مطوي"
+	},
+	"survey": {
+		"required_question": "سؤال مطلوب",
+		"required_answer": "هذا السؤال مطلوب.",
+		"expand": "عرض السؤال",
+		"collapse": "إخفاء السؤال",
+		"dismiss": "تجاهل الاستطلاع",
+		"submit": "إرسال",
+		"next": "التالي",
+		"submit_failed": "تعذّر إرسال إجابتك. يرجى المحاولة مرة أخرى."
 	},
 	"header": {
 		"home": "الرئيسية",
@@ -88,13 +147,26 @@
 		"close": "إغلاق"
 	},
 	"arrivals_and_departures": "الوصول والمغادرة",
+	"show_more": "عرض المزيد",
+	"show_less": "عرض أقل",
 	"load_more_arrivals": "تحميل المزيد من الوصولات",
+	"refresh": "تحديث",
 	"no_arrivals_found_in_next_minutes": "لا توجد وصولات في الدقائق {minutes} القادمة",
 	"no_more_arrivals_in_next_minutes": "لا يوجد المزيد من الوصولات في الدقائق {minutes} القادمة",
 	"stop": "المحطة",
+	"direction_bound": "باتجاه {direction}",
 	"routes": "المسارات",
 	"route": "المسار",
 	"route_modal_title": "مسار {name}",
+	"notifications": {
+		"route_load_failed": "تعذّر تحميل هذا المسار.",
+		"route_shape_failed": "تعذّر رسم هذا المسار على الخريطة.",
+		"route_shape_partial": "تعذّر رسم جزء من هذا المسار. قد يكون هناك مقطع ناقص على الخريطة.",
+		"favorite_saved": "تم الحفظ في المفضلة.",
+		"favorite_removed": "تمت الإزالة من المفضلة.",
+		"tap_to_retry": "اضغط لإعادة المحاولة.",
+		"dismiss": "تجاهل"
+	},
 	"loading": "جاري التحميل",
 	"arrives": "يصل",
 	"NA": "غير متاح",
@@ -105,13 +177,16 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n} د"
 	},
 	"vehicle": {
 		"number": "رقم المركبة",
 		"data_updated": "تم تحديث البيانات",
 		"no_real_time_data": "لا توجد بيانات في الوقت الحقيقي لهذه المركبة الآن.",
-		"next_stop": "المحطة التالية:"
+		"next_stop": "المحطة التالية:",
+		"label": "المركبة",
+		"to_headsign": "مركبة متجهة إلى {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "الوصول والمغادرة"
@@ -150,18 +225,61 @@
 		"no_description": "لا يوجد وصف تفصيلي متاح لهذا التنبيه",
 		"page": "صفحة",
 		"show": "عرض",
-		"hide": "إخفاء"
+		"hide": "إخفاء",
+		"open_alert": "فتح تفاصيل تنبيه الخدمة ({severity}): {summary}",
+		"affects_this_stop": "يؤثر على هذه المحطة",
+		"other_alerts": "تنبيهات أخرى",
+		"severity_severe": "خطير",
+		"severity_warning": "تحذير",
+		"severity_info": "معلومات",
+		"cause": "السبب",
+		"effect": "التأثير",
+		"active": "نشط",
+		"active_until": "حتى {date}",
+		"active_from": "من {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "غير معروف",
+		"cause_other": "سبب آخر",
+		"cause_technical": "مشكلة فنية",
+		"cause_strike": "إضراب",
+		"cause_demonstration": "مظاهرة",
+		"cause_accident": "حادث",
+		"cause_holiday": "عطلة",
+		"cause_weather": "الطقس",
+		"cause_maintenance": "صيانة",
+		"cause_construction": "أعمال إنشائية",
+		"cause_police": "نشاط الشرطة",
+		"cause_medical": "حالة طوارئ طبية",
+		"cause_equipment": "المعدات",
+		"cause_environment": "البيئة",
+		"cause_personnel": "الطاقم",
+		"cause_miscellaneous": "متنوع",
+		"cause_security": "تنبيه أمني",
+		"effect_no_service": "لا توجد خدمة",
+		"effect_reduced_service": "خدمة مخفّضة",
+		"effect_significant_delays": "تأخيرات كبيرة",
+		"effect_detour": "تحويلة",
+		"effect_additional_service": "خدمة إضافية",
+		"effect_modified_service": "خدمة معدّلة",
+		"effect_other": "تأثير آخر",
+		"effect_unknown": "تأثير غير معروف",
+		"effect_stop_moved": "تم نقل المحطة",
+		"effect_no_effect": "لا يوجد تأثير",
+		"effect_accessibility": "مشكلة في إمكانية الوصول"
 	},
 	"view_stop_information": "عرض معلومات المحطة",
 	"stop_details": {
-		"view_details": "عرض التفاصيل"
+		"view_details": "عرض التفاصيل",
+		"stop_info": "معلومات المحطة"
 	},
 	"language_switcher": {
 		"select_language": "اختر اللغة: {language}",
 		"available_languages": "اللغات المتاحة"
 	},
 	"map": {
-		"find_my_location": "تحديد موقعي"
+		"find_my_location": "تحديد موقعي",
+		"routes_shown": "المسارات المعروضة",
+		"live_vehicle_count": "مباشر: {count}"
 	},
 	"context-menu": {
 		"start_here": "ابدأ من هنا",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "الذهاب للرئيسية",
 		"go_back": "العودة"
+	},
+	"trip_details": {
+		"route": "المسار",
+		"no_stops": "لا توجد أوقات محطات متاحة لهذه الرحلة.",
+		"loading": "جاري تحميل تفاصيل الرحلة...",
+		"live_vehicle": "مباشر · المركبة {vehicleId}",
+		"collapsed_stops": "{count, plural, zero {# محطة} one {# محطة} two {# محطتان} few {# محطات} many {# محطة} other {# محطة}}"
 	},
 	"skip_to_main_content": "انتقل إلى المحتوى الرئيسي"
 }

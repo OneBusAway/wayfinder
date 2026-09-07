@@ -30,14 +30,54 @@
 		"trip_itineraries": "መስመራት መገሻ",
 		"show_steps": "ስጉምትታት ኣርኢ",
 		"hide_steps": "ስጉምትታት ሕባእ",
+		"options": "ኣማራጺታት",
+		"trip_options": "ኣማራጺታት መገሻ",
+		"cancel": "ሰርዝ",
+		"done": "ወዲአ",
+		"reset_to_defaults": "ናብ ንቡር ኣቀማምጣ መልስ",
+		"departure_time": "ሰዓት ምብጋስ",
+		"departure_date": "ዕለት ምብጋስ",
+		"leave_now": "ሕጂ ተበገስ",
+		"depart_at": "ኣብዚ ሰዓት ተበገስ",
+		"arrive_by": "ክሳብዚ ሰዓት ብጻሕ",
+		"wheelchair_accessible": "ንዊልቸር ዝምችእ",
+		"wheelchair_desc": "ንመንቀሳቐሲ መሳርሒታትን ዊልቸርን ዝምችኡ መስመራት ድለ",
+		"wheelchair": "ዊልቸር",
+		"route_optimization": "ምርጫ መስመር",
+		"fastest_trip": "ዝቐልጠፈ መገሻ",
+		"fewest_transfers": "ዝወሓደ ምቕያር",
+		"stay_on_board": "ኣብ ውሽጢ ተሽከርካሪ ጽናሕ። እዚ መገሻ ከም መስመር {route} ኮይኑ ይቕጽል።",
+		"walking_distance": "ብእግሪ ዝኽየድ ርሕቀት",
+		"max_walking_distance": "ዝለዓለ ብእግሪ ዝኽየድ ርሕቀት",
 		"distance_unit": "ኣሃዱ ርሕቀት",
 		"unit_auto": "ባዕሉ ይለሊ",
 		"unit_metric": "ሜትሪክ (ኪሜ፣ ሜ)",
-		"unit_imperial": "ኢምፐርያል (ማይል፣ ጫማ)"
+		"unit_imperial": "ኢምፐርያል (ማይል፣ ጫማ)",
+		"swap_locations": "ናይ ካብን ናብን ቦታታት ቀያይር",
+		"error_code": "ኮድ ጌጋ",
+		"remove_recent_trip": "ናይ ቀረባ ግዜ መገሻ ኣወግድ",
+		"recent_trip": "ካብ {from} ናብ {to} ዝነበረ ናይ ቀረባ ግዜ መገሻ ተጠቐም",
+		"recent_searches": "ናይ ቀረባ ግዜ ድልያታት",
+		"recents": "ናይ ቀረባ ግዜ",
+		"clear_all": "ኩሉ ደምስስ",
+		"request_failed": "ናብ ኣገልግሎት ውጥን መገሻ ክንበጽሕ ኣይከኣልናን። በጃኻ ደጊምካ ፈትን።",
+		"invalid_shared_link": "እዚ ዝተማቐለ መላግቦ መገሻ ዝተበላሸወ እዩ ዝመስል። መገሻኻ ደጊምካ ውጠን።"
 	},
 	"tabs": {
 		"stops-and-stations": "መዕረፊታትን መደበራትን",
 		"plan_trip": "መገሻ ውጠን"
+	},
+	"favorites": {
+		"title": "ተፈተውቲ",
+		"add": "ናብ ተፈተውቲ ወስኽ",
+		"remove": "ካብ ተፈተውቲ ኣወግድ",
+		"clear_all": "ኩሉ ደምስስ",
+		"open_panel": "ተፈተውቲ ክፈት",
+		"close_panel": "ተፈተውቲ ዕጸው",
+		"empty": "ገና ተፈተውቲ የለዉን። ኣብ መዕረፊ ወይ መስመር ዘሎ ኮኾብ ጠዊቕካ ኣብዚ ኣቐምጦ።",
+		"stop_code": "ኮድ",
+		"open_item": "{name} ክፈት",
+		"remove_item": "{name} ካብ ተፈተውቲ ኣወግድ"
 	},
 	"search": {
 		"placeholder": "መዕረፊታት፣ መስመራትን ቦታታትን ድለ",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "ዝርዝር ዘለዉ መስመራት ንምርኣይ",
 		"search_for_routes": "መስመራት ድለ...",
 		"no_routes_found": "መስመር ኣይተረኽበን",
-		"all_routes": "ኩሎም መስመራት"
+		"all_routes": "ኩሎም መስመራት",
+		"clear": "ደምስስ",
+		"collapse": "ድልያ ጽመቕ"
+	},
+	"sheet": {
+		"close": "ዕጸው",
+		"resize_handle": "ዓቐን ናይዚ ክፍሊ ቀይር",
+		"snap_full": "ምሉእ ቁመት",
+		"snap_half": "ፍርቂ ቁመት",
+		"snap_peek": "ዝተጸመቐ"
+	},
+	"survey": {
+		"required_question": "ግድን ዝምለስ ሕቶ",
+		"required_answer": "እዚ ሕቶ ግድን ክምለስ ኣለዎ።",
+		"expand": "ሕቶ ኣርኢ",
+		"collapse": "ሕቶ ሕባእ",
+		"dismiss": "መጽናዕቲ ዕጸው",
+		"submit": "ስደድ",
+		"next": "ቀጽል",
+		"submit_failed": "መልስኻ ክስደድ ኣይከኣለን። በጃኻ ደጊምካ ፈትን።"
 	},
 	"header": {
 		"home": "መበገሲ",
@@ -88,13 +147,26 @@
 		"close": "ዕጸው"
 	},
 	"arrivals_and_departures": "ምብጻሕን ምብጋስን",
+	"show_more": "ተወሳኺ ኣርኢ",
+	"show_less": "ውሑድ ኣርኢ",
 	"load_more_arrivals": "ተወሳኺ ምብጻሓት ጽዓን",
+	"refresh": "ኣሓድስ",
 	"no_arrivals_found_in_next_minutes": "ኣብ ዝመጽእ {minutes} ደቓይቕ ዝኾነ ምብጻሕ ኣይተረኽበን",
 	"no_more_arrivals_in_next_minutes": "ኣብ ዝመጽእ {minutes} ደቓይቕ ዝኾነ ተወሳኺ ምብጻሕ የለን",
 	"stop": "መዕረፊ",
+	"direction_bound": "ናብ {direction} ዝኸይድ",
 	"routes": "መስመራት",
 	"route": "መስመር",
 	"route_modal_title": "መስመር {name}",
+	"notifications": {
+		"route_load_failed": "እዚ መስመር ክጽዓን ኣይከኣለን።",
+		"route_shape_failed": "እዚ መስመር ኣብ ካርታ ክስኣል ኣይከኣለን።",
+		"route_shape_partial": "ክፋል እዚ መስመር ክስኣል ኣይከኣለን። ኣብ ካርታ ሓደ ክፋል ጎዲሉ ክኸውን ይኽእል።",
+		"favorite_saved": "ናብ ተፈተውቲ ተቐሚጡ።",
+		"favorite_removed": "ካብ ተፈተውቲ ተኣልዩ።",
+		"tap_to_retry": "ንምድጋም ጠውቕ።",
+		"dismiss": "ዕጸው"
+	},
 	"loading": "ይጽዕን ኣሎ",
 	"arrives": "ይበጽሕ",
 	"NA": "የለን",
@@ -105,13 +177,16 @@
 		"secs": "ካልኢታት",
 		"min": "ደቂቕ",
 		"mins": "ደቃይቕ",
-		"minutes": "ደቃይቕ"
+		"minutes": "ደቃይቕ",
+		"min_compact": "{n} ደቂቕ"
 	},
 	"vehicle": {
 		"number": "ተሽከርካሪ #",
 		"data_updated": "ሓበሬታ ተሓዲሱ",
 		"no_real_time_data": "ብቐጥታ ዝኾነ ሓበሬታ ናይዚ ተሽከርካሪ ሕጂ የብልናን።",
-		"next_stop": "ዝስዕብ መዕረፊ:"
+		"next_stop": "ዝስዕብ መዕረፊ:",
+		"label": "ተሽከርካሪ",
+		"to_headsign": "ናብ {headsign} ዝኸይድ ተሽከርካሪ"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "ምብጻሕን ምብጋስን"
@@ -150,18 +225,61 @@
 		"no_description": "ንዚ ምልክታ ዝርዝር መግለጺ የለን",
 		"page": "ገጽ",
 		"show": "ኣርኢ",
-		"hide": "ሕባእ"
+		"hide": "ሕባእ",
+		"open_alert": "{severity} — ዝርዝር ናይ ኣገልግሎት ምልክታ ክፈት: {summary}",
+		"affects_this_stop": "ነዚ መዕረፊ ይትንክፍ",
+		"other_alerts": "ካልኦት ምልክታታት",
+		"severity_severe": "ከቢድ",
+		"severity_warning": "መጠንቀቕታ",
+		"severity_info": "ሓበሬታ",
+		"cause": "ምኽንያት",
+		"effect": "ሳዕቤን",
+		"active": "ንጡፍ",
+		"active_until": "ክሳብ {date}",
+		"active_from": "ካብ {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "ዘይተፈልጠ",
+		"cause_other": "ካልእ",
+		"cause_technical": "ቴክኒካዊ ጸገም",
+		"cause_strike": "ኣድማ",
+		"cause_demonstration": "ሰላማዊ ሰልፊ",
+		"cause_accident": "ሓደጋ",
+		"cause_holiday": "በዓል",
+		"cause_weather": "ኩነታት ኣየር",
+		"cause_maintenance": "ጽገና",
+		"cause_construction": "ናይ ህንጸት ስራሕ",
+		"cause_police": "ናይ ፖሊስ ንጥፈት",
+		"cause_medical": "ሕክምናዊ ህጹጽ ኩነታት",
+		"cause_equipment": "መሳርሒ",
+		"cause_environment": "ከባቢ",
+		"cause_personnel": "ሰራሕተኛታት",
+		"cause_miscellaneous": "ዝተፈላለየ",
+		"cause_security": "ናይ ጸጥታ ምልክታ",
+		"effect_no_service": "ኣገልግሎት የለን",
+		"effect_reduced_service": "ዝወሓደ ኣገልግሎት",
+		"effect_significant_delays": "ብርቱዕ ምድንጓይ",
+		"effect_detour": "መተካእታ መንገዲ",
+		"effect_additional_service": "ተወሳኺ ኣገልግሎት",
+		"effect_modified_service": "ዝተቐየረ ኣገልግሎት",
+		"effect_other": "ካልእ ሳዕቤን",
+		"effect_unknown": "ዘይተፈልጠ ሳዕቤን",
+		"effect_stop_moved": "መዕረፊ ቦታኡ ተቐይሩ",
+		"effect_no_effect": "ሳዕቤን የለን",
+		"effect_accessibility": "ናይ ተበጻሕነት ጸገም"
 	},
 	"view_stop_information": "ሓበሬታ መዕረፊ ርአ",
 	"stop_details": {
-		"view_details": "ዝርዝር ርአ"
+		"view_details": "ዝርዝር ርአ",
+		"stop_info": "ሓበሬታ መዕረፊ"
 	},
 	"language_switcher": {
 		"select_language": "ቋንቋ ምረጽ: {language}",
 		"available_languages": "ዝርከቡ ቋንቋታት"
 	},
 	"map": {
-		"find_my_location": "ቦታይ ፈልጥ"
+		"find_my_location": "ቦታይ ፈልጥ",
+		"routes_shown": "ዝረኣዩ መስመራት",
+		"live_vehicle_count": "{count} ብቐጥታ"
 	},
 	"context-menu": {
 		"start_here": "ካብዚ ጀምር",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "ናብ መበገሲ",
 		"go_back": "ንድሕሪት ተመለስ"
+	},
+	"trip_details": {
+		"route": "መስመር",
+		"no_stops": "ነዚ መገሻ ናይ መዕረፊ ሰዓታት የለን።",
+		"loading": "ዝርዝር መገሻ ይጽዕን ኣሎ...",
+		"live_vehicle": "ብቐጥታ · ተሽከርካሪ {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# መዕረፊ} other {# መዕረፊታት}}"
 	},
 	"skip_to_main_content": "ናብ ቀንዲ ትሕዝቶ ዝሕለፍ"
 }

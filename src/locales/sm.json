@@ -30,14 +30,54 @@
 		"trip_itineraries": "Lisi o Malaga",
 		"show_steps": "Faʻaali laasaga",
 		"hide_steps": "Natia laasaga",
+		"options": "Filifiliga",
+		"trip_options": "Filifiliga o le Malaga",
+		"cancel": "Faʻaleaoga",
+		"done": "Maeʻa",
+		"reset_to_defaults": "Toe faʻafoʻi i tulaga masani",
+		"departure_time": "Taimi e Alu Ese ai",
+		"departure_date": "Aso e alu ese ai",
+		"leave_now": "Alu Ese Nei",
+		"depart_at": "Alu Ese i le Taimi",
+		"arrive_by": "Taunuʻu i le Taimi",
+		"wheelchair_accessible": "Avanoa mo nofoa faʻataʻavalevale",
+		"wheelchair_desc": "Saili auala e talafeagai mo masini fesoasoani i le femalagaaʻi ma nofoa faʻataʻavalevale",
+		"wheelchair": "Nofoa faʻataʻavalevale",
+		"route_optimization": "Filifiliga o le Auala",
+		"fastest_trip": "Malaga Sili ona Vave",
+		"fewest_transfers": "Suiga Sili ona Itiiti",
+		"stay_on_board": "Nofo pea i luga o le taʻavale. E faʻaauau lenei malaga o le Auala {route}.",
+		"walking_distance": "Mamao e Savali ai",
+		"max_walking_distance": "Mamao sili e savali ai",
 		"distance_unit": "Iunite o le Mamao",
 		"unit_auto": "Otometi su'esu'e",
 		"unit_metric": "Metiriki (km, m)",
-		"unit_imperial": "Emepaea (mi, ft)"
+		"unit_imperial": "Emepaea (mi, ft)",
+		"swap_locations": "Fesuiaʻi le nofoaga amata ma le nofoaga faʻaiʻu",
+		"error_code": "Numera o le mea sese",
+		"remove_recent_trip": "Aveʻese le malaga talu ai nei",
+		"recent_trip": "Faʻaaoga le malaga talu ai nei mai {from} i {to}",
+		"recent_searches": "Sailiga Talu Ai Nei",
+		"recents": "Talu Ai Nei",
+		"clear_all": "Tapeʻe Uma",
+		"request_failed": "E leʻi mafai ona faʻafesoʻotaʻi le auaunaga fuafua malaga. Faʻamolemole toe taumafai.",
+		"invalid_shared_link": "E foliga mai ua leaga lenei soʻotaga malaga na faʻasoa mai. Taumafai e toe fuafua le malaga."
 	},
 	"tabs": {
 		"stops-and-stations": "Nofoaga Taofi ma Fale Taʻavale",
 		"plan_trip": "Fuafua se Malaga"
+	},
+	"favorites": {
+		"title": "Mea Pele",
+		"add": "Faʻaopoopo i mea pele",
+		"remove": "Aveʻese mai mea pele",
+		"clear_all": "Tapeʻe Uma",
+		"open_panel": "Tatala mea pele",
+		"close_panel": "Tapuni mea pele",
+		"empty": "E leai lava ni mea pele. Paʻi i le fetu i luga o se nofoaga taofi po o se auala e teu ai iinei.",
+		"stop_code": "Numera",
+		"open_item": "Tatala {name}",
+		"remove_item": "Aveʻese {name} mai mea pele"
 	},
 	"search": {
 		"placeholder": "Saili mo nofoaga taofi, auala, ma nofoaga",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "mo se lisi o auala o loʻo avanoa",
 		"search_for_routes": "Saili mo auala...",
 		"no_routes_found": "E leai ni auala na maua",
-		"all_routes": "Auala Uma"
+		"all_routes": "Auala Uma",
+		"clear": "Tapeʻe",
+		"collapse": "Faʻapuupuu le sailiga"
+	},
+	"sheet": {
+		"close": "Tapuni",
+		"resize_handle": "Suia le tele o le vaega",
+		"snap_full": "Maualuga atoa",
+		"snap_half": "Afa o le maualuga",
+		"snap_peek": "Faʻapuupuuina"
+	},
+	"survey": {
+		"required_question": "Fesili e manaʻomia",
+		"required_answer": "E manaʻomia se tali i lenei fesili.",
+		"expand": "Faʻaali le fesili",
+		"collapse": "Natia le fesili",
+		"dismiss": "Tapuni le suʻesuʻega",
+		"submit": "Lafo",
+		"next": "Sosoo",
+		"submit_failed": "E leʻi mafai ona lafo lau tali. Faʻamolemole toe taumafai."
 	},
 	"header": {
 		"home": "Aiga",
@@ -88,13 +147,26 @@
 		"close": "Tapuni"
 	},
 	"arrivals_and_departures": "Taunuʻuga ma alu atu",
+	"show_more": "Faʻaali atili",
+	"show_less": "Faʻaali itiiti",
 	"load_more_arrivals": "Utaina atili taunuʻuga",
+	"refresh": "Faʻafou",
 	"no_arrivals_found_in_next_minutes": "E leai ni taunuʻuga na maua i le {minutes} minute o loʻo sosoo",
 	"no_more_arrivals_in_next_minutes": "Leai ni taunuʻuga faaopoopo i le {minutes} minute o loʻo sosoo",
 	"stop": "Nofoaga Taofi",
+	"direction_bound": "Agaʻi i {direction}",
 	"routes": "Auala",
 	"route": "auala",
 	"route_modal_title": "Auala {name}",
+	"notifications": {
+		"route_load_failed": "E leʻi mafai ona utaina lenei auala.",
+		"route_shape_failed": "E leʻi mafai ona tusia lenei auala i le faʻafanua.",
+		"route_shape_partial": "E leʻi mafai ona tusia se vaega o lenei auala. Atonu o loʻo misi se vaega i le faʻafanua.",
+		"favorite_saved": "Ua teu i mea pele.",
+		"favorite_removed": "Ua aveʻese mai mea pele.",
+		"tap_to_retry": "Paʻi e toe taumafai.",
+		"dismiss": "Tapuni"
+	},
 	"loading": "O loʻo utaina",
 	"arrives": "taunuʻu",
 	"NA": "Leai",
@@ -105,13 +177,16 @@
 		"secs": "sek",
 		"min": "min",
 		"mins": "min",
-		"minutes": "minute"
+		"minutes": "minute",
+		"min_compact": "{n} min"
 	},
 	"vehicle": {
 		"number": "Taʻavale #",
 		"data_updated": "Faʻamatalaga faʻafouina",
 		"no_real_time_data": "E leai ni faʻamatalaga taimi moni mo lenei taʻavale i le taimi nei.",
-		"next_stop": "Nofoaga taofi e sosoo ai:"
+		"next_stop": "Nofoaga taofi e sosoo ai:",
+		"label": "Taʻavale",
+		"to_headsign": "Taʻavale i {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Taunuʻuga ma Alu Atu"
@@ -150,18 +225,61 @@
 		"no_description": "E leai se faʻamatalaga auiliili o loʻo avanoa mo lenei lapataiga",
 		"page": "Itulau",
 		"show": "Faʻaali",
-		"hide": "Natia"
+		"hide": "Natia",
+		"open_alert": "Tatala auiliiliga o le lapataiga o le auaunaga ({severity}): {summary}",
+		"affects_this_stop": "E aʻafia ai lenei nofoaga taofi",
+		"other_alerts": "Isi lapataiga",
+		"severity_severe": "Ogaoga",
+		"severity_warning": "Faʻaeteete",
+		"severity_info": "Faʻamatalaga",
+		"cause": "Mafuaʻaga",
+		"effect": "Aʻafiaga",
+		"active": "Taimi e aoga ai",
+		"active_until": "Seʻia oʻo i le {date}",
+		"active_from": "Mai le {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "E le iloa",
+		"cause_other": "Isi",
+		"cause_technical": "Faʻafitauli faʻatekinisi",
+		"cause_strike": "Teteʻe a le aufaigaluega",
+		"cause_demonstration": "Faʻaaliga teteʻe",
+		"cause_accident": "Faʻalavelave faʻafuaseʻi",
+		"cause_holiday": "Aso malolo",
+		"cause_weather": "Tau",
+		"cause_maintenance": "Tausiga",
+		"cause_construction": "Fausiaga",
+		"cause_police": "Gaoioiga a leoleo",
+		"cause_medical": "Faʻalavelave faʻafomaʻi",
+		"cause_equipment": "Meafaigaluega",
+		"cause_environment": "Siʻosiʻomaga",
+		"cause_personnel": "Aufaigaluega",
+		"cause_miscellaneous": "Mea eseese",
+		"cause_security": "Lapataiga o le saogalemu",
+		"effect_no_service": "Leai se auaunaga",
+		"effect_reduced_service": "Auaunaga ua faʻaitiitia",
+		"effect_significant_delays": "Tuai tetele",
+		"effect_detour": "Liliuga o le auala",
+		"effect_additional_service": "Auaunaga faʻaopoopo",
+		"effect_modified_service": "Auaunaga ua suia",
+		"effect_other": "Isi aʻafiaga",
+		"effect_unknown": "Aʻafiaga e le iloa",
+		"effect_stop_moved": "Ua siʻitia le nofoaga taofi",
+		"effect_no_effect": "Leai se aʻafiaga",
+		"effect_accessibility": "Faʻafitauli i le avanoa faigofie"
 	},
 	"view_stop_information": "Vaʻai Faʻamatalaga o le Nofoaga Taofi",
 	"stop_details": {
-		"view_details": "Vaʻai Faʻamatalaga"
+		"view_details": "Vaʻai Faʻamatalaga",
+		"stop_info": "Faʻamatalaga o le Nofoaga Taofi"
 	},
 	"language_switcher": {
 		"select_language": "Filifili gagana: {language}",
 		"available_languages": "Gagana avanoa"
 	},
 	"map": {
-		"find_my_location": "Su'e Lo'u Nofoaga"
+		"find_my_location": "Su'e Lo'u Nofoaga",
+		"routes_shown": "Auala o loʻo faʻaalia",
+		"live_vehicle_count": "{count} taʻavale i le taimi moni"
 	},
 	"context-menu": {
 		"start_here": "Amata mai iinei",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "Toe fo'i i le amataga",
 		"go_back": "Toe fo'i i tua"
+	},
+	"trip_details": {
+		"route": "Auala",
+		"no_stops": "E leai ni taimi o nofoaga taofi o loʻo avanoa mo lenei malaga.",
+		"loading": "O loʻo utaina faʻamatalaga o le malaga...",
+		"live_vehicle": "Taimi moni · taʻavale {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# nofoaga taofi} other {# nofoaga taofi}}"
 	},
 	"skip_to_main_content": "Alu i le mea autu"
 }

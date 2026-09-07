@@ -30,14 +30,54 @@
 		"trip_itineraries": "កាលវិភាគធ្វើដំណើរ",
 		"show_steps": "បង្ហាញជំហាន",
 		"hide_steps": "លាក់ជំហាន",
+		"options": "ជម្រើស",
+		"trip_options": "ជម្រើសការធ្វើដំណើរ",
+		"cancel": "បោះបង់",
+		"done": "រួចរាល់",
+		"reset_to_defaults": "កំណត់ឡើងវិញតាមលំនាំដើម",
+		"departure_time": "ម៉ោងចេញដំណើរ",
+		"departure_date": "កាលបរិច្ឆេទចេញដំណើរ",
+		"leave_now": "ចេញឥឡូវនេះ",
+		"depart_at": "ចេញនៅម៉ោង",
+		"arrive_by": "មកដល់ត្រឹមម៉ោង",
+		"wheelchair_accessible": "ងាយស្រួលសម្រាប់រទេះរុញ",
+		"wheelchair_desc": "ស្វែងរកផ្លូវដែលសមស្របសម្រាប់ឧបករណ៍ជំនួយការធ្វើចលនា និងរទេះរុញ",
+		"wheelchair": "រទេះរុញ",
+		"route_optimization": "របៀបជ្រើសរើសផ្លូវ",
+		"fastest_trip": "ការធ្វើដំណើរលឿនបំផុត",
+		"fewest_transfers": "ប្តូររថយន្តតិចបំផុត",
+		"stay_on_board": "សូមនៅលើរថយន្តដដែល។ ការធ្វើដំណើរនេះបន្តជាផ្លូវ {route}។",
+		"walking_distance": "ចម្ងាយដើរ",
+		"max_walking_distance": "ចម្ងាយដើរអតិបរមា",
 		"distance_unit": "ឯកតារង្វាស់ចម្ងាយ",
 		"unit_auto": "រកឃើញដោយស្វ័យប្រវត្តិ",
 		"unit_metric": "ម៉ែត្រ (km, m)",
-		"unit_imperial": "អ៊ីមភេរៀល (mi, ft)"
+		"unit_imperial": "អ៊ីមភេរៀល (mi, ft)",
+		"swap_locations": "ប្តូរទីតាំង ពី និង ទៅ",
+		"error_code": "លេខកូដកំហុស",
+		"remove_recent_trip": "លុបការធ្វើដំណើរថ្មីៗនេះ",
+		"recent_trip": "ប្រើការធ្វើដំណើរថ្មីៗ ពី {from} ទៅ {to}",
+		"recent_searches": "ការស្វែងរកថ្មីៗ",
+		"recents": "ថ្មីៗ",
+		"clear_all": "សម្អាតទាំងអស់",
+		"request_failed": "យើងមិនអាចភ្ជាប់ទៅសេវាកម្មរៀបចំការធ្វើដំណើរបានទេ។ សូមព្យាយាមម្តងទៀត។",
+		"invalid_shared_link": "តំណការធ្វើដំណើរដែលបានចែករំលែកនេះហាក់ដូចជាខូច។ សូមរៀបចំការធ្វើដំណើរម្តងទៀត។"
 	},
 	"tabs": {
 		"stops-and-stations": "ចំណតនិងស្ថានីយ៍",
 		"plan_trip": "រៀបចំការធ្វើដំណើរ"
+	},
+	"favorites": {
+		"title": "សំណព្វ",
+		"add": "បន្ថែមទៅសំណព្វ",
+		"remove": "ដកចេញពីសំណព្វ",
+		"clear_all": "សម្អាតទាំងអស់",
+		"open_panel": "បើកសំណព្វ",
+		"close_panel": "បិទសំណព្វ",
+		"empty": "មិនទាន់មានសំណព្វទេ។ ចុចផ្កាយនៅលើចំណត ឬផ្លូវ ដើម្បីរក្សាទុកនៅទីនេះ។",
+		"stop_code": "លេខកូដ",
+		"open_item": "បើក {name}",
+		"remove_item": "ដក {name} ចេញពីសំណព្វ"
 	},
 	"search": {
 		"placeholder": "ស្វែងរកចំណត ផ្លូវ និងទីកន្លែង",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "សម្រាប់បញ្ជីផ្លូវដែលមាន",
 		"search_for_routes": "ស្វែងរកផ្លូវ...",
 		"no_routes_found": "រកមិនឃើញផ្លូវទេ",
-		"all_routes": "ផ្លូវទាំងអស់"
+		"all_routes": "ផ្លូវទាំងអស់",
+		"clear": "សម្អាត",
+		"collapse": "បង្រួមការស្វែងរក"
+	},
+	"sheet": {
+		"close": "បិទ",
+		"resize_handle": "ប្តូរទំហំផ្ទាំង",
+		"snap_full": "កម្ពស់ពេញ",
+		"snap_half": "កម្ពស់ពាក់កណ្តាល",
+		"snap_peek": "បង្រួម"
+	},
+	"survey": {
+		"required_question": "សំណួរចាំបាច់",
+		"required_answer": "សំណួរនេះចាំបាច់ត្រូវឆ្លើយ។",
+		"expand": "បង្ហាញសំណួរ",
+		"collapse": "លាក់សំណួរ",
+		"dismiss": "បិទការស្ទង់មតិ",
+		"submit": "ដាក់ស្នើ",
+		"next": "បន្ទាប់",
+		"submit_failed": "មិនអាចផ្ញើចម្លើយរបស់អ្នកបានទេ។ សូមព្យាយាមម្តងទៀត។"
 	},
 	"header": {
 		"home": "ទំព័រដើម",
@@ -88,13 +147,26 @@
 		"close": "បិទ"
 	},
 	"arrivals_and_departures": "ការមកដល់និងចេញដំណើរ",
+	"show_more": "បង្ហាញបន្ថែម",
+	"show_less": "បង្ហាញតិច",
 	"load_more_arrivals": "ផ្ទុកការមកដល់បន្ថែម",
+	"refresh": "ផ្ទុកឡើងវិញ",
 	"no_arrivals_found_in_next_minutes": "រកមិនឃើញការមកដល់ក្នុង {minutes} នាទីខាងមុខទេ",
 	"no_more_arrivals_in_next_minutes": "មិនមានការមកដល់បន្ថែមទៀតទេក្នុង {minutes} នាទីខាងមុខ",
 	"stop": "ចំណត",
+	"direction_bound": "ឆ្ពោះទៅទិស {direction}",
 	"routes": "ផ្លូវ",
 	"route": "ផ្លូវ",
 	"route_modal_title": "ផ្លូវ {name}",
+	"notifications": {
+		"route_load_failed": "មិនអាចផ្ទុកផ្លូវនេះបានទេ។",
+		"route_shape_failed": "មិនអាចគូសផ្លូវនេះនៅលើផែនទីបានទេ។",
+		"route_shape_partial": "ផ្នែកខ្លះនៃផ្លូវនេះមិនអាចគូសបានទេ។ ផែនទីអាចនឹងខ្វះចន្លោះខ្លះនៃខ្សែផ្លូវ។",
+		"favorite_saved": "បានរក្សាទុកទៅសំណព្វ។",
+		"favorite_removed": "បានដកចេញពីសំណព្វ។",
+		"tap_to_retry": "ចុចដើម្បីព្យាយាមម្តងទៀត។",
+		"dismiss": "បិទ"
+	},
 	"loading": "កំពុងផ្ទុក",
 	"arrives": "មកដល់",
 	"NA": "មិនមាន",
@@ -105,13 +177,16 @@
 		"secs": "វិនាទី",
 		"min": "នាទី",
 		"mins": "នាទី",
-		"minutes": "នាទី"
+		"minutes": "នាទី",
+		"min_compact": "{n} នាទី"
 	},
 	"vehicle": {
 		"number": "រថយន្តលេខ",
 		"data_updated": "ទិន្នន័យបានធ្វើបច្ចុប្បន្នភាព",
 		"no_real_time_data": "យើងមិនមានទិន្នន័យពេលវេលាជាក់ស្តែងសម្រាប់រថយន្តនេះឥឡូវទេ។",
-		"next_stop": "ចំណតបន្ទាប់៖"
+		"next_stop": "ចំណតបន្ទាប់៖",
+		"label": "រថយន្ត",
+		"to_headsign": "រថយន្តទៅ {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "ការមកដល់និងចេញដំណើរ"
@@ -150,18 +225,61 @@
 		"no_description": "គ្មានការពិពណ៌នាលម្អិតសម្រាប់ការជូនដំណឹងនេះទេ",
 		"page": "ទំព័រ",
 		"show": "បង្ហាញ",
-		"hide": "លាក់"
+		"hide": "លាក់",
+		"open_alert": "បើកព័ត៌មានលម្អិតនៃការជូនដំណឹងសេវាកម្មកម្រិត{severity}៖ {summary}",
+		"affects_this_stop": "ប៉ះពាល់ដល់ចំណតនេះ",
+		"other_alerts": "ការជូនដំណឹងផ្សេងទៀត",
+		"severity_severe": "ធ្ងន់ធ្ងរ",
+		"severity_warning": "ព្រមាន",
+		"severity_info": "ព័ត៌មាន",
+		"cause": "មូលហេតុ",
+		"effect": "ផលប៉ះពាល់",
+		"active": "សុពលភាព",
+		"active_until": "រហូតដល់ {date}",
+		"active_from": "ចាប់ពី {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "មិនស្គាល់",
+		"cause_other": "ផ្សេងទៀត",
+		"cause_technical": "បញ្ហាបច្ចេកទេស",
+		"cause_strike": "កូដកម្ម",
+		"cause_demonstration": "បាតុកម្ម",
+		"cause_accident": "គ្រោះថ្នាក់",
+		"cause_holiday": "ថ្ងៃឈប់សម្រាក",
+		"cause_weather": "អាកាសធាតុ",
+		"cause_maintenance": "ការថែទាំ",
+		"cause_construction": "ការសាងសង់",
+		"cause_police": "សកម្មភាពប៉ូលិស",
+		"cause_medical": "ករណីអាសន្នផ្នែកវេជ្ជសាស្ត្រ",
+		"cause_equipment": "ឧបករណ៍",
+		"cause_environment": "បរិស្ថាន",
+		"cause_personnel": "បុគ្គលិក",
+		"cause_miscellaneous": "ផ្សេងៗ",
+		"cause_security": "ការជូនដំណឹងសន្តិសុខ",
+		"effect_no_service": "គ្មានសេវាកម្ម",
+		"effect_reduced_service": "សេវាកម្មត្រូវបានកាត់បន្ថយ",
+		"effect_significant_delays": "ការយឺតយ៉ាវខ្លាំង",
+		"effect_detour": "ផ្លូវវាង",
+		"effect_additional_service": "សេវាកម្មបន្ថែម",
+		"effect_modified_service": "សេវាកម្មត្រូវបានកែប្រែ",
+		"effect_other": "ផលប៉ះពាល់ផ្សេងទៀត",
+		"effect_unknown": "ផលប៉ះពាល់មិនស្គាល់",
+		"effect_stop_moved": "ចំណតបានផ្លាស់ទី",
+		"effect_no_effect": "គ្មានផលប៉ះពាល់",
+		"effect_accessibility": "បញ្ហាភាពងាយស្រួលក្នុងការចូលប្រើ"
 	},
 	"view_stop_information": "មើលព័ត៌មានចំណត",
 	"stop_details": {
-		"view_details": "មើលព័ត៌មានលម្អិត"
+		"view_details": "មើលព័ត៌មានលម្អិត",
+		"stop_info": "ព័ត៌មានចំណត"
 	},
 	"language_switcher": {
 		"select_language": "ជ្រើសរើសភាសា: {language}",
 		"available_languages": "ភាសាដែលមាន"
 	},
 	"map": {
-		"find_my_location": "រកទីតាំងរបស់ខ្ញុំ"
+		"find_my_location": "រកទីតាំងរបស់ខ្ញុំ",
+		"routes_shown": "ផ្លូវដែលបង្ហាញ",
+		"live_vehicle_count": "{count} តាមពេលវេលាជាក់ស្តែង"
 	},
 	"context-menu": {
 		"start_here": "ចាប់ផ្ដើមនៅទីនេះ",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "ទៅទំព័រដើម",
 		"go_back": "ត្រឡប់ក្រោយ"
+	},
+	"trip_details": {
+		"route": "ផ្លូវ",
+		"no_stops": "គ្មានម៉ោងចំណតសម្រាប់ការធ្វើដំណើរនេះទេ។",
+		"loading": "កំពុងផ្ទុកព័ត៌មានលម្អិតនៃការធ្វើដំណើរ...",
+		"live_vehicle": "ពេលវេលាជាក់ស្តែង · រថយន្តលេខ {vehicleId}",
+		"collapsed_stops": "{count, plural, other {# ចំណត}}"
 	},
 	"skip_to_main_content": "រំលងទៅមាតិកាចម្បង"
 }

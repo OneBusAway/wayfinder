@@ -30,14 +30,54 @@
 		"trip_itineraries": "Mga itineraryo ng biyahe",
 		"show_steps": "Ipakita ang mga hakbang",
 		"hide_steps": "Itago ang mga hakbang",
+		"options": "Mga Opsyon",
+		"trip_options": "Mga Opsyon sa Biyahe",
+		"cancel": "Kanselahin",
+		"done": "Tapos na",
+		"reset_to_defaults": "I-reset sa mga default",
+		"departure_time": "Oras ng Pag-alis",
+		"departure_date": "Petsa ng pag-alis",
+		"leave_now": "Umalis Ngayon",
+		"depart_at": "Umalis sa Piniling Oras",
+		"arrive_by": "Dumating sa Piniling Oras",
+		"wheelchair_accessible": "Accessible sa wheelchair",
+		"wheelchair_desc": "Maghanap ng mga rutang angkop para sa mga mobility device at wheelchair",
+		"wheelchair": "Wheelchair",
+		"route_optimization": "Pag-optimize ng Ruta",
+		"fastest_trip": "Pinakamabilis na Biyahe",
+		"fewest_transfers": "Pinakakaunting Paglipat",
+		"stay_on_board": "Manatili sa sasakyan. Magpapatuloy ang biyaheng ito bilang Ruta {route}.",
+		"walking_distance": "Distansya ng Paglalakad",
+		"max_walking_distance": "Pinakamalayong distansya ng paglalakad",
 		"distance_unit": "Yunit ng Distansya",
 		"unit_auto": "Awtomatikong tukuyin",
 		"unit_metric": "Metriko (km, m)",
-		"unit_imperial": "Imperyalismo (mi, ft)"
+		"unit_imperial": "Imperyalismo (mi, ft)",
+		"swap_locations": "Ipagpalit ang mga lokasyong Mula sa at Patungo sa",
+		"error_code": "Code ng error",
+		"remove_recent_trip": "Alisin ang kamakailang biyahe",
+		"recent_trip": "Gamitin ang kamakailang biyahe mula sa {from} papuntang {to}",
+		"recent_searches": "Mga Kamakailang Paghahanap",
+		"recents": "Kamakailan",
+		"clear_all": "I-clear Lahat",
+		"request_failed": "Hindi namin maabot ang serbisyo sa pagpaplano ng biyahe. Pakisubukang muli.",
+		"invalid_shared_link": "Mukhang sira ang na-share na link ng biyaheng ito. Subukang planuhin muli ang biyahe."
 	},
 	"tabs": {
 		"stops-and-stations": "Mga hintuan at estasyon",
 		"plan_trip": "Planuhin ang biyahe"
+	},
+	"favorites": {
+		"title": "Mga Paborito",
+		"add": "Idagdag sa mga paborito",
+		"remove": "Alisin sa mga paborito",
+		"clear_all": "I-clear Lahat",
+		"open_panel": "Buksan ang mga paborito",
+		"close_panel": "Isara ang mga paborito",
+		"empty": "Wala pang paborito. I-tap ang bituin sa isang hintuan o ruta para i-save ito rito.",
+		"stop_code": "Code",
+		"open_item": "Buksan ang {name}",
+		"remove_item": "Alisin ang {name} sa mga paborito"
 	},
 	"search": {
 		"placeholder": "Maghanap ng mga hintuan, ruta, at lugar",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "para sa listahan ng mga magagamit na ruta",
 		"search_for_routes": "Maghanap ng mga ruta...",
 		"no_routes_found": "Walang nahanap na ruta",
-		"all_routes": "Lahat ng ruta"
+		"all_routes": "Lahat ng ruta",
+		"clear": "I-clear",
+		"collapse": "I-collapse ang paghahanap"
+	},
+	"sheet": {
+		"close": "Isara",
+		"resize_handle": "Baguhin ang laki ng panel",
+		"snap_full": "Buong taas",
+		"snap_half": "Kalahating taas",
+		"snap_peek": "Naka-collapse"
+	},
+	"survey": {
+		"required_question": "Kinakailangang tanong",
+		"required_answer": "Kinakailangan ang tanong na ito.",
+		"expand": "Ipakita ang tanong",
+		"collapse": "Itago ang tanong",
+		"dismiss": "I-dismiss ang survey",
+		"submit": "Isumite",
+		"next": "Susunod",
+		"submit_failed": "Hindi naipadala ang iyong sagot. Pakisubukang muli."
 	},
 	"header": {
 		"home": "Home",
@@ -88,13 +147,26 @@
 		"close": "Isara"
 	},
 	"arrivals_and_departures": "Mga pagdating at pag-alis",
+	"show_more": "Ipakita pa",
+	"show_less": "Ipakita nang mas kaunti",
 	"load_more_arrivals": "Mag-load pa ng mga pagdating",
+	"refresh": "I-refresh",
 	"no_arrivals_found_in_next_minutes": "Walang nahanap na pagdating sa susunod na {minutes} minuto",
 	"no_more_arrivals_in_next_minutes": "Wala nang karagdagang pagdating sa susunod na {minutes} minuto",
 	"stop": "Hintuan",
+	"direction_bound": "Papuntang {direction}",
 	"routes": "Mga ruta",
 	"route": "Ruta",
 	"route_modal_title": "Ruta {name}",
+	"notifications": {
+		"route_load_failed": "Hindi ma-load ang rutang ito.",
+		"route_shape_failed": "Hindi maiguhit ang rutang ito sa mapa.",
+		"route_shape_partial": "May bahagi ng rutang ito na hindi naiguhit. Maaaring may kulang na segment sa mapa.",
+		"favorite_saved": "Na-save sa mga paborito.",
+		"favorite_removed": "Inalis sa mga paborito.",
+		"tap_to_retry": "I-tap para subukang muli.",
+		"dismiss": "I-dismiss"
+	},
 	"loading": "Naglo-load",
 	"arrives": "Dumarating",
 	"NA": "W/A",
@@ -105,13 +177,16 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n} min"
 	},
 	"vehicle": {
 		"number": "Sasakyan #",
 		"data_updated": "Na-update ang data",
 		"no_real_time_data": "Wala kaming real-time na data para sa sasakyang ito ngayon.",
-		"next_stop": "Susunod na hintuan:"
+		"next_stop": "Susunod na hintuan:",
+		"label": "Sasakyan",
+		"to_headsign": "Sasakyang papuntang {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Mga Pagdating at Pag-alis"
@@ -150,18 +225,61 @@
 		"no_description": "Walang detalyadong paglalarawan na available para sa abisong ito",
 		"page": "Pahina",
 		"show": "Ipakita",
-		"hide": "Itago"
+		"hide": "Itago",
+		"open_alert": "Buksan ang mga detalye ng abiso ng serbisyo ({severity}): {summary}",
+		"affects_this_stop": "Nakakaapekto sa hintuang ito",
+		"other_alerts": "Iba pang abiso",
+		"severity_severe": "Malubha",
+		"severity_warning": "Babala",
+		"severity_info": "Impormasyon",
+		"cause": "Sanhi",
+		"effect": "Epekto",
+		"active": "Aktibo",
+		"active_until": "Hanggang {date}",
+		"active_from": "Mula {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Hindi alam",
+		"cause_other": "Iba pa",
+		"cause_technical": "Teknikal na problema",
+		"cause_strike": "Welga",
+		"cause_demonstration": "Demonstrasyon",
+		"cause_accident": "Aksidente",
+		"cause_holiday": "Pista opisyal",
+		"cause_weather": "Panahon",
+		"cause_maintenance": "Maintenance",
+		"cause_construction": "Konstruksyon",
+		"cause_police": "Aktibidad ng pulisya",
+		"cause_medical": "Medikal na emerhensya",
+		"cause_equipment": "Kagamitan",
+		"cause_environment": "Kapaligiran",
+		"cause_personnel": "Tauhan",
+		"cause_miscellaneous": "Iba't ibang dahilan",
+		"cause_security": "Abiso sa seguridad",
+		"effect_no_service": "Walang serbisyo",
+		"effect_reduced_service": "Nabawasang serbisyo",
+		"effect_significant_delays": "Malaking pagkaantala",
+		"effect_detour": "Detour",
+		"effect_additional_service": "Karagdagang serbisyo",
+		"effect_modified_service": "Binagong serbisyo",
+		"effect_other": "Ibang epekto",
+		"effect_unknown": "Hindi alam na epekto",
+		"effect_stop_moved": "Inilipat ang hintuan",
+		"effect_no_effect": "Walang epekto",
+		"effect_accessibility": "Isyu sa accessibility"
 	},
 	"view_stop_information": "Tingnan ang impormasyon ng hintuan",
 	"stop_details": {
-		"view_details": "Tingnan ang detalye"
+		"view_details": "Tingnan ang detalye",
+		"stop_info": "Impormasyon ng Hintuan"
 	},
 	"language_switcher": {
 		"select_language": "Piliin ang wika: {language}",
 		"available_languages": "Mga available na wika"
 	},
 	"map": {
-		"find_my_location": "Hanapin ang Aking Lokasyon"
+		"find_my_location": "Hanapin ang Aking Lokasyon",
+		"routes_shown": "Mga ipinapakitang ruta",
+		"live_vehicle_count": "{count} live"
 	},
 	"context-menu": {
 		"start_here": "Magsimula dito",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "Pumunta sa home",
 		"go_back": "Bumalik"
+	},
+	"trip_details": {
+		"route": "Ruta",
+		"no_stops": "Walang magagamit na oras ng hintuan para sa biyaheng ito.",
+		"loading": "Naglo-load ng mga detalye ng biyahe...",
+		"live_vehicle": "Live · sasakyan {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# hintuan} other {# na hintuan}}"
 	},
 	"skip_to_main_content": "Lumipat sa pangunahing nilalaman"
 }

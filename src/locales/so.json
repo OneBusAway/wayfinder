@@ -30,14 +30,54 @@
 		"trip_itineraries": "Jadwalka safarada",
 		"show_steps": "Muuji tillaabooyinka",
 		"hide_steps": "Qari tillaabooyinka",
+		"options": "Ikhtiyaarada",
+		"trip_options": "Ikhtiyaarada safarka",
+		"cancel": "Jooji",
+		"done": "Dhammee",
+		"reset_to_defaults": "Dib ugu celi sida caadiga ah",
+		"departure_time": "Waqtiga bixitaanka",
+		"departure_date": "Taariikhda bixitaanka",
+		"leave_now": "Hadda bax",
+		"depart_at": "Bax waqtigan",
+		"arrive_by": "Imow ka hor",
+		"wheelchair_accessible": "Ku habboon kursiga naafada",
+		"wheelchair_desc": "Raadi waddooyin ku habboon qalabka caawimaadda socodka iyo kuraasta naafada",
+		"wheelchair": "Kursi naafo",
+		"route_optimization": "Doorbidka waddada",
+		"fastest_trip": "Safarka ugu dhaqsaha badan",
+		"fewest_transfers": "Beddelaadda ugu yar",
+		"stay_on_board": "Gaariga ku sii jir. Safarkan wuxuu ku sii socdaa Waddada {route}.",
+		"walking_distance": "Masaafada socodka",
+		"max_walking_distance": "Masaafada socodka ee ugu badan",
 		"distance_unit": "Halbeegga Masaafada",
 		"unit_auto": "Si toos ah u ogaado",
 		"unit_metric": "Mitrik (km, m)",
-		"unit_imperial": "Imbiriyaal (mi, ft)"
+		"unit_imperial": "Imbiriyaal (mi, ft)",
+		"swap_locations": "Is-weydaarso goobaha laga bilaabo iyo loo socdo",
+		"error_code": "Koodhka qaladka",
+		"remove_recent_trip": "Ka saar safarkii dhowaa",
+		"recent_trip": "Isticmaal safarkii dhowaa ee laga bilaabo {from} ilaa {to}",
+		"recent_searches": "Raadinnadii dhowaa",
+		"recents": "Kuwii dhowaa",
+		"clear_all": "Nadiifi dhammaan",
+		"request_failed": "Lama gaadhi karin adeegga qorshaynta safarka. Fadlan mar kale isku day.",
+		"invalid_shared_link": "Xiriirkan safarka la wadaagay ma shaqaynayo. Isku day inaad safarka mar kale qorshayso."
 	},
 	"tabs": {
 		"stops-and-stations": "Joogsiyada iyo saldhigyada",
 		"plan_trip": "Qorshee safarka"
+	},
+	"favorites": {
+		"title": "Kuwa aad jeceshahay",
+		"add": "Ku dar kuwa aad jeceshahay",
+		"remove": "Ka saar kuwa aad jeceshahay",
+		"clear_all": "Nadiifi dhammaan",
+		"open_panel": "Fur kuwa aad jeceshahay",
+		"close_panel": "Xidh kuwa aad jeceshahay",
+		"empty": "Weli waxba lama kaydin. Taabo xiddigta joogsi ama waddo si aad halkan ugu kaydsato.",
+		"stop_code": "Koodh",
+		"open_item": "Fur {name}",
+		"remove_item": "{name} ka saar kuwa aad jeceshahay"
 	},
 	"search": {
 		"placeholder": "Raadi joogsiyo, wadooyin iyo meelo",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "si aad u aragto liiska waddooyinka la heli karo",
 		"search_for_routes": "Raadi wadooyin...",
 		"no_routes_found": "Wax waddo ah lama helin",
-		"all_routes": "Dhammaan wadooyinka"
+		"all_routes": "Dhammaan wadooyinka",
+		"clear": "Nadiifi",
+		"collapse": "Laabo raadinta"
+	},
+	"sheet": {
+		"close": "Xidh",
+		"resize_handle": "Beddel cabbirka daaqadda",
+		"snap_full": "Dhererka buuxa",
+		"snap_half": "Nuska dhererka",
+		"snap_peek": "La laabay"
+	},
+	"survey": {
+		"required_question": "Su'aal khasab ah",
+		"required_answer": "Su'aashan waa khasab.",
+		"expand": "Muuji su'aasha",
+		"collapse": "Qari su'aasha",
+		"dismiss": "Iska dhaaf sahanka",
+		"submit": "Gudbi",
+		"next": "Xiga",
+		"submit_failed": "Jawaabtaada lama diri karin. Fadlan mar kale isku day."
 	},
 	"header": {
 		"home": "Bogga Hore",
@@ -88,13 +147,26 @@
 		"close": "Xidh"
 	},
 	"arrivals_and_departures": "Imaatinka iyo baxsashada",
+	"show_more": "Muuji wax dheeraad ah",
+	"show_less": "Muuji wax yar",
 	"load_more_arrivals": "Soo rar imaatinno dheeraad ah",
+	"refresh": "Cusbooneysii",
 	"no_arrivals_found_in_next_minutes": "Lama helin soo gaadhis {minutes} daqiiqo ee soo socda",
 	"no_more_arrivals_in_next_minutes": "Ma jiraan soo gaadhis dheeraad ah {minutes} daqiiqo ee soo socda",
 	"stop": "Joogsi",
+	"direction_bound": "Jihada {direction}",
 	"routes": "Jidadka",
 	"route": "Jidka",
 	"route_modal_title": "Jidka {name}",
+	"notifications": {
+		"route_load_failed": "Waddadan lama soo rari karin.",
+		"route_shape_failed": "Waddadan laguma sawiri karin khariidadda.",
+		"route_shape_partial": "Qayb ka mid ah waddadan lama sawiri karin. Khariidadda waxaa laga yaabaa inay qayb ka maqan tahay.",
+		"favorite_saved": "Waxaa lagu kaydiyay kuwa aad jeceshahay.",
+		"favorite_removed": "Waxaa laga saaray kuwa aad jeceshahay.",
+		"tap_to_retry": "Taabo si aad mar kale isugu daydo.",
+		"dismiss": "Iska dhaaf"
+	},
 	"loading": "Shaqeynaya",
 	"arrives": "imaataa",
 	"NA": "M/Q",
@@ -105,13 +177,16 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n} daq"
 	},
 	"vehicle": {
 		"number": "Gaari #",
 		"data_updated": "Xogta waa la cusbooneysiiyay",
 		"no_real_time_data": "Ma hayno xog ku saabsan wakhtiga dhabta ah ee gaarigan hadda.",
-		"next_stop": "Joogsiga xiga:"
+		"next_stop": "Joogsiga xiga:",
+		"label": "Gaari",
+		"to_headsign": "Gaariga u socda {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Imaanshaha iyo Bixitaanka"
@@ -150,18 +225,61 @@
 		"no_description": "Sharax faahfaahsan ma jiro ogeysiiskan",
 		"page": "Bogga",
 		"show": "Muujin",
-		"hide": "Qari"
+		"hide": "Qari",
+		"open_alert": "Fur faahfaahinta ogeysiiska adeegga ee heerka {severity}: {summary}",
+		"affects_this_stop": "Kuwa saameeya joogsigan",
+		"other_alerts": "Ogeysiisyo kale",
+		"severity_severe": "Daran",
+		"severity_warning": "Digniin",
+		"severity_info": "Macluumaad",
+		"cause": "Sababta",
+		"effect": "Saamaynta",
+		"active": "Firfircoon",
+		"active_until": "Ilaa {date}",
+		"active_from": "Laga bilaabo {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Lama garanayo",
+		"cause_other": "Kale",
+		"cause_technical": "Cillad farsamo",
+		"cause_strike": "Shaqo-joojin",
+		"cause_demonstration": "Bannaanbax",
+		"cause_accident": "Shil",
+		"cause_holiday": "Fasax",
+		"cause_weather": "Cimilo",
+		"cause_maintenance": "Dayactir",
+		"cause_construction": "Dhismo",
+		"cause_police": "Howlgal booliis",
+		"cause_medical": "Xaalad caafimaad oo degdeg ah",
+		"cause_equipment": "Qalab",
+		"cause_environment": "Deegaan",
+		"cause_personnel": "Shaqaale",
+		"cause_miscellaneous": "Kala duwan",
+		"cause_security": "Digniin ammaan",
+		"effect_no_service": "Adeeg ma jiro",
+		"effect_reduced_service": "Adeeg la yareeyay",
+		"effect_significant_delays": "Daahitaan weyn",
+		"effect_detour": "Wareeg",
+		"effect_additional_service": "Adeeg dheeraad ah",
+		"effect_modified_service": "Adeeg la beddelay",
+		"effect_other": "Saamayn kale",
+		"effect_unknown": "Saamayn aan la garanayn",
+		"effect_stop_moved": "Joogsi la wareejiyay",
+		"effect_no_effect": "Saamayn ma leh",
+		"effect_accessibility": "Cillad marin u helidda"
 	},
 	"view_stop_information": "Eeg macluumaadka joogsiga",
 	"stop_details": {
-		"view_details": "Eeg faahfaahinta"
+		"view_details": "Eeg faahfaahinta",
+		"stop_info": "Macluumaadka joogsiga"
 	},
 	"language_switcher": {
 		"select_language": "Dooro luuqadda: {language}",
 		"available_languages": "Luuqadaha la heli karo"
 	},
 	"map": {
-		"find_my_location": "Raadi Goobteeyda"
+		"find_my_location": "Raadi Goobteeyda",
+		"routes_shown": "Waddooyinka la muujiyay",
+		"live_vehicle_count": "{count} toos ah"
 	},
 	"context-menu": {
 		"start_here": "Halkan ka bilow",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "Aad guriga",
 		"go_back": "Ku noqo"
+	},
+	"trip_details": {
+		"route": "Waddo",
+		"no_stops": "Waqtiyo joogsi lama heli karo safarkan.",
+		"loading": "Faahfaahinta safarka waa la soo rarayaa...",
+		"live_vehicle": "Toos ah · gaariga {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# joogsi} other {# joogsi}}"
 	},
 	"skip_to_main_content": "U bood waxa muhiimka ah"
 }

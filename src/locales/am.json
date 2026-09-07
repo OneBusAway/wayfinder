@@ -30,14 +30,54 @@
 		"trip_itineraries": "የጉዞ አይነቶች",
 		"show_steps": "ደረጃዎችን አሳይ",
 		"hide_steps": "ደረጃዎችን ደብቅ",
+		"options": "አማራጮች",
+		"trip_options": "የጉዞ አማራጮች",
+		"cancel": "ሰርዝ",
+		"done": "ጨርስ",
+		"reset_to_defaults": "ወደ ነባሪ መልስ",
+		"departure_time": "የመነሻ ጊዜ",
+		"departure_date": "የመነሻ ቀን",
+		"leave_now": "አሁን መነሳት",
+		"depart_at": "በዚህ ሰዓት መነሳት",
+		"arrive_by": "እስከዚህ ሰዓት መድረስ",
+		"wheelchair_accessible": "ለተሽከርካሪ ወንበር ተደራሽ",
+		"wheelchair_desc": "ለመንቀሳቀሻ መርጃ መሣሪያዎችና ለተሽከርካሪ ወንበሮች የሚስማሙ መንገዶችን ይፈልጉ",
+		"wheelchair": "ተሽከርካሪ ወንበር",
+		"route_optimization": "የመንገድ ምርጫ",
+		"fastest_trip": "ፈጣኑ ጉዞ",
+		"fewest_transfers": "አነስተኛ ዝውውር",
+		"stay_on_board": "በተሽከርካሪው ውስጥ ይቆዩ። ይህ ጉዞ እንደ መንገድ {route} ይቀጥላል።",
+		"walking_distance": "የእግር ጉዞ ርቀት",
+		"max_walking_distance": "ከፍተኛ የእግር ጉዞ ርቀት",
 		"distance_unit": "የርቀት መለኪያ",
 		"unit_auto": "በራስ-ሰር ይለዩ",
 		"unit_metric": "ሜትሪክ (ኪሜ፣ ሜ)",
-		"unit_imperial": "ኢምፔሪያል (ማይል፣ ጫማ)"
+		"unit_imperial": "ኢምፔሪያል (ማይል፣ ጫማ)",
+		"swap_locations": "የመነሻና የመድረሻ ቦታዎችን ቀያይር",
+		"error_code": "የስህተት ኮድ",
+		"remove_recent_trip": "የቅርብ ጊዜ ጉዞን አስወግድ",
+		"recent_trip": "ከ{from} ወደ {to} የቅርብ ጊዜ ጉዞን ተጠቀም",
+		"recent_searches": "የቅርብ ጊዜ ፍለጋዎች",
+		"recents": "የቅርብ ጊዜ ጉዞዎች",
+		"clear_all": "ሁሉንም አጥፋ",
+		"request_failed": "የጉዞ እቅድ አገልግሎትን ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።",
+		"invalid_shared_link": "ይህ የተጋራው የጉዞ አገናኝ የተበላሸ ይመስላል። ጉዞውን እንደገና ለማቀድ ይሞክሩ።"
 	},
 	"tabs": {
 		"stops-and-stations": "ማቆሚያዎችና ጣቢያዎች",
 		"plan_trip": "ጉዞን አቅድ"
+	},
+	"favorites": {
+		"title": "ተወዳጆች",
+		"add": "ወደ ተወዳጆች አክል",
+		"remove": "ከተወዳጆች አስወግድ",
+		"clear_all": "ሁሉንም አጥፋ",
+		"open_panel": "ተወዳጆችን ክፈት",
+		"close_panel": "ተወዳጆችን ዝጋ",
+		"empty": "እስካሁን ምንም ተወዳጅ የለም። እዚህ ለማስቀመጥ በማቆሚያ ወይም በመንገድ ላይ ያለውን ኮከብ መታ ያድርጉ።",
+		"stop_code": "ኮድ",
+		"open_item": "ክፈት: {name}",
+		"remove_item": "ከተወዳጆች አስወግድ: {name}"
 	},
 	"search": {
 		"placeholder": "ቆሻሻዎችን፣ መንገዶችን እና ቦታዎችን ይፈልጉ",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "ለመገኘት የሚገባቸው መንገዶች",
 		"search_for_routes": "መንገዶችን ይፈልጉ...",
 		"no_routes_found": "ምንም መንገዶች አልተገኙም",
-		"all_routes": "ሁሉም መንገዶች"
+		"all_routes": "ሁሉም መንገዶች",
+		"clear": "አጥፋ",
+		"collapse": "ፍለጋን ሰብስብ"
+	},
+	"sheet": {
+		"close": "ዝጋ",
+		"resize_handle": "የፓነሉን መጠን ቀይር",
+		"snap_full": "ሙሉ ከፍታ",
+		"snap_half": "ግማሽ ከፍታ",
+		"snap_peek": "የተሰበሰበ"
+	},
+	"survey": {
+		"required_question": "የግዴታ ጥያቄ",
+		"required_answer": "ይህ ጥያቄ የግዴታ ነው።",
+		"expand": "ጥያቄውን አሳይ",
+		"collapse": "ጥያቄውን ደብቅ",
+		"dismiss": "የዳሰሳ ጥናቱን ዝጋ",
+		"submit": "አስገባ",
+		"next": "ቀጣይ",
+		"submit_failed": "መልስዎን መላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
 	},
 	"header": {
 		"home": "ቤት",
@@ -88,13 +147,26 @@
 		"close": "ዝጋ"
 	},
 	"arrivals_and_departures": "መግቢያዎችና መውጫዎች",
+	"show_more": "ተጨማሪ አሳይ",
+	"show_less": "ያነሰ አሳይ",
 	"load_more_arrivals": "ተጨማሪ መድረሻዎችን ጫን",
+	"refresh": "አድስ",
 	"no_arrivals_found_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም መድረሻ አልተገኘም",
 	"no_more_arrivals_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም ተጨማሪ መድረሻ የለም",
 	"stop": "ቆሻሻ",
+	"direction_bound": "ወደ {direction} አቅጣጫ",
 	"routes": "መንገዶች",
 	"route": "መንገድ",
 	"route_modal_title": "መስመር {name}",
+	"notifications": {
+		"route_load_failed": "ይህን መንገድ መጫን አልተቻለም።",
+		"route_shape_failed": "ይህን መንገድ በካርታው ላይ መሳል አልተቻለም።",
+		"route_shape_partial": "የዚህ መንገድ ከፊሉ ሊሳል አልቻለም። ካርታው አንድ ክፍል ሊጎድለው ይችላል።",
+		"favorite_saved": "ወደ ተወዳጆች ተቀምጧል።",
+		"favorite_removed": "ከተወዳጆች ተወግዷል።",
+		"tap_to_retry": "እንደገና ለመሞከር መታ ያድርጉ።",
+		"dismiss": "ዝጋ"
+	},
 	"loading": "በመጫን ላይ",
 	"arrives": "ይደርሳል",
 	"NA": "አቅርኛ",
@@ -105,13 +177,16 @@
 		"secs": "secs",
 		"min": "min",
 		"mins": "mins",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n} ደቂቃ"
 	},
 	"vehicle": {
 		"number": "ተሽከርካሪ #",
 		"data_updated": "የተሻሻለ ውሂብ",
 		"no_real_time_data": "ለዚህ ተሽከርካሪ በእሁድኛ ጊዜ ውሂብ አናስተውላም።",
-		"next_stop": "ቀጣይ ማቆሚያ:"
+		"next_stop": "ቀጣይ ማቆሚያ:",
+		"label": "ተሽከርካሪ",
+		"to_headsign": "ወደ {headsign} የሚሄድ ተሽከርካሪ"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "መድረሻዎች እና ማቆሚያዎች"
@@ -150,18 +225,61 @@
 		"no_description": "ለዚህ ማስጠንቀቂያ ዝርዝር መግለጫ የለም",
 		"page": "ገፅ",
 		"show": "አሳይ",
-		"hide": "ደብቅ"
+		"hide": "ደብቅ",
+		"open_alert": "አገልግሎት ማስጠንቀቂያ ዝርዝሮችን ክፈት ({severity}): {summary}",
+		"affects_this_stop": "ይህን ማቆሚያ ይነካል",
+		"other_alerts": "ሌሎች ማስጠንቀቂያዎች",
+		"severity_severe": "ከባድ",
+		"severity_warning": "ማስጠንቀቂያ",
+		"severity_info": "መረጃ",
+		"cause": "ምክንያት",
+		"effect": "ተጽዕኖ",
+		"active": "ንቁ",
+		"active_until": "እስከ {date}",
+		"active_from": "ከ{date} ጀምሮ",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "ያልታወቀ",
+		"cause_other": "ሌላ",
+		"cause_technical": "ቴክኒካዊ ችግር",
+		"cause_strike": "የሥራ ማቆም አድማ",
+		"cause_demonstration": "ሰላማዊ ሰልፍ",
+		"cause_accident": "አደጋ",
+		"cause_holiday": "በዓል",
+		"cause_weather": "የአየር ሁኔታ",
+		"cause_maintenance": "ጥገና",
+		"cause_construction": "ግንባታ",
+		"cause_police": "የፖሊስ እንቅስቃሴ",
+		"cause_medical": "የሕክምና ድንገተኛ አደጋ",
+		"cause_equipment": "የመሣሪያ ችግር",
+		"cause_environment": "የአካባቢ ሁኔታ",
+		"cause_personnel": "የሰው ኃይል ችግር",
+		"cause_miscellaneous": "ልዩ ልዩ",
+		"cause_security": "የደህንነት ማስጠንቀቂያ",
+		"effect_no_service": "አገልግሎት የለም",
+		"effect_reduced_service": "የተቀነሰ አገልግሎት",
+		"effect_significant_delays": "ከፍተኛ መዘግየት",
+		"effect_detour": "የመንገድ ማዞሪያ",
+		"effect_additional_service": "ተጨማሪ አገልግሎት",
+		"effect_modified_service": "የተለወጠ አገልግሎት",
+		"effect_other": "ሌላ ተጽዕኖ",
+		"effect_unknown": "ያልታወቀ ተጽዕኖ",
+		"effect_stop_moved": "ማቆሚያ ተዛውሯል",
+		"effect_no_effect": "ተጽዕኖ የለም",
+		"effect_accessibility": "የተደራሽነት ችግር"
 	},
 	"view_stop_information": "የማቆሚያ መረጃ ይመልከቱ",
 	"stop_details": {
-		"view_details": "ዝርዝሮችን ይመልከቱ"
+		"view_details": "ዝርዝሮችን ይመልከቱ",
+		"stop_info": "የማቆሚያ መረጃ"
 	},
 	"language_switcher": {
 		"select_language": "ቋንቋ ይምረጡ: {language}",
 		"available_languages": "የሚገኙ ቋንቋዎች"
 	},
 	"map": {
-		"find_my_location": "ቦታዬን ፈልግ"
+		"find_my_location": "ቦታዬን ፈልግ",
+		"routes_shown": "የሚታዩ መንገዶች",
+		"live_vehicle_count": "{count} በቀጥታ"
 	},
 	"context-menu": {
 		"start_here": "ከዚህ ጀምር",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "ወደ መነሻ ይሂዱ",
 		"go_back": "ወደ ኋላ ይመለሱ"
+	},
+	"trip_details": {
+		"route": "መንገድ",
+		"no_stops": "ለዚህ ጉዞ ምንም የማቆሚያ ሰዓቶች የሉም።",
+		"loading": "የጉዞ ዝርዝሮች በመጫን ላይ...",
+		"live_vehicle": "በቀጥታ · ተሽከርካሪ {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# ማቆሚያ} other {# ማቆሚያዎች}}"
 	},
 	"skip_to_main_content": "ወደ ዋና ይዘቱ ዝለል"
 }

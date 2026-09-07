@@ -30,14 +30,54 @@
 		"trip_itineraries": "여행 여정",
 		"show_steps": "단계 보기",
 		"hide_steps": "단계 숨기기",
+		"options": "옵션",
+		"trip_options": "여행 옵션",
+		"cancel": "취소",
+		"done": "완료",
+		"reset_to_defaults": "기본값으로 재설정",
+		"departure_time": "출발 시간",
+		"departure_date": "출발 날짜",
+		"leave_now": "지금 출발",
+		"depart_at": "출발 시간 지정",
+		"arrive_by": "도착 시간 지정",
+		"wheelchair_accessible": "휠체어 이용 가능",
+		"wheelchair_desc": "휠체어와 이동 보조 기기로 이용할 수 있는 경로를 찾습니다",
+		"wheelchair": "휠체어",
+		"route_optimization": "경로 최적화",
+		"fastest_trip": "최단 시간",
+		"fewest_transfers": "최소 환승",
+		"stay_on_board": "내리지 마세요. 이 차량은 {route} 노선으로 이어서 운행합니다.",
+		"walking_distance": "도보 거리",
+		"max_walking_distance": "최대 도보 거리",
 		"distance_unit": "거리 단위",
 		"unit_auto": "자동 감지",
 		"unit_metric": "미터법 (km, m)",
-		"unit_imperial": "야드파운드법 (mi, ft)"
+		"unit_imperial": "야드파운드법 (mi, ft)",
+		"swap_locations": "출발지와 도착지 바꾸기",
+		"error_code": "오류 코드",
+		"remove_recent_trip": "최근 여행 삭제",
+		"recent_trip": "{from}에서 {to}까지 최근 여행 사용",
+		"recent_searches": "최근 검색",
+		"recents": "최근 기록",
+		"clear_all": "전체 삭제",
+		"request_failed": "여행 계획 서비스에 연결할 수 없습니다. 다시 시도해 주세요.",
+		"invalid_shared_link": "공유된 여행 링크가 올바르지 않습니다. 여행을 다시 계획해 주세요."
 	},
 	"tabs": {
 		"stops-and-stations": "정류장 및 역",
 		"plan_trip": "여행 계획"
+	},
+	"favorites": {
+		"title": "즐겨찾기",
+		"add": "즐겨찾기에 추가",
+		"remove": "즐겨찾기에서 삭제",
+		"clear_all": "전체 삭제",
+		"open_panel": "즐겨찾기 열기",
+		"close_panel": "즐겨찾기 닫기",
+		"empty": "아직 즐겨찾기가 없습니다. 정류장이나 노선의 별표를 눌러 여기에 저장하세요.",
+		"stop_code": "번호",
+		"open_item": "{name} 열기",
+		"remove_item": "즐겨찾기에서 {name} 삭제"
 	},
 	"search": {
 		"placeholder": "정류장, 노선, 장소 검색",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "이용 가능한 노선 목록 보기",
 		"search_for_routes": "노선 검색...",
 		"no_routes_found": "노선을 찾을 수 없습니다",
-		"all_routes": "전체 노선"
+		"all_routes": "전체 노선",
+		"clear": "지우기",
+		"collapse": "검색 접기"
+	},
+	"sheet": {
+		"close": "닫기",
+		"resize_handle": "패널 크기 조절",
+		"snap_full": "전체 높이",
+		"snap_half": "절반 높이",
+		"snap_peek": "접힘"
+	},
+	"survey": {
+		"required_question": "필수 질문",
+		"required_answer": "이 질문은 필수입니다.",
+		"expand": "질문 보기",
+		"collapse": "질문 숨기기",
+		"dismiss": "설문 닫기",
+		"submit": "제출",
+		"next": "다음",
+		"submit_failed": "답변을 보내지 못했습니다. 다시 시도해 주세요."
 	},
 	"header": {
 		"home": "홈",
@@ -88,13 +147,26 @@
 		"close": "닫기"
 	},
 	"arrivals_and_departures": "도착 및 출발",
+	"show_more": "더 보기",
+	"show_less": "접기",
 	"load_more_arrivals": "도착 정보 더 보기",
+	"refresh": "새로고침",
 	"no_arrivals_found_in_next_minutes": "{minutes}분 이내 도착 예정이 없습니다",
 	"no_more_arrivals_in_next_minutes": "앞으로 {minutes}분 이내에 더 이상 도착 예정이 없습니다",
 	"stop": "정류장",
+	"direction_bound": "{direction} 방면",
 	"routes": "노선",
 	"route": "노선",
 	"route_modal_title": "{name}번 노선",
+	"notifications": {
+		"route_load_failed": "이 노선을 불러오지 못했습니다.",
+		"route_shape_failed": "이 노선을 지도에 표시하지 못했습니다.",
+		"route_shape_partial": "이 노선의 일부를 지도에 표시하지 못했습니다. 일부 구간이 빠져 있을 수 있습니다.",
+		"favorite_saved": "즐겨찾기에 추가되었습니다.",
+		"favorite_removed": "즐겨찾기에서 삭제되었습니다.",
+		"tap_to_retry": "다시 시도하려면 누르세요.",
+		"dismiss": "닫기"
+	},
 	"loading": "로딩 중",
 	"arrives": "도착",
 	"NA": "정보 없음",
@@ -105,13 +177,16 @@
 		"secs": "초",
 		"min": "분",
 		"mins": "분",
-		"minutes": "분"
+		"minutes": "분",
+		"min_compact": "{n}분"
 	},
 	"vehicle": {
 		"number": "차량 번호",
 		"data_updated": "데이터 업데이트",
 		"no_real_time_data": "현재 이 차량의 실시간 정보가 없습니다.",
-		"next_stop": "다음 정류장:"
+		"next_stop": "다음 정류장:",
+		"label": "차량",
+		"to_headsign": "{headsign} 방면 차량"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "도착 및 출발"
@@ -150,18 +225,61 @@
 		"no_description": "이 알림에 대한 상세 설명이 없습니다",
 		"page": "페이지",
 		"show": "보기",
-		"hide": "숨기기"
+		"hide": "숨기기",
+		"open_alert": "{severity} 등급 운행 알림 상세 보기: {summary}",
+		"affects_this_stop": "이 정류장 관련 알림",
+		"other_alerts": "기타 알림",
+		"severity_severe": "심각",
+		"severity_warning": "경고",
+		"severity_info": "정보",
+		"cause": "원인",
+		"effect": "영향",
+		"active": "적용 기간",
+		"active_until": "{date}까지",
+		"active_from": "{date}부터",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "알 수 없음",
+		"cause_other": "기타",
+		"cause_technical": "기술적 문제",
+		"cause_strike": "파업",
+		"cause_demonstration": "시위",
+		"cause_accident": "사고",
+		"cause_holiday": "공휴일",
+		"cause_weather": "기상 상황",
+		"cause_maintenance": "정비",
+		"cause_construction": "공사",
+		"cause_police": "경찰 활동",
+		"cause_medical": "응급 의료 상황",
+		"cause_equipment": "장비 문제",
+		"cause_environment": "환경 요인",
+		"cause_personnel": "인력 문제",
+		"cause_miscellaneous": "기타 사유",
+		"cause_security": "보안 경보",
+		"effect_no_service": "운행 중단",
+		"effect_reduced_service": "운행 축소",
+		"effect_significant_delays": "심각한 지연",
+		"effect_detour": "우회 운행",
+		"effect_additional_service": "증편 운행",
+		"effect_modified_service": "운행 변경",
+		"effect_other": "기타 영향",
+		"effect_unknown": "알 수 없는 영향",
+		"effect_stop_moved": "정류장 이전",
+		"effect_no_effect": "영향 없음",
+		"effect_accessibility": "접근성 문제"
 	},
 	"view_stop_information": "정류장 정보 보기",
 	"stop_details": {
-		"view_details": "상세 정보 보기"
+		"view_details": "상세 정보 보기",
+		"stop_info": "정류장 정보"
 	},
 	"language_switcher": {
 		"select_language": "언어 선택: {language}",
 		"available_languages": "사용 가능한 언어"
 	},
 	"map": {
-		"find_my_location": "내 위치 찾기"
+		"find_my_location": "내 위치 찾기",
+		"routes_shown": "표시된 노선",
+		"live_vehicle_count": "실시간 {count}대"
 	},
 	"context-menu": {
 		"start_here": "여기에서 출발",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "홈으로",
 		"go_back": "뒤로 가기"
+	},
+	"trip_details": {
+		"route": "노선",
+		"no_stops": "이 운행의 정류장 시간 정보가 없습니다.",
+		"loading": "운행 정보를 불러오는 중...",
+		"live_vehicle": "실시간 · 차량 {vehicleId}",
+		"collapsed_stops": "{count, plural, other {정류장 #개}}"
 	},
 	"skip_to_main_content": "주요 콘텐츠로 건너뛰기"
 }
