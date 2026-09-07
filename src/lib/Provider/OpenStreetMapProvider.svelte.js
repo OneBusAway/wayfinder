@@ -69,6 +69,7 @@ export default class OpenStreetMapProvider {
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
+		this.pinMarkers = new Set();
 		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || 'positron';
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
@@ -165,7 +166,7 @@ export default class OpenStreetMapProvider {
 			dotColor: options.dotColor ?? null
 		});
 
-		mount(StopMarker, {
+		const component = mount(StopMarker, {
 			target: container,
 			props
 		});
@@ -189,6 +190,7 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 
 		marker.props = props;
+		marker.component = component;
 
 		this.markersMap.set(options.stop.id, marker);
 		return marker;
@@ -216,7 +218,7 @@ export default class OpenStreetMapProvider {
 
 		const container = document.createElement('div');
 
-		mount(TripPlanPinMarker, {
+		const component = mount(TripPlanPinMarker, {
 			target: container,
 			props: {
 				text: text
@@ -234,12 +236,16 @@ export default class OpenStreetMapProvider {
 			this.map
 		);
 
+		marker.component = component;
+		this.pinMarkers.add(marker);
 		return marker;
 	}
 
 	removePinMarker(marker) {
 		if (marker) {
+			this._unmountMarker(marker);
 			marker.remove();
+			this.pinMarkers.delete(marker);
 		}
 	}
 
@@ -430,6 +436,11 @@ export default class OpenStreetMapProvider {
 		if (this.globalInfoWindow) {
 			this.globalInfoWindow.close();
 		}
+		if (this.popupContentComponent) {
+			unmount(this.popupContentComponent);
+		}
+		this.popupContentComponent = null;
+		this.globalInfoWindow = null;
 	}
 
 	removeStopMarker(marker) {
@@ -646,9 +657,17 @@ export default class OpenStreetMapProvider {
 		return this.map.getZoom();
 	}
 
+	_unmountMarker(marker) {
+		if (marker.component) {
+			unmount(marker.component);
+			marker.component = null;
+		}
+	}
+
 	removeMarker(marker) {
-		if (!browser || !this.map || !marker) return;
-		this.map.removeLayer(marker);
+		if (!marker) return;
+		this._unmountMarker(marker);
+		this.map?.removeLayer(marker);
 
 		for (const [stopId, storedMarker] of this.markersMap.entries()) {
 			if (storedMarker === marker) {
@@ -659,11 +678,10 @@ export default class OpenStreetMapProvider {
 	}
 
 	clearAllStopMarkers() {
-		if (!browser || !this.map) return;
-
-		// Clear the main stop markers
+		// Clear the main stop markers and their mounted Svelte components.
 		for (const marker of this.markersMap.values()) {
-			this.map.removeLayer(marker);
+			this._unmountMarker(marker);
+			this.map?.removeLayer(marker);
 		}
 		this.markersMap.clear();
 	}
@@ -706,11 +724,8 @@ export default class OpenStreetMapProvider {
 	 * Creates a polyline from an encoded shape, returning `null` outside the
 	 * browser, before the map is initialized, or when the shape decodes to empty.
 	 *
-	 * Contract note: this method is synchronous (`Polyline|null`), whereas the
-	 * Google provider's createPolyline is async (`Promise<Polyline|null>`)
-	 * because it lazy-loads its geometry library. Both return `null` on decode
-	 * failure; callers that need provider-agnostic behavior should `await` the
-	 * result and guard against `null`.
+	 * This returns a synchronous `Polyline|null` handle, matching the other map
+	 * providers. It returns `null` on decode failure.
 	 */
 	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
@@ -1149,5 +1164,20 @@ export default class OpenStreetMapProvider {
 			south: sw.lat,
 			west: sw.lng
 		};
+	}
+
+	destroy() {
+		this.clearAllStopMarkers();
+		for (const marker of this.pinMarkers) this.removePinMarker(marker);
+		if (!this.map) return;
+		this.removeStopMarkers();
+		this.clearVehicleMarkers();
+		this.clearAllPolylines();
+		this.removeUserLocationMarker();
+		this.cleanupInfoWindow();
+		this.closeContextMenu();
+		this.map.remove?.();
+		this.map = null;
+		this.maplibreLayer = null;
 	}
 }

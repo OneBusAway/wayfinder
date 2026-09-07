@@ -1,4 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { mount, unmount } from 'svelte';
 import OpenStreetMapProvider, {
 	toLeafletPadding
 } from '$lib/Provider/OpenStreetMapProvider.svelte.js';
@@ -918,5 +919,67 @@ describe('toLeafletPadding / fitToPolylines padding', () => {
 				paddingBottomRight: [20, 300]
 			})
 		);
+	});
+});
+
+describe('destroy', () => {
+	test('unmounts and clears the active stop popup before removing the map', () => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		const popup = { close: vi.fn() };
+		const popupComponent = {};
+		provider.map = { remove: vi.fn() };
+		provider.globalInfoWindow = popup;
+		provider.popupContentComponent = popupComponent;
+
+		provider.destroy();
+
+		expect(popup.close).toHaveBeenCalledOnce();
+		expect(unmount).toHaveBeenCalledWith(popupComponent);
+		expect(provider.globalInfoWindow).toBeNull();
+		expect(provider.popupContentComponent).toBeNull();
+	});
+});
+
+describe('mounted marker cleanup', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mount.mockImplementation(() => ({}));
+	});
+
+	test.each(['remove', 'clear', 'destroy'])(
+		'unmounts stop markers exactly once through %s',
+		(path) => {
+			const provider = new OpenStreetMapProvider(vi.fn());
+			provider.map = { getZoom: () => 14, removeLayer: vi.fn(), remove: vi.fn() };
+			provider.L = makeFakeL(makeFakeMarker());
+			const marker = provider.addMarker({
+				stop: { id: 'stop-1' },
+				position: { lat: 47, lng: -122 }
+			});
+			const component = mount.mock.results[0].value;
+			if (path === 'remove') provider.removeMarker(marker);
+			if (path === 'clear') provider.clearAllStopMarkers();
+			provider.destroy();
+			provider.destroy();
+			expect(unmount).toHaveBeenCalledOnce();
+			expect(unmount).toHaveBeenCalledWith(component);
+			expect(provider.markersMap.size).toBe(0);
+		}
+	);
+
+	test.each([true, false])('unmounts pins exactly once (explicit removal: %s)', (removeFirst) => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		provider.map = { remove: vi.fn() };
+		const fakeMarker = { ...makeFakeMarker(), remove: vi.fn() };
+		provider.L = makeFakeL(fakeMarker);
+		const marker = provider.addPinMarker({ lat: 47, lng: -122 }, 'A');
+		const component = mount.mock.results[0].value;
+		expect(provider.pinMarkers.has(marker)).toBe(true);
+		if (removeFirst) provider.removePinMarker(marker);
+		provider.destroy();
+		provider.destroy();
+		expect(unmount).toHaveBeenCalledOnce();
+		expect(unmount).toHaveBeenCalledWith(component);
+		expect(provider.pinMarkers.size).toBe(0);
 	});
 });

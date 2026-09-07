@@ -205,6 +205,7 @@
 
 	onDestroy(() => {
 		drawToken++;
+		mapProvider.resetPadding?.();
 		// Partial-shape warnings auto-dismiss, but clear ours immediately on close
 		// so it doesn't linger over the next view.
 		notifications.dismiss(notificationId);

@@ -6,12 +6,13 @@
  */
 
 /**
- * A map provider instance, as created in MapContainer.svelte. Either the
- * Leaflet/OpenStreetMap implementation or the Google Maps implementation; both
- * expose the same interface (initMap, addMarker, panTo, flyTo, ...).
+ * A map provider instance, as created in MapContainer.svelte. Implementations
+ * expose standard `{lat,lng}` coordinates, WGS84 bounds or `null`, synchronous
+ * marker/polyline handles, and an idempotent `destroy()` lifecycle method.
  *
  * @typedef {import('./Provider/OpenStreetMapProvider.svelte.js').default
- * 	| import('./Provider/GoogleMapProvider.svelte.js').default} MapProvider
+ * 	| import('./Provider/GoogleMapProvider.svelte.js').default
+ * 	| import('./Provider/ArcGISMapProvider.svelte.js').default} MapProvider
  */
 
 /**

@@ -53,6 +53,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@arcgis/core": "4.33.14",
 		"@fortawesome/free-regular-svg-icons": "^6.6.0",
 		"@googlemaps/js-api-loader": "^1.16.8",
 		"@maplibre/maplibre-gl-leaflet": "^0.0.22",
