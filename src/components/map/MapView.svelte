@@ -205,7 +205,7 @@
 		}
 
 		const stopsForLocation = await response.json();
-		stopsCache.set(key, stopsForLocation);
+		if (!isDestroyed) stopsCache.set(key, stopsForLocation);
 
 		return stopsForLocation;
 	}
@@ -235,6 +235,8 @@
 				await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
 			}
 
+			if (isDestroyed) return;
+
 			debouncedLoadMarkers = debounce(async () => {
 				if (isDestroyed || mapMode !== Modes.NORMAL || !mapInstance) {
 					return;
@@ -262,7 +264,7 @@
 
 	async function loadStopsAndAddMarkers(lat, lng, firstCall = false, zoomLevel = 15) {
 		const stopsData = await loadStopsForLocation(lat, lng, zoomLevel, firstCall);
-		if (!stopsData) return;
+		if (isDestroyed || !stopsData) return;
 		const newStops = stopsData.data.list;
 		const routeReference = stopsData.data.references.routes || [];
 
@@ -292,7 +294,7 @@
 
 	// Batch operation to add multiple markers efficiently
 	function batchAddMarkers(stops) {
-		if (!mapInstance || mapMode !== Modes.NORMAL) {
+		if (isDestroyed || !mapInstance || mapMode !== Modes.NORMAL) {
 			return;
 		}
 
@@ -310,7 +312,7 @@
 		// the frame runs so a pending batch cannot repaint stops after trip mode clears them.
 		pendingMarkerBatch = requestAnimationFrame(() => {
 			pendingMarkerBatch = null;
-			if (!mapInstance || mapMode !== Modes.NORMAL) {
+			if (isDestroyed || !mapInstance || mapMode !== Modes.NORMAL) {
 				return;
 			}
 			stopsToAdd.forEach((s) => addMarker(s));
@@ -318,7 +320,7 @@
 	}
 
 	function addMarker(s) {
-		if (!mapInstance || mapMode !== Modes.NORMAL) {
+		if (isDestroyed || !mapInstance || mapMode !== Modes.NORMAL) {
 			return;
 		}
 

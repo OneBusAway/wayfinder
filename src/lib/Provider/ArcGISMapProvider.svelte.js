@@ -34,22 +34,6 @@ function chooseStopIcon(stop, requestedIcon) {
 	return prioritizedRouteTypeForDisplay(RouteType.UNKNOWN);
 }
 
-function colorWithOpacity(color, opacity = 1) {
-	const alpha = Number.isFinite(opacity) ? Math.max(0, Math.min(1, opacity)) : 1;
-	if (Array.isArray(color)) return [...color.slice(0, 3), alpha];
-	if (typeof color !== 'string') return color;
-
-	const hex = color.replace('#', '');
-	const expanded = hex.length === 3 ? [...hex].map((part) => part + part).join('') : hex;
-	if (!/^[0-9a-f]{6}$/i.test(expanded)) return color;
-	return [
-		Number.parseInt(expanded.slice(0, 2), 16),
-		Number.parseInt(expanded.slice(2, 4), 16),
-		Number.parseInt(expanded.slice(4, 6), 16),
-		alpha
-	];
-}
-
 function toArcGISPadding(padding) {
 	if (padding == null) return { top: 50, right: 50, bottom: 50, left: 50 };
 	if (typeof padding === 'number') {
@@ -106,6 +90,7 @@ export default class ArcGISMapProvider {
 		await import('./../../assets/styles/arcgis-map.css');
 		const modules = await Promise.all([
 			import('@arcgis/core/Map.js'),
+			import('@arcgis/core/Color.js'),
 			import('@arcgis/core/views/MapView.js'),
 			import('@arcgis/core/Basemap.js'),
 			import('@arcgis/core/layers/VectorTileLayer.js'),
@@ -124,6 +109,7 @@ export default class ArcGISMapProvider {
 		]);
 		[
 			{ default: this.Map },
+			{ default: this.Color },
 			{ default: this.MapView },
 			{ default: this.Basemap },
 			{ default: this.VectorTileLayer },
@@ -685,36 +671,38 @@ export default class ArcGISMapProvider {
 		});
 	}
 
+	/** Convert SDK-supported colors; CIM uses byte alpha, simple symbols use 0–1. */
+	_colorWithOpacity(color, opacity = 1, cim = false) {
+		const rgba = new this.Color(color).toRgba();
+		rgba[3] = (Number.isFinite(opacity) ? Math.max(0, Math.min(1, opacity)) : 1) * (cim ? 255 : 1);
+		return rgba;
+	}
+
 	_createRouteSymbol(color, weight, opacity, withArrow, dashArray) {
-		const symbolColor = colorWithOpacity(color, opacity);
+		const symbolColor = this._colorWithOpacity(color, opacity);
 		const dashTemplate = String(dashArray ?? '')
 			.split(/[ ,]+/)
 			.map(Number)
 			.filter((value) => Number.isFinite(value) && value > 0);
 		if (!withArrow && !dashTemplate.length)
 			return new this.SimpleLineSymbol({ color: symbolColor, width: weight, style: 'solid' });
-		const arrowColor = colorWithOpacity(polylineArrowColor(color), opacity);
+		const arrowColor = this._colorWithOpacity(polylineArrowColor(color), opacity, true);
 		return new this.CIMSymbol({
 			data: {
 				type: 'CIMSymbolReference',
-				data: {
+				symbol: {
 					type: 'CIMLineSymbol',
+					// CIM draws layers from last to first; keep arrows above the route stroke.
 					symbolLayers: [
-						{
-							type: 'CIMSolidStroke',
-							enable: true,
-							width: weight,
-							color: symbolColor,
-							...(dashTemplate.length
-								? { effects: [{ type: 'CIMGeometricEffectDashes', dashTemplate }] }
-								: {})
-						},
 						{
 							type: 'CIMVectorMarker',
 							enable: withArrow,
+							size: 12,
+							frame: { xmin: -6, ymin: -6, xmax: 6, ymax: 6 },
 							markerPlacement: {
 								type: 'CIMMarkerPlacementAlongLineSameSize',
 								placementTemplate: [50],
+								angleToLine: true,
 								endings: 'WithMarkers'
 							},
 							markerGraphics: [
@@ -723,10 +711,10 @@ export default class ArcGISMapProvider {
 									geometry: {
 										rings: [
 											[
-												[0, 6],
-												[6, -6],
+												[6, 0],
 												[-6, -6],
-												[0, 6]
+												[-6, 6],
+												[6, 0]
 											]
 										]
 									},
@@ -736,6 +724,15 @@ export default class ArcGISMapProvider {
 									}
 								}
 							]
+						},
+						{
+							type: 'CIMSolidStroke',
+							enable: true,
+							width: weight,
+							color: this._colorWithOpacity(color, opacity, true),
+							...(dashTemplate.length
+								? { effects: [{ type: 'CIMGeometricEffectDashes', dashTemplate }] }
+								: {})
 						}
 					]
 				}
@@ -773,7 +770,7 @@ export default class ArcGISMapProvider {
 			graphic._casing = new this.Graphic({
 				geometry,
 				symbol: new this.SimpleLineSymbol({
-					color: colorWithOpacity('#ffffff', 0.95),
+					color: this._colorWithOpacity('#ffffff', 0.95),
 					width: weight + 5,
 					style: 'solid'
 				})
@@ -912,7 +909,7 @@ export default class ArcGISMapProvider {
 		let geographic = extent;
 		try {
 			if (!extent.spatialReference?.isWGS84) {
-				geographic = this.webMercatorUtils.isWebMercator(extent)
+				geographic = extent.spatialReference?.isWebMercator
 					? this.webMercatorUtils.webMercatorToGeographic(extent)
 					: this.projection.project(extent, { wkid: 4326 });
 			}
