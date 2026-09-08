@@ -21,14 +21,25 @@ vi.mock('$lib/agencyFilter.js', () => ({
 
 import { groupStopTimesByHour } from '$lib/scheduleForStop.js';
 
+const region = vi.hoisted(() => ({ timeZone: 'America/Los_Angeles' }));
+vi.mock('$env/dynamic/public', () => ({
+	env: {
+		get PUBLIC_OBA_TIMEZONE() {
+			return region.timeZone;
+		}
+	}
+}));
+
 let GET;
 
-function stopResponse(routeId = 'MTS_120', scheduleDate = 1787554800000) {
+// schedule-for-stop uses entry.date, never schedule-for-route's entry.scheduleDate.
+function stopResponse(routeId = 'MTS_120', date = 1787554800000) {
 	return {
 		code: 200,
 		data: {
 			entry: {
-				scheduleDate,
+				date,
+				stopId: 'MTS_12434',
 				stopRouteSchedules: [
 					{
 						routeId,
@@ -91,6 +102,9 @@ describe('GET /api/oba/schedule-for-stop/[stopId]', () => {
 	beforeEach(async () => {
 		vi.resetModules();
 		vi.resetAllMocks();
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date('2026-08-24T15:00:00Z'));
+		region.timeZone = 'America/Los_Angeles';
 		({ GET } = await import('../../routes/api/oba/schedule-for-stop/[stopId]/+server.js'));
 		mockFilterByRouteId.mockImplementation((schedules) => schedules);
 		mockGetAgencyFilter.mockReturnValue(null);
@@ -152,28 +166,103 @@ describe('GET /api/oba/schedule-for-stop/[stopId]', () => {
 		}
 	});
 
-	it('separates routes and uses the upstream service day for undated requests', async () => {
+	it('reuses undated headsigns despite changing wall-clock entry.date values', async () => {
+		mockRetrieve.mockImplementation(() => Promise.resolve(stopResponse('MTS_120', Date.now())));
 		mockScheduleForRouteRetrieve.mockResolvedValue(routeResponse());
-		mockRetrieve.mockImplementation(() => Promise.resolve(stopResponse()));
 		await request(null);
-		await request(null);
-		mockRetrieve.mockResolvedValueOnce(stopResponse('MTS_3'));
-		await request(null);
-		mockRetrieve.mockResolvedValueOnce(stopResponse('MTS_120', 1787641200000));
-		await request(null);
-		expect(mockScheduleForRouteRetrieve.mock.calls).toEqual([
-			['MTS_120', {}],
-			['MTS_3', {}],
-			['MTS_120', {}]
+		vi.setSystemTime(new Date('2026-08-24T16:17:30Z'));
+		await request(null, 'MTS_other');
+		await request('2026-08-24');
+		expect(mockScheduleForRouteRetrieve).toHaveBeenCalledTimes(1);
+		expect(mockScheduleForRouteRetrieve).toHaveBeenCalledWith('MTS_120', { date: '2026-08-24' });
+		expect(mockRetrieve.mock.calls.map(([, params]) => params)).toEqual([
+			{ date: '2026-08-24' },
+			{ date: '2026-08-24' },
+			{ date: '2026-08-24' }
 		]);
 	});
 
-	it('does not cache an undated response with no service date', async () => {
-		mockRetrieve.mockImplementation(() => Promise.resolve(stopResponse('MTS_120', null)));
+	it('separates routes and rolls the undated cache over at region midnight, not UTC midnight', async () => {
+		mockScheduleForRouteRetrieve.mockResolvedValue(routeResponse());
+		mockRetrieve.mockImplementation(() => Promise.resolve(stopResponse()));
+		vi.setSystemTime(new Date('2026-08-25T00:00:00Z'));
+		await request(null);
+		vi.setSystemTime(new Date('2026-08-25T06:59:59Z'));
+		await request(null);
+		mockRetrieve.mockResolvedValueOnce(stopResponse('MTS_3'));
+		await request(null);
+		vi.setSystemTime(new Date('2026-08-25T07:00:00Z'));
+		await request(null);
+		expect(mockScheduleForRouteRetrieve.mock.calls).toEqual([
+			['MTS_120', { date: '2026-08-24' }],
+			['MTS_3', { date: '2026-08-24' }],
+			['MTS_120', { date: '2026-08-25' }]
+		]);
+	});
+
+	it.each([
+		[
+			'2026-03-08T09:59:59Z',
+			'2026-03-08T10:00:00Z',
+			'2026-03-09T07:00:00Z',
+			'2026-03-08',
+			'2026-03-09'
+		],
+		[
+			'2026-11-01T08:59:59Z',
+			'2026-11-01T09:00:00Z',
+			'2026-11-02T08:00:00Z',
+			'2026-11-01',
+			'2026-11-02'
+		]
+	])(
+		'keeps the service date stable across DST at %s',
+		async (before, after, nextMidnight, date, nextDate) => {
+			mockRetrieve.mockImplementation(() => Promise.resolve(stopResponse()));
+			mockScheduleForRouteRetrieve.mockResolvedValue(routeResponse());
+			for (const now of [before, after, nextMidnight]) {
+				vi.setSystemTime(new Date(now));
+				await request(null);
+			}
+			expect(mockScheduleForRouteRetrieve.mock.calls).toEqual([
+				['MTS_120', { date }],
+				['MTS_120', { date: nextDate }]
+			]);
+		}
+	);
+
+	it('uses the configured region date east of UTC', async () => {
+		region.timeZone = 'Asia/Kolkata';
+		vi.setSystemTime(new Date('2026-08-24T18:30:00Z'));
+		mockRetrieve.mockResolvedValue(stopResponse());
+		mockScheduleForRouteRetrieve.mockResolvedValue(routeResponse());
+		await request(null);
+		expect(mockRetrieve).toHaveBeenCalledWith('MTS_12434', { date: '2026-08-25' });
+		expect(mockScheduleForRouteRetrieve).toHaveBeenCalledWith('MTS_120', { date: '2026-08-25' });
+	});
+
+	it('pins both upstream requests to the same date when the stop lookup crosses midnight', async () => {
+		vi.setSystemTime(new Date('2026-08-25T06:59:59Z'));
+		mockRetrieve.mockImplementation(async () => {
+			vi.setSystemTime(new Date('2026-08-25T07:00:01Z'));
+			return stopResponse();
+		});
+		mockScheduleForRouteRetrieve.mockResolvedValue(routeResponse());
+		await request(null);
+		expect(mockRetrieve).toHaveBeenCalledWith('MTS_12434', { date: '2026-08-24' });
+		expect(mockScheduleForRouteRetrieve).toHaveBeenCalledWith('MTS_120', { date: '2026-08-24' });
+	});
+
+	it('caches undated requests even when the upstream date field is absent', async () => {
+		mockRetrieve.mockImplementation(() => {
+			const response = stopResponse();
+			delete response.data.entry.date;
+			return Promise.resolve(response);
+		});
 		mockScheduleForRouteRetrieve.mockResolvedValue(routeResponse());
 		await request(null);
 		await request(null);
-		expect(mockScheduleForRouteRetrieve).toHaveBeenCalledTimes(2);
+		expect(mockScheduleForRouteRetrieve).toHaveBeenCalledTimes(1);
 	});
 
 	it('refreshes cached headsigns after 24 hours', async () => {

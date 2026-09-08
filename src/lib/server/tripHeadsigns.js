@@ -6,8 +6,8 @@ const CACHE_TTL = 24 * 60 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 100;
 const cache = new Map();
 
-async function fetchTripHeadsigns(routeId, queryParams) {
-	const response = await oba.scheduleForRoute.retrieve(routeId, queryParams);
+async function fetchTripHeadsigns(routeId, date) {
+	const response = await oba.scheduleForRoute.retrieve(routeId, { date });
 	const trips = response?.data?.references?.trips;
 	if (response?.code !== 200 || !Array.isArray(trips)) {
 		throw new Error('Invalid schedule-for-route response');
@@ -22,12 +22,11 @@ async function fetchTripHeadsigns(routeId, queryParams) {
 	);
 }
 
-export function getTripHeadsigns(routeId, queryParams, scheduleDate) {
-	// Use the upstream service date for requests without an explicit date, never
-	// a persistent "today" key that could return yesterday's trips after midnight.
-	const date = queryParams.date || scheduleDate;
-	if (date == null) return fetchTripHeadsigns(routeId, queryParams);
-
+/**
+ * Reuse route headsigns for the explicit YYYY-MM-DD service date used by the
+ * stop request. The caller resolves undated requests in the region's timezone.
+ */
+export function getTripHeadsigns(routeId, date) {
 	const key = JSON.stringify([routeId, date]);
 	const now = Date.now();
 	for (const [cacheKey, entry] of cache) {
@@ -43,7 +42,7 @@ export function getTripHeadsigns(routeId, queryParams, scheduleDate) {
 	while (cache.size >= MAX_CACHE_ENTRIES) cache.delete(cache.keys().next().value);
 	const entry = { expiresAt: now + CACHE_TTL, promise: null };
 	// Cache the promise too, so simultaneous requests for nearby stops share work.
-	entry.promise = fetchTripHeadsigns(routeId, queryParams).catch((error) => {
+	entry.promise = fetchTripHeadsigns(routeId, date).catch((error) => {
 		if (cache.get(key) === entry) cache.delete(key);
 		throw error;
 	});
