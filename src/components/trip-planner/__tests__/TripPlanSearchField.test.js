@@ -149,7 +149,7 @@ describe('TripPlanSearchField', () => {
 			expect(mockOnSelect).toHaveBeenCalledWith(result);
 		});
 
-		it('result buttons are focusable', async () => {
+		it('keeps focus on the input while arrowing through options', async () => {
 			const results = [
 				{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' },
 				{ displayText: 'University District, Seattle, WA, USA', name: 'University District' }
@@ -157,22 +157,57 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, results };
 			render(TripPlanSearchField, { props });
 
-			const firstResult = screen.getByText('Capitol Hill, Seattle, WA, USA');
-			const secondResult = screen.getByText('University District, Seattle, WA, USA');
+			const input = screen.getByRole('combobox');
+			input.focus();
+			await user.keyboard('{ArrowDown}');
 
-			// Results should be focusable
-			expect(firstResult).toBeInTheDocument();
-			expect(secondResult).toBeInTheDocument();
+			// The combobox pattern moves the selection with aria-activedescendant
+			// rather than moving focus, so the input keeps it throughout.
+			expect(input).toHaveFocus();
+			expect(input).toHaveAttribute('aria-activedescendant', 'from-location-input-option-0');
 
-			// Should be able to focus on results
-			firstResult.focus();
-			expect(firstResult).toHaveFocus();
-
-			secondResult.focus();
-			expect(secondResult).toHaveFocus();
+			await user.keyboard('{ArrowDown}');
+			expect(input).toHaveFocus();
+			expect(input).toHaveAttribute('aria-activedescendant', 'from-location-input-option-1');
 		});
 
-		it('selects result with Enter key', async () => {
+		it('wraps around at both ends of the list', async () => {
+			const results = [
+				{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' },
+				{ displayText: 'University District, Seattle, WA, USA', name: 'University District' }
+			];
+			const props = { ...defaultProps, results };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByRole('combobox');
+			input.focus();
+
+			// ArrowUp from the input jumps to the last option.
+			await user.keyboard('{ArrowUp}');
+			expect(input).toHaveAttribute('aria-activedescendant', 'from-location-input-option-1');
+
+			// And past the end it wraps back to the first.
+			await user.keyboard('{ArrowDown}');
+			expect(input).toHaveAttribute('aria-activedescendant', 'from-location-input-option-0');
+		});
+
+		it('closes the list on Escape without clearing the query', async () => {
+			const results = [{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' }];
+			const props = { ...defaultProps, place: 'Capitol', results };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByRole('combobox');
+			expect(input).toHaveAttribute('aria-expanded', 'true');
+
+			input.focus();
+			await user.keyboard('{Escape}');
+
+			expect(input).toHaveAttribute('aria-expanded', 'false');
+			expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+			expect(input).toHaveValue('Capitol');
+		});
+
+		it('selects the active option with Enter key', async () => {
 			const result = {
 				displayText: 'Capitol Hill, Seattle, WA, USA',
 				name: 'Capitol Hill'
@@ -180,11 +215,27 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, results: [result] };
 			render(TripPlanSearchField, { props });
 
-			const resultButton = screen.getByText('Capitol Hill, Seattle, WA, USA');
-			resultButton.focus();
-			await user.keyboard('{Enter}');
+			const input = screen.getByRole('combobox');
+			input.focus();
+			await user.keyboard('{ArrowDown}{Enter}');
 
 			expect(mockOnSelect).toHaveBeenCalledWith(result);
+		});
+
+		it('does not select on Enter when no option is active', async () => {
+			const result = {
+				displayText: 'Capitol Hill, Seattle, WA, USA',
+				name: 'Capitol Hill'
+			};
+			const props = { ...defaultProps, results: [result] };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByRole('combobox');
+			input.focus();
+			await user.keyboard('{Enter}');
+
+			// Enter belongs to the form until the user has arrowed into the list.
+			expect(mockOnSelect).not.toHaveBeenCalled();
 		});
 	});
 
@@ -207,13 +258,58 @@ describe('TripPlanSearchField', () => {
 			expect(clearButton).toHaveAttribute('type', 'button');
 		});
 
-		it('autocomplete results are keyboard accessible', () => {
+		it('options are not tab stops', () => {
 			const results = [{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' }];
 			const props = { ...defaultProps, results };
 			render(TripPlanSearchField, { props });
 
-			const resultButton = screen.getByText('Capitol Hill, Seattle, WA, USA');
-			expect(a11yHelpers.isFocusable(resultButton)).toBe(true);
+			// Options must stay out of the tab sequence: the combobox owns the
+			// keyboard and points at them with aria-activedescendant instead.
+			const option = screen.getByRole('option');
+			expect(option).not.toHaveAttribute('tabindex');
+			expect(a11yHelpers.isFocusable(option)).toBe(false);
+		});
+
+		it('wires the combobox to its listbox', async () => {
+			const results = [
+				{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' },
+				{ displayText: 'University District, Seattle, WA, USA', name: 'University District' }
+			];
+			const props = { ...defaultProps, results };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByRole('combobox');
+			const listbox = screen.getByRole('listbox');
+
+			expect(input).toHaveAttribute('aria-autocomplete', 'list');
+			expect(input).toHaveAttribute('aria-expanded', 'true');
+			expect(input).toHaveAttribute('aria-controls', listbox.id);
+			expect(listbox.id).toBe('from-location-input-listbox');
+		});
+
+		it('reports collapsed state when there are no results', () => {
+			render(TripPlanSearchField, { props: defaultProps });
+
+			const input = screen.getByRole('combobox');
+			expect(input).toHaveAttribute('aria-expanded', 'false');
+			expect(input).not.toHaveAttribute('aria-activedescendant');
+		});
+
+		it('marks only the active option as selected', async () => {
+			const results = [
+				{ displayText: 'Capitol Hill, Seattle, WA, USA', name: 'Capitol Hill' },
+				{ displayText: 'University District, Seattle, WA, USA', name: 'University District' }
+			];
+			const props = { ...defaultProps, results };
+			render(TripPlanSearchField, { props });
+
+			const input = screen.getByRole('combobox');
+			input.focus();
+			await user.keyboard('{ArrowDown}');
+
+			const options = screen.getAllByRole('option');
+			expect(options[0]).toHaveAttribute('aria-selected', 'true');
+			expect(options[1]).toHaveAttribute('aria-selected', 'false');
 		});
 
 		it('has proper semantic structure', () => {
@@ -224,13 +320,12 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, results };
 			render(TripPlanSearchField, { props });
 
-			// Results should be in a list
-			const resultsList = screen.getByRole('list', { hidden: true });
-			expect(resultsList).toBeInTheDocument();
+			// Results live in a listbox, one option per result.
+			const listbox = screen.getByRole('listbox');
+			expect(listbox).toBeInTheDocument();
 
-			// Each result should be a button within the list
-			const resultButtons = screen.getAllByRole('button');
-			expect(resultButtons).toHaveLength(2); // Excluding clear button which is conditional
+			const options = screen.getAllByRole('option');
+			expect(options).toHaveLength(2);
 		});
 
 		it('supports screen readers with proper labeling', () => {
@@ -248,8 +343,7 @@ describe('TripPlanSearchField', () => {
 			const props = { ...defaultProps, results: [] };
 			render(TripPlanSearchField, { props });
 
-			const resultsList = screen.queryByRole('list', { hidden: true });
-			expect(resultsList).not.toBeInTheDocument();
+			expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 		});
 
 		it('handles null/undefined results', () => {
