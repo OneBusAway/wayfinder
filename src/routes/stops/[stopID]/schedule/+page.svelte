@@ -3,7 +3,7 @@
 	import RouteScheduleTable from '$components/schedule-for-stop/RouteScheduleTable.svelte';
 	import StopPageHeader from '$components/stops/StopPageHeader.svelte';
 	import StandalonePage from '$components/StandalonePage.svelte';
-	import { msToTimeString } from '$lib/dateTimeFormat.js';
+	import { groupStopTimesByHour } from '$lib/scheduleForStop.js';
 	import Accordion from '$components/containers/Accordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import { Datepicker } from 'flowbite-svelte';
@@ -80,7 +80,10 @@
 			let stopRouteDirectionSchedules = routeSchedule.stopRouteDirectionSchedules;
 
 			stopRouteDirectionSchedules.forEach((directionSchedule) => {
-				const stopTimesGroupedByHour = groupStopTimesByHour(directionSchedule.scheduleStopTimes);
+				const stopTimesGroupedByHour = groupStopTimesByHour(
+					directionSchedule.scheduleStopTimes,
+					directionSchedule.tripHeadsign
+				);
 				const routeName = getRouteName(routeId, directionSchedule.tripHeadsign);
 
 				schedulesMap.set(routeName, {
@@ -94,19 +97,6 @@
 	function getRouteName(routeId, tripHeadsign) {
 		const route = routeReference.get(routeId);
 		return `${route.shortName ?? route.longName} - ${tripHeadsign}`;
-	}
-
-	function groupStopTimesByHour(stopTimes) {
-		const grouped = {};
-		for (let stopTime of stopTimes) {
-			const date = new Date(stopTime.arrivalTime);
-			const hour = date.getHours();
-			if (!grouped[hour]) grouped[hour] = [];
-			grouped[hour].push({
-				arrivalTime: msToTimeString(stopTime.arrivalTime)
-			});
-		}
-		return grouped;
 	}
 
 	function toggleAllRoutes() {
