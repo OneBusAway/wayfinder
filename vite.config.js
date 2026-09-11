@@ -40,7 +40,8 @@ export default defineConfig({
 		},
 		environment: 'jsdom',
 		env: {
-			TZ: 'UTC'
+			TZ: 'UTC',
+			LC_ALL: 'en_US.UTF-8'
 		},
 		setupFiles: ['./vitest-setup.js'],
 		globals: true
