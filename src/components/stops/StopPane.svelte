@@ -15,7 +15,7 @@
 	import analytics from '$lib/Insights';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
-	import { filterDeparted, makeKey } from '$lib/arrivalFiltering';
+	import { collapseLayovers, filterDeparted, makeKey } from '$lib/arrivalFiltering';
 	import { fade } from 'svelte/transition';
 
 	/**
@@ -49,7 +49,7 @@
 
 	// Seed from any server-rendered response so the standalone page shows arrivals
 	// immediately instead of flashing the first-load skeleton.
-	let arrivalsAndDepartures = $state(arrivalsAndDeparturesResponse?.data?.entry);
+	let arrivalsAndDepartures = $state(seedArrivals(arrivalsAndDeparturesResponse?.data?.entry));
 	let error = $state();
 	// Seed alerts from the same server-rendered response so they show on first
 	// render instead of waiting for the initial client fetch to complete.
@@ -94,6 +94,19 @@
 	 * @returns {Promise<number|null>} the number of arrivals fetched, or `null`
 	 * when the request was aborted or failed (count is then unknown).
 	 */
+	/**
+	 * Applies the same row-level cleanup to a server-rendered entry that loadData
+	 * applies to fetched ones, so the seeded first paint never shows a layover
+	 * pair that the first client poll would immediately collapse.
+	 */
+	function seedArrivals(entry) {
+		if (!entry) return entry;
+		return {
+			...entry,
+			arrivalsAndDepartures: collapseLayovers(entry.arrivalsAndDepartures || [])
+		};
+	}
+
 	async function loadData(stopID) {
 		// Cancel the previous request if it exists
 		if (abortController) {
@@ -119,7 +132,7 @@
 			arrivalsAndDeparturesResponse = data;
 			const entry = data.data.entry;
 			const rawArrivals = entry.arrivalsAndDepartures || [];
-			const filtered = filterDeparted(rawArrivals, Date.now());
+			const filtered = collapseLayovers(filterDeparted(rawArrivals, Date.now()));
 			arrivalsAndDepartures = { ...entry, arrivalsAndDepartures: filtered };
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
 			error = null; // Clear previous errors if successful

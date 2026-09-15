@@ -54,3 +54,45 @@ export function filterDeparted(arrivals, now) {
 		return eta >= 0;
 	});
 }
+
+/**
+ * True when `departure` is the same vehicle beginning the next trip of its
+ * block immediately after finishing `arrival`'s trip at this stop.
+ *
+ * "Next trip" is pinned to blockTripSequence + 1 so a vehicle on a short route
+ * that revisits the stop later in the window (trip N+2, N+3, ...) is not
+ * merged with an unrelated earlier arrival.
+ */
+function isLayoverContinuation(arrival, departure) {
+	return (
+		departure !== arrival &&
+		Boolean(arrival.vehicleId) &&
+		departure.vehicleId === arrival.vehicleId &&
+		departure.serviceDate === arrival.serviceDate &&
+		arrival.stopSequence === arrival.totalStopsInTrip - 1 &&
+		departure.stopSequence === 0 &&
+		departure.blockTripSequence === arrival.blockTripSequence + 1
+	);
+}
+
+/**
+ * Collapses layover pairs: when a vehicle ends one trip at this stop and
+ * begins its next trip here, the API returns two rows for one parked bus --
+ * the arrival on the finishing trip's final stop and the departure on the
+ * next trip's first stop. Drops the arrival row and keeps the departure the
+ * rider can actually board.
+ *
+ * Only adjoining trips of the same vehicle (consecutive blockTripSequence on
+ * the same service date) are merged; a vehicle that returns to the stop later
+ * on a short route keeps every one of its visits.
+ *
+ * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
+ * @returns {Array<object>} Arrivals with layover arrival rows removed
+ */
+export function collapseLayovers(arrivals) {
+	if (!arrivals || arrivals.length === 0) return [];
+
+	return arrivals.filter(
+		(arrival) => !arrivals.some((other) => isLayoverContinuation(arrival, other))
+	);
+}
