@@ -6,7 +6,7 @@
 	import { browser } from '$app/environment';
 	import { t } from 'svelte-i18n';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faRightLeft } from '@fortawesome/free-solid-svg-icons';
+	import { faRightLeft, faClockRotateLeft } from '@fortawesome/free-solid-svg-icons';
 	import {
 		tripOptions,
 		showTripOptionsModal,
@@ -20,6 +20,9 @@
 	import { swapTripLocations, clearTripPlanPins } from '$lib/tripPlanUtils';
 	import { recentTrips } from '$stores/recentTripsStore';
 	import RecentTripsList from './RecentTripsList.svelte';
+	import { replaceState } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { applyTripParams, removeTripParams } from '$lib/urlState';
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
@@ -38,6 +41,9 @@
 	let loading = $state(false);
 	let fromRequestId = 0;
 	let toRequestId = 0;
+	// Recent trips stay behind a compact control so the plan form doesn't grow
+	// a tall history list under From/To (see #577).
+	let showRecentTrips = $state(false);
 
 	async function fetchAutocompleteResults(query) {
 		const response = await fetch(`/api/oba/place-suggestions?query=${encodeURIComponent(query)}`);
@@ -81,6 +87,10 @@
 	}
 
 	async function handleSearchInput(query, isFrom) {
+		// Retyping a field starts a new trip, so drop any prior results/empty-state
+		// (and the parent's hasPlanned flag) instead of letting "No itineraries
+		// found" linger under the form while the rider edits.
+		clearTripItineraries();
 		if (query.trim() === '') {
 			if (isFrom) fromResults = [];
 			else toResults = [];
@@ -148,6 +158,7 @@
 			}
 		}
 		clearTripItineraries();
+		clearTripUrl();
 	}
 
 	function swapLocations() {
@@ -170,13 +181,20 @@
 		toMarker = result.toMarker;
 	}
 
+	// Always resolves to an OTP-response-shaped object ({ plan } or { error }),
+	// never null. A shared link recipient has no context to recover from a
+	// silent failure, so every failure path here (bad coordinates, network
+	// error, non-2xx response) is surfaced as an { error } result instead of
+	// being swallowed — the caller can then always call handleTripPlan and let
+	// the itinerary modal show a message rather than leaving a blank screen.
 	async function fetchTripPlan(from, to) {
 		const fromValidation = validateCoordinates(from);
 		const toValidation = validateCoordinates(to);
 
 		if (!fromValidation.valid || !toValidation.valid) {
-			console.error('Invalid coordinates:', fromValidation.error || toValidation.error);
-			return null;
+			const message = fromValidation.error || toValidation.error;
+			console.error('Invalid coordinates:', message);
+			return { error: { id: 'INVALID_COORDINATES', msg: $t('trip-planner.request_failed') } };
 		}
 
 		try {
@@ -195,7 +213,34 @@
 			return data;
 		} catch (error) {
 			console.error(error.message);
-			return null;
+			return { error: { id: 'REQUEST_FAILED', msg: $t('trip-planner.request_failed') } };
+		}
+	}
+
+	// Reflect the planned trip in the URL so it can be copied and shared. Uses
+	// replaceState to keep the shareable link current without stacking history.
+	// Guarded: replaceState throws if called before SvelteKit's router has
+	// initialized, and failing to update the shareable link should never break
+	// the actual trip the user just planned.
+	function syncTripUrl() {
+		if (!browser) return;
+		try {
+			const url = new URL($page.url);
+			applyTripParams(url, { selectedFrom, selectedTo, fromPlace, toPlace });
+			replaceState(url, {});
+		} catch (e) {
+			console.warn('Failed to update shareable trip URL:', e);
+		}
+	}
+
+	function clearTripUrl() {
+		if (!browser) return;
+		try {
+			const url = new URL($page.url);
+			removeTripParams(url);
+			replaceState(url, {});
+		} catch (e) {
+			console.warn('Failed to clear shareable trip URL:', e);
 		}
 	}
 
@@ -218,12 +263,15 @@
 			fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
 			toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
 
+			// fetchTripPlan always resolves (never null/throws), so the itinerary
+			// modal opens either with results or a visible error — a shared-link
+			// recipient never lands on a blank, dead-end map.
 			const data = await fetchTripPlan(selectedFrom, selectedTo);
+			handleTripPlan({ data });
 
-			if (data) {
-				handleTripPlan({ data });
+			if (!data.error) {
+				syncTripUrl();
 
-				// Save to recent trips
 				try {
 					recentTrips.addTrip({
 						fromPlace,
@@ -235,6 +283,8 @@
 					console.warn('Failed to save trip to recent history:', e);
 				}
 			}
+		} catch (error) {
+			console.error('Unexpected error while planning trip:', error);
 		} finally {
 			loading = false;
 		}
@@ -277,6 +327,38 @@
 		}
 	}
 
+	// Restore a shared trip from the URL: hydrate the form, drop the pins, and run
+	// the search so the recipient lands on the same itinerary. Wrapped in
+	// try/catch: this runs from a window event with no caller to report to, so a
+	// malformed detail payload must not become an unhandled rejection — planTrip
+	// itself already can't throw, but this also guards the destructuring above it.
+	async function handleLoadSharedTrip(e) {
+		try {
+			const { selectedFrom: from, selectedTo: to, fromPlace: fp, toPlace: tp } = e.detail;
+			fromPlace = fp;
+			toPlace = tp;
+			selectedFrom = from;
+			selectedTo = to;
+			fromResults = [];
+			toResults = [];
+			await planTrip();
+		} catch (error) {
+			console.error('Failed to restore shared trip:', error);
+		}
+	}
+
+	// A shared link had a "from"/"to" param present but it didn't parse (broken,
+	// truncated, out of range). Surface that in the same itinerary modal used for
+	// every other trip-planning failure rather than leaving a silent blank map.
+	function handleInvalidSharedTrip() {
+		handleTripPlan({
+			data: { error: { id: 'INVALID_SHARED_LINK', msg: $t('trip-planner.invalid_shared_link') } }
+		});
+	}
+
+	let loadSharedTripHandler;
+	let invalidSharedTripHandler;
+
 	onMount(() => {
 		if (browser) {
 			tabSwitchedHandler = () => {
@@ -285,9 +367,13 @@
 			};
 			setTripPlanLocationHandler = handleSetTripPlanLocation;
 			tripPlanModalClosedHandler = handleTripPlanModalClosed;
+			loadSharedTripHandler = handleLoadSharedTrip;
+			invalidSharedTripHandler = handleInvalidSharedTrip;
 			window.addEventListener('tabSwitched', tabSwitchedHandler);
 			window.addEventListener('setTripPlanLocation', setTripPlanLocationHandler);
 			window.addEventListener('tripPlanModalClosed', tripPlanModalClosedHandler);
+			window.addEventListener('loadSharedTrip', loadSharedTripHandler);
+			window.addEventListener('invalidSharedTrip', invalidSharedTripHandler);
 		}
 	});
 
@@ -308,10 +394,17 @@
 			if (tripPlanModalClosedHandler) {
 				window.removeEventListener('tripPlanModalClosed', tripPlanModalClosedHandler);
 			}
+			if (loadSharedTripHandler) {
+				window.removeEventListener('loadSharedTrip', loadSharedTripHandler);
+			}
+			if (invalidSharedTripHandler) {
+				window.removeEventListener('invalidSharedTrip', invalidSharedTripHandler);
+			}
 		}
 	});
 
 	async function handleRecentTripSelect(trip) {
+		showRecentTrips = false;
 		fromPlace = trip.fromPlace;
 		toPlace = trip.toPlace;
 		selectedFrom = trip.fromCoords;
@@ -418,14 +511,31 @@
 	{/if}
 
 	<!-- Button Row -->
-	<div class="mt-4 flex items-center gap-2">
+	<div class="mt-4 flex items-stretch gap-2">
 		<button
 			type="button"
 			onclick={() => showTripOptionsModal.set(true)}
-			class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+			class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
 		>
 			{$t('trip-planner.options')}
 		</button>
+		{#if $recentTrips.length > 0}
+			<button
+				type="button"
+				onclick={() => (showRecentTrips = !showRecentTrips)}
+				aria-expanded={showRecentTrips}
+				aria-controls="trip-plan-recent-trips"
+				class="inline-flex items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+				class:border-brand-accent={showRecentTrips}
+				class:text-brand-accent={showRecentTrips}
+				class:dark:border-brand={showRecentTrips}
+				class:dark:text-brand={showRecentTrips}
+			>
+				<FontAwesomeIcon icon={faClockRotateLeft} class="h-3.5 w-3.5" />
+				<span class="hidden md:inline">{$t('trip-planner.recents')}</span>
+				<span class="sr-only md:hidden">{$t('trip-planner.recent_searches')}</span>
+			</button>
+		{/if}
 		<div class="flex-1"></div>
 		<button
 			onclick={planTrip}
@@ -451,5 +561,9 @@
 		</button>
 	</div>
 
-	<RecentTripsList onSelect={handleRecentTripSelect} />
+	{#if showRecentTrips && $recentTrips.length > 0}
+		<div id="trip-plan-recent-trips">
+			<RecentTripsList onSelect={handleRecentTripSelect} />
+		</div>
+	{/if}
 </div>

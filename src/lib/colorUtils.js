@@ -7,7 +7,7 @@ import { COLORS } from './colors.js';
 
 /**
  * Converts a hex color string to RGB object
- * Supports both 3-digit (#fff) and 6-digit (#ffffff) hex formats
+ * Supports 3-digit (#fff), 6-digit (#ffffff) and 8-digit (#ffffffff) hex formats
  * @param {string} hex - Hex color string (with or without #)
  * @returns {{r: number, g: number, b: number} | null} RGB object or null if invalid
  */
@@ -21,6 +21,11 @@ export function hexToRgb(hex) {
 			.map((c) => c + c)
 			.join('');
 	}
+	// ignore alpha channel in 8-digit hex
+	if (hex.length === 8) {
+		hex = hex.slice(0, 6);
+	}
+
 	const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 	return result
 		? {
@@ -103,7 +108,7 @@ export function generatePalette(baseHex, fallbackHex = '#486621') {
 	// 600 is slightly darker, 900 is very dark
 	const darkWeights = { 600: 0.15, 700: 0.3, 800: 0.45, 900: 0.6 };
 
-	const palette = { 500: baseHex };
+	const palette = { 500: rgbToHex(base.r, base.g, base.b) };
 
 	for (const [shade, weight] of Object.entries(lightWeights)) {
 		const mixed = mixColors(base, white, weight);
@@ -124,11 +129,16 @@ export function generatePalette(baseHex, fallbackHex = '#486621') {
  * @param {number} amount - Amount to darken (0-1, where 1 is pure black)
  * @returns {string} Darkened hex color
  */
-export function darkenColor(hexColor, amount) {
-	if (!hexColor) return '#000000';
-
+export function darkenColor(hexColor, amount, fallbackHex = '#486621') {
 	const rgb = hexToRgb(hexColor);
-	if (!rgb) return '#000000';
+	if (!rgb) {
+		if (fallbackHex === null) {
+			console.error(`Invalid hex color "${hexColor}" and no fallback available`);
+			return '#000000';
+		}
+		console.warn(`Invalid hex color "${hexColor}", falling back to "${fallbackHex}"`);
+		return darkenColor(fallbackHex, amount, null);
+	}
 
 	const black = { r: 0, g: 0, b: 0 };
 	const darkened = mixColors(rgb, black, amount);
@@ -143,11 +153,16 @@ export function darkenColor(hexColor, amount) {
  * @param {number} amount - Amount to lighten (0-1, where 1 is pure white)
  * @returns {string} Lightened hex color
  */
-export function lightenColor(hexColor, amount) {
-	if (!hexColor) return '#ffffff';
-
+export function lightenColor(hexColor, amount, fallbackHex = '#486621') {
 	const rgb = hexToRgb(hexColor);
-	if (!rgb) return '#ffffff';
+	if (!rgb) {
+		if (fallbackHex === null) {
+			console.error(`Invalid hex color "${hexColor}" and no fallback available`);
+			return '#ffffff';
+		}
+		console.warn(`Invalid hex color "${hexColor}", falling back to "${fallbackHex}"`);
+		return lightenColor(fallbackHex, amount, null);
+	}
 
 	const white = { r: 255, g: 255, b: 255 };
 	const lightened = mixColors(rgb, white, amount);

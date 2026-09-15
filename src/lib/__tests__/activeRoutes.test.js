@@ -42,6 +42,7 @@ describe('activeRoutesFromArrivals', () => {
 			shortName: 'C Line',
 			type: 3,
 			tripId: 't_a',
+			tripCandidates: [{ id: 't_a' }],
 			gtfsColor: 'b02a37'
 		});
 	});
@@ -70,6 +71,137 @@ describe('activeRoutesFromArrivals', () => {
 		);
 		expect(result).toHaveLength(1);
 		expect(result[0].tripId).toBe('t_soon');
+		expect(result[0].tripCandidates).toEqual([{ id: 't_soon' }, { id: 't_late' }]);
+	});
+
+	test('keeps ordered, unique trip candidates with their service dates', () => {
+		const result = activeRoutesFromArrivals(
+			makeResponse([
+				{
+					routeId: 'r_c',
+					tripId: 't_soon',
+					serviceDate: 20260904,
+					predicted: true,
+					predictedArrivalTime: 1000,
+					scheduledArrivalTime: 1000
+				},
+				{
+					routeId: 'r_c',
+					tripId: 't_soon',
+					serviceDate: 20260904,
+					predicted: true,
+					predictedArrivalTime: 2000,
+					scheduledArrivalTime: 2000
+				},
+				{
+					routeId: 'r_c',
+					tripId: 't_next',
+					serviceDate: 20260904,
+					predicted: false,
+					predictedArrivalTime: 0,
+					scheduledArrivalTime: 3000
+				}
+			])
+		);
+
+		expect(result[0].tripCandidates).toEqual([
+			{ id: 't_soon', serviceDate: 20260904 },
+			{ id: 't_next', serviceDate: 20260904 }
+		]);
+	});
+
+	test('picks the departing trip, not the laid-over arrival, so the map matches the list', () => {
+		// Same vehicle ends trip t_in here and starts trip t_out here. StopPane
+		// hides the arrival row, so the map must draw t_out's shape, not t_in's.
+		const result = activeRoutesFromArrivals(
+			makeResponse([
+				{
+					routeId: 'r_10',
+					tripId: 't_in',
+					serviceDate: 1,
+					vehicleId: 'v_1',
+					stopSequence: 20,
+					totalStopsInTrip: 21,
+					blockTripSequence: 5,
+					predicted: true,
+					predictedArrivalTime: 2000,
+					scheduledArrivalTime: 2000
+				},
+				{
+					routeId: 'r_10',
+					tripId: 't_out',
+					serviceDate: 1,
+					vehicleId: 'v_1',
+					stopSequence: 0,
+					totalStopsInTrip: 13,
+					blockTripSequence: 6,
+					predicted: true,
+					predictedArrivalTime: 9000,
+					scheduledArrivalTime: 9000
+				}
+			]),
+			{ now: 1000 }
+		);
+
+		expect(result.map((r) => r.tripId)).toEqual(['t_out']);
+	});
+
+	test('collapses layovers even without a clock, so a seeded map matches a seeded list', () => {
+		const result = activeRoutesFromArrivals(
+			makeResponse([
+				{
+					routeId: 'r_10',
+					tripId: 't_in',
+					serviceDate: 1,
+					vehicleId: 'v_1',
+					stopSequence: 20,
+					totalStopsInTrip: 21,
+					blockTripSequence: 5,
+					predicted: true,
+					predictedArrivalTime: 2000,
+					scheduledArrivalTime: 2000
+				},
+				{
+					routeId: 'r_10',
+					tripId: 't_out',
+					serviceDate: 1,
+					vehicleId: 'v_1',
+					stopSequence: 0,
+					totalStopsInTrip: 13,
+					blockTripSequence: 6,
+					predicted: true,
+					predictedArrivalTime: 9000,
+					scheduledArrivalTime: 9000
+				}
+			])
+		);
+
+		expect(result.map((r) => r.tripId)).toEqual(['t_out']);
+	});
+
+	test('excludes departed arrivals when the caller supplies the current time', () => {
+		const minute = 60_000;
+		const result = activeRoutesFromArrivals(
+			makeResponse([
+				{
+					routeId: 'r_departed',
+					tripId: 't_departed',
+					predicted: true,
+					predictedArrivalTime: 9 * minute,
+					scheduledArrivalTime: 9 * minute
+				},
+				{
+					routeId: 'r_boardable',
+					tripId: 't_boardable',
+					predicted: false,
+					predictedArrivalTime: 0,
+					scheduledArrivalTime: 11 * minute
+				}
+			]),
+			{ now: 10 * minute }
+		);
+
+		expect(result.map((route) => route.id)).toEqual(['r_boardable']);
 	});
 
 	// OBA sends predictedArrivalTime: 0 (not null) when there is no real-time

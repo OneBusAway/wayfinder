@@ -613,3 +613,42 @@ describe('setPolylineLayer', () => {
 		expect(() => provider.setPolylineLayer(null, 'obaRoutePromoted')).not.toThrow();
 	});
 });
+
+describe('fitToPolylines padding', () => {
+	test('forwards an object padding to map.fitBounds unchanged', async () => {
+		const fitBounds = vi.fn();
+		const addListenerOnce = vi.fn((target, event, handler) => {
+			if (event === 'idle') queueMicrotask(handler);
+			return {};
+		});
+		const removeListener = vi.fn();
+		global.google = {
+			maps: {
+				LatLngBounds: vi.fn(function Bounds() {
+					this.extend = vi.fn();
+					this.isEmpty = vi.fn(() => false);
+				}),
+				event: { addListenerOnce, removeListener }
+			}
+		};
+
+		const provider = new GoogleMapProvider('test-key', vi.fn());
+		provider.map = {
+			fitBounds,
+			getZoom: vi.fn(() => 14),
+			setZoom: vi.fn()
+		};
+		provider.polylines = [
+			{
+				getPath: () => ({
+					forEach: (fn) => fn({ lat: () => 47.6, lng: () => -122.3 })
+				})
+			}
+		];
+
+		const padding = { top: 10, right: 20, bottom: 300, left: 40 };
+		await provider.fitToPolylines({ padding });
+
+		expect(fitBounds).toHaveBeenCalledWith(expect.any(Object), padding);
+	});
+});

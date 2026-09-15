@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { debounce, removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
+import {
+	debounce,
+	directionLabel,
+	removeAgencyPrefix,
+	routeShortNamesForStop,
+	stopSubtitle
+} from '$lib/utils';
 
 describe('debounce', () => {
 	beforeEach(() => {
@@ -193,5 +199,46 @@ describe('routeShortNamesForStop', () => {
 
 		expect(routeShortNamesForStop(response, {})).toBe(null);
 		expect(routeShortNamesForStop(response, null)).toBe(null);
+	});
+});
+
+describe('directionLabel', () => {
+	// Stands in for svelte-i18n's $t: known ids resolve, unknown ones take the
+	// caller's `default` (and fall back to the id when there isn't one).
+	const translate = (id, options) =>
+		({ 'direction.N': 'North', 'direction.SW': 'Southwest' })[id] ?? options?.default ?? id;
+
+	it('translates the eight compass codes', () => {
+		expect(directionLabel('N', translate)).toBe('North');
+		expect(directionLabel('SW', translate)).toBe('Southwest');
+	});
+
+	it('returns null when the stop has no direction', () => {
+		expect(directionLabel(null, translate)).toBe(null);
+		expect(directionLabel(undefined, translate)).toBe(null);
+		expect(directionLabel('', translate)).toBe(null);
+	});
+
+	it('falls back to the raw code rather than leaking the message id', () => {
+		expect(directionLabel('NNW', translate)).toBe('NNW');
+	});
+});
+
+describe('stopSubtitle', () => {
+	const translate = (id, options) =>
+		({ 'direction.S': 'South', 'favorites.stop_code': 'Code' })[id] ?? options?.default ?? id;
+
+	it('joins the direction and the stop code', () => {
+		expect(stopSubtitle({ id: '1_75403', code: '75403', direction: 'S' }, translate)).toBe(
+			'South · Code: 75403'
+		);
+	});
+
+	it('omits the direction when the stop has none', () => {
+		expect(stopSubtitle({ id: '1_75403', code: '75403' }, translate)).toBe('Code: 75403');
+	});
+
+	it('falls back to the id without its agency prefix when the stop has no code', () => {
+		expect(stopSubtitle({ id: '1_75403', direction: 'S' }, translate)).toBe('South · Code: 75403');
 	});
 });

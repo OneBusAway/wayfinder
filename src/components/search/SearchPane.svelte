@@ -13,8 +13,12 @@
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
-	import { removeAgencyPrefix } from '$lib/utils';
+	import { removeAgencyPrefix, stopSubtitle } from '$lib/utils';
 	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
+	import { parseTripParams, hasTripParams } from '$lib/urlState';
+	import { notifyRouteLoadFailed, notifyPartialRouteShape } from '$lib/routeNotifications';
+	import { notifications } from '$stores/notificationStore';
 
 	let {
 		handleRouteSelected,
@@ -26,6 +30,9 @@
 		mapProvider = null,
 		onCollapse = null,
 		collapsed = false,
+		// When false, Plan tab stays available but TripPlan mounts elsewhere
+		// (mobile bottom sheet). Avoids two TripPlan instances.
+		embedTripPlan = true,
 		childContent
 	} = $props();
 
@@ -39,6 +46,9 @@
 	// click took over (after one of its awaits) and bail instead of fighting the
 	// newer route for the camera, stop markers, and vehicle polling.
 	let routeLoadToken = 0;
+	// Id of the toast the current route load raised, so we only ever clear our
+	// own and never one owned by another component.
+	let notificationId = null;
 	let mapLoaded = $state(false);
 	let isSurveyAnswered = $state(false);
 	let activeTab = $state('stops');
@@ -109,6 +119,10 @@
 
 	async function handleRouteClick(route) {
 		const loadToken = ++routeLoadToken;
+		// Drop our prior retriable toast so a stale Retry for a previous route
+		// can't wipe markers/polylines after the user has moved on.
+		notifications.dismiss(notificationId);
+		notificationId = null;
 		mapProvider.clearAllPolylines();
 		mapProvider.removeStopMarkers();
 		mapProvider.clearVehicleMarkers();
@@ -120,6 +134,7 @@
 
 			if (!response.ok) {
 				console.error(`Failed to fetch route data: ${response.status}`);
+				notificationId = notifyRouteLoadFailed(() => handleRouteClick(route));
 				return;
 			}
 
@@ -140,6 +155,7 @@
 			// Reset the collection so each route click rebuilds it from scratch
 			// rather than accumulating stale references from previous selections.
 			polylines = [];
+			const segmentCount = polylinesData?.length ?? 0;
 			for (const polylineData of polylinesData) {
 				const polyline = await mapProvider.createPolyline(polylineData.points);
 				if (loadToken !== routeLoadToken) return;
@@ -147,6 +163,12 @@
 				// provider); skip it so one bad segment degrades the route instead
 				// of leaving a null hole in the polylines array.
 				if (polyline) polylines.push(polyline);
+			}
+
+			if (loadToken !== routeLoadToken) return;
+
+			if (segmentCount > 0 && polylines.length < segmentCount) {
+				notificationId = notifyPartialRouteShape();
 			}
 
 			// Fit the view to the full route so it's always centered and visible
@@ -190,6 +212,9 @@
 			handleRouteSelected(routeData);
 		} catch (error) {
 			console.error('Error fetching route data:', error);
+			if (loadToken === routeLoadToken) {
+				notificationId = notifyRouteLoadFailed(() => handleRouteClick(route));
+			}
 		}
 	}
 
@@ -255,26 +280,85 @@
 		isContextMenuTrigger = true;
 		activeTab = 'plan';
 		await tick();
+		// Enter trip-plan mode the same way a Plan tab click does (mobile sheet,
+		// map chrome).
+		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+		// On mobile, TripPlan remounts inside the plan sheet after this event —
+		// wait one tick so its listeners exist before setTripPlanLocation.
+		await tick();
 		window.dispatchEvent(new CustomEvent('setTripPlanLocation', { detail: e.detail }));
 		isContextMenuTrigger = false;
+	}
+
+	function handleOpenStopsTab() {
+		if (activeTab !== 'plan') return;
+		handleTabSwitch();
+		activeTab = 'stops';
+	}
+
+	let hasRestoredSharedTrip = false;
+
+	// Restore a trip shared via the URL. Waits for the map so TripPlan can drop
+	// pins, then opens the Plan tab and hands the parsed trip to TripPlan. The
+	// parsed trip is captured up front because planTripTabClicked resets the URL
+	// to "/" (the planned trip rewrites it once the itinerary loads). Wrapped in
+	// try/catch since this runs from an isMapLoaded subscription callback with no
+	// caller to report failures to.
+	async function maybeRestoreSharedTrip() {
+		if (hasRestoredSharedTrip || !env.PUBLIC_OTP_SERVER_URL) return;
+
+		const searchParams = $page.url.searchParams;
+		const trip = parseTripParams(searchParams);
+
+		// "from"/"to" present but unparsable (truncated, corrupted, out of range):
+		// tell the recipient the link didn't work instead of silently falling
+		// back to the default map with no explanation.
+		if (!trip && !hasTripParams(searchParams)) return;
+
+		hasRestoredSharedTrip = true;
+		try {
+			activeTab = 'plan';
+			// tick() also lets the Plan tab mount so TripPlan's loadSharedTrip /
+			// invalidSharedTrip listeners are registered before either is dispatched.
+			await tick();
+			// Mirror a real Plan tab click so the map hides stop markers and enters
+			// trip-plan mode. Dispatched after tick so MapView's listener is ready.
+			window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+			// On mobile, TripPlan remounts inside the plan sheet after this event —
+			// wait one more tick so its listeners exist before loadSharedTrip.
+			await tick();
+			if (trip) {
+				window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: trip }));
+			} else {
+				window.dispatchEvent(new CustomEvent('invalidSharedTrip'));
+			}
+		} catch (error) {
+			console.error('Failed to restore shared trip from URL:', error);
+		}
 	}
 
 	onMount(() => {
 		unsubscribeMapLoaded = isMapLoaded.subscribe((value) => {
 			mapLoaded = value;
+			if (value && mapProvider) {
+				maybeRestoreSharedTrip();
+			}
 		});
 
 		window.addEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
 		window.addEventListener('contextMenuTripPlan', handleContextMenuTripPlan);
+		window.addEventListener('openStopsTab', handleOpenStopsTab);
 	});
 
 	onDestroy(() => {
+		notifications.dismiss(notificationId);
 		if (unsubscribeMapLoaded) {
 			unsubscribeMapLoaded();
 		}
 		if (browser) {
 			window.removeEventListener('routeSelectedFromModal', handleRouteSelectedFromModal);
 			window.removeEventListener('contextMenuTripPlan', handleContextMenuTripPlan);
+			window.removeEventListener('openStopsTab', handleOpenStopsTab);
 		}
 		if (currentIntervalId) {
 			clearInterval(currentIntervalId);
@@ -347,7 +431,7 @@
 							on:click={() => handleStopClick(stop)}
 							icon={faSignsPost}
 							title={stop.name}
-							subtitle={`${stop.direction ? $t(`direction.${stop.direction}`) : ''}; Code: ${stop.code}`}
+							subtitle={stopSubtitle(stop, $t)}
 						/>
 					{/each}
 				{/if}
@@ -377,7 +461,9 @@
 				}}
 				disabled={!mapLoaded}
 			>
-				<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
+				{#if embedTripPlan}
+					<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
+				{/if}
 			</TabItem>
 		{/if}
 

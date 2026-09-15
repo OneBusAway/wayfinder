@@ -110,7 +110,7 @@ When writing tests, the setup file already mocks `$env/static/public`, `$env/sta
 
 ## Environment Variables
 
-`env-schema.json` defines every variable with its type, constraints, and whether it's required. Run `npm run validate-env` to check your `.env` file against the schema.
+`env-schema.json` defines every variable with its type, constraints, whether it's required, and any `deprecatedNames` (pre-rename aliases that `npm run validate-env` accepts with a warning) or `requiredWith` (a variable that becomes required once another is set). `deprecatedNames` is validation-only — the runtime fallback for an alias must be implemented separately, as in `src/lib/sidecarConfig.js`. Run `npm run validate-env` to check your `.env` file against the schema.
 
 See `.env.example` for full list. Key variables:
 

@@ -5,16 +5,18 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import SurveyModal from '$components/surveys/SurveyModal.svelte';
 	import ServiceAlerts from '$components/service-alerts/ServiceAlerts.svelte';
-	import { onDestroy, untrack } from 'svelte';
+	import { onDestroy, tick, untrack } from 'svelte';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
 	import { surveyStore, showSurveyModal, markSurveyAnswered } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
-	import HeroQuestion from '$components/surveys/HeroQuestion.svelte';
+	import SurveyBanner from '$components/surveys/SurveyBanner.svelte';
 	import analytics from '$lib/Insights';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
+	import { makeKey, visibleArrivals } from '$lib/arrivalFiltering';
+	import { fade } from 'svelte/transition';
 
 	/**
 	 * @typedef {Object} Props
@@ -46,8 +48,12 @@
 	const MINUTES_AFTER_INCREMENT = 30;
 
 	// Seed from any server-rendered response so the standalone page shows arrivals
-	// immediately instead of flashing the first-load skeleton.
-	let arrivalsAndDepartures = $state(arrivalsAndDeparturesResponse?.data?.entry);
+	// immediately instead of flashing the first-load skeleton. No clock is passed
+	// so server and client render the same seed; departed rows fall away on the
+	// first client poll.
+	let arrivalsAndDepartures = $state(
+		withVisibleArrivals(arrivalsAndDeparturesResponse?.data?.entry)
+	);
 	let error = $state();
 	// Seed alerts from the same server-rendered response so they show on first
 	// render instead of waiting for the initial client fetch to complete.
@@ -57,12 +63,48 @@
 	let minutesAfter = $state(DEFAULT_MINUTES_AFTER);
 	let loadingMore = $state(false);
 	let noMoreArrivals = $state(false);
+	// Skip fade-in on the first render so arrivals appear instantly; subsequent
+	// polls animate new/departed items via the keyed {#each} block.
+	let isFirstLoad = $state(true);
 
 	let interval = null;
 	let currentStopSurvey = $state(null);
 	let remainingSurveyQuestions = $state([]);
 
+	// Furthest arrival time (ms) observed when we last concluded "no more arrivals".
+	// A later poll that surfaces an arrival beyond this clears the stale hint.
+	let noMoreArrivalsBoundary = 0;
+
 	let abortController = null;
+
+	/**
+	 * Returns the furthest-out arrival time (ms) in the list, preferring the
+	 * predicted time and falling back to the scheduled time. Comparing this
+	 * across window widenings is more robust than a raw count: an arrival
+	 * departing the front of the list no longer masks a genuinely later one.
+	 * @param {any[]} [arrivals]
+	 * @returns {number}
+	 */
+	function furthestArrivalTime(arrivals) {
+		let furthest = 0;
+		for (const arrival of arrivals ?? []) {
+			const time = arrival.predictedArrivalTime || arrival.scheduledArrivalTime || 0;
+			if (time > furthest) furthest = time;
+		}
+		return furthest;
+	}
+	/**
+	 * Copies a response entry with its arrival list reduced to the rows the
+	 * rider should see (see visibleArrivals). Returns null for a missing entry
+	 * so the first-load skeleton renders.
+	 * @param {any} [entry]
+	 * @param {number} [now]
+	 */
+	function withVisibleArrivals(entry, now) {
+		if (!entry) return null;
+		return { ...entry, arrivalsAndDepartures: visibleArrivals(entry.arrivalsAndDepartures, now) };
+	}
+
 	/**
 	 * Fetches arrivals for the stop within the current `minutesAfter` window.
 	 * @returns {Promise<number|null>} the number of arrivals fetched, or `null`
@@ -91,13 +133,21 @@
 
 			const data = await response.json();
 			arrivalsAndDeparturesResponse = data;
-			arrivalsAndDepartures = data.data.entry;
+			arrivalsAndDepartures = withVisibleArrivals(data.data.entry, Date.now());
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
 			error = null; // Clear previous errors if successful
+			if (isFirstLoad) {
+				await tick();
+				isFirstLoad = false;
+			}
 			const count = arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
-			// A refresh that returns arrivals clears a stale "no more arrivals" hint
-			// (e.g. after a 30s poll surfaces new departures).
-			if (count > 0) {
+			// Clear a stale "no more arrivals" hint only when a refresh actually
+			// surfaces an arrival further out than the window we'd exhausted — a
+			// poll returning the same (or nearer) arrivals must leave the hint up.
+			if (
+				noMoreArrivals &&
+				furthestArrivalTime(arrivalsAndDepartures?.arrivalsAndDepartures) > noMoreArrivalsBoundary
+			) {
 				noMoreArrivals = false;
 			}
 			return count;
@@ -133,7 +183,7 @@
 	// Widen the arrivals window and refetch. If the count doesn't grow, surface a
 	// "no more arrivals found" hint (the server has nothing further to show).
 	async function loadMoreArrivals() {
-		const previousCount = arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
+		const previousFurthest = furthestArrivalTime(arrivalsAndDepartures?.arrivalsAndDepartures);
 
 		loadingMore = true;
 		noMoreArrivals = false;
@@ -146,7 +196,10 @@
 		loadingMore = false;
 		// Only conclude "no more arrivals" from a request that actually completed.
 		if (count !== null) {
-			noMoreArrivals = count === previousCount;
+			const newFurthest = furthestArrivalTime(arrivalsAndDepartures?.arrivalsAndDepartures);
+			// Widening the window surfaced nothing further out → nothing more to show.
+			noMoreArrivals = newFurthest <= previousFurthest;
+			if (noMoreArrivals) noMoreArrivalsBoundary = newFurthest;
 		}
 		analytics.reportArrivalClicked('Loaded more arrivals');
 	}
@@ -159,8 +212,18 @@
 		untrack(() => {
 			minutesAfter = DEFAULT_MINUTES_AFTER;
 			noMoreArrivals = false;
+			isFirstLoad = true;
 			clearInterval(interval);
 			resetDataFetchInterval(stopID);
+
+			// StopPane is not remounted when the user selects a different stop
+			// (see the {#key stop.id} around SurveyBanner below), so the survey
+			// hero-question flow state must be reset per-stop here or it never
+			// returns after the first submit/dismiss of the session.
+			showHeroQuestion = true;
+			heroAnswer = '';
+			nextSurveyQuestion = false;
+			surveyPublicIdentifier = null;
 		});
 	});
 
@@ -195,18 +258,18 @@
 	let surveyPublicIdentifier = $state(null);
 	let showHeroQuestion = $state(true);
 
+	function heroAnswerIsEmpty() {
+		if (Array.isArray(heroAnswer)) return heroAnswer.length === 0;
+		return !heroAnswer || heroAnswer.trim() === '';
+	}
+
 	async function handleSurveyButtonClick() {
 		let heroQuestion = currentStopSurvey.questions[0];
 		remainingSurveyQuestions = currentStopSurvey.questions.slice(1);
-		if (heroQuestion.content.type !== 'label' && (!heroAnswer || heroAnswer.trim() === '')) {
+
+		if (heroQuestion.content.type !== 'label' && heroAnswerIsEmpty()) {
 			return;
 		}
-
-		// If there are more questions, show the modal
-		if (remainingSurveyQuestions.length > 0) {
-			showSurveyModal.set(true);
-		}
-		nextSurveyQuestion = true;
 
 		let surveyResponse = {
 			survey_id: currentStopSurvey.id,
@@ -224,9 +287,22 @@
 			answer: heroAnswer
 		};
 
-		surveyPublicIdentifier = await submitHeroQuestion(surveyResponse);
-		showHeroQuestion = false;
+		try {
+			surveyPublicIdentifier = await submitHeroQuestion(surveyResponse);
+		} catch (error) {
+			// Rethrow so SurveyBanner can show a retry affordance. The banner
+			// stays mounted because showHeroQuestion is untouched.
+			console.error('Error submitting hero question:', error);
+			throw error;
+		}
 
+		// Only advance the flow once the hero answer is actually recorded.
+		if (remainingSurveyQuestions.length > 0) {
+			showSurveyModal.set(true);
+		}
+		nextSurveyQuestion = true;
+
+		showHeroQuestion = false;
 		markSurveyAnswered(currentStopSurvey.id);
 	}
 
@@ -234,8 +310,11 @@
 		skipSurvey(currentStopSurvey);
 		showHeroQuestion = false;
 	}
-	function handleHeroQuestionChange(event) {
-		heroAnswer = event.target.value;
+
+	// SurveyBanner resolves the answer (string, or string[] for checkboxes)
+	// before reporting it, so this no longer digs into the DOM event.
+	function handleHeroQuestionChange(answer) {
+		heroAnswer = answer;
 	}
 
 	$effect(() => {
@@ -268,9 +347,11 @@
 			<p>{error}</p>
 		{/if}
 		{#if arrivalsAndDepartures}
-			<div class="space-y-4">
+			<!-- No space-y here: the survey banner and the arrivals list must sit
+			     flush against each other. Spacing is applied per-child instead. -->
+			<div>
 				{#if showHeroCard}
-					<div>
+					<div class="mb-4">
 						<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent p-4">
 							<h1 class="h1 mb-0 text-white">{stop.name}</h1>
 							<h2 class="h2 mb-0 text-white">
@@ -302,18 +383,25 @@
 					</div>
 				{/if}
 
-				{#if serviceAlerts}
-					<ServiceAlerts bind:serviceAlerts />
+				{#if serviceAlerts?.length}
+					<div class="mb-4">
+						<ServiceAlerts bind:serviceAlerts stopId={stop.id} routeIds={stop.routeIds ?? []} />
+					</div>
 				{/if}
 
 				{#if showHeroQuestion && currentStopSurvey}
-					<HeroQuestion
-						{currentStopSurvey}
-						{handleSkip}
-						{handleSurveyButtonClick}
-						{handleHeroQuestionChange}
-						remainingQuestionsLength={remainingSurveyQuestions.length}
-					/>
+					<!-- Keyed on the stop: StopBottomSheet is not remounted when the
+					     user selects a different stop, so without this the previous
+					     stop's expanded/answer state would carry over. -->
+					{#key stop.id}
+						<SurveyBanner
+							{currentStopSurvey}
+							{handleSkip}
+							{handleSurveyButtonClick}
+							{handleHeroQuestionChange}
+							remainingQuestionsLength={(currentStopSurvey?.questions?.length ?? 1) - 1}
+						/>
+					{/key}
 				{/if}
 				{#if nextSurveyQuestion}
 					<SurveyModal
@@ -326,9 +414,13 @@
 
 				{#snippet loadMoreButton(emptyResults = false)}
 					<div class="flex flex-col items-center gap-2">
-						{#if emptyResults || noMoreArrivals}
+						{#if emptyResults}
 							<p class="text-sm text-gray-600 dark:text-gray-400">
 								{$t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
+							</p>
+						{:else if noMoreArrivals}
+							<p class="text-sm text-gray-600 dark:text-gray-400">
+								{$t('no_more_arrivals_in_next_minutes', { values: { minutes: minutesAfter } })}
 							</p>
 						{/if}
 						<button
@@ -343,38 +435,40 @@
 				{/snippet}
 
 				{#if arrivalsAndDepartures.arrivalsAndDepartures.length === 0}
-					<div class="flex flex-col items-center justify-center gap-3">
+					<div class="mt-4 flex flex-col items-center justify-center gap-3 first:mt-0">
 						{@render loadMoreButton(true)}
 					</div>
 				{:else}
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
-							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
-								<AccordionItem data={arrival} fullBleed hideChevron>
-									{#snippet header(isActive)}
-										<!-- min-w-0 lets this flex child shrink below its content width so the
-										     card's headsign wraps/clamps instead of pushing the ETA off-screen.
-										     ArrivalDeparture renders the chevron itself (stacked under the ETA),
-										     so the built-in AccordionItem chevron is hidden. -->
-										<span class="block min-w-0 flex-1">
-											<ArrivalDeparture
-												arrivalDeparture={arrival}
-												route={routeById.get(arrival.routeId)}
-												routeColors={routeColors?.get(arrival.routeId) ?? null}
-												expanded={isActive}
-											/>
-										</span>
-									{/snippet}
-									<TripDetailsPane
-										{stop}
-										tripId={arrival.tripId}
-										serviceDate={arrival.serviceDate}
-									/>
-								</AccordionItem>
+							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival (makeKey(arrival))}
+								<div in:fade={{ duration: isFirstLoad ? 0 : 300 }} out:fade={{ duration: 200 }}>
+									<AccordionItem data={arrival} fullBleed hideChevron>
+										{#snippet header(isActive)}
+											<!-- min-w-0 lets this flex child shrink below its content width so the
+											     card's headsign wraps/clamps instead of pushing the ETA off-screen.
+											     ArrivalDeparture renders the chevron itself (stacked under the ETA),
+											     so the built-in AccordionItem chevron is hidden. -->
+											<span class="block min-w-0 flex-1">
+												<ArrivalDeparture
+													arrivalDeparture={arrival}
+													route={routeById.get(arrival.routeId)}
+													routeColors={routeColors?.get(arrival.routeId) ?? null}
+													expanded={isActive}
+												/>
+											</span>
+										{/snippet}
+										<TripDetailsPane
+											{stop}
+											tripId={arrival.tripId}
+											serviceDate={arrival.serviceDate}
+										/>
+									</AccordionItem>
+								</div>
 							{/each}
 						</Accordion>
 					{/key}
-					<div class="flex justify-center">
+					<div class="mt-4 flex justify-center first:mt-0">
 						{@render loadMoreButton()}
 					</div>
 				{/if}

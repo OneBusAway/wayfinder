@@ -18,12 +18,13 @@
 <script>
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import StopPane from '$components/stops/StopPane.svelte';
+	import FavoriteToggle from '$components/favorites/FavoriteToggle.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faCircleInfo, faX, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 	import { keybinding } from '$lib/keybinding';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
-	import { removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
+	import { directionLabel, removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
 
 	let {
 		stop,
@@ -43,13 +44,15 @@
 	let stopPaneLoading = $state(false);
 
 	let routeShortNames = $derived(routeShortNamesForStop(arrivalsAndDeparturesResponse, stop));
-	// "Stop #20170 · SW bound · C, 21, 116, 125" — direction and routes are both
-	// optional, so build the parts list and join only what's present.
+	// "Stop #20170 · Southwest bound · C, 21, 116, 125" — direction and routes are
+	// both optional, so build the parts list and join only what's present.
 	let subtitle = $derived(
 		[
 			`${$isLoading ? '' : $t('stop')} #${removeAgencyPrefix(stop.id)}`,
 			stop.direction && !$isLoading
-				? $t('direction_bound', { values: { direction: stop.direction } })
+				? $t('direction_bound', {
+						values: { direction: directionLabel(stop.direction, $t) }
+					})
 				: null,
 			routeShortNames?.length ? routeShortNames.join(', ') : null
 		]
@@ -93,6 +96,15 @@
 						<FontAwesomeIcon icon={faArrowsRotate} />
 					</span>
 				</button>
+				<FavoriteToggle
+					type="stop"
+					id={stop.id}
+					name={stop.name}
+					code={stop.code}
+					direction={stop.direction}
+					lat={stop.lat}
+					lon={stop.lon}
+				/>
 				<a
 					href={`/stops/${stop.id}`}
 					class="flex h-10 items-center gap-2 rounded-xl border border-gray-300 px-4 text-base font-semibold text-black hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"

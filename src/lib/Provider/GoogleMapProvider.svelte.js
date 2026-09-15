@@ -540,6 +540,10 @@ export default class GoogleMapProvider {
 		return { lat: center.lat(), lng: center.lng() };
 	}
 
+	getZoom() {
+		return this.map.getZoom();
+	}
+
 	addListener(event, callback) {
 		this.map.addListener(event, callback);
 	}
@@ -822,7 +826,7 @@ export default class GoogleMapProvider {
 	/**
 	 * Fits the map view to the bounds of all currently drawn polylines so the
 	 * full route is centered and visible. Returns true when a fit was applied.
-	 * @param {{ padding?: number, maxZoom?: number }} [options]
+	 * @param {{ padding?: number | { top?: number, right?: number, bottom?: number, left?: number }, maxZoom?: number }} [options]
 	 * @returns {Promise<boolean>} resolves once the view has settled
 	 */
 	async fitToPolylines(options = {}) {

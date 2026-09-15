@@ -27,9 +27,10 @@
 		label: variant === 'compact' ? 'text-red-500' : 'text-xl text-red-500'
 	};
 
+	// `error` is owned by the parent. This component never decides on its own
+	// that an answer is missing — it only reports the change upward.
 	function handleInput(event) {
 		onInputChange(event, question, index);
-		error = required && (!value || (Array.isArray(value) && value.length === 0));
 	}
 </script>
 
@@ -102,5 +103,5 @@
 {/if}
 
 {#if error && question.content.type !== 'label'}
-	<p class={`${errorClasses.label} mt-4`}>This question is required.</p>
+	<p class={`${errorClasses.label} mt-4`}>{$t('survey.required_answer')}</p>
 {/if}

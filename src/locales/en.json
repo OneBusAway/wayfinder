@@ -58,11 +58,26 @@
 		"remove_recent_trip": "Remove recent trip",
 		"recent_trip": "Use recent trip from {from} to {to}",
 		"recent_searches": "Recent Searches",
-		"clear_all": "Clear All"
+		"recents": "Recents",
+		"clear_all": "Clear All",
+		"request_failed": "We couldn't reach the trip planning service. Please try again.",
+		"invalid_shared_link": "This shared trip link looks broken. Try planning the trip again."
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",
 		"plan_trip": "Plan a Trip"
+	},
+	"favorites": {
+		"title": "Favorites",
+		"add": "Add to favorites",
+		"remove": "Remove from favorites",
+		"clear_all": "Clear All",
+		"open_panel": "Open favorites",
+		"close_panel": "Close favorites",
+		"empty": "No favorites yet. Tap the star on a stop or route to save it here.",
+		"stop_code": "Code",
+		"open_item": "Open {name}",
+		"remove_item": "Remove {name} from favorites"
 	},
 	"search": {
 		"placeholder": "Search for stops, routes, and places",
@@ -85,7 +100,14 @@
 		"snap_peek": "Collapsed"
 	},
 	"survey": {
-		"required_question": "Required question"
+		"required_question": "Required question",
+		"required_answer": "This question is required.",
+		"expand": "Show question",
+		"collapse": "Hide question",
+		"dismiss": "Dismiss survey",
+		"submit": "Submit",
+		"next": "Next",
+		"submit_failed": "Couldn't send your answer. Please try again."
 	},
 	"header": {
 		"home": "Home",
@@ -130,11 +152,21 @@
 	"load_more_arrivals": "Load more arrivals",
 	"refresh": "Refresh",
 	"no_arrivals_found_in_next_minutes": "No arrivals found in the next {minutes} minutes",
+	"no_more_arrivals_in_next_minutes": "No more arrivals in the next {minutes} minutes",
 	"stop": "Stop",
 	"direction_bound": "{direction} bound",
 	"routes": "Routes",
 	"route": "route",
 	"route_modal_title": "Route {name}",
+	"notifications": {
+		"route_load_failed": "Couldn't load this route.",
+		"route_shape_failed": "Couldn't draw this route on the map.",
+		"route_shape_partial": "Part of this route couldn't be drawn. The map may be missing a segment.",
+		"favorite_saved": "Saved to favorites.",
+		"favorite_removed": "Removed from favorites.",
+		"tap_to_retry": "Tap to retry.",
+		"dismiss": "Dismiss"
+	},
 	"loading": "Loading",
 	"arrives": "arrives",
 	"NA": "N/A",
@@ -170,7 +202,8 @@
 		"route_schedules": "Route Schedules",
 		"no_schedules_available": "No schedules available for the selected date.",
 		"stop_id": "Stop ID",
-		"direction": "Direction"
+		"direction": "Direction",
+		"schedule_table_caption": "Departure times for {route}"
 	},
 	"direction": {
 		"N": "North",
@@ -193,8 +226,46 @@
 		"page": "Page",
 		"show": "Show",
 		"hide": "Hide",
-		"open_alert": "Open service alert details: {summary}",
-		"alert_modal": "Service alert details dialog"
+		"open_alert": "Open {severity} service alert details: {summary}",
+		"affects_this_stop": "Affects this stop",
+		"other_alerts": "Other alerts",
+		"severity_severe": "Severe",
+		"severity_warning": "Warning",
+		"severity_info": "Info",
+		"cause": "Cause",
+		"effect": "Effect",
+		"active": "Active",
+		"active_until": "Until {date}",
+		"active_from": "From {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Unknown",
+		"cause_other": "Other",
+		"cause_technical": "Technical problem",
+		"cause_strike": "Strike",
+		"cause_demonstration": "Demonstration",
+		"cause_accident": "Accident",
+		"cause_holiday": "Holiday",
+		"cause_weather": "Weather",
+		"cause_maintenance": "Maintenance",
+		"cause_construction": "Construction",
+		"cause_police": "Police activity",
+		"cause_medical": "Medical emergency",
+		"cause_equipment": "Equipment",
+		"cause_environment": "Environment",
+		"cause_personnel": "Personnel",
+		"cause_miscellaneous": "Miscellaneous",
+		"cause_security": "Security alert",
+		"effect_no_service": "No service",
+		"effect_reduced_service": "Reduced service",
+		"effect_significant_delays": "Significant delays",
+		"effect_detour": "Detour",
+		"effect_additional_service": "Additional service",
+		"effect_modified_service": "Modified service",
+		"effect_other": "Other effect",
+		"effect_unknown": "Unknown effect",
+		"effect_stop_moved": "Stop moved",
+		"effect_no_effect": "No effect",
+		"effect_accessibility": "Accessibility issue"
 	},
 	"view_stop_information": "View Stop Information",
 	"stop_details": {

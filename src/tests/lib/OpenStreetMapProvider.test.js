@@ -1,5 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
-import OpenStreetMapProvider from '$lib/Provider/OpenStreetMapProvider.svelte.js';
+import OpenStreetMapProvider, {
+	toLeafletPadding
+} from '$lib/Provider/OpenStreetMapProvider.svelte.js';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 
 // Minimal Svelte component stubs — only imported by the module, never called
@@ -863,5 +865,58 @@ describe('setPolylineLayer', () => {
 	test('is a no-op with no polyline', () => {
 		const provider = makeProvider();
 		expect(() => provider.setPolylineLayer(null, 'obaRoutePromoted')).not.toThrow();
+	});
+});
+
+describe('toLeafletPadding / fitToPolylines padding', () => {
+	test('object padding becomes paddingTopLeft / paddingBottomRight', () => {
+		expect(toLeafletPadding({ top: 10, right: 20, bottom: 30, left: 40 })).toEqual({
+			paddingTopLeft: [40, 10],
+			paddingBottomRight: [20, 30]
+		});
+	});
+
+	test('array and number forms still pass through', () => {
+		expect(toLeafletPadding([12, 24])).toEqual({ padding: [12, 24] });
+		expect(toLeafletPadding(50)).toEqual({ padding: [50, 50] });
+		expect(toLeafletPadding(null)).toEqual({ padding: [50, 50] });
+	});
+
+	test('fitToPolylines forwards object padding to flyToBounds', async () => {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		const flyToBounds = vi.fn();
+		const bounds = {
+			isValid: () => true,
+			extend: vi.fn()
+		};
+		provider.L = {
+			latLngBounds: vi.fn(() => bounds)
+		};
+		provider.map = {
+			flyToBounds,
+			once: vi.fn(),
+			hasLayer: () => false,
+			removeLayer: vi.fn()
+		};
+		provider.polylines = [{ getBounds: () => ({}) }];
+		provider._setPolylinesVisible = vi.fn();
+		provider.revealPolylines = vi.fn();
+
+		const fitPromise = provider.fitToPolylines({
+			padding: { top: 10, right: 20, bottom: 300, left: 40 },
+			duration: 0
+		});
+		const moveend = provider.map.once.mock.calls.find((c) => c[0] === 'moveend');
+		expect(moveend).toBeTruthy();
+		moveend[1]();
+		await fitPromise;
+
+		expect(flyToBounds).toHaveBeenCalledWith(
+			bounds,
+			expect.objectContaining({
+				paddingTopLeft: [40, 10],
+				paddingBottomRight: [20, 300]
+			})
+		);
 	});
 });

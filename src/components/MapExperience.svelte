@@ -6,6 +6,7 @@
 	import MapContainer from '$components/MapContainer.svelte';
 	import RouteModal from '$components/routes/RouteModal.svelte';
 	import ViewAllRoutesModal from '$components/routes/ViewAllRoutesModal.svelte';
+	import FavoritesFloatingControl from '$components/favorites/FavoritesFloatingControl.svelte';
 	import { isLoading } from 'svelte-i18n';
 	import AlertsModal from '$components/navigation/AlertsModal.svelte';
 	import { onMount, onDestroy } from 'svelte';
@@ -27,9 +28,13 @@
 	import { analyticsDistanceToStop } from '$lib/Insights/insightsUtils';
 	import SurveyLauncher from '$components/surveys/SurveyLauncher.svelte';
 	import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
+	import { hasTripParams } from '$lib/urlState';
+	import { notifications } from '$stores/notificationStore';
+	import { env } from '$env/dynamic/public';
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
 	import { mapStopPath } from '$lib/mapStopUrl.js';
+	import { removeAgencyPrefix } from '$lib/utils';
 	import { clearVehicleMarkersMap } from '$lib/vehicleUtils';
 	import { activeRoutesFromArrivals, assignRouteColors } from '$lib/activeRoutes.js';
 
@@ -45,6 +50,11 @@
 				Number(PUBLIC_OBA_REGION_CENTER_LAT),
 				Number(PUBLIC_OBA_REGION_CENTER_LNG)
 			);
+
+	// Any shared-trip URL (valid or broken) should enter trip-plan mode before the
+	// map loads stops, so region-center markers are never painted and then stuck.
+	const startInTripPlanMode =
+		browser && !!env.PUBLIC_OTP_SERVER_URL && hasTripParams(initialPage.url.searchParams);
 
 	let currentModal = $state(null);
 	let selectedTrip = $state(null);
@@ -65,6 +75,7 @@
 
 	let tripItineraries = $state([]);
 	let tripPlanError = $state(null);
+	let tripPlanAttempted = $state(false);
 	let loadingItineraries = false;
 	let currentHighlightedStopId = null;
 
@@ -100,7 +111,11 @@
 	let arrivalsMatchSelection = $derived(
 		stopArrivals?.data?.entry?.stopId != null && stopArrivals.data.entry.stopId === selectedStopId
 	);
-	let activeRoutes = $derived(arrivalsMatchSelection ? activeRoutesFromArrivals(stopArrivals) : []);
+	// Use the same non-departed arrival set the sheet renders. Keeping the raw
+	// response as the bound value is still useful to StopPane; the map derives a
+	// boardable subset whenever that response refreshes.
+	let boardableRoutes = $derived(activeRoutesFromArrivals(stopArrivals, { now: Date.now() }));
+	let activeRoutes = $derived(arrivalsMatchSelection ? boardableRoutes : []);
 	// Deliberately NOT gated on arrivalsMatchSelection (derived from stopArrivals
 	// directly, not from the gated activeRoutes above). StopPane's rendered rows are
 	// a one-time $state seed that doesn't react to stopArrivals going stale, so
@@ -108,9 +123,7 @@
 	// are the correct colors for them. The map is separately held back from drawing
 	// anything stale by activeRoutes being empty until B's arrivals land. Two
 	// consumers of routeColors, two different staleness semantics, one source.
-	let routeColors = $derived(
-		assignRouteColors(activeRoutesFromArrivals(stopArrivals), { dark: isDarkMode })
-	);
+	let routeColors = $derived(assignRouteColors(boardableRoutes, { dark: isDarkMode }));
 
 	// While a stop's bottom sheet is open, the search pane collapses to a single
 	// floating field below the md breakpoint; on wider viewports the pane stays
@@ -120,6 +133,18 @@
 	let stopSheetOpen = $derived(selectedStopId != null);
 	let showCollapsedSearch = $derived(stopSheetOpen && searchCollapsed);
 
+	// Mobile: form + recent + results in the bottom sheet (#577). Desktop: form stays
+	// in SearchPane; sheet below is only for itinerary results after planning.
+	const NARROW_VIEWPORT_MQ = '(max-width: 767px)';
+	let planTabActive = $state(false);
+	let isNarrowViewport = $state(browser ? window.matchMedia(NARROW_VIEWPORT_MQ).matches : false);
+	let mobilePlanSheetOpen = $derived(planTabActive && isNarrowViewport);
+	let hideSearchForMobilePlan = $derived(mobilePlanSheetOpen);
+	let mediaQueryList = null;
+	function syncNarrowViewport(event) {
+		isNarrowViewport = event.matches;
+	}
+
 	function handleStopMarkerSelect(stopData) {
 		// Instant: the marker already carries the stop, so push it into history state
 		// (no fetch). The selection effect reacts to the URL change and frames the map.
@@ -127,6 +152,46 @@
 		// structured-clones its state argument (DataCloneError on a proxy). Snapshot
 		// yields a plain, clone-safe copy.
 		pushState(mapStopPath(stopData.id), { stopData: $state.snapshot(stopData) });
+	}
+
+	/**
+	 * Open a favorited stop from the map floating control.
+	 * @param {Object} favorite
+	 */
+	function handleFavoriteStopClick(favorite) {
+		if (!mapProvider) return;
+		// Seed the marker so the selection effect has something to highlight, then
+		// hand off. Framing is the effect's job — flying here too would fight it.
+		mapProvider.addMarker({
+			stop: favorite,
+			position: { lat: favorite.lat, lng: favorite.lon },
+			onClick: () => handleStopMarkerSelect(favorite)
+		});
+		handleStopMarkerSelect(favorite);
+	}
+
+	/**
+	 * Open a favorited route via the same event ViewAllRoutesModal uses, so
+	 * SearchPane's existing handleRouteClick path loads shapes and vehicles.
+	 * @param {Object} favorite
+	 */
+	function handleFavoriteRouteClick(favorite) {
+		// The listener drives the map straight away (clearAllPolylines et al), so
+		// don't fire before MapContainer has handed us a provider.
+		if (!mapProvider) return;
+		window.dispatchEvent(
+			new CustomEvent('routeSelectedFromModal', {
+				detail: {
+					route: {
+						id: favorite.id,
+						shortName: favorite.shortName,
+						nullSafeShortName: favorite.shortName ?? removeAgencyPrefix(favorite.id),
+						description: favorite.description,
+						type: favorite.routeType
+					}
+				}
+			})
+		);
 	}
 
 	$effect(() => {
@@ -172,6 +237,10 @@
 				tripPlanError = null;
 			}
 			currentModal = null;
+			// The stop now owns the map, so any route/trip toast still on screen is
+			// stale — and tapping its Retry would tear down the stop's own markers
+			// and polylines. Unscoped: this supersedes whichever component raised it.
+			notifications.dismiss();
 
 			searchCollapsed = true;
 			if (browser && window.innerWidth >= 768) sheetSnap = 'full';
@@ -358,17 +427,36 @@
 	}
 
 	function clearTripItineraries() {
+		const hadTripUi =
+			tripItineraries.length > 0 || tripPlanError != null || currentModal === Modal.TRIP_PLANNER;
 		tripItineraries = [];
 		tripPlanError = null;
+		tripPlanAttempted = false;
 		currentModal = null;
 		mapProvider.clearAllPolylines();
+		// Back to edit height when the rider clears results but stays on the mobile plan sheet.
+		if (hadTripUi && planTabActive && isNarrowViewport) {
+			sheetSnap = 'half';
+		}
 	}
 
+	/** Close desktop itinerary results sheet; keep Plan tab and form in SearchPane. */
 	function closeTripPlanModal() {
 		if (browser) {
 			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
 		}
 		clearTripItineraries();
+	}
+
+	/** Exit mobile plan sheet and return to Stops. */
+	function closeMobilePlanSheet() {
+		if (browser) {
+			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
+			window.dispatchEvent(new CustomEvent('openStopsTab'));
+		}
+		planTabActive = false;
+		clearTripItineraries();
+		sheetSnap = 'half';
 	}
 
 	async function loadAlerts() {
@@ -397,20 +485,32 @@
 		const tripData = tripPlanData.data;
 		tripItineraries = tripData.plan?.itineraries || [];
 		tripPlanError = tripData.error || null;
+		tripPlanAttempted = true;
 		currentModal = Modal.TRIP_PLANNER;
-		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
-		// bottom sheet, so open it fully instead of at the half detent.
-		if (browser && window.innerWidth >= 768) {
+		// Desktop: sheet fills the left rail. Mobile: stay at half when results land so
+		// the map stays visible; riders can drag to full or scroll inside the sheet.
+		// Keyed off isNarrowViewport (the same matchMedia the layout uses) so a
+		// fractional width from browser zoom can't disagree with mobilePlanSheetOpen.
+		if (!isNarrowViewport) {
 			sheetSnap = 'full';
+		} else if (tripItineraries.length > 0) {
+			sheetSnap = 'half';
 		}
 	}
 
 	function handleTabSwitched() {
 		// SearchPane owns trip-plan teardown when leaving the Plan tab (it dispatches tripPlanModalClosed and calls clearTripItineraries). Here we just close any open modal for the generic tab switch.
+		planTabActive = false;
 		currentModal = null;
 	}
 
 	function handlePlanTripTabClicked() {
+		planTabActive = true;
+		// Mobile: open the plan sheet at half. Desktop: form lives in SearchPane — no
+		// empty results sheet until the rider plans a trip.
+		if (isNarrowViewport) {
+			sheetSnap = 'half';
+		}
 		closePane();
 	}
 
@@ -424,6 +524,10 @@
 		if (browser) {
 			window.addEventListener('tabSwitched', handleTabSwitched);
 			window.addEventListener('planTripTabClicked', handlePlanTripTabClicked);
+
+			mediaQueryList = window.matchMedia(NARROW_VIEWPORT_MQ);
+			isNarrowViewport = mediaQueryList.matches;
+			mediaQueryList.addEventListener('change', syncNarrowViewport);
 
 			// Clean URL params after coordinates have been captured
 			if (initialCoords) {
@@ -461,6 +565,9 @@
 		if (browser) {
 			window.removeEventListener('tabSwitched', handleTabSwitched);
 			window.removeEventListener('planTripTabClicked', handlePlanTripTabClicked);
+			if (mediaQueryList) {
+				mediaQueryList.removeEventListener('change', syncNarrowViewport);
+			}
 			if (themeChangeHandler) {
 				window.removeEventListener('themeChange', themeChangeHandler);
 			}
@@ -504,7 +611,8 @@
 				<SearchPane
 					{mapProvider}
 					cssClasses="pointer-events-auto"
-					collapsed={showCollapsedSearch}
+					collapsed={showCollapsedSearch || hideSearchForMobilePlan}
+					embedTripPlan={!mobilePlanSheetOpen}
 					{handleRouteSelected}
 					{handleViewAllRoutes}
 					{clearPolylines}
@@ -517,6 +625,19 @@
 						<SurveyLauncher />
 					{/snippet}
 				</SearchPane>
+			</div>
+
+			<!-- Mobile: sit in flow below the search pane. Desktop: pin to the map's
+			     top-right (absolute against the full-screen overlay ancestor).
+			     Wrapper stays pointer-events transparent (and shrink-wrapped) so it
+			     cannot steal map pans; the control itself opts back in. -->
+			<div
+				class="relative z-30 mx-2 mt-2 w-fit self-end md:absolute md:right-4 md:top-4 md:mx-0 md:mt-0"
+			>
+				<FavoritesFloatingControl
+					onStopClick={handleFavoriteStopClick}
+					onRouteClick={handleFavoriteRouteClick}
+				/>
 			</div>
 
 			<div class="relative mt-2 flex-1 md:mt-4">
@@ -534,6 +655,19 @@
 					<RouteModal {closePane} {mapProvider} {stops} {selectedRoute} bind:snap={sheetSnap} />
 				{:else if currentModal === Modal.ALL_ROUTES}
 					<ViewAllRoutesModal {closePane} {handleModalRouteClick} bind:snap={sheetSnap} />
+				{:else if mobilePlanSheetOpen}
+					<TripPlanModal
+						{mapProvider}
+						showForm={true}
+						hasPlanned={tripPlanAttempted}
+						{handleTripPlan}
+						{clearTripItineraries}
+						itineraries={tripItineraries}
+						error={tripPlanError}
+						loading={loadingItineraries}
+						closePane={closeMobilePlanSheet}
+						bind:snap={sheetSnap}
+					/>
 				{:else if currentModal === Modal.TRIP_PLANNER}
 					<TripPlanModal
 						{mapProvider}
@@ -567,6 +701,7 @@
 		{isRouteSelected}
 		{showRouteMap}
 		{initialCoords}
+		{startInTripPlanMode}
 		{activeRoutes}
 		{routeColors}
 		bind:mapProvider

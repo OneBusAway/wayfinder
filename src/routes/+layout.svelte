@@ -11,6 +11,7 @@
 	import analytics from '$lib/Insights';
 	import { initSystemTheme } from '$lib/systemTheme.js';
 	import { env } from '$env/dynamic/public';
+	import Toast from '$components/notification/Toast.svelte';
 
 	const faviconUrl = env.PUBLIC_FAVICON_URL || '/favicon.png';
 	const appleTouchIconUrl = env.PUBLIC_APPLE_TOUCH_ICON_URL || '/apple-touch-icon.png';
@@ -56,4 +57,5 @@
 	<main id="main-content" tabindex="-1" class="relative flex-1 overflow-hidden dark:bg-black">
 		{@render children?.()}
 	</main>
+	<Toast />
 </div>

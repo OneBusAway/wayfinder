@@ -3,11 +3,16 @@
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { mapContrastColor } from '$lib/colorUtils';
 	import { onMount, onDestroy } from 'svelte';
+	import { notifyRouteLoadFailed, notifyRouteShapeFailed } from '$lib/routeNotifications';
+	import { notifications } from '$stores/notificationStore';
 	let { mapProvider, tripId, currentSelectedStop = null } = $props();
 	let shapeId = null;
 	let tripData = null;
 	let shapeData = null;
 	let isMounted = true;
+	// Id of the toast this instance raised, so teardown clears only its own and
+	// can't wipe one owned by another component.
+	let notificationId = null;
 
 	// used to clear interval api calls
 	let currentIntervalId = null;
@@ -18,8 +23,18 @@
 		await loadRouteDataPromise;
 	});
 
+	// A retry restarts the load, so it has to become the promise onDestroy
+	// awaits — otherwise teardown races an in-flight retry and the retry's
+	// camera moves land after the next view has taken over the map.
+	function retryLoadRouteData() {
+		loadRouteDataPromise = loadRouteData();
+	}
+
 	onDestroy(async () => {
 		isMounted = false;
+		// Drop our own toast: a stale Retry could otherwise clear map content
+		// owned by the next view.
+		notifications.dismiss(notificationId);
 		if (loadRouteDataPromise) {
 			await loadRouteDataPromise;
 		}
@@ -59,6 +74,9 @@
 			mapProvider.removeStopMarkers();
 
 			const tripResponse = await fetch(`/api/oba/trip-details/${tripId}`);
+			if (!tripResponse.ok) {
+				throw new Error(`Trip details request failed: ${tripResponse.status}`);
+			}
 			tripData = await tripResponse.json();
 
 			const tripReferences = tripData?.data?.references?.trips;
@@ -72,11 +90,34 @@
 			const routeColor = mapContrastColor(route?.color, { dark });
 
 			if (shapeId && isMounted) {
-				const shapeResponse = await fetch(`/api/oba/shape/${shapeId}`);
-				shapeData = await shapeResponse.json();
-				const shapePoints = shapeData?.data?.entry?.points;
-				if (shapePoints && isMounted) {
-					await mapProvider.createPolyline(shapePoints, { color: routeColor });
+				// Scoped to its own try so a shape failure still leaves the stops and
+				// vehicles below to render — the trip is usable without the line.
+				let polyline = null;
+				try {
+					const shapeResponse = await fetch(`/api/oba/shape/${shapeId}`);
+					if (!shapeResponse.ok) {
+						throw new Error(`Shape request failed: ${shapeResponse.status}`);
+					}
+					shapeData = await shapeResponse.json();
+					const shapePoints = shapeData?.data?.entry?.points;
+					// createPolyline returns null when the encoded shape fails to decode.
+					polyline = shapePoints
+						? await mapProvider.createPolyline(shapePoints, { color: routeColor })
+						: null;
+				} catch (error) {
+					console.error(`Error drawing route shape for trip ${tripId}:`, error);
+				}
+
+				// Re-check after the awaits above: the user may have closed this view
+				// while the shape was in flight, in which case onDestroy has already
+				// run and a toast raised now would have no owner to dismiss it.
+				if (!isMounted) return;
+
+				// This component draws one polyline for the whole trip, so no polyline
+				// means no route line at all — a total failure worth a retry, not the
+				// subtler "a segment is missing" warning.
+				if (!polyline) {
+					notificationId = notifyRouteShapeFailed(retryLoadRouteData);
 				}
 			}
 
@@ -122,6 +163,9 @@
 			}
 		} catch (error) {
 			console.error(`Error loading route data for trip ${tripId}:`, error);
+			if (isMounted) {
+				notificationId = notifyRouteLoadFailed(retryLoadRouteData);
+			}
 		}
 	}
 </script>

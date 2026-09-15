@@ -9,7 +9,8 @@ import {
 	getBrightness,
 	adjustColorForDarkMode,
 	mapContrastColor,
-	polylineArrowColor
+	polylineArrowColor,
+	contrastRatio
 } from '$lib/colorUtils.js';
 
 describe('colorUtils', () => {
@@ -42,6 +43,7 @@ describe('colorUtils', () => {
 			expect(hexToRgb('#AABBCC')).toEqual({ r: 170, g: 187, b: 204 });
 			expect(hexToRgb('#aAbBcC')).toEqual({ r: 170, g: 187, b: 204 });
 			expect(hexToRgb('#ABC')).toEqual({ r: 170, g: 187, b: 204 });
+			expect(hexToRgb('#486621FF')).toEqual({ r: 72, g: 102, b: 33 });
 		});
 
 		test('returns null for invalid input', () => {
@@ -57,6 +59,11 @@ describe('colorUtils', () => {
 			expect(hexToRgb(undefined)).toBeNull();
 			expect(hexToRgb(123456)).toBeNull();
 			expect(hexToRgb({})).toBeNull();
+		});
+
+		test('converts 8-digit hex by ignoring alpha channel', () => {
+			expect(hexToRgb('#486621ff')).toEqual({ r: 72, g: 102, b: 33 });
+			expect(hexToRgb('#48662180')).toEqual({ r: 72, g: 102, b: 33 });
 		});
 	});
 
@@ -213,7 +220,7 @@ describe('colorUtils', () => {
 
 		test('works with shorthand hex', () => {
 			const palette = generatePalette('#f00');
-			expect(palette['500']).toBe('#f00');
+			expect(palette['500']).toBe('#ff0000');
 			expect(Object.keys(palette).length).toBe(10);
 		});
 
@@ -257,6 +264,19 @@ describe('colorUtils', () => {
 	});
 
 	describe('darkenColor', () => {
+		let consoleWarnSpy;
+		let consoleErrorSpy;
+
+		beforeEach(() => {
+			consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			consoleWarnSpy.mockRestore();
+			consoleErrorSpy.mockRestore();
+		});
+
 		test('should darken a light color by 50%', () => {
 			const result = darkenColor('#ffffff', 0.5);
 			expect(result).toBe('#808080'); // Mid-gray
@@ -278,14 +298,45 @@ describe('colorUtils', () => {
 			expect(result).toBe('#ff0000');
 		});
 
-		test('should return black for null or undefined input', () => {
-			expect(darkenColor(null, 0.5)).toBe('#000000');
-			expect(darkenColor(undefined, 0.5)).toBe('#000000');
-			expect(darkenColor('', 0.5)).toBe('#000000');
+		test('falls back to default on invalid input', () => {
+			const result = darkenColor('invalid', 0.15);
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid", falling back to "#486621"'
+			);
+			expect(result).toBe('#3d571c');
 		});
 
-		test('should return black for invalid hex', () => {
-			expect(darkenColor('not-a-color', 0.5)).toBe('#000000');
+		test('handles null fallback gracefully', () => {
+			const result = darkenColor('invalid', 0.15, null);
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid" and no fallback available'
+			);
+			expect(result).toBe('#000000');
+		});
+
+		test('uses custom fallback when provided', () => {
+			const result = darkenColor('invalid', 0.5, '#ffffff');
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid", falling back to "#ffffff"'
+			);
+			expect(result).toBe('#808080');
+		});
+
+		test('handles invalid custom fallback gracefully', () => {
+			const result = darkenColor('invalid', 0.15, 'invalid-fallback');
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid", falling back to "invalid-fallback"'
+			);
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid-fallback" and no fallback available'
+			);
+
+			expect(result).toBe('#000000');
 		});
 
 		test('result is always darker than the input', () => {
@@ -293,9 +344,32 @@ describe('colorUtils', () => {
 			const darkened = hexToRgb(darkenColor('#486621', 0.15));
 			expect(getBrightness(darkened)).toBeLessThan(getBrightness(original));
 		});
+
+		test('brand accent hover color maintains AA contrast with white text', () => {
+			const hover = darkenColor(process.env.COLOR_BRAND_ACCENT, 0.15);
+
+			expect(contrastRatio('#ffffff', hover)).toBeGreaterThanOrEqual(4.5);
+		});
+
+		test('should accept 8-digit hex colors', () => {
+			expect(darkenColor('#486621ff', 0.15)).toBe('#3d571c');
+		});
 	});
 
 	describe('lightenColor', () => {
+		let consoleWarnSpy;
+		let consoleErrorSpy;
+
+		beforeEach(() => {
+			consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			consoleWarnSpy.mockRestore();
+			consoleErrorSpy.mockRestore();
+		});
+
 		test('should lighten a dark color by 50%', () => {
 			const result = lightenColor('#000000', 0.5);
 			expect(result).toBe('#808080'); // Mid-gray
@@ -321,14 +395,44 @@ describe('colorUtils', () => {
 			expect(result).toBe('#ff8080');
 		});
 
-		test('should return white for null or undefined input', () => {
-			expect(lightenColor(null, 0.5)).toBe('#ffffff');
-			expect(lightenColor(undefined, 0.5)).toBe('#ffffff');
-			expect(lightenColor('', 0.5)).toBe('#ffffff');
+		test('falls back to default on invalid input', () => {
+			const result = lightenColor('invalid', 0.15);
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid", falling back to "#486621"'
+			);
+			expect(result).toBe('#637d42');
 		});
 
-		test('should return white for invalid hex color', () => {
-			const result = lightenColor('not-a-color', 0.5);
+		test('handles null fallback gracefully', () => {
+			const result = lightenColor('invalid', 0.15, null);
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid" and no fallback available'
+			);
+			expect(result).toBe('#ffffff');
+		});
+
+		test('uses custom fallback when provided', () => {
+			const result = lightenColor('invalid', 0.5, '#000000');
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid", falling back to "#000000"'
+			);
+			expect(result).toBe('#808080');
+		});
+
+		test('handles invalid custom fallback gracefully', () => {
+			const result = lightenColor('invalid', 0.15, 'invalid-fallback');
+
+			expect(consoleWarnSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid", falling back to "invalid-fallback"'
+			);
+
+			expect(consoleErrorSpy).toHaveBeenCalledWith(
+				'Invalid hex color "invalid-fallback" and no fallback available'
+			);
+
 			expect(result).toBe('#ffffff');
 		});
 	});

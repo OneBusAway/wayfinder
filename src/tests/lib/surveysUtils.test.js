@@ -6,7 +6,8 @@ import {
 	getMapSurvey,
 	submitHeroQuestion,
 	updateSurveyResponse,
-	getPrioritySurvey
+	getPrioritySurvey,
+	skipSurvey
 } from '../../lib/Surveys/surveyUtils';
 
 beforeEach(() => {
@@ -14,7 +15,8 @@ beforeEach(() => {
 	vi.stubGlobal('localStorage', {
 		getItem: vi.fn((key) => store[key] || null),
 		setItem: vi.fn((key, value) => {
-			store[key] = value;
+			// Storage coerces on write, so getItem always hands back a string.
+			store[key] = String(value);
 		}),
 		removeItem: vi.fn((key) => {
 			delete store[key];
@@ -316,5 +318,46 @@ describe('Survey Visibility and Multiple Responses', () => {
 		const selectedSurvey = await getPrioritySurvey(surveys, null);
 
 		expect(selectedSurvey).toEqual(surveys[2]);
+	});
+});
+
+describe('skipSurvey', () => {
+	const NOW = 1787700000000;
+
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('should only set the timestamp when skipping a recurring survey', () => {
+		const survey = { id: 1, allows_multiple_responses: true, always_visible: true };
+
+		skipSurvey(survey);
+
+		expect(localStorage.getItem('survey_1_skipped_timestamp')).toBe(String(NOW));
+		expect(localStorage.getItem('survey_1_skipped')).toBeNull();
+	});
+
+	it('should only set the permanent flag when skipping a one-time survey', () => {
+		const survey = { id: 2, allows_multiple_responses: false, always_visible: false };
+
+		skipSurvey(survey);
+
+		expect(localStorage.getItem('survey_2_skipped')).toBe('true');
+		expect(localStorage.getItem('survey_2_skipped_timestamp')).toBeNull();
+	});
+
+	it('should clear a stale permanent flag when skipping a recurring survey', () => {
+		const survey = { id: 3, allows_multiple_responses: true, always_visible: true };
+		localStorage.setItem('survey_3_skipped', 'true');
+
+		skipSurvey(survey);
+
+		expect(localStorage.getItem('survey_3_skipped')).toBeNull();
+		expect(localStorage.getItem('survey_3_skipped_timestamp')).toBe(String(NOW));
 	});
 });

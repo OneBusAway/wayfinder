@@ -39,22 +39,19 @@ for (const line of envContent.split('\n')) {
 const errors = [];
 const warnings = [];
 
-// Validate each schema entry
-for (const [name, rule] of Object.entries(schema)) {
-	const value = parsed[name];
-	const isPresent = name in parsed;
-
-	// Check required
-	if (rule.required && !isPresent) {
-		errors.push(`${name}: missing (required)`);
-		continue;
-	}
-
-	if (!isPresent) continue;
-
-	// Check empty values
+/**
+ * Checks one variable's value against a schema rule, reporting by pushing onto
+ * the module-level `errors` and `warnings` arrays. Deprecated aliases are
+ * checked against their replacement's rule, so a rule is written down once.
+ *
+ * @param {string} name variable name to report against
+ * @param {string} value the parsed value
+ * @param {object} rule the schema entry to check against
+ * @returns {void}
+ */
+function validateVariable(name, value, rule) {
 	if (value === '') {
-		if (rule.allowEmpty) continue;
+		if (rule.allowEmpty) return;
 
 		// Detect unquoted hex colors that dotenv treated as comments
 		const raw = rawLines.get(name) || '';
@@ -65,10 +62,9 @@ for (const [name, rule] of Object.entries(schema)) {
 		} else {
 			warnings.push(`${name}: present but empty (set allowEmpty or remove)`);
 		}
-		continue;
+		return;
 	}
 
-	// Type-specific validation
 	switch (rule.type) {
 		case 'url':
 			try {
@@ -128,10 +124,62 @@ for (const [name, rule] of Object.entries(schema)) {
 	}
 }
 
+// Validate each schema entry, plus any pre-rename aliases still in use
+const deprecatedNames = new Set();
+
+/** The value the app will actually read for `name`, counting empty as unset. */
+function effectiveValue(name) {
+	if (parsed[name]) return parsed[name];
+	for (const alias of schema[name]?.deprecatedNames ?? []) {
+		if (parsed[alias]) return parsed[alias];
+	}
+	return undefined;
+}
+
+for (const [name, rule] of Object.entries(schema)) {
+	for (const alias of rule.deprecatedNames ?? []) {
+		deprecatedNames.add(alias);
+
+		// An empty alias has no effect either way, so there is nothing to say.
+		if (!parsed[alias]) continue;
+
+		// `readSetting()` in src/lib/sidecarConfig.js prefers the current name only
+		// when it holds a non-empty value, so an empty replacement means the alias
+		// is still what takes effect. A superseded alias is not validated: a value
+		// the app never reads must not be able to fail the build.
+		if (parsed[name]) {
+			warnings.push(`${alias}: deprecated and ignored — ${name} is also set`);
+		} else {
+			warnings.push(`${alias}: deprecated, rename to ${name}`);
+			validateVariable(alias, parsed[alias], rule);
+		}
+	}
+
+	const isPresent = name in parsed;
+
+	if (rule.required && !isPresent && effectiveValue(name) === undefined) {
+		errors.push(`${name}: missing (required)`);
+		continue;
+	}
+
+	if (!isPresent) continue;
+
+	validateVariable(name, parsed[name], rule);
+}
+
+// Cross-field requirements, e.g. a region ID is meaningless without a base URL
+// but mandatory once one is set.
+for (const [name, rule] of Object.entries(schema)) {
+	if (!rule.requiredWith) continue;
+	if (effectiveValue(rule.requiredWith) && !effectiveValue(name)) {
+		errors.push(`${name}: required when ${rule.requiredWith} is set`);
+	}
+}
+
 // Warn on unknown variables
 const schemaKeys = new Set(Object.keys(schema));
 for (const name of Object.keys(parsed)) {
-	if (!schemaKeys.has(name)) {
+	if (!schemaKeys.has(name) && !deprecatedNames.has(name)) {
 		warnings.push(`${name}: not defined in env-schema.json`);
 	}
 }

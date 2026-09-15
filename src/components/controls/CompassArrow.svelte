@@ -32,9 +32,10 @@
 		NW: 'rotate-225'
 	};
 
-	// Wrapping the icon in a span we control means the rotation class re-applies
-	// reactively when `stopDirection` changes, independent of how the
-	// FontAwesome component forwards its own `class` prop to the rendered SVG.
+	// Wrap the icon in a span we control so the rotation class updates
+	// reactively when `stopDirection` changes. The FontAwesome component
+	// only reads its `class` prop during initialization, so later changes
+	// aren't reflected on the rendered SVG.
 	let rotationClass = $derived(ROTATION_CLASS_BY_DIRECTION[stopDirection] ?? 'hidden');
 </script>
 

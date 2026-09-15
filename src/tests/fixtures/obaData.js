@@ -145,54 +145,90 @@ export const mockStopsForRouteData = [
 	}
 ];
 
+// Real OBA Situation shape (allAffects + TranslatedString wrappers). Reasons /
+// consequences use the GTFS vocabulary Puget Sound (and most OBA servers) emit
+// — e.g. CONSTRUCTION / DETOUR — not the TPEG spellings in the SDK typings.
 export const mockServiceAlertsData = [
 	{
 		id: 'alert_1',
-		summary: 'Route 10 Detour',
-		description:
-			'Route 10 is experiencing a detour due to construction on Pine Street. Buses will use alternative routing via Pike Street.',
+		summary: { lang: 'en', value: 'Route 10 Detour' },
+		description: {
+			lang: 'en',
+			value:
+				'Route 10 is experiencing a detour due to construction on Pine Street. Buses will use alternative routing via Pike Street.'
+		},
 		severity: 'warning',
 		reason: 'CONSTRUCTION',
-		effect: 'DETOUR',
-		cause: 'CONSTRUCTION',
-		url: 'https://metro.kingcounty.gov/alerts/route-10-detour',
+		url: { lang: 'en', value: 'https://metro.kingcounty.gov/alerts/route-10-detour' },
 		activeWindows: [
 			{
 				from: Date.now() - 86400000, // 1 day ago
 				to: Date.now() + 604800000 // 1 week from now
 			}
 		],
-		informedEntities: [
+		consequences: [{ condition: 'DETOUR' }],
+		allAffects: [
 			{
 				agencyId: '1',
 				routeId: '1_100479',
 				stopId: null,
-				tripId: null
+				tripId: null,
+				directionId: null
 			}
 		]
 	},
 	{
 		id: 'alert_2',
-		summary: 'Downtown Transit Tunnel Closed',
-		description:
-			'The Downtown Seattle Transit Tunnel is temporarily closed for maintenance. All bus routes are operating on surface streets.',
+		summary: { lang: 'en', value: 'Downtown Transit Tunnel Closed' },
+		description: {
+			lang: 'en',
+			value:
+				'The Downtown Seattle Transit Tunnel is temporarily closed for maintenance. All bus routes are operating on surface streets.'
+		},
 		severity: 'severe',
 		reason: 'MAINTENANCE',
-		effect: 'DETOUR',
-		cause: 'MAINTENANCE',
-		url: 'https://metro.kingcounty.gov/alerts/tunnel-closure',
+		url: { lang: 'en', value: 'https://metro.kingcounty.gov/alerts/tunnel-closure' },
 		activeWindows: [
 			{
 				from: Date.now() - 3600000, // 1 hour ago
 				to: Date.now() + 7200000 // 2 hours from now
 			}
 		],
-		informedEntities: [
+		consequences: [{ condition: 'DETOUR' }],
+		allAffects: [
 			{
 				agencyId: '1',
 				routeId: null,
 				stopId: null,
-				tripId: null
+				tripId: null,
+				directionId: null
+			}
+		]
+	},
+	{
+		id: 'alert_3',
+		summary: { lang: 'en', value: 'Stop temporarily relocated' },
+		description: {
+			lang: 'en',
+			value: 'Pine St & 3rd Ave boardings have moved one block north during sidewalk work.'
+		},
+		severity: 'noImpact',
+		reason: 'CONSTRUCTION',
+		url: { lang: 'en', value: 'https://metro.kingcounty.gov/alerts/stop-relocate' },
+		activeWindows: [
+			{
+				from: Date.now() - 7200000,
+				to: Date.now() + 86400000
+			}
+		],
+		consequences: [{ condition: 'STOP_MOVED' }],
+		allAffects: [
+			{
+				agencyId: '1',
+				routeId: null,
+				stopId: '1_75403',
+				tripId: null,
+				directionId: null
 			}
 		]
 	}
