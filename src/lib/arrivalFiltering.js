@@ -56,18 +56,23 @@ export function filterDeparted(arrivals, now) {
 }
 
 /**
+ * True when `arrival` is the row for a trip's final stop with a vehicle
+ * assigned -- the only rows that can be the arrival half of a layover pair.
+ */
+function endsTripHere(arrival) {
+	return arrival.stopSequence === arrival.totalStopsInTrip - 1 && Boolean(arrival.vehicleId);
+}
+
+/**
  * True when `departure` is the same vehicle beginning the next trip of its
  * block right after finishing `arrival`'s trip at this stop.
  *
  * "Next trip" is pinned to blockTripSequence + 1 so a vehicle on a short route
  * that revisits the stop later in the window (trip N+2, N+3, ...) is not
- * merged with an unrelated earlier arrival. The cheap arrival-side checks run
- * first so the inner loop exits early for the common non-final-stop row.
+ * merged with an unrelated earlier arrival.
  */
-function isLayoverContinuation(arrival, departure) {
+function continuesTrip(arrival, departure) {
 	return (
-		arrival.stopSequence === arrival.totalStopsInTrip - 1 &&
-		Boolean(arrival.vehicleId) &&
 		departure.stopSequence === 0 &&
 		departure.vehicleId === arrival.vehicleId &&
 		departure.serviceDate === arrival.serviceDate &&
@@ -92,20 +97,28 @@ export function collapseLayovers(arrivals) {
 	if (!arrivals || arrivals.length === 0) return [];
 
 	return arrivals.filter(
-		(arrival) => !arrivals.some((other) => isLayoverContinuation(arrival, other))
+		(arrival) =>
+			!(
+				arrival &&
+				endsTripHere(arrival) &&
+				arrivals.some((other) => other && continuesTrip(arrival, other))
+			)
 	);
 }
 
 /**
- * The rows a rider should see for a stop: departed rows removed, then
- * layover pairs collapsed. Every consumer that renders or reasons about the
- * arrival list (StopPane, the map's active-route picker) goes through this so
- * they cannot disagree about which trips are boardable.
+ * The rows a rider should see for a stop: departed rows removed (when a clock
+ * is supplied), then layover pairs collapsed. Every consumer that renders or
+ * reasons about the arrival list (StopPane, the map's active-route picker)
+ * goes through this so they cannot disagree about which trips are boardable.
  *
  * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
- * @param {number} now - Current time in milliseconds since epoch
+ * @param {number} [now] - Current time in ms since epoch; omit to skip the
+ *   clock-dependent departed filter (e.g. a server-rendered seed that must
+ *   hydrate identically on the client)
  * @returns {Array<object>} Boardable arrivals in their original order
  */
 export function visibleArrivals(arrivals, now) {
-	return collapseLayovers(filterDeparted(arrivals, now));
+	const upcoming = Number.isFinite(now) ? filterDeparted(arrivals, now) : arrivals;
+	return collapseLayovers(upcoming);
 }

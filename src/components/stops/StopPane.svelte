@@ -15,7 +15,7 @@
 	import analytics from '$lib/Insights';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
-	import { collapseLayovers, makeKey, visibleArrivals } from '$lib/arrivalFiltering';
+	import { makeKey, visibleArrivals } from '$lib/arrivalFiltering';
 	import { fade } from 'svelte/transition';
 
 	/**
@@ -48,10 +48,12 @@
 	const MINUTES_AFTER_INCREMENT = 30;
 
 	// Seed from any server-rendered response so the standalone page shows arrivals
-	// immediately instead of flashing the first-load skeleton. Only the
-	// clock-independent cleanup runs here so server and client render the same
-	// seed; departed rows fall away on the first client poll.
-	let arrivalsAndDepartures = $state(seedArrivals(arrivalsAndDeparturesResponse?.data?.entry));
+	// immediately instead of flashing the first-load skeleton. No clock is passed
+	// so server and client render the same seed; departed rows fall away on the
+	// first client poll.
+	let arrivalsAndDepartures = $state(
+		withVisibleArrivals(arrivalsAndDeparturesResponse?.data?.entry)
+	);
 	let error = $state();
 	// Seed alerts from the same server-rendered response so they show on first
 	// render instead of waiting for the initial client fetch to complete.
@@ -91,9 +93,16 @@
 		}
 		return furthest;
 	}
-	function seedArrivals(entry) {
-		if (!entry) return entry;
-		return { ...entry, arrivalsAndDepartures: collapseLayovers(entry.arrivalsAndDepartures) };
+	/**
+	 * Copies a response entry with its arrival list reduced to the rows the
+	 * rider should see (see visibleArrivals). Returns null for a missing entry
+	 * so the first-load skeleton renders.
+	 * @param {any} [entry]
+	 * @param {number} [now]
+	 */
+	function withVisibleArrivals(entry, now) {
+		if (!entry) return null;
+		return { ...entry, arrivalsAndDepartures: visibleArrivals(entry.arrivalsAndDepartures, now) };
 	}
 
 	/**
@@ -124,11 +133,7 @@
 
 			const data = await response.json();
 			arrivalsAndDeparturesResponse = data;
-			const entry = data.data.entry;
-			arrivalsAndDepartures = {
-				...entry,
-				arrivalsAndDepartures: visibleArrivals(entry.arrivalsAndDepartures, Date.now())
-			};
+			arrivalsAndDepartures = withVisibleArrivals(data.data.entry, Date.now());
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
 			error = null; // Clear previous errors if successful
 			if (isFirstLoad) {

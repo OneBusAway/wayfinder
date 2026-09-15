@@ -146,6 +146,39 @@ describe('activeRoutesFromArrivals', () => {
 		expect(result.map((r) => r.tripId)).toEqual(['t_out']);
 	});
 
+	test('collapses layovers even without a clock, so a seeded map matches a seeded list', () => {
+		const result = activeRoutesFromArrivals(
+			makeResponse([
+				{
+					routeId: 'r_10',
+					tripId: 't_in',
+					serviceDate: 1,
+					vehicleId: 'v_1',
+					stopSequence: 20,
+					totalStopsInTrip: 21,
+					blockTripSequence: 5,
+					predicted: true,
+					predictedArrivalTime: 2000,
+					scheduledArrivalTime: 2000
+				},
+				{
+					routeId: 'r_10',
+					tripId: 't_out',
+					serviceDate: 1,
+					vehicleId: 'v_1',
+					stopSequence: 0,
+					totalStopsInTrip: 13,
+					blockTripSequence: 6,
+					predicted: true,
+					predictedArrivalTime: 9000,
+					scheduledArrivalTime: 9000
+				}
+			])
+		);
+
+		expect(result.map((r) => r.tripId)).toEqual(['t_out']);
+	});
+
 	test('excludes departed arrivals when the caller supplies the current time', () => {
 		const minute = 60_000;
 		const result = activeRoutesFromArrivals(

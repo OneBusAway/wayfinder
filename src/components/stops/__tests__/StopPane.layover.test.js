@@ -1,8 +1,9 @@
 // Integration coverage for layover collapsing in StopPane's arrival list.
 // StopPane.test.js mocks the accordion wrappers, so it can never observe how
 // many rows the list renders. Here the REAL SingleSelectAccordion and
-// AccordionItem are used and only the row body (ArrivalDeparture) is mocked,
-// so each rendered row shows up as one call to the mock with its arrival.
+// AccordionItem are used; the row body (ArrivalDeparture) and the unrelated
+// panes are stubbed, so each rendered row shows up as one call to the
+// ArrivalDeparture mock with its arrival.
 import { render, waitFor } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach } from 'vitest';
 import StopPane from '../StopPane.svelte';
@@ -12,40 +13,24 @@ import {
 	mockArrivalsAndDeparturesResponse
 } from '../../../tests/fixtures/obaData.js';
 
-vi.mock('$components/ArrivalDeparture.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
+const stubComponent = vi.hoisted(() => () => ({
+	default: vi.fn(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
 }));
 
-vi.mock('$components/oba/TripDetailsPane.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
-}));
+vi.mock('$components/ArrivalDeparture.svelte', stubComponent);
+vi.mock('$components/oba/TripDetailsPane.svelte', stubComponent);
+vi.mock('$components/surveys/SurveyModal.svelte', stubComponent);
+vi.mock('$components/surveys/SurveyBanner.svelte', stubComponent);
+vi.mock('$components/service-alerts/ServiceAlerts.svelte', stubComponent);
 
-vi.mock('$components/surveys/SurveyModal.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
-}));
-
-vi.mock('$components/surveys/SurveyBanner.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
-}));
-
-vi.mock('$components/service-alerts/ServiceAlerts.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
-}));
-
-vi.mock('$components/LoadingSpinner.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
-}));
-
-vi.mock('$stores/surveyStore', () => ({
-	surveyStore: {
-		subscribe: vi.fn((fn) => {
-			fn(null);
-			return { unsubscribe: () => {} };
-		})
-	},
-	showSurveyModal: { set: vi.fn() },
-	markSurveyAnswered: vi.fn()
-}));
+vi.mock('$stores/surveyStore', async () => {
+	const { createMockStore } = await import('../../../tests/helpers/test-utils.js');
+	return {
+		surveyStore: createMockStore(null),
+		showSurveyModal: { set: vi.fn() },
+		markSurveyAnswered: vi.fn()
+	};
+});
 
 vi.mock('$lib/Insights', () => ({
 	default: { reportArrivalClicked: vi.fn() }
@@ -129,7 +114,7 @@ describe('StopPane layover collapsing', () => {
 		render(StopPane, { props: defaultProps });
 
 		await waitFor(() => {
-			expect(ArrivalDeparture).toHaveBeenCalled();
+			expect(ArrivalDeparture).toHaveBeenCalledTimes(1);
 		});
 
 		expect(renderedTripIds()).toEqual(['1_layover_departure']);
@@ -162,7 +147,7 @@ describe('StopPane layover collapsing', () => {
 		});
 
 		await waitFor(() => {
-			expect(ArrivalDeparture).toHaveBeenCalled();
+			expect(ArrivalDeparture).toHaveBeenCalledTimes(1);
 		});
 
 		expect(renderedTripIds()).toEqual(['1_layover_departure']);

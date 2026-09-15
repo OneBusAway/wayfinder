@@ -47,10 +47,10 @@ export function activeRoutesFromArrivals(response, { now } = {}) {
 	const rawArrivals = response?.data?.entry?.arrivalsAndDepartures;
 	if (!Array.isArray(rawArrivals)) return [];
 
-	// Reduce to the rows StopPane renders when the caller supplies its clock, so
-	// the map cannot draw a shape for a just-departed or laid-over trip that the
-	// list no longer shows.
-	const arrivals = Number.isFinite(now) ? visibleArrivals(rawArrivals, now) : rawArrivals;
+	// Reduce to the rows StopPane renders so the map cannot draw a shape for a
+	// laid-over trip (or, when the caller supplies its clock, a just-departed
+	// one) that the list no longer shows.
+	const arrivals = visibleArrivals(rawArrivals, now);
 
 	const routeRefs = new Map(
 		(response?.data?.references?.routes ?? []).map((route) => [route.id, route])
