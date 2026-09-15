@@ -13,7 +13,7 @@
 
 	let { data } = $props();
 	const stop = data.stopData.entry;
-	let arrivalsAndDeparturesResponse = $state(data.arrivalsAndDeparturesData || null);
+	let arrivalsAndDeparturesResponse = $state(data.arrivalsAndDeparturesResponse ?? null);
 
 	const currentUserLocation = $state($userLocation);
 

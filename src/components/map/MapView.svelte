@@ -43,6 +43,14 @@
 		startInTripPlanMode = false
 	} = $props();
 
+	// Highlight the vehicle by the trip it is actually running, not the trip of
+	// the expanded row. For a laid-over bus the list shows only the next trip's
+	// row (see collapseLayovers), while the vehicle feed keeps reporting the
+	// finishing trip as active until the bus pulls out.
+	let highlightedTripId = $derived(
+		selectedTrip?.tripStatus?.activeTripId ?? selectedTrip?.tripId ?? null
+	);
+
 	let routeStopIds = $state(new Map());
 	let liveCounts = $state(new Map());
 
@@ -411,7 +419,7 @@
 			{activeRoutes}
 			{routeColors}
 			promotedRouteId={selectedRoute?.id ?? null}
-			highlightedTripId={selectedTrip?.tripId ?? null}
+			{highlightedTripId}
 			bind:routeStopIds
 			bind:liveCounts
 		/>

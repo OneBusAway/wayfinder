@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { filterDeparted, makeKey } from '../arrivalFiltering';
+import { collapseLayovers, filterDeparted, makeKey, visibleArrivals } from '../arrivalFiltering';
 
 // Factory function for creating test arrival objects
 function makeArrival({
@@ -164,5 +164,172 @@ describe('filterDeparted', () => {
 		});
 		const result = filterDeparted([arrival], now);
 		expect(result).toHaveLength(1);
+	});
+});
+
+// A vehicle finishing trip N at this stop (its final stop) and then starting
+// trip N+1 here (first stop) produces two rows for one physical bus sitting
+// at the curb. Modeled on King County Metro route 10 at stop 1_11370.
+const serviceDate = 1789369200000;
+const t = (mins) => serviceDate + mins * 60000;
+
+function makeLayoverPair({ arrivalOverrides = {}, departureOverrides = {} } = {}) {
+	const arrival = makeArrival({
+		tripId: '1_846336761',
+		serviceDate,
+		vehicleId: '1_4391',
+		stopSequence: 20,
+		totalStopsInTrip: 21,
+		blockTripSequence: 5,
+		scheduledArrivalTime: t(1178),
+		...arrivalOverrides
+	});
+	const departure = makeArrival({
+		tripId: '1_846336651',
+		serviceDate,
+		vehicleId: '1_4391',
+		stopSequence: 0,
+		totalStopsInTrip: 13,
+		blockTripSequence: 6,
+		scheduledArrivalTime: t(1196),
+		...departureOverrides
+	});
+	return { arrival, departure };
+}
+
+describe('collapseLayovers', () => {
+	it('drops the final-stop arrival when the same vehicle departs on the next block trip', () => {
+		const { arrival, departure } = makeLayoverPair();
+		const result = collapseLayovers([arrival, departure]);
+		expect(result).toEqual([departure]);
+	});
+
+	it('keeps both rows when the departure is not the next trip in the block (short route, wide window)', () => {
+		// The vehicle already left on trip 6 and is back at this stop later on
+		// trip 7 -- the arrival at trip 5's end and trip 7's departure are
+		// unrelated visits and must both stay.
+		const { arrival, departure } = makeLayoverPair({
+			departureOverrides: {
+				blockTripSequence: 7,
+				tripId: '1_846336999',
+				scheduledArrivalTime: t(1256)
+			}
+		});
+		const result = collapseLayovers([arrival, departure]);
+		expect(result).toEqual([arrival, departure]);
+	});
+
+	it('keeps both rows when the trips are served by different vehicles', () => {
+		const { arrival, departure } = makeLayoverPair({
+			departureOverrides: { vehicleId: '1_8222301' }
+		});
+		const result = collapseLayovers([arrival, departure]);
+		expect(result).toEqual([arrival, departure]);
+	});
+
+	it('keeps an arrival that is not at the final stop of its trip', () => {
+		// A mid-route through-stop is not a layover even if the block's next
+		// trip happens to start here as well.
+		const { arrival, departure } = makeLayoverPair({
+			arrivalOverrides: { stopSequence: 12 }
+		});
+		const result = collapseLayovers([arrival, departure]);
+		expect(result).toEqual([arrival, departure]);
+	});
+
+	it('keeps both rows when neither has a vehicle assigned', () => {
+		for (const vehicleId of ['', null, undefined]) {
+			const { arrival, departure } = makeLayoverPair({
+				arrivalOverrides: { vehicleId },
+				departureOverrides: { vehicleId }
+			});
+			expect(collapseLayovers([arrival, departure])).toEqual([arrival, departure]);
+		}
+	});
+
+	it('keeps both rows when the trips belong to different service dates', () => {
+		const { arrival, departure } = makeLayoverPair({
+			departureOverrides: { serviceDate: serviceDate + 86400000 }
+		});
+		const result = collapseLayovers([arrival, departure]);
+		expect(result).toEqual([arrival, departure]);
+	});
+
+	it('collapses across routes when an interlined block changes route at this stop', () => {
+		// The finishing trip's route is not boardable here (it is that route's
+		// last stop), so only the departing route's row survives.
+		const { arrival, departure } = makeLayoverPair({
+			arrivalOverrides: { routeId: '1_100' },
+			departureOverrides: { routeId: '1_200' }
+		});
+		expect(collapseLayovers([arrival, departure])).toEqual([departure]);
+	});
+
+	it('collapses each adjoining pair when a vehicle lays over here twice in the window', () => {
+		const first = makeLayoverPair();
+		const second = makeLayoverPair({
+			arrivalOverrides: {
+				tripId: '1_846336641',
+				blockTripSequence: 7,
+				scheduledArrivalTime: t(1238)
+			},
+			departureOverrides: {
+				tripId: '1_846336631',
+				blockTripSequence: 8,
+				scheduledArrivalTime: t(1256)
+			}
+		});
+		const result = collapseLayovers([
+			first.arrival,
+			first.departure,
+			second.arrival,
+			second.departure
+		]);
+		expect(result).toEqual([first.departure, second.departure]);
+	});
+
+	it('leaves unrelated arrivals untouched and preserves order', () => {
+		const { arrival, departure } = makeLayoverPair();
+		const other = makeArrival({
+			tripId: '1_other',
+			serviceDate,
+			vehicleId: '1_9999',
+			stopSequence: 4,
+			totalStopsInTrip: 30,
+			blockTripSequence: 2,
+			scheduledArrivalTime: t(1180)
+		});
+		const result = collapseLayovers([other, arrival, departure]);
+		expect(result).toEqual([other, departure]);
+	});
+
+	it('returns an empty array for null or empty input', () => {
+		expect(collapseLayovers(null)).toEqual([]);
+		expect(collapseLayovers(undefined)).toEqual([]);
+		expect(collapseLayovers([])).toEqual([]);
+	});
+
+	it('passes null rows through untouched', () => {
+		// activeRoutesFromArrivals tolerates null entries; the collapse must not
+		// dereference them.
+		const { arrival, departure } = makeLayoverPair();
+		expect(collapseLayovers([null, arrival, departure])).toEqual([null, departure]);
+	});
+});
+
+describe('visibleArrivals', () => {
+	it('drops departed rows and then collapses layover pairs', () => {
+		const departed = makeArrival({ tripId: '1_gone', serviceDate, scheduledArrivalTime: t(1170) });
+		const { arrival, departure } = makeLayoverPair();
+		expect(visibleArrivals([departed, arrival, departure], t(1175))).toEqual([departure]);
+	});
+
+	it('skips the departed filter but still collapses layovers when no clock is supplied', () => {
+		// A server-rendered seed has no trustworthy clock, so departed rows are
+		// left for the first client poll; the clock-independent collapse still
+		// runs so the seed and the first poll agree on the layover pair.
+		const departed = makeArrival({ tripId: '1_gone', serviceDate, scheduledArrivalTime: t(1170) });
+		const { arrival, departure } = makeLayoverPair();
+		expect(visibleArrivals([departed, arrival, departure])).toEqual([departed, departure]);
 	});
 });
