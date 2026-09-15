@@ -1,4 +1,4 @@
-import { filterDeparted } from '$lib/arrivalFiltering.js';
+import { visibleArrivals } from '$lib/arrivalFiltering.js';
 import { mapContrastColor, contrastRatio } from '$lib/colorUtils.js';
 import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';
 
@@ -47,11 +47,10 @@ export function activeRoutesFromArrivals(response, { now } = {}) {
 	const rawArrivals = response?.data?.entry?.arrivalsAndDepartures;
 	if (!Array.isArray(rawArrivals)) return [];
 
-	// StopPane filters departed rows before rendering them. Apply the same rule
-	// here when the caller supplies its clock so the map cannot choose a stale,
-	// just-departed trip as the only shape candidate for a route that still has
-	// boardable arrivals.
-	const arrivals = Number.isFinite(now) ? filterDeparted(rawArrivals, now) : rawArrivals;
+	// Reduce to the rows StopPane renders when the caller supplies its clock, so
+	// the map cannot draw a shape for a just-departed or laid-over trip that the
+	// list no longer shows.
+	const arrivals = Number.isFinite(now) ? visibleArrivals(rawArrivals, now) : rawArrivals;
 
 	const routeRefs = new Map(
 		(response?.data?.references?.routes ?? []).map((route) => [route.id, route])

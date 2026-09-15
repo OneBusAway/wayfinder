@@ -15,7 +15,7 @@
 	import analytics from '$lib/Insights';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
-	import { collapseLayovers, filterDeparted, makeKey } from '$lib/arrivalFiltering';
+	import { collapseLayovers, makeKey, visibleArrivals } from '$lib/arrivalFiltering';
 	import { fade } from 'svelte/transition';
 
 	/**
@@ -48,7 +48,9 @@
 	const MINUTES_AFTER_INCREMENT = 30;
 
 	// Seed from any server-rendered response so the standalone page shows arrivals
-	// immediately instead of flashing the first-load skeleton.
+	// immediately instead of flashing the first-load skeleton. Only the
+	// clock-independent cleanup runs here so server and client render the same
+	// seed; departed rows fall away on the first client poll.
 	let arrivalsAndDepartures = $state(seedArrivals(arrivalsAndDeparturesResponse?.data?.entry));
 	let error = $state();
 	// Seed alerts from the same server-rendered response so they show on first
@@ -89,24 +91,16 @@
 		}
 		return furthest;
 	}
+	function seedArrivals(entry) {
+		if (!entry) return entry;
+		return { ...entry, arrivalsAndDepartures: collapseLayovers(entry.arrivalsAndDepartures) };
+	}
+
 	/**
 	 * Fetches arrivals for the stop within the current `minutesAfter` window.
 	 * @returns {Promise<number|null>} the number of arrivals fetched, or `null`
 	 * when the request was aborted or failed (count is then unknown).
 	 */
-	/**
-	 * Applies the same row-level cleanup to a server-rendered entry that loadData
-	 * applies to fetched ones, so the seeded first paint never shows a layover
-	 * pair that the first client poll would immediately collapse.
-	 */
-	function seedArrivals(entry) {
-		if (!entry) return entry;
-		return {
-			...entry,
-			arrivalsAndDepartures: collapseLayovers(entry.arrivalsAndDepartures || [])
-		};
-	}
-
 	async function loadData(stopID) {
 		// Cancel the previous request if it exists
 		if (abortController) {
@@ -131,9 +125,10 @@
 			const data = await response.json();
 			arrivalsAndDeparturesResponse = data;
 			const entry = data.data.entry;
-			const rawArrivals = entry.arrivalsAndDepartures || [];
-			const filtered = collapseLayovers(filterDeparted(rawArrivals, Date.now()));
-			arrivalsAndDepartures = { ...entry, arrivalsAndDepartures: filtered };
+			arrivalsAndDepartures = {
+				...entry,
+				arrivalsAndDepartures: visibleArrivals(entry.arrivalsAndDepartures, Date.now())
+			};
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
 			error = null; // Clear previous errors if successful
 			if (isFirstLoad) {

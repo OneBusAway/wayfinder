@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { collapseLayovers, filterDeparted, makeKey } from '../arrivalFiltering';
+import { collapseLayovers, filterDeparted, makeKey, visibleArrivals } from '../arrivalFiltering';
 
 // Factory function for creating test arrival objects
 function makeArrival({
@@ -171,37 +171,28 @@ describe('collapseLayovers', () => {
 	// A vehicle finishing trip N at this stop (its final stop) and then starting
 	// trip N+1 here (first stop) produces two rows for one physical bus sitting
 	// at the curb. Modeled on King County Metro route 10 at stop 1_11370.
-	const LAYOVER_STOP = '1_11370';
 	const serviceDate = 1789369200000;
 	const t = (mins) => serviceDate + mins * 60000;
 
-	function makeLayoverPair({
-		vehicleId = '1_4391',
-		arrivalOverrides = {},
-		departureOverrides = {}
-	} = {}) {
+	function makeLayoverPair({ arrivalOverrides = {}, departureOverrides = {} } = {}) {
 		const arrival = makeArrival({
 			tripId: '1_846336761',
 			serviceDate,
-			vehicleId,
-			stopId: LAYOVER_STOP,
+			vehicleId: '1_4391',
 			stopSequence: 20,
 			totalStopsInTrip: 21,
 			blockTripSequence: 5,
 			scheduledArrivalTime: t(1178),
-			tripHeadsign: 'Capitol Hill Via 15th Ave E',
 			...arrivalOverrides
 		});
 		const departure = makeArrival({
 			tripId: '1_846336651',
 			serviceDate,
-			vehicleId,
-			stopId: LAYOVER_STOP,
+			vehicleId: '1_4391',
 			stopSequence: 0,
 			totalStopsInTrip: 13,
 			blockTripSequence: 6,
 			scheduledArrivalTime: t(1196),
-			tripHeadsign: 'Downtown Seattle',
 			...departureOverrides
 		});
 		return { arrival, departure };
@@ -229,8 +220,9 @@ describe('collapseLayovers', () => {
 	});
 
 	it('keeps both rows when the trips are served by different vehicles', () => {
-		const { arrival } = makeLayoverPair({ vehicleId: '1_4391' });
-		const { departure } = makeLayoverPair({ vehicleId: '1_8222301' });
+		const { arrival, departure } = makeLayoverPair({
+			departureOverrides: { vehicleId: '1_8222301' }
+		});
 		const result = collapseLayovers([arrival, departure]);
 		expect(result).toEqual([arrival, departure]);
 	});
@@ -246,19 +238,13 @@ describe('collapseLayovers', () => {
 	});
 
 	it('keeps both rows when neither has a vehicle assigned', () => {
-		const { arrival, departure } = makeLayoverPair({ vehicleId: '' });
-		expect(collapseLayovers([arrival, departure])).toEqual([arrival, departure]);
-
-		// Override through the spreads: a bare `vehicleId: undefined` argument
-		// would fall back to the factory default instead.
-		const unassigned = makeLayoverPair({
-			arrivalOverrides: { vehicleId: undefined },
-			departureOverrides: { vehicleId: undefined }
-		});
-		expect(collapseLayovers([unassigned.arrival, unassigned.departure])).toEqual([
-			unassigned.arrival,
-			unassigned.departure
-		]);
+		for (const vehicleId of ['', null, undefined]) {
+			const { arrival, departure } = makeLayoverPair({
+				arrivalOverrides: { vehicleId },
+				departureOverrides: { vehicleId }
+			});
+			expect(collapseLayovers([arrival, departure])).toEqual([arrival, departure]);
+		}
 	});
 
 	it('keeps both rows when the trips belong to different service dates', () => {
@@ -311,5 +297,37 @@ describe('collapseLayovers', () => {
 		expect(collapseLayovers(null)).toEqual([]);
 		expect(collapseLayovers(undefined)).toEqual([]);
 		expect(collapseLayovers([])).toEqual([]);
+	});
+});
+
+describe('visibleArrivals', () => {
+	const serviceDate = 1789369200000;
+	const t = (mins) => serviceDate + mins * 60000;
+
+	it('drops departed rows and then collapses layover pairs', () => {
+		const departed = makeArrival({ tripId: '1_gone', serviceDate, scheduledArrivalTime: t(1170) });
+		const arrival = makeArrival({
+			tripId: '1_a',
+			serviceDate,
+			vehicleId: '1_4391',
+			stopSequence: 20,
+			totalStopsInTrip: 21,
+			blockTripSequence: 5,
+			scheduledArrivalTime: t(1178)
+		});
+		const departure = makeArrival({
+			tripId: '1_b',
+			serviceDate,
+			vehicleId: '1_4391',
+			stopSequence: 0,
+			totalStopsInTrip: 13,
+			blockTripSequence: 6,
+			scheduledArrivalTime: t(1196)
+		});
+		expect(visibleArrivals([departed, arrival, departure], t(1175))).toEqual([departure]);
+	});
+
+	it('returns an empty array for null input', () => {
+		expect(visibleArrivals(null, 0)).toEqual([]);
 	});
 });

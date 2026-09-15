@@ -57,20 +57,20 @@ export function filterDeparted(arrivals, now) {
 
 /**
  * True when `departure` is the same vehicle beginning the next trip of its
- * block immediately after finishing `arrival`'s trip at this stop.
+ * block right after finishing `arrival`'s trip at this stop.
  *
  * "Next trip" is pinned to blockTripSequence + 1 so a vehicle on a short route
  * that revisits the stop later in the window (trip N+2, N+3, ...) is not
- * merged with an unrelated earlier arrival.
+ * merged with an unrelated earlier arrival. The cheap arrival-side checks run
+ * first so the inner loop exits early for the common non-final-stop row.
  */
 function isLayoverContinuation(arrival, departure) {
 	return (
-		departure !== arrival &&
+		arrival.stopSequence === arrival.totalStopsInTrip - 1 &&
 		Boolean(arrival.vehicleId) &&
+		departure.stopSequence === 0 &&
 		departure.vehicleId === arrival.vehicleId &&
 		departure.serviceDate === arrival.serviceDate &&
-		arrival.stopSequence === arrival.totalStopsInTrip - 1 &&
-		departure.stopSequence === 0 &&
 		departure.blockTripSequence === arrival.blockTripSequence + 1
 	);
 }
@@ -82,9 +82,8 @@ function isLayoverContinuation(arrival, departure) {
  * next trip's first stop. Drops the arrival row and keeps the departure the
  * rider can actually board.
  *
- * Only adjoining trips of the same vehicle (consecutive blockTripSequence on
- * the same service date) are merged; a vehicle that returns to the stop later
- * on a short route keeps every one of its visits.
+ * Matching is by vehicleId, so rows with no vehicle assigned (schedule-only
+ * data, or a trip before AVL picks it up) are never collapsed.
  *
  * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
  * @returns {Array<object>} Arrivals with layover arrival rows removed
@@ -95,4 +94,18 @@ export function collapseLayovers(arrivals) {
 	return arrivals.filter(
 		(arrival) => !arrivals.some((other) => isLayoverContinuation(arrival, other))
 	);
+}
+
+/**
+ * The rows a rider should see for a stop: departed rows removed, then
+ * layover pairs collapsed. Every consumer that renders or reasons about the
+ * arrival list (StopPane, the map's active-route picker) goes through this so
+ * they cannot disagree about which trips are boardable.
+ *
+ * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
+ * @param {number} now - Current time in milliseconds since epoch
+ * @returns {Array<object>} Boardable arrivals in their original order
+ */
+export function visibleArrivals(arrivals, now) {
+	return collapseLayovers(filterDeparted(arrivals, now));
 }

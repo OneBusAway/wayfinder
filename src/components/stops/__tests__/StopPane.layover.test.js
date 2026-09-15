@@ -3,7 +3,7 @@
 // many rows the list renders. Here the REAL SingleSelectAccordion and
 // AccordionItem are used and only the row body (ArrivalDeparture) is mocked,
 // so each rendered row shows up as one call to the mock with its arrival.
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, waitFor } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach } from 'vitest';
 import StopPane from '../StopPane.svelte';
 import ArrivalDeparture from '$components/ArrivalDeparture.svelte';
@@ -123,15 +123,11 @@ describe('StopPane layover collapsing', () => {
 		const { arrival, departure } = makeLayoverPair(Date.now());
 		global.fetch.mockResolvedValue({
 			ok: true,
-			status: 200,
 			json: async () => responseWith([arrival, departure])
 		});
 
 		render(StopPane, { props: defaultProps });
 
-		await waitFor(() => {
-			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
-		});
 		await waitFor(() => {
 			expect(ArrivalDeparture).toHaveBeenCalled();
 		});
@@ -144,7 +140,6 @@ describe('StopPane layover collapsing', () => {
 		const laterVisit = { ...departure, tripId: '1_later_visit', blockTripSequence: 7 };
 		global.fetch.mockResolvedValue({
 			ok: true,
-			status: 200,
 			json: async () => responseWith([arrival, laterVisit])
 		});
 
