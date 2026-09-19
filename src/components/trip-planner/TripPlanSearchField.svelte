@@ -50,6 +50,8 @@
 
 	function handleKeydown(event) {
 		if (event.key === 'Escape') {
+			if (!hasResults && !isLoading) return;
+
 			event.preventDefault();
 			activeIndex = -1;
 			onDismiss();
