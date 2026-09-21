@@ -1,10 +1,22 @@
 export function debounce(func, wait) {
-	let timeout;
+	let timeout = null;
 
-	return function (...args) {
+	function debounced(...args) {
 		clearTimeout(timeout);
-		timeout = setTimeout(() => func.apply(this, args), wait);
+		timeout = setTimeout(() => {
+			timeout = null;
+			func.apply(this, args);
+		}, wait);
+	}
+
+	// Consumers that own a lifecycle (such as a map view) must be able to
+	// discard a queued call before its target is torn down.
+	debounced.cancel = () => {
+		if (timeout != null) clearTimeout(timeout);
+		timeout = null;
 	};
+
+	return debounced;
 }
 
 /**

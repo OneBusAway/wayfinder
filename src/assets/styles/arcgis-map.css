@@ -1,0 +1,45 @@
+.arcgis-overlay-container {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	overflow: hidden;
+	z-index: 10;
+}
+
+.arcgis-stop-marker-overlay,
+.arcgis-pin-marker-overlay {
+	position: absolute;
+	pointer-events: auto;
+	will-change: transform;
+}
+
+/*
+ * Wayfinder mounts its own Svelte content in ArcGIS popups. Keep the ArcGIS
+ * positioning/pointer, but remove the GIS-specific action bar and make the
+ * outer shell behave like the compact popups used by the other providers.
+ */
+.esri-popup__main-container {
+	border-radius: 0.5rem;
+	max-width: min(21rem, calc(100vw - 2rem));
+	min-height: 0;
+	max-height: min(28rem, calc(100vh - 2rem));
+	overflow: visible;
+}
+
+.esri-popup__content {
+	margin: 0;
+	padding: 0;
+	overflow: visible;
+}
+
+.esri-features__footer,
+.esri-features__header:has(.esri-features__header-actions:empty) {
+	display: none;
+}
+
+.dark .esri-popup__main-container,
+.dark .esri-popup__pointer-direction,
+.dark .esri-features__header {
+	background-color: #1f2937;
+	color: #f3f4f6;
+}

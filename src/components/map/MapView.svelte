@@ -100,6 +100,8 @@
 	let mapMode = $state(startInTripPlanMode ? Modes.TRIP_PLAN : Modes.NORMAL);
 	let modeChangeTimeout = null;
 	let pendingMarkerBatch = null;
+	let debouncedLoadMarkers = null;
+	let isDestroyed = false;
 
 	$effect(() => {
 		let newMode;
@@ -147,6 +149,7 @@
 				batchAddMarkers(stops);
 
 				const center = mapInstance.getCenter();
+				if (!center) return;
 				const zoomLevel = mapInstance.getZoom();
 				loadStopsAndAddMarkers(center.lat, center.lng, false, zoomLevel)
 					.then(() => batchAddMarkers(allStops))
@@ -187,6 +190,11 @@
 		}
 
 		const boundingBox = getBoundingBox();
+		if (!boundingBox) {
+			// A provider can briefly have no valid extent while initializing or
+			// tearing down. Never turn that into a Null Island stop request.
+			return null;
+		}
 		const key = cacheKey(zoomLevel, boundingBox);
 
 		if (stopsCache.has(key)) {
@@ -205,7 +213,7 @@
 		}
 
 		const stopsForLocation = await response.json();
-		stopsCache.set(key, stopsForLocation);
+		if (!isDestroyed) stopsCache.set(key, stopsForLocation);
 
 		return stopsForLocation;
 	}
@@ -220,6 +228,7 @@
 				lat: mapCenterLat,
 				lng: mapCenterLng
 			});
+			if (isDestroyed) return;
 
 			mapInstance = mapProvider;
 
@@ -234,12 +243,15 @@
 				await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
 			}
 
-			const debouncedLoadMarkers = debounce(async () => {
-				if (mapMode !== Modes.NORMAL) {
+			if (isDestroyed) return;
+
+			debouncedLoadMarkers = debounce(async () => {
+				if (isDestroyed || mapMode !== Modes.NORMAL || !mapInstance) {
 					return;
 				}
 
 				const center = mapInstance.getCenter();
+				if (!center) return;
 				const zoomLevel = mapInstance.getZoom();
 				await loadStopsAndAddMarkers(center.lat, center.lng, false, zoomLevel);
 			}, 300);
@@ -260,6 +272,7 @@
 
 	async function loadStopsAndAddMarkers(lat, lng, firstCall = false, zoomLevel = 15) {
 		const stopsData = await loadStopsForLocation(lat, lng, zoomLevel, firstCall);
+		if (isDestroyed || !stopsData) return;
 		const newStops = stopsData.data.list;
 		const routeReference = stopsData.data.references.routes || [];
 
@@ -289,7 +302,7 @@
 
 	// Batch operation to add multiple markers efficiently
 	function batchAddMarkers(stops) {
-		if (!mapInstance || mapMode !== Modes.NORMAL) {
+		if (isDestroyed || !mapInstance || mapMode !== Modes.NORMAL) {
 			return;
 		}
 
@@ -307,7 +320,7 @@
 		// the frame runs so a pending batch cannot repaint stops after trip mode clears them.
 		pendingMarkerBatch = requestAnimationFrame(() => {
 			pendingMarkerBatch = null;
-			if (!mapInstance || mapMode !== Modes.NORMAL) {
+			if (isDestroyed || !mapInstance || mapMode !== Modes.NORMAL) {
 				return;
 			}
 			stopsToAdd.forEach((s) => addMarker(s));
@@ -315,7 +328,7 @@
 	}
 
 	function addMarker(s) {
-		if (!mapInstance || mapMode !== Modes.NORMAL) {
+		if (isDestroyed || !mapInstance || mapMode !== Modes.NORMAL) {
 			return;
 		}
 
@@ -365,7 +378,9 @@
 	let planTripHandler, tabSwitchHandler;
 
 	onMount(async () => {
+		isDestroyed = false;
 		await initMap();
+		if (isDestroyed) return;
 		isMapLoaded.set(true);
 		if (browser) {
 			const darkMode = document.documentElement.classList.contains('dark');
@@ -387,6 +402,10 @@
 	});
 
 	onDestroy(() => {
+		isDestroyed = true;
+		debouncedLoadMarkers?.cancel?.();
+		debouncedLoadMarkers = null;
+
 		if (browser) {
 			window.removeEventListener('themeChange', handleThemeChange);
 
@@ -404,6 +423,7 @@
 		}
 
 		clearAllMarkers();
+		mapProvider?.destroy?.();
 
 		allStopsMap.clear();
 		stopsCache.clear();
