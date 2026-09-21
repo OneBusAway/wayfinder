@@ -71,8 +71,15 @@
 			// The browser focuses a clicked element on mousedown, before this click
 			// reaches the window listener, so restoring focus here would yank the
 			// caret back out of whatever the user just clicked onto. Restore only
-			// when the click did not take focus itself: a click on the map leaves
-			// activeElement at <body>, and focus still inside the closing panel
+			// when the click did not take focus itself.
+			//
+			// The <body> branch is for genuinely non-focusable chrome. It does not
+			// cover the map: Leaflet's keyboard handler sets tabIndex on the map
+			// container and focuses it on mousedown, and initMap does not pass
+			// keyboard: false, so an OSM map click lands focus on the container.
+			// That skips the restore, which is what we want there anyway.
+			//
+			// The rootEl branch is separate: focus still inside the closing panel
 			// would be stranded when it unmounts.
 			const active = document.activeElement;
 			close({ restoreFocus: !active || active === document.body || rootEl.contains(active) });
