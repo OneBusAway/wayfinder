@@ -13,7 +13,7 @@ export async function GET({ url }) {
 		lat: lat,
 		lon: lng,
 		latSpan: latSpan,
-		lngSpan: lngSpan,
+		lonSpan: lngSpan,
 		radius: radius
 	};
 
