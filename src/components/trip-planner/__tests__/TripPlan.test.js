@@ -204,6 +204,49 @@ describe('TripPlan autocomplete dismissal', () => {
 		expect(screen.queryByRole('status')).not.toBeInTheDocument();
 		unmount();
 	});
+
+	it('does not strand a loading field when the other field is typed during its debounce', async () => {
+		vi.useFakeTimers();
+		const resolveSuggestions = [];
+		global.fetch = vi.fn(
+			() =>
+				new Promise((resolve) => {
+					resolveSuggestions.push(() =>
+						resolve({
+							ok: true,
+							json: () => Promise.resolve({ suggestions: [] })
+						})
+					);
+				})
+		);
+		const { container, unmount } = render(TripPlan, { props });
+		const fromInput = container.querySelector('#from-location-input');
+		const toInput = container.querySelector('#to-location-input');
+
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		expect(global.fetch).toHaveBeenCalledOnce();
+
+		await fireEvent.input(fromInput, { target: { value: 'Capitol Hill' } });
+		await vi.advanceTimersByTimeAsync(250);
+		await fireEvent.input(toInput, { target: { value: 'University' } });
+		await vi.advanceTimersByTimeAsync(500);
+
+		// The To debounce must not cancel the superseding From lookup.
+		expect(global.fetch).toHaveBeenCalledTimes(3);
+
+		for (const resolveSuggestion of resolveSuggestions) {
+			resolveSuggestion();
+		}
+		await vi.advanceTimersByTimeAsync(0);
+		for (let i = 0; i < 4; i += 1) {
+			await Promise.resolve();
+		}
+		await tick();
+
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
+		unmount();
+	});
 });
 
 describe('TripPlan shared URL round trip', () => {

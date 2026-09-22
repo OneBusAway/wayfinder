@@ -70,7 +70,7 @@
 		return isFrom ? requestId === fromAutocompleteRequestId : requestId === toAutocompleteRequestId;
 	}
 
-	const fetchLocationResults = debounce(async (query, isFrom, requestId) => {
+	async function fetchLocationResults(query, isFrom, requestId) {
 		if (!isCurrentAutocompleteRequest(isFrom, requestId)) return;
 
 		if (isFrom) {
@@ -98,7 +98,18 @@
 				}
 			}
 		}
-	}, 500);
+	}
+
+	// Each field needs its own timer so typing in one cannot discard a queued
+	// lookup for the other after that field's request token has advanced.
+	const fetchFromLocationResults = debounce(
+		(query, requestId) => fetchLocationResults(query, true, requestId),
+		500
+	);
+	const fetchToLocationResults = debounce(
+		(query, requestId) => fetchLocationResults(query, false, requestId),
+		500
+	);
 
 	async function geocodeLocation(locationName) {
 		const response = await fetch(
@@ -130,7 +141,8 @@
 			}
 			return;
 		}
-		await fetchLocationResults(query, isFrom, requestId);
+		const fetchResults = isFrom ? fetchFromLocationResults : fetchToLocationResults;
+		fetchResults(query, requestId);
 	}
 
 	async function selectLocation(suggestion, isFrom) {
