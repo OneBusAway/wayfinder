@@ -30,14 +30,54 @@
 		"trip_itineraries": "旅程一覧",
 		"show_steps": "手順を表示",
 		"hide_steps": "手順を非表示",
+		"options": "オプション",
+		"trip_options": "旅程オプション",
+		"cancel": "キャンセル",
+		"done": "完了",
+		"reset_to_defaults": "初期設定に戻す",
+		"departure_time": "出発時刻",
+		"departure_date": "出発日",
+		"leave_now": "今すぐ出発",
+		"depart_at": "出発時刻を指定",
+		"arrive_by": "到着時刻を指定",
+		"wheelchair_accessible": "車椅子対応",
+		"wheelchair_desc": "車椅子や移動補助用具に対応した経路を検索します",
+		"wheelchair": "車椅子",
+		"route_optimization": "経路の最適化",
+		"fastest_trip": "時間優先",
+		"fewest_transfers": "乗換回数優先",
+		"stay_on_board": "そのままご乗車ください。この便は{route}系統として運行を続けます。",
+		"walking_distance": "徒歩距離",
+		"max_walking_distance": "最大徒歩距離",
 		"distance_unit": "距離の単位",
 		"unit_auto": "自動検出",
 		"unit_metric": "メートル法 (km, m)",
-		"unit_imperial": "ヤード・ポンド法 (mi, ft)"
+		"unit_imperial": "ヤード・ポンド法 (mi, ft)",
+		"swap_locations": "出発地と目的地を入れ替える",
+		"error_code": "エラーコード",
+		"remove_recent_trip": "最近の旅程を削除",
+		"recent_trip": "{from}から{to}までの最近の旅程を使用",
+		"recent_searches": "最近の検索",
+		"recents": "履歴",
+		"clear_all": "すべてクリア",
+		"request_failed": "経路検索サービスに接続できませんでした。もう一度お試しください。",
+		"invalid_shared_link": "共有された旅程のリンクが無効なようです。もう一度旅程を計画してください。"
 	},
 	"tabs": {
 		"stops-and-stations": "停留所と駅",
 		"plan_trip": "旅程を計画"
+	},
+	"favorites": {
+		"title": "お気に入り",
+		"add": "お気に入りに追加",
+		"remove": "お気に入りから削除",
+		"clear_all": "すべてクリア",
+		"open_panel": "お気に入りを開く",
+		"close_panel": "お気に入りを閉じる",
+		"empty": "お気に入りはまだありません。停留所や路線の星アイコンをタップすると、ここに保存されます。",
+		"stop_code": "コード",
+		"open_item": "{name}を開く",
+		"remove_item": "{name}をお気に入りから削除"
 	},
 	"search": {
 		"placeholder": "停留所、路線、場所を検索",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "利用可能な路線一覧を表示",
 		"search_for_routes": "路線を検索...",
 		"no_routes_found": "路線が見つかりませんでした",
-		"all_routes": "全路線"
+		"all_routes": "全路線",
+		"clear": "クリア",
+		"collapse": "検索を折りたたむ"
+	},
+	"sheet": {
+		"close": "閉じる",
+		"resize_handle": "パネルのサイズを変更",
+		"snap_full": "全画面表示",
+		"snap_half": "半分表示",
+		"snap_peek": "折りたたみ"
+	},
+	"survey": {
+		"required_question": "必須の質問",
+		"required_answer": "この質問は必須です。",
+		"expand": "質問を表示",
+		"collapse": "質問を非表示",
+		"dismiss": "アンケートを閉じる",
+		"submit": "送信",
+		"next": "次へ",
+		"submit_failed": "回答を送信できませんでした。もう一度お試しください。"
 	},
 	"header": {
 		"home": "ホーム",
@@ -88,13 +147,26 @@
 		"close": "閉じる"
 	},
 	"arrivals_and_departures": "到着・出発",
+	"show_more": "もっと見る",
+	"show_less": "折りたたむ",
 	"load_more_arrivals": "さらに到着を読み込む",
+	"refresh": "更新",
 	"no_arrivals_found_in_next_minutes": "今後{minutes}分以内に到着はありません",
 	"no_more_arrivals_in_next_minutes": "今後{minutes}分以内にこれ以上の到着はありません",
 	"stop": "停留所",
+	"direction_bound": "{direction}方面",
 	"routes": "路線",
 	"route": "路線",
 	"route_modal_title": "{name}系統",
+	"notifications": {
+		"route_load_failed": "この路線を読み込めませんでした。",
+		"route_shape_failed": "この路線を地図上に表示できませんでした。",
+		"route_shape_partial": "この路線の一部を地図上に表示できませんでした。表示されていない区間がある可能性があります。",
+		"favorite_saved": "お気に入りに保存しました。",
+		"favorite_removed": "お気に入りから削除しました。",
+		"tap_to_retry": "タップして再試行してください。",
+		"dismiss": "閉じる"
+	},
 	"loading": "読み込み中",
 	"arrives": "到着",
 	"NA": "該当なし",
@@ -105,13 +177,16 @@
 		"secs": "秒",
 		"min": "分",
 		"mins": "分",
-		"minutes": "分"
+		"minutes": "分",
+		"min_compact": "{n}分"
 	},
 	"vehicle": {
 		"number": "車両番号",
 		"data_updated": "データ更新日時",
 		"no_real_time_data": "この車両のリアルタイムデータは現在ありません。",
-		"next_stop": "次の停留所:"
+		"next_stop": "次の停留所:",
+		"label": "車両",
+		"to_headsign": "{headsign}行きの車両"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "到着・出発"
@@ -150,18 +225,61 @@
 		"no_description": "この通知の詳細説明はありません",
 		"page": "ページ",
 		"show": "表示",
-		"hide": "非表示"
+		"hide": "非表示",
+		"open_alert": "運行情報（{severity}）の詳細を開く: {summary}",
+		"affects_this_stop": "この停留所に影響あり",
+		"other_alerts": "その他の運行情報",
+		"severity_severe": "重大",
+		"severity_warning": "警告",
+		"severity_info": "情報",
+		"cause": "原因",
+		"effect": "影響",
+		"active": "有効期間",
+		"active_until": "{date}まで",
+		"active_from": "{date}から",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "不明",
+		"cause_other": "その他",
+		"cause_technical": "技術的な問題",
+		"cause_strike": "ストライキ",
+		"cause_demonstration": "デモ活動",
+		"cause_accident": "事故",
+		"cause_holiday": "祝日",
+		"cause_weather": "天候",
+		"cause_maintenance": "保守作業",
+		"cause_construction": "工事",
+		"cause_police": "警察活動",
+		"cause_medical": "救急対応",
+		"cause_equipment": "設備の問題",
+		"cause_environment": "環境要因",
+		"cause_personnel": "人員の問題",
+		"cause_miscellaneous": "その他の要因",
+		"cause_security": "保安上の警報",
+		"effect_no_service": "運休",
+		"effect_reduced_service": "減便",
+		"effect_significant_delays": "大幅な遅延",
+		"effect_detour": "迂回運行",
+		"effect_additional_service": "増便",
+		"effect_modified_service": "運行変更",
+		"effect_other": "その他の影響",
+		"effect_unknown": "影響不明",
+		"effect_stop_moved": "停留所の移設",
+		"effect_no_effect": "影響なし",
+		"effect_accessibility": "バリアフリーに関する問題"
 	},
 	"view_stop_information": "停留所情報を見る",
 	"stop_details": {
-		"view_details": "詳細を見る"
+		"view_details": "詳細を見る",
+		"stop_info": "停留所情報"
 	},
 	"language_switcher": {
 		"select_language": "言語を選択: {language}",
 		"available_languages": "利用可能な言語"
 	},
 	"map": {
-		"find_my_location": "現在地を表示"
+		"find_my_location": "現在地を表示",
+		"routes_shown": "表示中の路線",
+		"live_vehicle_count": "リアルタイム{count}台"
 	},
 	"context-menu": {
 		"start_here": "ここから出発",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "ホームへ",
 		"go_back": "戻る"
+	},
+	"trip_details": {
+		"route": "路線",
+		"no_stops": "この便の停車時刻はありません。",
+		"loading": "便の詳細を読み込み中...",
+		"live_vehicle": "リアルタイム · 車両{vehicleId}",
+		"collapsed_stops": "{count, plural, other {停留所#か所}}"
 	},
 	"skip_to_main_content": "メインコンテンツへスキップ"
 }

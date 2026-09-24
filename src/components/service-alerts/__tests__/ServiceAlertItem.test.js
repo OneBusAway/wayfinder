@@ -34,6 +34,12 @@ vi.mock('svelte-i18n', () => {
 				fn(translate);
 				return () => {};
 			}
+		},
+		locale: {
+			subscribe: (fn) => {
+				fn('en');
+				return () => {};
+			}
 		}
 	};
 });

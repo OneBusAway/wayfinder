@@ -1,4 +1,5 @@
 export const MapSource = {
 	Google: 'google',
-	OpenStreetMap: 'osm'
+	OpenStreetMap: 'osm',
+	ArcGIS: 'arcgis'
 };

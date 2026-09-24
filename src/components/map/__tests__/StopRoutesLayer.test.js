@@ -94,6 +94,117 @@ describe('StopRoutesLayer', () => {
 		expect(tripDetailsUrl).toContain('includeStatus=false');
 	});
 
+	test('tries the next boardable trip when the first trip has no usable shape', async () => {
+		const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const resilientRoute = {
+			...routes[0],
+			tripCandidates: [
+				{ id: 't_stale', serviceDate: 20260904 },
+				{ id: 't_good', serviceDate: 20260904 }
+			]
+		};
+		global.fetch = vi.fn(async (url) => {
+			if (url.includes('/trip-details/t_stale')) return { ok: false, status: 500 };
+			if (url.includes('/trip-details/t_good')) {
+				return {
+					ok: true,
+					json: async () => ({
+						data: {
+							entry: { schedule: { stopTimes: [{ stopId: 'stop_good' }] } },
+							references: { trips: [{ id: 't_good', shapeId: 'shape_good' }] }
+						}
+					})
+				};
+			}
+			if (url.includes('/shape/shape_good')) {
+				return { ok: true, json: async () => ({ data: { entry: { points: 'encoded_good' } } }) };
+			}
+			throw new Error(`unexpected fetch: ${url}`);
+		});
+
+		const mapProvider = makeProvider();
+		render(StopRoutesLayer, {
+			props: { mapProvider, activeRoutes: [resilientRoute], routeColors: colors }
+		});
+
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(1));
+		expect(mapProvider.createPolyline).toHaveBeenCalledWith(
+			'encoded_good',
+			expect.objectContaining({ color: '#b02a37' })
+		);
+		expect(global.fetch.mock.calls[0][0]).toContain('serviceDate=20260904');
+		expect(global.fetch.mock.calls.some(([url]) => url.includes('/stops-for-route/'))).toBe(false);
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			'StopRoutesLayer: using alternate trip shape',
+			expect.objectContaining({
+				routeId: 'r_c',
+				tripId: 't_good',
+				shapeId: 'shape_good',
+				failedTripIds: ['t_stale']
+			})
+		);
+		expect(notifyPartialRouteShape).not.toHaveBeenCalled();
+		consoleWarnSpy.mockRestore();
+	});
+
+	test('uses every route-level polyline when all boardable trip shapes fail', async () => {
+		const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const resilientRoute = {
+			...routes[0],
+			tripCandidates: [{ id: 't_bad_1' }, { id: 't_bad_2' }, { id: 't_bad_3' }, { id: 't_bad_4' }]
+		};
+		global.fetch = vi.fn(async (url) => {
+			if (url.includes('/trip-details/')) return { ok: false, status: 500 };
+			if (url.includes('/stops-for-route/r_c')) {
+				return {
+					ok: true,
+					json: async () => ({
+						data: {
+							entry: {
+								polylines: [
+									{ points: 'fallback_a' },
+									{ points: 'fallback_b' },
+									{ points: 'fallback_a' }
+								]
+							},
+							references: { stops: [{ id: 'fallback_stop' }] }
+						}
+					})
+				};
+			}
+			throw new Error(`unexpected fetch: ${url}`);
+		});
+
+		const mapProvider = makeProvider();
+		render(StopRoutesLayer, {
+			props: { mapProvider, activeRoutes: [resilientRoute], routeColors: colors }
+		});
+
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(2));
+		expect(mapProvider.createPolyline.mock.calls.map(([points]) => points)).toEqual([
+			'fallback_a',
+			'fallback_b'
+		]);
+		const attemptedTrips = global.fetch.mock.calls
+			.map(([url]) => url)
+			.filter((url) => url.includes('/trip-details/'));
+		expect(attemptedTrips).toHaveLength(3);
+		expect(attemptedTrips.some((url) => url.includes('t_bad_4'))).toBe(false);
+		expect(mapProvider.revealPolylines).toHaveBeenCalledWith({
+			only: expect.arrayContaining([expect.any(Object), expect.any(Object)]),
+			duration: 0.8
+		});
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			'StopRoutesLayer: using route-level shape fallback',
+			expect.objectContaining({
+				routeId: 'r_c',
+				tripIds: ['t_bad_1', 't_bad_2', 't_bad_3']
+			})
+		);
+		expect(notifyPartialRouteShape).not.toHaveBeenCalled();
+		consoleWarnSpy.mockRestore();
+	});
+
 	// $bindable writes land on the parent's reactive state, and $state is a runes
 	// macro that only compiles in a .svelte/.svelte.js module — so a plain
 	// .test.js can't create the proxy to read back. Use a support harness, the
@@ -214,7 +325,9 @@ describe('StopRoutesLayer', () => {
 		const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 		mockShapeFetches({ failRouteId: 'r_22' });
 		const mapProvider = makeProvider();
-		render(StopRoutesLayer, { props: { mapProvider, activeRoutes: routes, routeColors: colors } });
+		const { unmount } = render(StopRoutesLayer, {
+			props: { mapProvider, activeRoutes: routes, routeColors: colors }
+		});
 
 		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(1));
 		expect(mapProvider.createPolyline.mock.calls[0][1].color).toBe('#b02a37');
@@ -231,6 +344,12 @@ describe('StopRoutesLayer', () => {
 			expect.any(Error)
 		);
 		expect(notifyPartialRouteShape).toHaveBeenCalledTimes(1);
+
+		unmount();
+		expect(removeVehicleMarkersForRoutes).toHaveBeenCalledWith(
+			expect.arrayContaining(['r_c', 'r_22']),
+			mapProvider
+		);
 
 		consoleErrorSpy.mockRestore();
 	});
@@ -340,6 +459,27 @@ describe('StopRoutesLayer', () => {
 		expect(mapProvider.removePolyline.mock.calls.length).toBe(removeCallsAfterFirstDraw);
 	});
 
+	test('does not redraw when polling only changes a route candidate list', async () => {
+		const mapProvider = makeProvider();
+		const initialRoutes = [{ ...routes[0], tripCandidates: [{ id: 't_c' }, { id: 't_c_next' }] }];
+		const { rerender } = render(StopRoutesLayer, {
+			props: { mapProvider, activeRoutes: initialRoutes, routeColors: colors }
+		});
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(1));
+		const fetchCallsAfterFirstDraw = global.fetch.mock.calls.length;
+
+		await rerender({
+			mapProvider,
+			activeRoutes: [{ ...routes[0], tripCandidates: [{ id: 't_c_next' }, { id: 't_c_later' }] }],
+			routeColors: colors
+		});
+		await flush();
+
+		expect(mapProvider.createPolyline).toHaveBeenCalledTimes(1);
+		expect(global.fetch).toHaveBeenCalledTimes(fetchCallsAfterFirstDraw);
+		expect(mapProvider.removePolyline).not.toHaveBeenCalled();
+	});
+
 	test('does redraw when the route set actually changes', async () => {
 		const mapProvider = makeProvider();
 		const { rerender } = render(StopRoutesLayer, {
@@ -349,9 +489,12 @@ describe('StopRoutesLayer', () => {
 
 		const changedColors = new Map(colors);
 		changedColors.set('r_c', { ...colors.get('r_c'), line: '#000000' });
+		const fetchCallsBeforeRedraw = global.fetch.mock.calls.length;
 		await rerender({ mapProvider, activeRoutes: routes, routeColors: changedColors });
 
 		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(4));
+		// Geometry is immutable; a color-only redraw should reuse cached shapes.
+		expect(global.fetch).toHaveBeenCalledTimes(fetchCallsBeforeRedraw);
 		// The redraw's own teardown removes exactly the two polylines the
 		// previous draw produced (the first mount's teardown had nothing to
 		// remove yet).

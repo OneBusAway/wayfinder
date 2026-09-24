@@ -30,14 +30,54 @@
 		"trip_itineraries": "Itinéraires de trajet",
 		"show_steps": "Afficher les étapes",
 		"hide_steps": "Masquer les étapes",
+		"options": "Options",
+		"trip_options": "Options du trajet",
+		"cancel": "Annuler",
+		"done": "Terminé",
+		"reset_to_defaults": "Rétablir les valeurs par défaut",
+		"departure_time": "Heure de départ",
+		"departure_date": "Date de départ",
+		"leave_now": "Partir maintenant",
+		"depart_at": "Partir à",
+		"arrive_by": "Arriver avant",
+		"wheelchair_accessible": "Accessible en fauteuil roulant",
+		"wheelchair_desc": "Trouver des itinéraires adaptés aux aides à la mobilité et aux fauteuils roulants",
+		"wheelchair": "Fauteuil roulant",
+		"route_optimization": "Optimisation de l'itinéraire",
+		"fastest_trip": "Trajet le plus rapide",
+		"fewest_transfers": "Moins de correspondances",
+		"stay_on_board": "Restez à bord. Ce trajet se poursuit sur la ligne {route}.",
+		"walking_distance": "Distance de marche",
+		"max_walking_distance": "Distance de marche maximale",
 		"distance_unit": "Unité de distance",
 		"unit_auto": "Détection automatique",
 		"unit_metric": "Métrique (km, m)",
-		"unit_imperial": "Impérial (mi, ft)"
+		"unit_imperial": "Impérial (mi, ft)",
+		"swap_locations": "Intervertir les points de départ et d'arrivée",
+		"error_code": "Code d'erreur",
+		"remove_recent_trip": "Supprimer le trajet récent",
+		"recent_trip": "Utiliser le trajet récent de {from} à {to}",
+		"recent_searches": "Recherches récentes",
+		"recents": "Récents",
+		"clear_all": "Tout effacer",
+		"request_failed": "Impossible de contacter le service de planification de trajets. Veuillez réessayer.",
+		"invalid_shared_link": "Ce lien de trajet partagé semble invalide. Essayez de planifier à nouveau le trajet."
 	},
 	"tabs": {
 		"stops-and-stations": "Arrêts et stations",
 		"plan_trip": "Planifier un trajet"
+	},
+	"favorites": {
+		"title": "Favoris",
+		"add": "Ajouter aux favoris",
+		"remove": "Retirer des favoris",
+		"clear_all": "Tout effacer",
+		"open_panel": "Ouvrir les favoris",
+		"close_panel": "Fermer les favoris",
+		"empty": "Aucun favori pour le moment. Appuyez sur l'étoile d'un arrêt ou d'une ligne pour l'enregistrer ici.",
+		"stop_code": "Code",
+		"open_item": "Ouvrir {name}",
+		"remove_item": "Retirer {name} des favoris"
 	},
 	"search": {
 		"placeholder": "Rechercher des arrêts, lignes et lieux",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "pour la liste des lignes disponibles",
 		"search_for_routes": "Rechercher des lignes...",
 		"no_routes_found": "Aucune ligne trouvée",
-		"all_routes": "Toutes les lignes"
+		"all_routes": "Toutes les lignes",
+		"clear": "Effacer",
+		"collapse": "Réduire la recherche"
+	},
+	"sheet": {
+		"close": "Fermer",
+		"resize_handle": "Redimensionner le panneau",
+		"snap_full": "Pleine hauteur",
+		"snap_half": "Demi-hauteur",
+		"snap_peek": "Réduit"
+	},
+	"survey": {
+		"required_question": "Question obligatoire",
+		"required_answer": "Cette question est obligatoire.",
+		"expand": "Afficher la question",
+		"collapse": "Masquer la question",
+		"dismiss": "Ignorer le sondage",
+		"submit": "Envoyer",
+		"next": "Suivant",
+		"submit_failed": "Impossible d'envoyer votre réponse. Veuillez réessayer."
 	},
 	"header": {
 		"home": "Accueil",
@@ -88,13 +147,26 @@
 		"close": "Fermer"
 	},
 	"arrivals_and_departures": "Arrivées et départs",
+	"show_more": "Afficher plus",
+	"show_less": "Afficher moins",
 	"load_more_arrivals": "Charger plus d'arrivées",
+	"refresh": "Actualiser",
 	"no_arrivals_found_in_next_minutes": "Aucune arrivée trouvée dans les {minutes} prochaines minutes",
 	"no_more_arrivals_in_next_minutes": "Aucune autre arrivée dans les {minutes} prochaines minutes",
 	"stop": "Arrêt",
+	"direction_bound": "direction {direction}",
 	"routes": "Lignes",
 	"route": "ligne",
 	"route_modal_title": "Ligne {name}",
+	"notifications": {
+		"route_load_failed": "Impossible de charger cette ligne.",
+		"route_shape_failed": "Impossible de tracer cette ligne sur la carte.",
+		"route_shape_partial": "Une partie de cette ligne n'a pas pu être tracée. Il manque peut-être un segment sur la carte.",
+		"favorite_saved": "Ajouté aux favoris.",
+		"favorite_removed": "Retiré des favoris.",
+		"tap_to_retry": "Appuyez pour réessayer.",
+		"dismiss": "Ignorer"
+	},
 	"loading": "Chargement",
 	"arrives": "arrive",
 	"NA": "N/D",
@@ -105,13 +177,16 @@
 		"secs": "sec",
 		"min": "min",
 		"mins": "min",
-		"minutes": "minutes"
+		"minutes": "minutes",
+		"min_compact": "{n} min"
 	},
 	"vehicle": {
 		"number": "Véhicule n°",
 		"data_updated": "Données mises à jour",
 		"no_real_time_data": "Nous n'avons pas de données en temps réel pour ce véhicule actuellement.",
-		"next_stop": "Prochain arrêt :"
+		"next_stop": "Prochain arrêt :",
+		"label": "Véhicule",
+		"to_headsign": "Véhicule vers {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Arrivées et départs"
@@ -150,18 +225,61 @@
 		"no_description": "Aucune description détaillée disponible pour cette alerte",
 		"page": "Page",
 		"show": "Afficher",
-		"hide": "Masquer"
+		"hide": "Masquer",
+		"open_alert": "Ouvrir les détails de l'alerte de service ({severity}) : {summary}",
+		"affects_this_stop": "Concerne cet arrêt",
+		"other_alerts": "Autres alertes",
+		"severity_severe": "Grave",
+		"severity_warning": "Avertissement",
+		"severity_info": "Info",
+		"cause": "Cause",
+		"effect": "Effet",
+		"active": "Validité",
+		"active_until": "Jusqu'au {date}",
+		"active_from": "À partir du {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Inconnue",
+		"cause_other": "Autre",
+		"cause_technical": "Problème technique",
+		"cause_strike": "Grève",
+		"cause_demonstration": "Manifestation",
+		"cause_accident": "Accident",
+		"cause_holiday": "Jour férié",
+		"cause_weather": "Météo",
+		"cause_maintenance": "Maintenance",
+		"cause_construction": "Travaux",
+		"cause_police": "Intervention policière",
+		"cause_medical": "Urgence médicale",
+		"cause_equipment": "Équipement",
+		"cause_environment": "Environnement",
+		"cause_personnel": "Personnel",
+		"cause_miscellaneous": "Divers",
+		"cause_security": "Alerte de sécurité",
+		"effect_no_service": "Aucun service",
+		"effect_reduced_service": "Service réduit",
+		"effect_significant_delays": "Retards importants",
+		"effect_detour": "Déviation",
+		"effect_additional_service": "Service supplémentaire",
+		"effect_modified_service": "Service modifié",
+		"effect_other": "Autre effet",
+		"effect_unknown": "Effet inconnu",
+		"effect_stop_moved": "Arrêt déplacé",
+		"effect_no_effect": "Aucun effet",
+		"effect_accessibility": "Problème d'accessibilité"
 	},
 	"view_stop_information": "Voir les informations de l'arrêt",
 	"stop_details": {
-		"view_details": "Voir les détails"
+		"view_details": "Voir les détails",
+		"stop_info": "Infos sur l'arrêt"
 	},
 	"language_switcher": {
 		"select_language": "Sélectionner la langue : {language}",
 		"available_languages": "Langues disponibles"
 	},
 	"map": {
-		"find_my_location": "Trouver ma position"
+		"find_my_location": "Trouver ma position",
+		"routes_shown": "Lignes affichées",
+		"live_vehicle_count": "{count} en temps réel"
 	},
 	"context-menu": {
 		"start_here": "Partir d'ici",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "Retour à l'accueil",
 		"go_back": "Retour"
+	},
+	"trip_details": {
+		"route": "Ligne",
+		"no_stops": "Aucun horaire d'arrêt disponible pour ce trajet.",
+		"loading": "Chargement des détails du trajet...",
+		"live_vehicle": "Temps réel · véhicule {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# arrêt} other {# arrêts}}"
 	},
 	"skip_to_main_content": "Aller au contenu principal"
 }

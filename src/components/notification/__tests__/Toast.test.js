@@ -56,6 +56,16 @@ describe('Toast', () => {
 		expect(status).toHaveAttribute('aria-live', 'polite');
 	});
 
+	test('renders a success toast as a polite status', async () => {
+		render(Toast);
+
+		notifications.show({ message: 'Saved to favorites.', variant: 'success' });
+
+		const status = await screen.findByRole('status');
+		expect(status).toHaveAttribute('aria-live', 'polite');
+		expect(status).toHaveTextContent('Saved to favorites.');
+	});
+
 	test('shows the retry button only when the notification is retriable', async () => {
 		render(Toast);
 

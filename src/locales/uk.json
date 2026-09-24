@@ -30,14 +30,54 @@
 		"trip_itineraries": "Варіанти маршруту",
 		"show_steps": "Показати кроки",
 		"hide_steps": "Сховати кроки",
+		"options": "Параметри",
+		"trip_options": "Параметри поїздки",
+		"cancel": "Скасувати",
+		"done": "Готово",
+		"reset_to_defaults": "Скинути налаштування",
+		"departure_time": "Час відправлення",
+		"departure_date": "Дата відправлення",
+		"leave_now": "Вирушити зараз",
+		"depart_at": "Вирушити о",
+		"arrive_by": "Прибути до",
+		"wheelchair_accessible": "Доступно для візків",
+		"wheelchair_desc": "Знаходити маршрути, придатні для візків та інших засобів пересування",
+		"wheelchair": "Візок",
+		"route_optimization": "Оптимізація маршруту",
+		"fastest_trip": "Найшвидша поїздка",
+		"fewest_transfers": "Найменше пересадок",
+		"stay_on_board": "Залишайтеся в салоні. Цей рейс продовжується як маршрут {route}.",
+		"walking_distance": "Відстань пішки",
+		"max_walking_distance": "Максимальна відстань пішки",
 		"distance_unit": "Одиниця вимірювання відстані",
 		"unit_auto": "Визначити автоматично",
 		"unit_metric": "Метрична (км, м)",
-		"unit_imperial": "Імперська (mi, ft)"
+		"unit_imperial": "Імперська (mi, ft)",
+		"swap_locations": "Поміняти місцями «Звідки» і «Куди»",
+		"error_code": "Код помилки",
+		"remove_recent_trip": "Видалити нещодавню поїздку",
+		"recent_trip": "Використати нещодавню поїздку. Звідки: {from}. Куди: {to}",
+		"recent_searches": "Нещодавні пошуки",
+		"recents": "Нещодавні",
+		"clear_all": "Очистити все",
+		"request_failed": "Не вдалося зв'язатися зі службою планування поїздок. Спробуйте ще раз.",
+		"invalid_shared_link": "Схоже, це посилання на поїздку пошкоджене. Спробуйте спланувати поїздку ще раз."
 	},
 	"tabs": {
 		"stops-and-stations": "Зупинки та станції",
 		"plan_trip": "Спланувати поїздку"
+	},
+	"favorites": {
+		"title": "Обране",
+		"add": "Додати до обраного",
+		"remove": "Видалити з обраного",
+		"clear_all": "Очистити все",
+		"open_panel": "Відкрити обране",
+		"close_panel": "Закрити обране",
+		"empty": "Обраного ще немає. Натисніть зірочку на зупинці або маршруті, щоб зберегти їх тут.",
+		"stop_code": "Код",
+		"open_item": "Відкрити: {name}",
+		"remove_item": "Видалити з обраного: {name}"
 	},
 	"search": {
 		"placeholder": "Пошук зупинок, маршрутів та місць",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "для перегляду доступних маршрутів",
 		"search_for_routes": "Пошук маршрутів...",
 		"no_routes_found": "Маршрутів не знайдено",
-		"all_routes": "Усі маршрути"
+		"all_routes": "Усі маршрути",
+		"clear": "Очистити",
+		"collapse": "Згорнути пошук"
+	},
+	"sheet": {
+		"close": "Закрити",
+		"resize_handle": "Змінити розмір панелі",
+		"snap_full": "Повна висота",
+		"snap_half": "Половина висоти",
+		"snap_peek": "Згорнуто"
+	},
+	"survey": {
+		"required_question": "Обов'язкове запитання",
+		"required_answer": "Це запитання обов'язкове.",
+		"expand": "Показати запитання",
+		"collapse": "Сховати запитання",
+		"dismiss": "Закрити опитування",
+		"submit": "Надіслати",
+		"next": "Далі",
+		"submit_failed": "Не вдалося надіслати відповідь. Спробуйте ще раз."
 	},
 	"header": {
 		"home": "Головна",
@@ -88,13 +147,26 @@
 		"close": "Закрити"
 	},
 	"arrivals_and_departures": "Прибуття та відправлення",
+	"show_more": "Показати більше",
+	"show_less": "Показати менше",
 	"load_more_arrivals": "Завантажити більше прибуттів",
+	"refresh": "Оновити",
 	"no_arrivals_found_in_next_minutes": "Немає прибуттів протягом наступних {minutes} хвилин",
 	"no_more_arrivals_in_next_minutes": "Немає більше прибуттів протягом наступних {minutes} хвилин",
 	"stop": "Зупинка",
+	"direction_bound": "Напрямок: {direction}",
 	"routes": "Маршрути",
 	"route": "маршрут",
 	"route_modal_title": "Маршрут {name}",
+	"notifications": {
+		"route_load_failed": "Не вдалося завантажити цей маршрут.",
+		"route_shape_failed": "Не вдалося показати цей маршрут на карті.",
+		"route_shape_partial": "Частину цього маршруту не вдалося показати. На карті може бракувати ділянки.",
+		"favorite_saved": "Збережено в обраному.",
+		"favorite_removed": "Видалено з обраного.",
+		"tap_to_retry": "Натисніть, щоб повторити.",
+		"dismiss": "Закрити"
+	},
 	"loading": "Завантаження",
 	"arrives": "прибуває",
 	"NA": "Н/Д",
@@ -105,13 +177,16 @@
 		"secs": "сек",
 		"min": "хв",
 		"mins": "хв",
-		"minutes": "хвилин"
+		"minutes": "хвилин",
+		"min_compact": "{n} хв"
 	},
 	"vehicle": {
 		"number": "Транспорт №",
 		"data_updated": "Дані оновлено",
 		"no_real_time_data": "Наразі немає даних у реальному часі для цього транспорту.",
-		"next_stop": "Наступна зупинка:"
+		"next_stop": "Наступна зупинка:",
+		"label": "Транспорт",
+		"to_headsign": "Транспорт у напрямку: {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Прибуття та відправлення"
@@ -150,18 +225,61 @@
 		"no_description": "Детальний опис для цього сповіщення недоступний",
 		"page": "Сторінка",
 		"show": "Показати",
-		"hide": "Сховати"
+		"hide": "Сховати",
+		"open_alert": "Відкрити деталі сервісного сповіщення ({severity}): {summary}",
+		"affects_this_stop": "Стосується цієї зупинки",
+		"other_alerts": "Інші сповіщення",
+		"severity_severe": "Критичне",
+		"severity_warning": "Попередження",
+		"severity_info": "Інформація",
+		"cause": "Причина",
+		"effect": "Наслідок",
+		"active": "Діє",
+		"active_until": "До {date}",
+		"active_from": "З {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Невідома",
+		"cause_other": "Інша",
+		"cause_technical": "Технічна несправність",
+		"cause_strike": "Страйк",
+		"cause_demonstration": "Демонстрація",
+		"cause_accident": "Аварія",
+		"cause_holiday": "Свято",
+		"cause_weather": "Погодні умови",
+		"cause_maintenance": "Технічне обслуговування",
+		"cause_construction": "Будівельні роботи",
+		"cause_police": "Дії поліції",
+		"cause_medical": "Надзвичайна медична ситуація",
+		"cause_equipment": "Проблема з обладнанням",
+		"cause_environment": "Умови довкілля",
+		"cause_personnel": "Проблема з персоналом",
+		"cause_miscellaneous": "Різне",
+		"cause_security": "Загроза безпеці",
+		"effect_no_service": "Рух припинено",
+		"effect_reduced_service": "Скорочений рух",
+		"effect_significant_delays": "Значні затримки",
+		"effect_detour": "Об'їзд",
+		"effect_additional_service": "Додаткові рейси",
+		"effect_modified_service": "Змінений рух",
+		"effect_other": "Інший наслідок",
+		"effect_unknown": "Невідомий наслідок",
+		"effect_stop_moved": "Зупинку перенесено",
+		"effect_no_effect": "Без наслідків",
+		"effect_accessibility": "Проблема з доступністю"
 	},
 	"view_stop_information": "Переглянути інформацію про зупинку",
 	"stop_details": {
-		"view_details": "Детальніше"
+		"view_details": "Детальніше",
+		"stop_info": "Про зупинку"
 	},
 	"language_switcher": {
 		"select_language": "Оберіть мову: {language}",
 		"available_languages": "Доступні мови"
 	},
 	"map": {
-		"find_my_location": "Знайти моє місцезнаходження"
+		"find_my_location": "Знайти моє місцезнаходження",
+		"routes_shown": "Показані маршрути",
+		"live_vehicle_count": "{count} онлайн"
 	},
 	"context-menu": {
 		"start_here": "Почати звідси",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "На головну",
 		"go_back": "Назад"
+	},
+	"trip_details": {
+		"route": "Маршрут",
+		"no_stops": "Немає даних про час зупинок для цього рейсу.",
+		"loading": "Завантаження деталей рейсу...",
+		"live_vehicle": "Онлайн · транспорт {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# зупинка} few {# зупинки} many {# зупинок} other {# зупинки}}"
 	},
 	"skip_to_main_content": "Перейти до основного вмісту"
 }

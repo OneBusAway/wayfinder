@@ -1,10 +1,12 @@
 import { render } from '@testing-library/svelte';
-import { describe, test, expect, vi, beforeEach } from 'vitest';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import RouteMap from '../RouteMap.svelte';
+import { fetchAndUpdateVehiclesForRoutes } from '$lib/vehicleUtils';
+import { mapContrastColor } from '$lib/colorUtils';
 
 vi.mock('$lib/vehicleUtils', () => ({
 	clearVehicleMarkersMap: vi.fn(),
-	fetchAndUpdateVehicles: vi.fn().mockResolvedValue(null)
+	fetchAndUpdateVehiclesForRoutes: vi.fn().mockResolvedValue({ intervalId: null, refresh: vi.fn() })
 }));
 
 function makeProvider() {
@@ -15,6 +17,7 @@ function makeProvider() {
 		clearVehicleMarkers: vi.fn(),
 		createPolyline: vi.fn().mockResolvedValue(undefined),
 		addStopRouteMarker: vi.fn(),
+		setPolylineColor: vi.fn(),
 		fitToPolylines: vi.fn().mockResolvedValue(true),
 		flyTo: vi.fn()
 	};
@@ -24,7 +27,10 @@ describe('RouteMap', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		global.fetch = vi.fn();
+		document.documentElement.classList.remove('dark');
 	});
+
+	afterEach(() => document.documentElement.classList.remove('dark'));
 
 	// Regression test for the transient-mount crash: MapExperience's framing
 	// effect nulls selectedTrip one render tick *after* the DOM re-renders, so
@@ -84,5 +90,82 @@ describe('RouteMap', () => {
 
 		unmount();
 		await vi.waitFor(() => expect(mapProvider.flyTo).toHaveBeenCalledWith(1, 2, 18));
+	});
+	function mockTrip() {
+		global.fetch = vi.fn(async (url) => ({
+			ok: true,
+			json: async () =>
+				url.includes('/trip-details/')
+					? {
+							data: {
+								entry: { schedule: { stopTimes: [] } },
+								references: {
+									trips: [{ id: 'trip_1', routeId: 'route_1', shapeId: 'shape_1' }],
+									routes: [{ id: 'route_1', color: '#003366' }]
+								}
+							}
+						}
+					: { data: { entry: { points: 'encoded-shape' } } }
+		}));
+	}
+
+	function switchTheme(darkMode) {
+		document.documentElement.classList.toggle('dark', darkMode);
+		window.dispatchEvent(new CustomEvent('themeChange', { detail: { darkMode } }));
+	}
+
+	test.each([false, true])(
+		'recolors the line and cached vehicles together (initial dark=%s)',
+		async (initialDark) => {
+			mockTrip();
+			document.documentElement.classList.toggle('dark', initialDark);
+			const mapProvider = makeProvider();
+			const polyline = {};
+			mapProvider.createPolyline.mockResolvedValue(polyline);
+			const { unmount } = render(RouteMap, { props: { mapProvider, tripId: 'trip_1' } });
+			await vi.waitFor(() => expect(fetchAndUpdateVehiclesForRoutes).toHaveBeenCalledOnce());
+			const { colorsByRouteId } = fetchAndUpdateVehiclesForRoutes.mock.calls[0][2];
+			const { refresh } = await fetchAndUpdateVehiclesForRoutes.mock.results[0].value;
+			await Promise.resolve();
+			for (const dark of [!initialDark, initialDark]) {
+				refresh.mockClear();
+				switchTheme(dark);
+				const expected = mapContrastColor('#003366', { dark });
+				expect(mapProvider.setPolylineColor).toHaveBeenLastCalledWith(polyline, expected);
+				expect(colorsByRouteId.get('route_1').line).toBe(expected);
+				expect(refresh).toHaveBeenCalledOnce();
+			}
+			expect(global.fetch).toHaveBeenCalledTimes(2);
+			expect(mapProvider.createPolyline).toHaveBeenCalledOnce();
+			expect(mapProvider.fitToPolylines).toHaveBeenCalledOnce();
+			expect(fetchAndUpdateVehiclesForRoutes).toHaveBeenCalledOnce();
+			unmount();
+			mapProvider.setPolylineColor.mockClear();
+			switchTheme(!initialDark);
+			expect(mapProvider.setPolylineColor).not.toHaveBeenCalled();
+		}
+	);
+
+	test('uses the latest theme when the polyline finishes loading', async () => {
+		mockTrip();
+		const mapProvider = makeProvider();
+		let finishPolyline;
+		mapProvider.createPolyline.mockReturnValue(
+			new Promise((resolve) => {
+				finishPolyline = resolve;
+			})
+		);
+		const { unmount } = render(RouteMap, { props: { mapProvider, tripId: 'trip_1' } });
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledOnce());
+		switchTheme(true);
+		const polyline = {};
+		finishPolyline(polyline);
+		await vi.waitFor(() => expect(fetchAndUpdateVehiclesForRoutes).toHaveBeenCalledOnce());
+		const expected = mapContrastColor('#003366', { dark: true });
+		expect(mapProvider.setPolylineColor).toHaveBeenLastCalledWith(polyline, expected);
+		expect(
+			fetchAndUpdateVehiclesForRoutes.mock.calls[0][2].colorsByRouteId.get('route_1').line
+		).toBe(expected);
+		unmount();
 	});
 });

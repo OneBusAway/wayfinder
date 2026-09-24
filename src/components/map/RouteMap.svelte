@@ -1,6 +1,6 @@
 <script>
 	import { calculateMidpoint } from '$lib/mathUtils';
-	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
+	import { clearVehicleMarkersMap, fetchAndUpdateVehiclesForRoutes } from '$lib/vehicleUtils';
 	import { mapContrastColor } from '$lib/colorUtils';
 	import { onMount, onDestroy } from 'svelte';
 	import { notifyRouteLoadFailed, notifyRouteShapeFailed } from '$lib/routeNotifications';
@@ -17,11 +17,32 @@
 	// used to clear interval api calls
 	let currentIntervalId = null;
 	let loadRouteDataPromise = null;
+	let dark = false;
+	let routeId = null;
+	let rawRouteColor = null;
+	let polyline = null;
+	let refreshVehicles = null;
+	const routeColors = new Map();
 
-	onMount(async () => {
+	onMount(() => {
+		dark = document.documentElement.classList.contains('dark');
+		window.addEventListener('themeChange', handleThemeChange);
 		loadRouteDataPromise = loadRouteData();
-		await loadRouteDataPromise;
+		return () => window.removeEventListener('themeChange', handleThemeChange);
 	});
+
+	function updateRouteColors() {
+		if (!isMounted || !routeId) return;
+		const color = mapContrastColor(rawRouteColor, { dark });
+		routeColors.set(routeId, { line: color ?? undefined });
+		if (polyline) mapProvider.setPolylineColor(polyline, color);
+		refreshVehicles?.();
+	}
+
+	function handleThemeChange(event) {
+		dark = event.detail.darkMode;
+		updateRouteColors();
+	}
 
 	// A retry restarts the load, so it has to become the promise onDestroy
 	// awaits — otherwise teardown races an in-flight retry and the retry's
@@ -70,6 +91,9 @@
 		}
 
 		try {
+			clearInterval(currentIntervalId);
+			refreshVehicles = null;
+			polyline = null;
 			mapProvider.clearAllPolylines();
 			mapProvider.removeStopMarkers();
 
@@ -83,16 +107,15 @@
 			const moreTripData = tripReferences?.find((t) => t.id == tripId);
 
 			shapeId = moreTripData?.shapeId;
-			const routeId = moreTripData?.routeId;
+			routeId = moreTripData?.routeId;
 
 			const route = tripData?.data?.references?.routes?.find((r) => r.id === routeId);
-			const dark = document.documentElement.classList.contains('dark');
-			const routeColor = mapContrastColor(route?.color, { dark });
+			rawRouteColor = route?.color;
+			updateRouteColors();
 
 			if (shapeId && isMounted) {
 				// Scoped to its own try so a shape failure still leaves the stops and
 				// vehicles below to render — the trip is usable without the line.
-				let polyline = null;
 				try {
 					const shapeResponse = await fetch(`/api/oba/shape/${shapeId}`);
 					if (!shapeResponse.ok) {
@@ -102,7 +125,9 @@
 					const shapePoints = shapeData?.data?.entry?.points;
 					// createPolyline returns null when the encoded shape fails to decode.
 					polyline = shapePoints
-						? await mapProvider.createPolyline(shapePoints, { color: routeColor })
+						? await mapProvider.createPolyline(shapePoints, {
+								color: routeColors.get(routeId)?.line
+							})
 						: null;
 				} catch (error) {
 					console.error(`Error drawing route shape for trip ${tripId}:`, error);
@@ -112,6 +137,9 @@
 				// while the shape was in flight, in which case onDestroy has already
 				// run and a toast raised now would have no owner to dismiss it.
 				if (!isMounted) return;
+				// A theme event may have arrived while createPolyline awaited its
+				// provider library. Apply the latest color to the completed line.
+				updateRouteColors();
 
 				// This component draws one polyline for the whole trip, so no polyline
 				// means no route line at all — a total failure worth a retry, not the
@@ -153,13 +181,12 @@
 			if (routeId && isMounted) {
 				// Highlight the vehicle serving the trip the user clicked, while still
 				// showing the other vehicles running this route.
-				currentIntervalId = await fetchAndUpdateVehicles(
-					routeId,
-					mapProvider,
-					undefined,
-					tripId,
-					routeColor ?? undefined
-				);
+				const poll = await fetchAndUpdateVehiclesForRoutes([{ id: routeId }], mapProvider, {
+					highlightedTripId: tripId,
+					colorsByRouteId: routeColors
+				});
+				currentIntervalId = poll.intervalId;
+				refreshVehicles = poll.refresh;
 			}
 		} catch (error) {
 			console.error(`Error loading route data for trip ${tripId}:`, error);

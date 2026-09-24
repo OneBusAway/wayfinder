@@ -7,7 +7,7 @@
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { Modal } from 'flowbite-svelte';
 	import ServiceAlertItem from './ServiceAlertItem.svelte';
-	import { t } from 'svelte-i18n';
+	import { t, locale } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';
 	import {
 		orderAlertsByRelevance,
@@ -47,7 +47,7 @@
 
 	let modalSeverity = $derived(modalAlert ? normalizeSeverity(modalAlert) : null);
 	let modalWindow = $derived(modalAlert ? activeWindowRange(modalAlert) : null);
-	let modalActiveLabel = $derived(formatActiveWindowLabel(modalWindow, $t, regionTz));
+	let modalActiveLabel = $derived(formatActiveWindowLabel(modalWindow, $t, regionTz, $locale));
 	let modalCause = $derived(modalAlert ? formatCauseLabel(modalAlert.reason, $t) : null);
 	let modalEffect = $derived(
 		modalAlert ? formatEffectLabel(modalAlert?.consequences?.[0]?.condition, $t) : null
