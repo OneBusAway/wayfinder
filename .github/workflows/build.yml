@@ -72,12 +72,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           files: ./coverage/lcov.info
 
-      - name: Display test results
-        if: failure()
-        run: |
-          echo "Tests failed. Please check the test output for more details."
-        continue-on-error: true
-
   build:
     needs: [check, test]
     runs-on: ubuntu-latest
