@@ -4,6 +4,7 @@
  *  <button use:keybinding={{code: 'Escape'}} on:click={yourEventHere}>
  *    Triggers a click on the button when the Escape key is pressed.
  *  </button>
+ * Events already handled by a child control via `preventDefault()` are ignored.
  * @param {HTMLElement} node The HTML element to bind to.
  * @param {Object} params The keybinding parameters. See the example above.
  * @returns {Object} An object with the update and destroy methods.
@@ -22,6 +23,7 @@ export const keybinding = (node, params) => {
 		}
 
 		handler = (e) => {
+			if (e.defaultPrevented) return;
 			if (
 				!!currentParams.alt != e.altKey ||
 				!!currentParams.shift != e.shiftKey ||
