@@ -6,7 +6,7 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
-		"check": "svelte-check",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
 		"test": "vitest",
 		"test:watch": "vitest --watch",
 		"test:coverage": "vitest run --coverage",
@@ -50,6 +50,7 @@
 		"svelte": "^5.0.0",
 		"svelte-check": "^4.7.6",
 		"tailwindcss": "^3.4.4",
+		"typescript": "^6.0.3",
 		"vite": "^5.4.4",
 		"vitest": "^2.1.8"
 	},
