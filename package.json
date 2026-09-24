@@ -6,6 +6,7 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
+		"check": "svelte-check",
 		"test": "vitest",
 		"test:watch": "vitest --watch",
 		"test:coverage": "vitest run --coverage",
