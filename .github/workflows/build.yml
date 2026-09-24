@@ -41,13 +41,6 @@ jobs:
         env:
           CI: true
 
-      - name: Display Svelte Check Issues
-        if: failure()
-        run: |
-          echo "Svelte Check found issues in the following files:"
-          cat /home/runner/.npm/_logs/*.log
-        continue-on-error: true
-
   test:
     runs-on: ubuntu-latest
     steps:
