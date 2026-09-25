@@ -1,5 +1,5 @@
 <script>
-    // @ts-check
+	// @ts-check
 	import ArrivalDeparture from '$components/ArrivalDeparture.svelte';
 	import TripDetailsPane from '$components/oba/TripDetailsPane.svelte';
 	import Accordion from '$components/containers/SingleSelectAccordion.svelte';
@@ -434,11 +434,7 @@
 					{/key}
 				{/if}
 				{#if nextSurveyQuestion}
-					<SurveyModal
-						{stop}
-						skipHeroQuestion={true}
-						surveyPublicId={surveyPublicIdentifier}
-					/>
+					<SurveyModal {stop} skipHeroQuestion={true} surveyPublicId={surveyPublicIdentifier} />
 				{/if}
 
 				{#snippet loadMoreButton(emptyResults = false)}
