@@ -2,13 +2,37 @@ import js from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
 import prettier from 'eslint-config-prettier';
 import globals from 'globals';
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
 	js.configs.recommended,
+	...tsPlugin.configs['flat/recommended'].map((config) => ({
+		...config,
+		files: ['**/*.svelte', '**/*.ts']
+	})),
+	...tsPlugin.configs['flat/stylistic'].map((config) => ({
+		...config,
+		files: ['**/*.svelte', '**/*.ts']
+	})),
 	...svelte.configs['flat/recommended'],
 	prettier,
 	...svelte.configs['flat/prettier'],
+	{
+		files: ['**/*.svelte'],
+		languageOptions: {
+			parserOptions: {
+				parser: { ts: tsParser }
+			}
+		},
+		rules: {
+			// 2026-09-25: When TS's "flat/recommended" was added the codebase used `let` in many
+			// places so `const` was not preferred.
+			'prefer-const': 'off',
+			'@typescript-eslint/no-unused-expressions': ['error', { allowTernary: true }]
+		}
+	},
 	{
 		languageOptions: {
 			globals: {
