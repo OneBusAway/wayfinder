@@ -1,4 +1,47 @@
+import { browser } from '$app/environment';
 import { calcDistanceBetweenTwoPoints } from '$lib/mathUtils';
+
+const ANALYTICS_ID_KEY = 'wayfinder.analyticsId';
+
+/**
+ * crypto.randomUUID only exists in secure contexts (HTTPS/localhost); a Wayfinder served over
+ * plain HTTP still has crypto.getRandomValues, so build a v4 UUID from that instead.
+ * @returns {string}
+ */
+function randomUUID() {
+	if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+	const bytes = crypto.getRandomValues(new Uint8Array(16));
+	bytes[6] = (bytes[6] & 0x0f) | 0x40;
+	bytes[8] = (bytes[8] & 0x3f) | 0x80;
+	const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+/**
+ * Returns a persisted anonymous per-browser analytics id, generating and storing one on
+ * first use. Umami derives its visitor/session id from IP + User-Agent + a monthly salt
+ * unless the event payload carries an `id`; forwarding a stable client-generated id keeps
+ * a returning visitor's session stable across IP changes (e.g. switching networks) instead
+ * of minting a "new visitor" on every IP change and inflating MAU. (True through Umami v3.2;
+ * v3.3+ hash the IP back in, so the shared server must stay pinned to <= v3.2.)
+ *
+ * Never throws: storage can be unavailable (private browsing, blocked storage, SSR) — in
+ * that case this returns undefined and the envelope simply omits `id`.
+ * @returns {string|undefined}
+ */
+export function getAnalyticsId() {
+	if (!browser) return undefined;
+	try {
+		const existing = localStorage.getItem(ANALYTICS_ID_KEY);
+		if (existing) return existing;
+		const id = randomUUID();
+		localStorage.setItem(ANALYTICS_ID_KEY, id);
+		return id;
+	} catch (e) {
+		console.warn('Failed to read/persist analytics id:', e);
+		return undefined;
+	}
+}
 
 /**
  * Converts a distance (in km) to a category string.

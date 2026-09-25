@@ -3,7 +3,8 @@ import {
 	UmamiAdapter,
 	sanitizeData,
 	FALLBACK_USER_AGENT,
-	isSuccessfulIngest
+	isSuccessfulIngest,
+	isValidAnalyticsId
 } from '$lib/Insights/adapters/UmamiAdapter.js';
 
 const fullEnv = {
@@ -178,6 +179,72 @@ describe('UmamiAdapter.forwardEvent (happy path)', () => {
 		await expect(new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx)).rejects.toThrow(
 			'dropped event'
 		);
+	});
+});
+
+describe('UmamiAdapter.forwardEvent (analytics id)', () => {
+	beforeEach(() => {
+		global.fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			text: async () => JSON.stringify({ cache: 'abc' })
+		});
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it('forwards a valid id in payload.id', async () => {
+		await new UmamiAdapter(fullEnv).forwardEvent({ ...envelope, id: 'abc-123' }, ctx);
+		const [, init] = global.fetch.mock.calls[0];
+		const body = JSON.parse(init.body);
+		expect(body.payload.id).toBe('abc-123');
+	});
+
+	it('omits payload.id when envelope has no id', async () => {
+		await new UmamiAdapter(fullEnv).forwardEvent(envelope, ctx);
+		const [, init] = global.fetch.mock.calls[0];
+		const body = JSON.parse(init.body);
+		expect(body.payload).not.toHaveProperty('id');
+	});
+
+	it('drops an invalid id (validated by isValidAnalyticsId)', async () => {
+		await new UmamiAdapter(fullEnv).forwardEvent({ ...envelope, id: 'a'.repeat(51) }, ctx);
+		const [, init] = global.fetch.mock.calls[0];
+		const body = JSON.parse(init.body);
+		expect(body.payload).not.toHaveProperty('id');
+	});
+});
+
+describe('isValidAnalyticsId', () => {
+	it('accepts a UUID', () => {
+		expect(isValidAnalyticsId('79eab5f4-0c4d-492b-9b60-ecf018859f03')).toBe(true);
+	});
+
+	it('accepts a 50-character id (the boundary)', () => {
+		expect(isValidAnalyticsId('a'.repeat(50))).toBe(true);
+	});
+
+	it('rejects a 51-character id', () => {
+		expect(isValidAnalyticsId('a'.repeat(51))).toBe(false);
+	});
+
+	it('rejects an empty string', () => {
+		expect(isValidAnalyticsId('')).toBe(false);
+	});
+
+	it('rejects non-string values', () => {
+		expect(isValidAnalyticsId(123)).toBe(false);
+		expect(isValidAnalyticsId(null)).toBe(false);
+		expect(isValidAnalyticsId(undefined)).toBe(false);
+		expect(isValidAnalyticsId({})).toBe(false);
+	});
+
+	it('rejects ids with disallowed characters', () => {
+		expect(isValidAnalyticsId('abc def')).toBe(false);
+		expect(isValidAnalyticsId('abc<script>')).toBe(false);
+		expect(isValidAnalyticsId('abc_def')).toBe(false);
 	});
 });
 
