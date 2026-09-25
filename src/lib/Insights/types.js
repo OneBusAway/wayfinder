@@ -2,6 +2,9 @@
  * @typedef {Object} AnalyticsEnvelope
  * @property {string} name      Event name (e.g. "pageview", "search", "click").
  * @property {string} url       Path on the site (e.g. "/", "/stop").
+ * @property {string} [id]      Persisted anonymous per-browser id (localStorage), forwarded
+ *                               so Umami derives a stable visitor id instead of one keyed to
+ *                               IP + User-Agent. Omitted when storage is unavailable.
  * @property {string} [referrer]
  * @property {string} [title]
  * @property {string} [language]

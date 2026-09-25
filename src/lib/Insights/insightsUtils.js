@@ -1,4 +1,32 @@
+import { browser } from '$app/environment';
 import { calcDistanceBetweenTwoPoints } from '$lib/mathUtils';
+
+const ANALYTICS_ID_KEY = 'wayfinder.analyticsId';
+
+/**
+ * Returns a persisted anonymous per-browser analytics id, generating and storing one on
+ * first use. Umami derives its visitor/session id from IP + User-Agent + a monthly salt
+ * unless the event payload carries an `id`; forwarding a stable client-generated id keeps
+ * a returning visitor's session stable across IP changes (e.g. switching networks) instead
+ * of minting a "new visitor" on every IP change and inflating MAU.
+ *
+ * Never throws: storage can be unavailable (private browsing, blocked storage, SSR) — in
+ * that case this returns undefined and the envelope simply omits `id`.
+ * @returns {string|undefined}
+ */
+export function getAnalyticsId() {
+	if (!browser) return undefined;
+	try {
+		const existing = localStorage.getItem(ANALYTICS_ID_KEY);
+		if (existing) return existing;
+		const id = crypto.randomUUID();
+		localStorage.setItem(ANALYTICS_ID_KEY, id);
+		return id;
+	} catch (e) {
+		console.warn('Failed to read/persist analytics id:', e);
+		return undefined;
+	}
+}
 
 /**
  * Converts a distance (in km) to a category string.

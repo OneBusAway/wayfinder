@@ -1,5 +1,6 @@
 import { env as dynamicEnv } from '$env/dynamic/public';
 import { upstreamError } from './upstreamError.js';
+import { getAnalyticsId } from './insightsUtils.js';
 
 /**
  * Provider-agnostic facade. Builds an AnalyticsEnvelope and POSTs it to /api/events.
@@ -34,9 +35,11 @@ export class Analytics {
 	}
 
 	buildEnvelope(pageURL, eventName, props) {
+		const id = getAnalyticsId();
 		return {
 			name: eventName,
 			url: pageURL,
+			...(id ? { id } : {}),
 			...this.collectBrowserContext(),
 			props: this.buildProps(props)
 		};

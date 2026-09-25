@@ -4,11 +4,21 @@ const mockEnv = vi.hoisted(() => ({
 	PUBLIC_ANALYTICS_PROVIDER: 'plausible'
 }));
 
+const mockAnalyticsId = vi.hoisted(() => ({ value: undefined }));
+
 vi.mock('$env/dynamic/public', () => ({
 	get env() {
 		return mockEnv;
 	}
 }));
+
+vi.mock('$lib/Insights/insightsUtils.js', async (importOriginal) => {
+	const actual = await importOriginal();
+	return {
+		...actual,
+		getAnalyticsId: () => mockAnalyticsId.value
+	};
+});
 
 import { Analytics } from '$lib/Insights/Insights.js';
 
@@ -51,6 +61,7 @@ describe('Analytics (constructor + isEnabled)', () => {
 describe('Analytics envelope construction', () => {
 	beforeEach(() => {
 		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'umami';
+		mockAnalyticsId.value = undefined;
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: true,
 			json: async () => ({ status: 'ok' })
@@ -59,6 +70,22 @@ describe('Analytics envelope construction', () => {
 
 	afterEach(() => {
 		vi.restoreAllMocks();
+	});
+
+	it('envelope includes id when getAnalyticsId() returns a value', async () => {
+		mockAnalyticsId.value = 'stable-id-123';
+		await new Analytics().reportPageView('/test');
+		const [, init] = global.fetch.mock.calls[0];
+		const body = JSON.parse(init.body);
+		expect(body.id).toBe('stable-id-123');
+	});
+
+	it('envelope omits id when getAnalyticsId() returns undefined', async () => {
+		mockAnalyticsId.value = undefined;
+		await new Analytics().reportPageView('/test');
+		const [, init] = global.fetch.mock.calls[0];
+		const body = JSON.parse(init.body);
+		expect(body).not.toHaveProperty('id');
 	});
 
 	it('reportPageView POSTs envelope to /api/events', async () => {
@@ -160,6 +187,7 @@ describe('Analytics envelope construction', () => {
 describe('Analytics convenience methods', () => {
 	beforeEach(() => {
 		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'umami';
+		mockAnalyticsId.value = undefined;
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: true,
 			json: async () => ({ status: 'ok' })
@@ -214,6 +242,7 @@ describe('Analytics sendBeacon fallback on page unload', () => {
 	let sendBeaconSpy;
 	beforeEach(() => {
 		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'umami';
+		mockAnalyticsId.value = undefined;
 		sendBeaconSpy = vi.fn(() => true);
 		Object.defineProperty(global.navigator, 'sendBeacon', {
 			value: sendBeaconSpy,
