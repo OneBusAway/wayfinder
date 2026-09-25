@@ -23,6 +23,7 @@
 		onInput,
 		onClear,
 		onSelect,
+		// eslint-disable-next-line @typescript-eslint/no-empty-function
 		onDismiss = () => {}
 	} = $props();
 

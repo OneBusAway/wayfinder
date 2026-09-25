@@ -10,11 +10,11 @@ export default [
 	js.configs.recommended,
 	...tsPlugin.configs['flat/recommended'].map((config) => ({
 		...config,
-		files: ['**/*.ts']
+		files: ['**/*.svelte', '**/*.ts']
 	})),
 	...tsPlugin.configs['flat/stylistic'].map((config) => ({
 		...config,
-		files: ['**/*.ts']
+		files: ['**/*.svelte', '**/*.ts']
 	})),
 	...svelte.configs['flat/recommended'],
 	prettier,
@@ -25,6 +25,12 @@ export default [
 			parserOptions: {
 				parser: { ts: tsParser }
 			}
+		},
+		rules: {
+			// 2026-09-25: When TS's "flat/recommended" was added the codebase used `let` in many
+			// places so `const` was not preferred.
+			'prefer-const': 'off',
+			'@typescript-eslint/no-unused-expressions': ['error', { allowTernary: true }]
 		}
 	},
 	{
