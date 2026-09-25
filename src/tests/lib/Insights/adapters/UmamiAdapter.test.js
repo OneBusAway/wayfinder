@@ -209,32 +209,8 @@ describe('UmamiAdapter.forwardEvent (analytics id)', () => {
 		expect(body.payload).not.toHaveProperty('id');
 	});
 
-	it('drops a non-string id', async () => {
-		await new UmamiAdapter(fullEnv).forwardEvent({ ...envelope, id: 12345 }, ctx);
-		const [, init] = global.fetch.mock.calls[0];
-		const body = JSON.parse(init.body);
-		expect(body.payload).not.toHaveProperty('id');
-	});
-
-	it('drops an empty string id', async () => {
-		await new UmamiAdapter(fullEnv).forwardEvent({ ...envelope, id: '' }, ctx);
-		const [, init] = global.fetch.mock.calls[0];
-		const body = JSON.parse(init.body);
-		expect(body.payload).not.toHaveProperty('id');
-	});
-
-	it('drops an id longer than 50 characters', async () => {
+	it('drops an invalid id (validated by isValidAnalyticsId)', async () => {
 		await new UmamiAdapter(fullEnv).forwardEvent({ ...envelope, id: 'a'.repeat(51) }, ctx);
-		const [, init] = global.fetch.mock.calls[0];
-		const body = JSON.parse(init.body);
-		expect(body.payload).not.toHaveProperty('id');
-	});
-
-	it('drops an id containing characters outside the allowed pattern', async () => {
-		await new UmamiAdapter(fullEnv).forwardEvent(
-			{ ...envelope, id: '<script>alert(1)</script>' },
-			ctx
-		);
 		const [, init] = global.fetch.mock.calls[0];
 		const body = JSON.parse(init.body);
 		expect(body.payload).not.toHaveProperty('id');
