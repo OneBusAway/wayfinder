@@ -49,8 +49,8 @@ export function removeAgencyPrefix(idString) {
  * Extracts the sorted route short names served by a stop from an
  * arrivals-and-departures API response.
  *
- * @param {Object} arrivalsAndDeparturesResponse - Response from the arrivals-and-departures-for-stop API
- * @param {Object} stop - Stop object with a routeIds array
+ * @param {import('onebusaway-sdk/resources/arrival-and-departure').ArrivalAndDepartureListResponse | null} arrivalsAndDeparturesResponse - Response from the arrivals-and-departures-for-stop API
+ * @param {import('$lib/types').Stop} stop - Stop object with a routeIds array
  * @returns {Array<string>|null} Lexicographically sorted route short names (falling back to the
  *   route id without its agency prefix), or null when the response has no route references
  *   or the stop has no routeIds array
