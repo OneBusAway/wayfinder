@@ -9,6 +9,7 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {import('svelte').Snippet} [children]
+	 * @property {(event: { activeItem: string | null, activeData: any }) => void} handleAccordionSelectionChanged
 	 */
 
 	/** @type {Props} */

@@ -1,4 +1,5 @@
 <script>
+    // @ts-check
 	import ArrivalDeparture from '$components/ArrivalDeparture.svelte';
 	import TripDetailsPane from '$components/oba/TripDetailsPane.svelte';
 	import Accordion from '$components/containers/SingleSelectAccordion.svelte';
@@ -19,13 +20,24 @@
 	import { fade } from 'svelte/transition';
 
 	/**
+	 * @typedef {import('onebusaway-sdk/resources/arrival-and-departure').ArrivalAndDepartureListResponse} ArrivalAndDepartureListResponse
+	 * @typedef {import('$lib/activeRoutes').RouteColors} RouteColors
+	 * @typedef {import('$lib/types').Stop} Stop
+	 *
+	 * @typedef {ArrivalAndDepartureListResponse['data']['entry']['arrivalsAndDepartures'][number]} ArrivalsAndDeparture
+	 * @typedef {string | string[]} SurveyAnswer
+	 * @typedef {{ id: string | number, content: { type: string, label_text: string } }} SurveyQuestion
+	 * @typedef {{ id: string | number, questions: SurveyQuestion[], allows_multiple_responses?: boolean, always_visible?: boolean }} StopSurvey
+	 * @typedef {{ question_id: SurveyQuestion['id'], question_label: string, question_type: string, answer: SurveyAnswer }} SurveyAnswerResponse
+	 *
 	 * @typedef {Object} Props
-	 * @property {any} stop
-	 * @property {Function} [handleUpdateRouteMap]
-	 * @property {Function} [tripSelected]
+	 * @property {Stop} stop
+	 * @property {((event: { detail: { show: boolean } }) => void) | null} [handleUpdateRouteMap]
+	 * @property {((event: { detail: ArrivalsAndDeparture | null }) => void) | null} [tripSelected]
 	 * @property {boolean} [showHeroCard] - Render the brand-accent hero card above the arrivals list
-	 * @property {any} [arrivalsAndDeparturesResponse]
-	 * @property {Map<string, any>} [routeColors]
+	 * @property {ArrivalAndDepartureListResponse | null} [arrivalsAndDeparturesResponse]
+	 * @property {boolean} [loading]
+	 * @property {Map<string, RouteColors> | null} [routeColors]
 	 */
 
 	/** @type {Props} */
@@ -67,14 +79,18 @@
 	// polls animate new/departed items via the keyed {#each} block.
 	let isFirstLoad = $state(true);
 
+	/** @type {NodeJS.Timeout | null} */
 	let interval = null;
+	/** @type {StopSurvey | null} */
 	let currentStopSurvey = $state(null);
+	/** @type {SurveyQuestion[]} */
 	let remainingSurveyQuestions = $state([]);
 
 	// Furthest arrival time (ms) observed when we last concluded "no more arrivals".
 	// A later poll that surfaces an arrival beyond this clears the stale hint.
 	let noMoreArrivalsBoundary = 0;
 
+	/** @type {AbortController | null} */
 	let abortController = null;
 
 	/**
@@ -107,8 +123,9 @@
 
 	/**
 	 * Fetches arrivals for the stop within the current `minutesAfter` window.
+	 * @param {string} stopID
 	 * @returns {Promise<number|null>} the number of arrivals fetched, or `null`
-	 * when the request was aborted or failed (count is then unknown).
+	 *     when the request was aborted or failed (count is then unknown).
 	 */
 	async function loadData(stopID) {
 		// Cancel the previous request if it exists
@@ -152,6 +169,7 @@
 			}
 			return count;
 		} catch (err) {
+			// @ts-expect-error Errors must be typechecked at runtime w/ `instanceof`
 			if (err.name !== 'AbortError') {
 				error = 'Unable to fetch arrival/departure data';
 			}
@@ -163,6 +181,10 @@
 			}
 		}
 	}
+
+	/**
+	 * @param {string} stopID
+	 */
 	function resetDataFetchInterval(stopID) {
 		if (interval) clearInterval(interval);
 
@@ -213,7 +235,7 @@
 			minutesAfter = DEFAULT_MINUTES_AFTER;
 			noMoreArrivals = false;
 			isFirstLoad = true;
-			clearInterval(interval);
+			if (interval != null) clearInterval(interval);
 			resetDataFetchInterval(stopID);
 
 			// StopPane is not remounted when the user selects a different stop
@@ -241,6 +263,9 @@
 		new Map((arrivalsAndDeparturesResponse?.data?.references?.routes ?? []).map((r) => [r.id, r]))
 	);
 
+	/**
+	 * @param {{ activeData: ArrivalsAndDeparture | null }} event
+	 */
 	function handleAccordionSelectionChanged(event) {
 		const data = event.activeData; // this is the ArrivalDeparture object plumbed into the AccordionItem
 		const show = !!data;
@@ -253,6 +278,7 @@
 		analytics.reportArrivalClicked('Clicked on arrival/departure');
 	}
 
+	/** @type {SurveyAnswer} */
 	let heroAnswer = '';
 	let nextSurveyQuestion = $state(false);
 	let surveyPublicIdentifier = $state(null);
@@ -264,6 +290,8 @@
 	}
 
 	async function handleSurveyButtonClick() {
+		if (currentStopSurvey == null) return;
+
 		let heroQuestion = currentStopSurvey.questions[0];
 		remainingSurveyQuestions = currentStopSurvey.questions.slice(1);
 
@@ -271,6 +299,7 @@
 			return;
 		}
 
+		/** @type {{ survey_id: StopSurvey['id'], user_identifier: ReturnType<typeof getUserId>, stop_identifier: Stop['id'], stop_latitude: Stop['lat'], stop_longitude: Stop['lon'], responses: SurveyAnswerResponse[] }} */
 		let surveyResponse = {
 			survey_id: currentStopSurvey.id,
 			user_identifier: getUserId(),
@@ -313,6 +342,7 @@
 
 	// SurveyBanner resolves the answer (string, or string[] for checkboxes)
 	// before reporting it, so this no longer digs into the DOM event.
+	/** @param {SurveyAnswer} answer */
 	function handleHeroQuestionChange(answer) {
 		heroAnswer = answer;
 	}
@@ -405,7 +435,6 @@
 				{/if}
 				{#if nextSurveyQuestion}
 					<SurveyModal
-						currentSurvey={currentStopSurvey}
 						{stop}
 						skipHeroQuestion={true}
 						surveyPublicId={surveyPublicIdentifier}
