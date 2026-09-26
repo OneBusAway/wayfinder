@@ -9,8 +9,19 @@ This is the next-generation OneBusAway web application, built on top of [SvelteK
 ```bash
 npm install
 cp .env.example .env
-# edit .env with your editor of choice
+# edit .env with your values, then check them:
+npm run validate-env
 npm run dev
+```
+
+Required and optional variables are listed in `.env.example`. Run `npm run validate-env` to check your `.env` against `env-schema.json` before starting the app.
+
+## Testing and checks
+
+```bash
+npm run test          # run the test suite once
+npm run lint          # prettier + eslint
+npm run prepush       # format, lint, and test (handy before opening a PR)
 ```
 
 ## `.env` File Keys
