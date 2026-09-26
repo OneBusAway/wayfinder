@@ -30,14 +30,54 @@
 		"trip_itineraries": "यात्रा विकल्प",
 		"show_steps": "चरण दिखाएँ",
 		"hide_steps": "चरण छिपाएँ",
+		"options": "विकल्प",
+		"trip_options": "यात्रा विकल्प",
+		"cancel": "रद्द करें",
+		"done": "हो गया",
+		"reset_to_defaults": "डिफ़ॉल्ट पर रीसेट करें",
+		"departure_time": "प्रस्थान समय",
+		"departure_date": "प्रस्थान तिथि",
+		"leave_now": "अभी निकलें",
+		"depart_at": "इस समय निकलें",
+		"arrive_by": "इस समय तक पहुंचें",
+		"wheelchair_accessible": "व्हीलचेयर सुलभ",
+		"wheelchair_desc": "मोबिलिटी उपकरणों और व्हीलचेयर के लिए उपयुक्त मार्ग खोजें",
+		"wheelchair": "व्हीलचेयर",
+		"route_optimization": "मार्ग अनुकूलन",
+		"fastest_trip": "सबसे तेज़ यात्रा",
+		"fewest_transfers": "सबसे कम बदलाव",
+		"stay_on_board": "इसी वाहन में रहें। यह यात्रा मार्ग {route} के रूप में जारी रहेगी।",
+		"walking_distance": "पैदल दूरी",
+		"max_walking_distance": "अधिकतम पैदल दूरी",
 		"distance_unit": "दूरी की इकाई",
 		"unit_auto": "स्वतः पता लगाएं",
 		"unit_metric": "मीट्रिक (km, m)",
-		"unit_imperial": "इम्पिरियल (mi, ft)"
+		"unit_imperial": "इम्पिरियल (mi, ft)",
+		"swap_locations": "प्रारंभ और गंतव्य स्थान आपस में बदलें",
+		"error_code": "त्रुटि कोड",
+		"remove_recent_trip": "हाल की यात्रा हटाएं",
+		"recent_trip": "{from} से {to} तक की हाल की यात्रा उपयोग करें",
+		"recent_searches": "हाल की खोजें",
+		"recents": "हाल की यात्राएं",
+		"clear_all": "सभी साफ़ करें",
+		"request_failed": "हम यात्रा योजना सेवा तक नहीं पहुंच सके। कृपया पुनः प्रयास करें।",
+		"invalid_shared_link": "यह साझा यात्रा लिंक टूटा हुआ लगता है। कृपया यात्रा की योजना फिर से बनाएं।"
 	},
 	"tabs": {
 		"stops-and-stations": "स्टॉप और स्टेशन",
 		"plan_trip": "यात्रा की योजना बनाएं"
+	},
+	"favorites": {
+		"title": "पसंदीदा",
+		"add": "पसंदीदा में जोड़ें",
+		"remove": "पसंदीदा से हटाएं",
+		"clear_all": "सभी साफ़ करें",
+		"open_panel": "पसंदीदा खोलें",
+		"close_panel": "पसंदीदा बंद करें",
+		"empty": "अभी कोई पसंदीदा नहीं। किसी स्टॉप या मार्ग पर तारे को टैप करके उसे यहां सहेजें।",
+		"stop_code": "कोड",
+		"open_item": "{name} खोलें",
+		"remove_item": "{name} को पसंदीदा से हटाएं"
 	},
 	"search": {
 		"placeholder": "स्टॉप, मार्ग और स्थान खोजें",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "उपलब्ध मार्गों की सूची के लिए",
 		"search_for_routes": "मार्ग खोजें...",
 		"no_routes_found": "कोई मार्ग नहीं मिला",
-		"all_routes": "सभी मार्ग"
+		"all_routes": "सभी मार्ग",
+		"clear": "साफ़ करें",
+		"collapse": "खोज छिपाएं"
+	},
+	"sheet": {
+		"close": "बंद करें",
+		"resize_handle": "पैनल का आकार बदलें",
+		"snap_full": "पूरी ऊंचाई",
+		"snap_half": "आधी ऊंचाई",
+		"snap_peek": "न्यूनतम ऊंचाई"
+	},
+	"survey": {
+		"required_question": "आवश्यक प्रश्न",
+		"required_answer": "इस प्रश्न का उत्तर देना आवश्यक है।",
+		"expand": "प्रश्न दिखाएं",
+		"collapse": "प्रश्न छिपाएं",
+		"dismiss": "सर्वेक्षण खारिज करें",
+		"submit": "सबमिट करें",
+		"next": "आगे",
+		"submit_failed": "आपका उत्तर नहीं भेजा जा सका। कृपया पुनः प्रयास करें।"
 	},
 	"header": {
 		"home": "होम",
@@ -88,13 +147,26 @@
 		"close": "बंद करें"
 	},
 	"arrivals_and_departures": "आगमन और प्रस्थान",
+	"show_more": "और दिखाएं",
+	"show_less": "कम दिखाएं",
 	"load_more_arrivals": "और आगमन लोड करें",
+	"refresh": "रीफ़्रेश करें",
 	"no_arrivals_found_in_next_minutes": "अगले {minutes} मिनट में कोई आगमन नहीं मिला",
 	"no_more_arrivals_in_next_minutes": "अगले {minutes} मिनट में कोई और आगमन नहीं",
 	"stop": "स्टॉप",
+	"direction_bound": "{direction} की ओर",
 	"routes": "मार्ग",
 	"route": "मार्ग",
 	"route_modal_title": "मार्ग {name}",
+	"notifications": {
+		"route_load_failed": "यह मार्ग लोड नहीं हो सका।",
+		"route_shape_failed": "इस मार्ग को मानचित्र पर नहीं दिखाया जा सका।",
+		"route_shape_partial": "इस मार्ग का कुछ हिस्सा नहीं दिखाया जा सका। मानचित्र में कोई खंड गायब हो सकता है।",
+		"favorite_saved": "पसंदीदा में सहेजा गया।",
+		"favorite_removed": "पसंदीदा से हटाया गया।",
+		"tap_to_retry": "पुनः प्रयास के लिए टैप करें।",
+		"dismiss": "खारिज करें"
+	},
 	"loading": "लोड हो रहा है",
 	"arrives": "पहुंचेगा",
 	"NA": "उपलब्ध नहीं",
@@ -105,13 +177,16 @@
 		"secs": "सेकंड",
 		"min": "मिनट",
 		"mins": "मिनट",
-		"minutes": "मिनट"
+		"minutes": "मिनट",
+		"min_compact": "{n} मिनट"
 	},
 	"vehicle": {
 		"number": "वाहन #",
 		"data_updated": "डेटा अपडेट किया गया",
 		"no_real_time_data": "इस वाहन के लिए वास्तविक समय डेटा उपलब्ध नहीं है।",
-		"next_stop": "अगला स्टॉप:"
+		"next_stop": "अगला स्टॉप:",
+		"label": "वाहन",
+		"to_headsign": "{headsign} की ओर जाने वाला वाहन"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "आगमन और प्रस्थान"
@@ -150,18 +225,61 @@
 		"no_description": "इस सूचना के लिए कोई विस्तृत विवरण उपलब्ध नहीं",
 		"page": "पृष्ठ",
 		"show": "दिखाएं",
-		"hide": "छुपाएं"
+		"hide": "छुपाएं",
+		"open_alert": "सेवा सूचना ({severity}) का विवरण खोलें: {summary}",
+		"affects_this_stop": "इस स्टॉप पर प्रभाव",
+		"other_alerts": "अन्य सूचनाएं",
+		"severity_severe": "गंभीर",
+		"severity_warning": "चेतावनी",
+		"severity_info": "जानकारी",
+		"cause": "कारण",
+		"effect": "प्रभाव",
+		"active": "सक्रिय",
+		"active_until": "{date} तक",
+		"active_from": "{date} से",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "अज्ञात",
+		"cause_other": "अन्य",
+		"cause_technical": "तकनीकी समस्या",
+		"cause_strike": "हड़ताल",
+		"cause_demonstration": "प्रदर्शन",
+		"cause_accident": "दुर्घटना",
+		"cause_holiday": "अवकाश",
+		"cause_weather": "मौसम",
+		"cause_maintenance": "रखरखाव",
+		"cause_construction": "निर्माण कार्य",
+		"cause_police": "पुलिस कार्रवाई",
+		"cause_medical": "चिकित्सा आपातकाल",
+		"cause_equipment": "उपकरण में खराबी",
+		"cause_environment": "पर्यावरणीय स्थितियां",
+		"cause_personnel": "कर्मचारी संबंधी समस्या",
+		"cause_miscellaneous": "विविध",
+		"cause_security": "सुरक्षा सूचना",
+		"effect_no_service": "कोई सेवा नहीं",
+		"effect_reduced_service": "कम सेवा",
+		"effect_significant_delays": "काफ़ी देरी",
+		"effect_detour": "मार्ग परिवर्तन",
+		"effect_additional_service": "अतिरिक्त सेवा",
+		"effect_modified_service": "संशोधित सेवा",
+		"effect_other": "अन्य प्रभाव",
+		"effect_unknown": "अज्ञात प्रभाव",
+		"effect_stop_moved": "स्टॉप स्थानांतरित",
+		"effect_no_effect": "कोई प्रभाव नहीं",
+		"effect_accessibility": "सुलभता संबंधी समस्या"
 	},
 	"view_stop_information": "स्टॉप जानकारी देखें",
 	"stop_details": {
-		"view_details": "विवरण देखें"
+		"view_details": "विवरण देखें",
+		"stop_info": "स्टॉप जानकारी"
 	},
 	"language_switcher": {
 		"select_language": "भाषा चुनें: {language}",
 		"available_languages": "उपलब्ध भाषाएं"
 	},
 	"map": {
-		"find_my_location": "मेरा स्थान खोजें"
+		"find_my_location": "मेरा स्थान खोजें",
+		"routes_shown": "दिखाए गए मार्ग",
+		"live_vehicle_count": "{count} लाइव"
 	},
 	"context-menu": {
 		"start_here": "यहाँ से शुरू करें",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "होम पर जाएँ",
 		"go_back": "वापस जाएँ"
+	},
+	"trip_details": {
+		"route": "मार्ग",
+		"no_stops": "इस यात्रा के लिए कोई स्टॉप समय उपलब्ध नहीं है।",
+		"loading": "यात्रा विवरण लोड हो रहा है...",
+		"live_vehicle": "लाइव · वाहन {vehicleId}",
+		"collapsed_stops": "{count, plural, one {# स्टॉप} other {# स्टॉप}}"
 	},
 	"skip_to_main_content": "मुख्य सामग्री पर जाएं"
 }

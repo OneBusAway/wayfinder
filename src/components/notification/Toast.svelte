@@ -4,6 +4,15 @@
 
 	let notification = $derived($notifications);
 
+	const VARIANT_CLASSES = {
+		error:
+			'border-red-200 bg-red-50/95 text-red-900 dark:border-red-800 dark:bg-red-950/95 dark:text-red-100',
+		warning:
+			'border-amber-200 bg-amber-50/95 text-amber-950 dark:border-amber-800 dark:bg-amber-950/95 dark:text-amber-100',
+		success:
+			'border-green-200 bg-green-50/95 text-green-900 dark:border-green-800 dark:bg-green-950/95 dark:text-green-100'
+	};
+
 	function dismiss() {
 		// Unscoped: the user asked for this one to go away, whoever raised it.
 		notifications.dismiss();
@@ -32,10 +41,9 @@
 		aria-live={notification.variant === 'error' ? 'assertive' : 'polite'}
 	>
 		<div
-			class="pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-sm
-				{notification.variant === 'error'
-				? 'border-red-200 bg-red-50/95 text-red-900 dark:border-red-800 dark:bg-red-950/95 dark:text-red-100'
-				: 'border-amber-200 bg-amber-50/95 text-amber-950 dark:border-amber-800 dark:bg-amber-950/95 dark:text-amber-100'}"
+			class="pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-sm {VARIANT_CLASSES[
+				notification.variant
+			] ?? VARIANT_CLASSES.warning}"
 		>
 			<p class="flex-1 text-sm leading-snug">
 				{notification.message}

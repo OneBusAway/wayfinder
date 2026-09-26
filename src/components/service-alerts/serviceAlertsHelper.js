@@ -272,11 +272,13 @@ export function formatEffectLabel(effect, translate) {
  *
  * @param {number | null | undefined} ms
  * @param {string | undefined} timeZone
+ * @param {string | undefined} locale - the app's active locale; falls back to the
+ *   browser's when absent.
  * @returns {string | null}
  */
-function formatAlertDate(ms, timeZone) {
+function formatAlertDate(ms, timeZone, locale) {
 	if (!Number.isFinite(ms)) return null;
-	return new Intl.DateTimeFormat(undefined, {
+	return new Intl.DateTimeFormat(locale || undefined, {
 		month: 'short',
 		day: 'numeric',
 		hour: 'numeric',
@@ -292,12 +294,13 @@ function formatAlertDate(ms, timeZone) {
  * @param {{ from: number | null, to: number | null } | null | undefined} range
  * @param {(key: string, opts?: { values?: Record<string, string> }) => string} translate
  * @param {string | undefined} timeZone
+ * @param {string | undefined} locale
  * @returns {string | null}
  */
-export function formatActiveWindowLabel(range, translate, timeZone) {
+export function formatActiveWindowLabel(range, translate, timeZone, locale) {
 	if (!range) return null;
-	const from = formatAlertDate(range.from, timeZone);
-	const to = formatAlertDate(range.to, timeZone);
+	const from = formatAlertDate(range.from, timeZone, locale);
+	const to = formatAlertDate(range.to, timeZone, locale);
 	if (from && to) {
 		return translate('service_alerts.active_range', { values: { from, to } });
 	}

@@ -1,10 +1,22 @@
 export function debounce(func, wait) {
-	let timeout;
+	let timeout = null;
 
-	return function (...args) {
+	function debounced(...args) {
 		clearTimeout(timeout);
-		timeout = setTimeout(() => func.apply(this, args), wait);
+		timeout = setTimeout(() => {
+			timeout = null;
+			func.apply(this, args);
+		}, wait);
+	}
+
+	// Consumers that own a lifecycle (such as a map view) must be able to
+	// discard a queued call before its target is torn down.
+	debounced.cancel = () => {
+		if (timeout != null) clearTimeout(timeout);
+		timeout = null;
 	};
+
+	return debounced;
 }
 
 /**
@@ -58,4 +70,40 @@ export function routeShortNamesForStop(arrivalsAndDeparturesResponse, stop) {
 			.map((r) => r.shortName || removeAgencyPrefix(r.id))
 			.sort()
 	);
+}
+
+/**
+ * Localizes a stop's compass direction code ("N", "SW", …) via the `direction.*`
+ * messages. OneBusAway is not guaranteed to return one of the eight codes those
+ * messages cover — CompassArrow already hides its arrow for anything else — so an
+ * unrecognized code falls back to itself rather than leaking the literal message
+ * id ("direction.FOO") into the UI.
+ *
+ * @param {string | null | undefined} direction - Compass code from the OBA stop
+ * @param {(id: string, options?: Object) => string} translate - svelte-i18n's `$t`
+ * @returns {string | null} The localized direction, or null when the stop has none
+ */
+export function directionLabel(direction, translate) {
+	if (!direction) {
+		return null;
+	}
+	return translate(`direction.${direction}`, { default: direction });
+}
+
+/**
+ * Builds the one-line subtitle shown under a stop's name wherever stops are
+ * listed (search results, favorites), so the two lists read identically.
+ * A stop with no code falls back to its id instead of showing "undefined".
+ *
+ * @param {Object} stop - Stop object with `direction`, `code` and `id`
+ * @param {(id: string, options?: Object) => string} translate - svelte-i18n's `$t`
+ * @returns {string} e.g. "Southwest · Code: 41242"
+ */
+export function stopSubtitle(stop, translate) {
+	return [
+		directionLabel(stop.direction, translate),
+		`${translate('favorites.stop_code')}: ${stop.code || removeAgencyPrefix(stop.id)}`
+	]
+		.filter(Boolean)
+		.join(' · ');
 }

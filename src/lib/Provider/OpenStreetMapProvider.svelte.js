@@ -69,6 +69,7 @@ export default class OpenStreetMapProvider {
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
+		this.pinMarkers = new Set();
 		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || 'positron';
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
@@ -77,6 +78,7 @@ export default class OpenStreetMapProvider {
 		this.contextMenuPopup = null;
 		this.contextMenuComponent = null;
 		this.userLocationMarker = null;
+		this._darkTheme = this.maplibreLayer === 'dark';
 		// Incremented on each fitToPolylines() so a superseded route load's
 		// pending reveal can detect it's stale and bail out.
 		this._fitToken = 0;
@@ -165,7 +167,7 @@ export default class OpenStreetMapProvider {
 			dotColor: options.dotColor ?? null
 		});
 
-		mount(StopMarker, {
+		const component = mount(StopMarker, {
 			target: container,
 			props
 		});
@@ -189,6 +191,7 @@ export default class OpenStreetMapProvider {
 		}).addTo(this.map);
 
 		marker.props = props;
+		marker.component = component;
 
 		this.markersMap.set(options.stop.id, marker);
 		return marker;
@@ -216,7 +219,7 @@ export default class OpenStreetMapProvider {
 
 		const container = document.createElement('div');
 
-		mount(TripPlanPinMarker, {
+		const component = mount(TripPlanPinMarker, {
 			target: container,
 			props: {
 				text: text
@@ -234,12 +237,16 @@ export default class OpenStreetMapProvider {
 			this.map
 		);
 
+		marker.component = component;
+		this.pinMarkers.add(marker);
 		return marker;
 	}
 
 	removePinMarker(marker) {
 		if (marker) {
+			this._unmountMarker(marker);
 			marker.remove();
+			this.pinMarkers.delete(marker);
 		}
 	}
 
@@ -430,6 +437,11 @@ export default class OpenStreetMapProvider {
 		if (this.globalInfoWindow) {
 			this.globalInfoWindow.close();
 		}
+		if (this.popupContentComponent) {
+			unmount(this.popupContentComponent);
+		}
+		this.popupContentComponent = null;
+		this.globalInfoWindow = null;
 	}
 
 	removeStopMarker(marker) {
@@ -448,7 +460,8 @@ export default class OpenStreetMapProvider {
 			vehicle?.orientation,
 			color,
 			routeType,
-			isHighlighted
+			isHighlighted,
+			this._darkTheme
 		);
 		const zIndexOffset = isHighlighted ? 2000 : 1000;
 		const customIcon = this.L.divIcon({
@@ -474,6 +487,12 @@ export default class OpenStreetMapProvider {
 		});
 
 		this.vehicleMarkers.push(marker);
+		marker.vehicleIconOptions = {
+			orientation: vehicle?.orientation,
+			color,
+			routeType,
+			isHighlighted
+		};
 
 		const vehicleData = $state(buildVehiclePopupData(vehicle, activeTrip, this.stopsMap));
 
@@ -517,18 +536,12 @@ export default class OpenStreetMapProvider {
 			color = COLORS.VEHICLE_REAL_TIME_OFF;
 		}
 
-		const updatedIconSvg = createVehicleIconSvg(
-			vehicleStatus.orientation,
+		marker.vehicleIconOptions = {
+			orientation: vehicleStatus.orientation,
 			color,
 			routeType,
 			isHighlighted
-		);
-		const updatedIcon = this.L.divIcon({
-			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(updatedIconSvg)}" />`,
-			iconSize: [iconWidth, iconHeight],
-			iconAnchor: [iconWidth / 2, iconHeight / 2],
-			className: ''
-		});
+		};
 
 		const current = marker.getLatLng();
 		animateMarkerTo(
@@ -538,7 +551,7 @@ export default class OpenStreetMapProvider {
 			(lat, lng) => marker.setLatLng([lat, lng]),
 			{ routePaths: this._getRoutePaths() }
 		);
-		marker.setIcon(updatedIcon);
+		this._setVehicleMarkerIcon(marker);
 		// setIcon doesn't touch stacking order, so update the offset directly to
 		// reflect the current highlight state (divIcon ignores zIndexOffset).
 		marker.setZIndexOffset(isHighlighted ? 2000 : 1000);
@@ -556,6 +569,32 @@ export default class OpenStreetMapProvider {
 			marker.vehicleData,
 			buildVehiclePopupData(vehicleStatus, activeTrip, this.stopsMap)
 		);
+	}
+
+	_setVehicleMarkerIcon(marker) {
+		const { orientation, color, routeType, isHighlighted } = marker.vehicleIconOptions;
+		const vehicleIconSvg = createVehicleIconSvg(
+			orientation,
+			color,
+			routeType,
+			isHighlighted,
+			this._darkTheme
+		);
+		const icon = this.L.divIcon({
+			html: `<img alt="" src="data:image/svg+xml;charset=UTF-8,${encodeURIComponent(vehicleIconSvg)}" />`,
+			iconSize: [iconWidth, iconHeight],
+			iconAnchor: [iconWidth / 2, iconHeight / 2],
+			className: ''
+		});
+		marker.setIcon(icon);
+	}
+
+	_refreshVehicleMarkerIcons() {
+		for (const marker of this.vehicleMarkers) {
+			if (marker.vehicleIconOptions) {
+				this._setVehicleMarkerIcon(marker);
+			}
+		}
 	}
 	removeVehicleMarker(marker) {
 		if (marker) {
@@ -646,9 +685,17 @@ export default class OpenStreetMapProvider {
 		return this.map.getZoom();
 	}
 
+	_unmountMarker(marker) {
+		if (marker.component) {
+			unmount(marker.component);
+			marker.component = null;
+		}
+	}
+
 	removeMarker(marker) {
-		if (!browser || !this.map || !marker) return;
-		this.map.removeLayer(marker);
+		if (!marker) return;
+		this._unmountMarker(marker);
+		this.map?.removeLayer(marker);
 
 		for (const [stopId, storedMarker] of this.markersMap.entries()) {
 			if (storedMarker === marker) {
@@ -659,11 +706,10 @@ export default class OpenStreetMapProvider {
 	}
 
 	clearAllStopMarkers() {
-		if (!browser || !this.map) return;
-
-		// Clear the main stop markers
+		// Clear the main stop markers and their mounted Svelte components.
 		for (const marker of this.markersMap.values()) {
-			this.map.removeLayer(marker);
+			this._unmountMarker(marker);
+			this.map?.removeLayer(marker);
 		}
 		this.markersMap.clear();
 	}
@@ -677,7 +723,9 @@ export default class OpenStreetMapProvider {
 	}
 
 	setTheme(theme) {
+		this._darkTheme = theme === 'dark';
 		if (!browser || !this.map) return;
+		this._refreshVehicleMarkerIcons();
 
 		let styleUrl;
 		if (theme === 'dark') {
@@ -706,11 +754,8 @@ export default class OpenStreetMapProvider {
 	 * Creates a polyline from an encoded shape, returning `null` outside the
 	 * browser, before the map is initialized, or when the shape decodes to empty.
 	 *
-	 * Contract note: this method is synchronous (`Polyline|null`), whereas the
-	 * Google provider's createPolyline is async (`Promise<Polyline|null>`)
-	 * because it lazy-loads its geometry library. Both return `null` on decode
-	 * failure; callers that need provider-agnostic behavior should `await` the
-	 * result and guard against `null`.
+	 * This returns a synchronous `Polyline|null` handle, matching the other map
+	 * providers. It returns `null` on decode failure.
 	 */
 	createPolyline(points, options = {}) {
 		if (!browser || !this.map) return null;
@@ -782,6 +827,31 @@ export default class OpenStreetMapProvider {
 		polyline.arrowDecorator = arrowDecorator;
 
 		return polyline;
+	}
+
+	// Recolor in place so a theme switch preserves the camera, casing and reveal.
+	setPolylineColor(polyline, color) {
+		if (!polyline) return;
+		polyline.setStyle({ color: color || COLORS.POLYLINE });
+		if (polyline.arrowDecorator) {
+			const arrowColor = polylineArrowColor(color);
+			polyline.arrowDecorator.setPatterns([
+				{
+					offset: 0,
+					repeat: 125,
+					symbol: this.L.Symbol.arrowHead({
+						pixelSize: 12,
+						pathOptions: {
+							color: arrowColor,
+							fill: true,
+							fillColor: arrowColor,
+							fillOpacity: 0.85,
+							...(polyline.options.pane ? { pane: polyline.options.pane } : {})
+						}
+					})
+				}
+			]);
+		}
 	}
 
 	/**
@@ -1149,5 +1219,20 @@ export default class OpenStreetMapProvider {
 			south: sw.lat,
 			west: sw.lng
 		};
+	}
+
+	destroy() {
+		this.clearAllStopMarkers();
+		for (const marker of this.pinMarkers) this.removePinMarker(marker);
+		if (!this.map) return;
+		this.removeStopMarkers();
+		this.clearVehicleMarkers();
+		this.clearAllPolylines();
+		this.removeUserLocationMarker();
+		this.cleanupInfoWindow();
+		this.closeContextMenu();
+		this.map.remove?.();
+		this.map = null;
+		this.maplibreLayer = null;
 	}
 }

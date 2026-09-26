@@ -5,7 +5,7 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import SurveyModal from '$components/surveys/SurveyModal.svelte';
 	import ServiceAlerts from '$components/service-alerts/ServiceAlerts.svelte';
-	import { onDestroy, untrack } from 'svelte';
+	import { onDestroy, tick, untrack } from 'svelte';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
@@ -15,6 +15,8 @@
 	import analytics from '$lib/Insights';
 	import { filterActiveAlerts } from '$components/service-alerts/serviceAlertsHelper';
 	import { removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
+	import { makeKey, visibleArrivals } from '$lib/arrivalFiltering';
+	import { fade } from 'svelte/transition';
 
 	/**
 	 * @typedef {Object} Props
@@ -46,8 +48,12 @@
 	const MINUTES_AFTER_INCREMENT = 30;
 
 	// Seed from any server-rendered response so the standalone page shows arrivals
-	// immediately instead of flashing the first-load skeleton.
-	let arrivalsAndDepartures = $state(arrivalsAndDeparturesResponse?.data?.entry);
+	// immediately instead of flashing the first-load skeleton. No clock is passed
+	// so server and client render the same seed; departed rows fall away on the
+	// first client poll.
+	let arrivalsAndDepartures = $state(
+		withVisibleArrivals(arrivalsAndDeparturesResponse?.data?.entry)
+	);
 	let error = $state();
 	// Seed alerts from the same server-rendered response so they show on first
 	// render instead of waiting for the initial client fetch to complete.
@@ -57,6 +63,9 @@
 	let minutesAfter = $state(DEFAULT_MINUTES_AFTER);
 	let loadingMore = $state(false);
 	let noMoreArrivals = $state(false);
+	// Skip fade-in on the first render so arrivals appear instantly; subsequent
+	// polls animate new/departed items via the keyed {#each} block.
+	let isFirstLoad = $state(true);
 
 	let interval = null;
 	let currentStopSurvey = $state(null);
@@ -85,6 +94,18 @@
 		return furthest;
 	}
 	/**
+	 * Copies a response entry with its arrival list reduced to the rows the
+	 * rider should see (see visibleArrivals). Returns null for a missing entry
+	 * so the first-load skeleton renders.
+	 * @param {any} [entry]
+	 * @param {number} [now]
+	 */
+	function withVisibleArrivals(entry, now) {
+		if (!entry) return null;
+		return { ...entry, arrivalsAndDepartures: visibleArrivals(entry.arrivalsAndDepartures, now) };
+	}
+
+	/**
 	 * Fetches arrivals for the stop within the current `minutesAfter` window.
 	 * @returns {Promise<number|null>} the number of arrivals fetched, or `null`
 	 * when the request was aborted or failed (count is then unknown).
@@ -112,9 +133,13 @@
 
 			const data = await response.json();
 			arrivalsAndDeparturesResponse = data;
-			arrivalsAndDepartures = data.data.entry;
+			arrivalsAndDepartures = withVisibleArrivals(data.data.entry, Date.now());
 			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
 			error = null; // Clear previous errors if successful
+			if (isFirstLoad) {
+				await tick();
+				isFirstLoad = false;
+			}
 			const count = arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
 			// Clear a stale "no more arrivals" hint only when a refresh actually
 			// surfaces an arrival further out than the window we'd exhausted — a
@@ -187,6 +212,7 @@
 		untrack(() => {
 			minutesAfter = DEFAULT_MINUTES_AFTER;
 			noMoreArrivals = false;
+			isFirstLoad = true;
 			clearInterval(interval);
 			resetDataFetchInterval(stopID);
 
@@ -415,28 +441,30 @@
 				{:else}
 					{#key arrivalsAndDepartures.stopId}
 						<Accordion {handleAccordionSelectionChanged}>
-							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival}
-								<AccordionItem data={arrival} fullBleed hideChevron>
-									{#snippet header(isActive)}
-										<!-- min-w-0 lets this flex child shrink below its content width so the
-										     card's headsign wraps/clamps instead of pushing the ETA off-screen.
-										     ArrivalDeparture renders the chevron itself (stacked under the ETA),
-										     so the built-in AccordionItem chevron is hidden. -->
-										<span class="block min-w-0 flex-1">
-											<ArrivalDeparture
-												arrivalDeparture={arrival}
-												route={routeById.get(arrival.routeId)}
-												routeColors={routeColors?.get(arrival.routeId) ?? null}
-												expanded={isActive}
-											/>
-										</span>
-									{/snippet}
-									<TripDetailsPane
-										{stop}
-										tripId={arrival.tripId}
-										serviceDate={arrival.serviceDate}
-									/>
-								</AccordionItem>
+							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival (makeKey(arrival))}
+								<div in:fade={{ duration: isFirstLoad ? 0 : 300 }} out:fade={{ duration: 200 }}>
+									<AccordionItem data={arrival} fullBleed hideChevron>
+										{#snippet header(isActive)}
+											<!-- min-w-0 lets this flex child shrink below its content width so the
+											     card's headsign wraps/clamps instead of pushing the ETA off-screen.
+											     ArrivalDeparture renders the chevron itself (stacked under the ETA),
+											     so the built-in AccordionItem chevron is hidden. -->
+											<span class="block min-w-0 flex-1">
+												<ArrivalDeparture
+													arrivalDeparture={arrival}
+													route={routeById.get(arrival.routeId)}
+													routeColors={routeColors?.get(arrival.routeId) ?? null}
+													expanded={isActive}
+												/>
+											</span>
+										{/snippet}
+										<TripDetailsPane
+											{stop}
+											tripId={arrival.tripId}
+											serviceDate={arrival.serviceDate}
+										/>
+									</AccordionItem>
+								</div>
 							{/each}
 						</Accordion>
 					{/key}

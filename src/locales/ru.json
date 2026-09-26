@@ -30,14 +30,54 @@
 		"trip_itineraries": "Варианты маршрута",
 		"show_steps": "Показать шаги",
 		"hide_steps": "Скрыть шаги",
+		"options": "Параметры",
+		"trip_options": "Параметры поездки",
+		"cancel": "Отмена",
+		"done": "Готово",
+		"reset_to_defaults": "Сбросить настройки",
+		"departure_time": "Время отправления",
+		"departure_date": "Дата отправления",
+		"leave_now": "Отправиться сейчас",
+		"depart_at": "Отправиться в указанное время",
+		"arrive_by": "Прибыть к указанному времени",
+		"wheelchair_accessible": "Доступно для инвалидных колясок",
+		"wheelchair_desc": "Искать маршруты, подходящие для инвалидных колясок и других средств передвижения",
+		"wheelchair": "Коляска",
+		"route_optimization": "Оптимизация маршрута",
+		"fastest_trip": "Самая быстрая поездка",
+		"fewest_transfers": "Минимум пересадок",
+		"stay_on_board": "Оставайтесь в салоне. Этот рейс продолжается как маршрут {route}.",
+		"walking_distance": "Расстояние пешком",
+		"max_walking_distance": "Максимальное расстояние пешком",
 		"distance_unit": "Единица измерения расстояния",
 		"unit_auto": "Определить автоматически",
 		"unit_metric": "Метрическая (км, м)",
-		"unit_imperial": "Имперская (mi, ft)"
+		"unit_imperial": "Имперская (mi, ft)",
+		"swap_locations": "Поменять местами «Откуда» и «Куда»",
+		"error_code": "Код ошибки",
+		"remove_recent_trip": "Удалить недавнюю поездку",
+		"recent_trip": "Использовать недавнюю поездку из «{from}» в «{to}»",
+		"recent_searches": "Недавние запросы",
+		"recents": "Недавние",
+		"clear_all": "Очистить всё",
+		"request_failed": "Не удалось связаться со службой планирования поездок. Пожалуйста, попробуйте ещё раз.",
+		"invalid_shared_link": "Похоже, эта ссылка на поездку повреждена. Попробуйте спланировать поездку заново."
 	},
 	"tabs": {
 		"stops-and-stations": "Остановки и станции",
 		"plan_trip": "Спланировать поездку"
+	},
+	"favorites": {
+		"title": "Избранное",
+		"add": "Добавить в избранное",
+		"remove": "Удалить из избранного",
+		"clear_all": "Очистить всё",
+		"open_panel": "Открыть избранное",
+		"close_panel": "Закрыть избранное",
+		"empty": "В избранном пока пусто. Нажмите на звёздочку у остановки или маршрута, чтобы добавить их сюда.",
+		"stop_code": "Код",
+		"open_item": "Открыть «{name}»",
+		"remove_item": "Удалить «{name}» из избранного"
 	},
 	"search": {
 		"placeholder": "Поиск остановок, маршрутов и мест",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "для списка доступных маршрутов",
 		"search_for_routes": "Поиск маршрутов...",
 		"no_routes_found": "Маршруты не найдены",
-		"all_routes": "Все маршруты"
+		"all_routes": "Все маршруты",
+		"clear": "Очистить",
+		"collapse": "Свернуть поиск"
+	},
+	"sheet": {
+		"close": "Закрыть",
+		"resize_handle": "Изменить размер панели",
+		"snap_full": "Полная высота",
+		"snap_half": "Половина высоты",
+		"snap_peek": "Свёрнуто"
+	},
+	"survey": {
+		"required_question": "Обязательный вопрос",
+		"required_answer": "Ответ на этот вопрос обязателен.",
+		"expand": "Показать вопрос",
+		"collapse": "Скрыть вопрос",
+		"dismiss": "Закрыть опрос",
+		"submit": "Отправить",
+		"next": "Далее",
+		"submit_failed": "Не удалось отправить ответ. Пожалуйста, попробуйте ещё раз."
 	},
 	"header": {
 		"home": "Главная",
@@ -88,13 +147,26 @@
 		"close": "Закрыть"
 	},
 	"arrivals_and_departures": "Прибытие и отправление",
+	"show_more": "Показать больше",
+	"show_less": "Показать меньше",
 	"load_more_arrivals": "Загрузить больше прибытий",
+	"refresh": "Обновить",
 	"no_arrivals_found_in_next_minutes": "Нет прибытий в ближайшие {minutes} минут",
 	"no_more_arrivals_in_next_minutes": "Нет больше прибытий в ближайшие {minutes} минут",
 	"stop": "Остановка",
+	"direction_bound": "Направление {direction}",
 	"routes": "Маршруты",
 	"route": "маршрут",
 	"route_modal_title": "Маршрут {name}",
+	"notifications": {
+		"route_load_failed": "Не удалось загрузить маршрут.",
+		"route_shape_failed": "Не удалось отобразить маршрут на карте.",
+		"route_shape_partial": "Часть маршрута не удалось отобразить. На карте может не хватать участка.",
+		"favorite_saved": "Добавлено в избранное.",
+		"favorite_removed": "Удалено из избранного.",
+		"tap_to_retry": "Нажмите, чтобы повторить.",
+		"dismiss": "Закрыть"
+	},
 	"loading": "Загрузка",
 	"arrives": "прибывает",
 	"NA": "Н/Д",
@@ -105,13 +177,16 @@
 		"secs": "сек",
 		"min": "мин",
 		"mins": "мин",
-		"minutes": "минут"
+		"minutes": "минут",
+		"min_compact": "{n} мин"
 	},
 	"vehicle": {
 		"number": "Транспорт №",
 		"data_updated": "Данные обновлены",
 		"no_real_time_data": "Данные в реальном времени для этого транспорта сейчас недоступны.",
-		"next_stop": "Следующая остановка:"
+		"next_stop": "Следующая остановка:",
+		"label": "Транспорт",
+		"to_headsign": "Транспорт до «{headsign}»"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Прибытие и отправление"
@@ -150,18 +225,61 @@
 		"no_description": "Подробное описание для этого оповещения недоступно",
 		"page": "Страница",
 		"show": "Показать",
-		"hide": "Скрыть"
+		"hide": "Скрыть",
+		"open_alert": "Открыть подробности оповещения ({severity}): {summary}",
+		"affects_this_stop": "Касается этой остановки",
+		"other_alerts": "Другие оповещения",
+		"severity_severe": "Серьёзное",
+		"severity_warning": "Предупреждение",
+		"severity_info": "Информация",
+		"cause": "Причина",
+		"effect": "Последствие",
+		"active": "Действует",
+		"active_until": "До {date}",
+		"active_from": "С {date}",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Неизвестно",
+		"cause_other": "Другое",
+		"cause_technical": "Техническая проблема",
+		"cause_strike": "Забастовка",
+		"cause_demonstration": "Демонстрация",
+		"cause_accident": "Авария",
+		"cause_holiday": "Праздник",
+		"cause_weather": "Погода",
+		"cause_maintenance": "Техобслуживание",
+		"cause_construction": "Строительные работы",
+		"cause_police": "Действия полиции",
+		"cause_medical": "Неотложная медицинская помощь",
+		"cause_equipment": "Оборудование",
+		"cause_environment": "Окружающая среда",
+		"cause_personnel": "Персонал",
+		"cause_miscellaneous": "Прочее",
+		"cause_security": "Угроза безопасности",
+		"effect_no_service": "Нет движения",
+		"effect_reduced_service": "Сокращённое движение",
+		"effect_significant_delays": "Значительные задержки",
+		"effect_detour": "Объезд",
+		"effect_additional_service": "Дополнительные рейсы",
+		"effect_modified_service": "Изменённое движение",
+		"effect_other": "Другое последствие",
+		"effect_unknown": "Неизвестное последствие",
+		"effect_stop_moved": "Остановка перенесена",
+		"effect_no_effect": "Без последствий",
+		"effect_accessibility": "Проблема с доступностью"
 	},
 	"view_stop_information": "Информация об остановке",
 	"stop_details": {
-		"view_details": "Подробнее"
+		"view_details": "Подробнее",
+		"stop_info": "Об остановке"
 	},
 	"language_switcher": {
 		"select_language": "Выберите язык: {language}",
 		"available_languages": "Доступные языки"
 	},
 	"map": {
-		"find_my_location": "Найти моё местоположение"
+		"find_my_location": "Найти моё местоположение",
+		"routes_shown": "Маршруты на карте",
+		"live_vehicle_count": "{count} онлайн"
 	},
 	"context-menu": {
 		"start_here": "Начать отсюда",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "На главную",
 		"go_back": "Назад"
+	},
+	"trip_details": {
+		"route": "Маршрут",
+		"no_stops": "Для этого рейса нет расписания по остановкам.",
+		"loading": "Загрузка информации о рейсе...",
+		"live_vehicle": "Онлайн · транспорт №{vehicleId}",
+		"collapsed_stops": "{count, plural, one {# остановка} few {# остановки} many {# остановок} other {# остановки}}"
 	},
 	"skip_to_main_content": "Перейти к основному содержимому"
 }

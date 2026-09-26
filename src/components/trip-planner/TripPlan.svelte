@@ -5,7 +5,7 @@
 	import OptionsPill from './OptionsPill.svelte';
 	import { browser } from '$app/environment';
 	import { t } from 'svelte-i18n';
-	import { ArrowLeftRight, History } from '@lucide/svelte';
+	import { ArrowLeftRight, RotateCcwClock } from '@lucide/svelte';
 	import {
 		tripOptions,
 		showTripOptionsModal,
@@ -40,6 +40,8 @@
 	let loading = $state(false);
 	let fromRequestId = 0;
 	let toRequestId = 0;
+	let fromAutocompleteRequestId = 0;
+	let toAutocompleteRequestId = 0;
 	// Recent trips stay behind a compact control so the plan form doesn't grow
 	// a tall history list under From/To (see #577).
 	let showRecentTrips = $state(false);
@@ -55,21 +57,58 @@
 		return data.suggestions;
 	}
 
-	const fetchLocationResults = debounce(async (query, isFrom) => {
-		isLoadingFrom = isFrom;
-		isLoadingTo = !isFrom;
+	function invalidateAutocompleteRequest(isFrom) {
+		if (isFrom) {
+			return ++fromAutocompleteRequestId;
+		}
+
+		return ++toAutocompleteRequestId;
+	}
+
+	function isCurrentAutocompleteRequest(isFrom, requestId) {
+		return isFrom ? requestId === fromAutocompleteRequestId : requestId === toAutocompleteRequestId;
+	}
+
+	async function fetchLocationResults(query, isFrom, requestId) {
+		if (!isCurrentAutocompleteRequest(isFrom, requestId)) return;
+
+		if (isFrom) {
+			isLoadingFrom = true;
+		} else {
+			isLoadingTo = true;
+		}
 
 		try {
 			const results = await fetchAutocompleteResults(query);
 
+			if (!isCurrentAutocompleteRequest(isFrom, requestId)) return;
+
 			isFrom ? (fromResults = results) : (toResults = results);
 		} catch (error) {
-			console.error('Error fetching location results:', error);
+			if (isCurrentAutocompleteRequest(isFrom, requestId)) {
+				console.error('Error fetching location results:', error);
+			}
 		} finally {
-			isLoadingFrom = false;
-			isLoadingTo = false;
+			if (isCurrentAutocompleteRequest(isFrom, requestId)) {
+				if (isFrom) {
+					isLoadingFrom = false;
+				} else {
+					isLoadingTo = false;
+				}
+			}
 		}
-	}, 500);
+	}
+
+	// Each field needs its own timer so typing in one cannot discard a queued
+	// lookup for the other after that field's request token has advanced.
+	const fetchFromLocationResults = debounce(
+		(query, requestId) => fetchLocationResults(query, true, requestId),
+		500
+	);
+	const fetchToLocationResults = debounce(
+		(query, requestId) => fetchLocationResults(query, false, requestId),
+		500
+	);
 
 	async function geocodeLocation(locationName) {
 		const response = await fetch(
@@ -90,12 +129,19 @@
 		// (and the parent's hasPlanned flag) instead of letting "No itineraries
 		// found" linger under the form while the rider edits.
 		clearTripItineraries();
+		const requestId = invalidateAutocompleteRequest(isFrom);
 		if (query.trim() === '') {
-			if (isFrom) fromResults = [];
-			else toResults = [];
+			if (isFrom) {
+				fromResults = [];
+				isLoadingFrom = false;
+			} else {
+				toResults = [];
+				isLoadingTo = false;
+			}
 			return;
 		}
-		await fetchLocationResults(query, isFrom);
+		const fetchResults = isFrom ? fetchFromLocationResults : fetchToLocationResults;
+		fetchResults(query, requestId);
 	}
 
 	async function selectLocation(suggestion, isFrom) {
@@ -139,9 +185,11 @@
 	}
 
 	function clearInput(isFrom) {
+		invalidateAutocompleteRequest(isFrom);
 		if (isFrom) {
 			fromPlace = '';
 			fromResults = [];
+			isLoadingFrom = false;
 			selectedFrom = null;
 			if (fromMarker) {
 				mapProvider.removePinMarker(fromMarker);
@@ -150,6 +198,7 @@
 		} else {
 			toPlace = '';
 			toResults = [];
+			isLoadingTo = false;
 			selectedTo = null;
 			if (toMarker) {
 				mapProvider.removePinMarker(toMarker);
@@ -158,6 +207,17 @@
 		}
 		clearTripItineraries();
 		clearTripUrl();
+	}
+
+	function dismissSearchResults(isFrom) {
+		invalidateAutocompleteRequest(isFrom);
+		if (isFrom) {
+			fromResults = [];
+			isLoadingFrom = false;
+		} else {
+			toResults = [];
+			isLoadingTo = false;
+		}
 	}
 
 	function swapLocations() {
@@ -442,6 +502,7 @@
 						onInput={(query) => handleSearchInput(query, true)}
 						onClear={() => clearInput(true)}
 						onSelect={(location) => selectLocation(location, true)}
+						onDismiss={() => dismissSearchResults(true)}
 					/>
 				</div>
 			</div>
@@ -470,6 +531,7 @@
 						onInput={(query) => handleSearchInput(query, false)}
 						onClear={() => clearInput(false)}
 						onSelect={(location) => selectLocation(location, false)}
+						onDismiss={() => dismissSearchResults(false)}
 					/>
 				</div>
 			</div>
@@ -530,7 +592,7 @@
 				class:dark:border-brand={showRecentTrips}
 				class:dark:text-brand={showRecentTrips}
 			>
-				<History class="h-3.5 w-3.5" />
+				<RotateCcwClock class="h-3.5 w-3.5" />
 				<span class="hidden md:inline">{$t('trip-planner.recents')}</span>
 				<span class="sr-only md:hidden">{$t('trip-planner.recent_searches')}</span>
 			</button>

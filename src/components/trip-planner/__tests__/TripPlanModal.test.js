@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { get } from 'svelte/store';
 import userEvent from '@testing-library/user-event';
@@ -446,6 +446,31 @@ describe('TripPlanModal partial-shape warnings', () => {
 });
 
 describe('TripPlanModal showForm embedding', () => {
+	it('closes on Escape from a search field when no autocomplete popup is open', async () => {
+		const closePane = vi.fn();
+		const { unmount } = render(TripPlanModal, {
+			props: {
+				mapProvider: makeMapProvider(),
+				itineraries: [],
+				closePane,
+				snap: 'half',
+				showForm: true,
+				handleTripPlan: vi.fn(),
+				clearTripItineraries: vi.fn()
+			}
+		});
+
+		const input = await vi.waitFor(() => {
+			const element = document.querySelector('#from-location-input');
+			expect(element).toBeInTheDocument();
+			return element;
+		});
+		await fireEvent.keyDown(input, { key: 'Escape', code: 'Escape' });
+
+		expect(closePane).toHaveBeenCalledOnce();
+		unmount();
+	});
+
 	it('embeds the plan form when showForm is true and skips empty state before planning', async () => {
 		const mapProvider = makeMapProvider();
 		const { queryByText, unmount } = render(TripPlanModal, {

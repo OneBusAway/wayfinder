@@ -30,14 +30,54 @@
 		"trip_itineraries": "行程方案",
 		"show_steps": "显示步骤",
 		"hide_steps": "隐藏步骤",
+		"options": "选项",
+		"trip_options": "行程选项",
+		"cancel": "取消",
+		"done": "完成",
+		"reset_to_defaults": "恢复默认设置",
+		"departure_time": "出发时间",
+		"departure_date": "出发日期",
+		"leave_now": "现在出发",
+		"depart_at": "指定出发时间",
+		"arrive_by": "指定到达时间",
+		"wheelchair_accessible": "轮椅无障碍",
+		"wheelchair_desc": "查找适合助行设备和轮椅通行的线路",
+		"wheelchair": "轮椅",
+		"route_optimization": "线路优化",
+		"fastest_trip": "最快行程",
+		"fewest_transfers": "最少换乘",
+		"stay_on_board": "请留在车上。本次行程将以 {route} 线路继续运行。",
+		"walking_distance": "步行距离",
+		"max_walking_distance": "最大步行距离",
 		"distance_unit": "距离单位",
 		"unit_auto": "自动检测",
 		"unit_metric": "公制 (km, m)",
-		"unit_imperial": "英制 (mi, ft)"
+		"unit_imperial": "英制 (mi, ft)",
+		"swap_locations": "交换起点和终点",
+		"error_code": "错误代码",
+		"remove_recent_trip": "删除最近行程",
+		"recent_trip": "使用从 {from} 到 {to} 的最近行程",
+		"recent_searches": "最近搜索",
+		"recents": "最近",
+		"clear_all": "全部清除",
+		"request_failed": "无法连接行程规划服务，请稍后重试。",
+		"invalid_shared_link": "此行程分享链接似乎已失效，请重新规划行程。"
 	},
 	"tabs": {
 		"stops-and-stations": "站点",
 		"plan_trip": "规划行程"
+	},
+	"favorites": {
+		"title": "收藏",
+		"add": "添加到收藏",
+		"remove": "从收藏中移除",
+		"clear_all": "全部清除",
+		"open_panel": "打开收藏",
+		"close_panel": "关闭收藏",
+		"empty": "暂无收藏。点击站点或线路上的星标即可保存到此处。",
+		"stop_code": "编号",
+		"open_item": "打开 {name}",
+		"remove_item": "将 {name} 从收藏中移除"
 	},
 	"search": {
 		"placeholder": "搜索站点、线路和地点",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "查看可用线路列表",
 		"search_for_routes": "搜索线路...",
 		"no_routes_found": "未找到线路",
-		"all_routes": "所有线路"
+		"all_routes": "所有线路",
+		"clear": "清除",
+		"collapse": "收起搜索"
+	},
+	"sheet": {
+		"close": "关闭",
+		"resize_handle": "调整面板大小",
+		"snap_full": "完整高度",
+		"snap_half": "半屏高度",
+		"snap_peek": "最小高度"
+	},
+	"survey": {
+		"required_question": "必答题",
+		"required_answer": "此题为必答题。",
+		"expand": "显示问题",
+		"collapse": "隐藏问题",
+		"dismiss": "关闭问卷",
+		"submit": "提交",
+		"next": "下一题",
+		"submit_failed": "无法提交您的回答，请重试。"
 	},
 	"header": {
 		"home": "首页",
@@ -88,13 +147,26 @@
 		"close": "关闭"
 	},
 	"arrivals_and_departures": "到站与发车",
+	"show_more": "显示更多",
+	"show_less": "收起",
 	"load_more_arrivals": "加载更多到站信息",
+	"refresh": "刷新",
 	"no_arrivals_found_in_next_minutes": "未来{minutes}分钟内无到站信息",
 	"no_more_arrivals_in_next_minutes": "未来{minutes}分钟内无更多到站信息",
 	"stop": "站点",
+	"direction_bound": "{direction} 方向",
 	"routes": "线路",
 	"route": "线路",
 	"route_modal_title": "{name} 线路",
+	"notifications": {
+		"route_load_failed": "无法加载该线路。",
+		"route_shape_failed": "无法在地图上绘制该线路。",
+		"route_shape_partial": "该线路部分路段无法绘制，地图上可能缺少一段。",
+		"favorite_saved": "已添加到收藏。",
+		"favorite_removed": "已从收藏中移除。",
+		"tap_to_retry": "点击重试。",
+		"dismiss": "关闭"
+	},
 	"loading": "加载中",
 	"arrives": "到达",
 	"NA": "暂无",
@@ -105,13 +177,16 @@
 		"secs": "秒",
 		"min": "分钟",
 		"mins": "分钟",
-		"minutes": "分钟"
+		"minutes": "分钟",
+		"min_compact": "{n} 分钟"
 	},
 	"vehicle": {
 		"number": "车辆编号",
 		"data_updated": "数据更新于",
 		"no_real_time_data": "暂无该车辆的实时数据。",
-		"next_stop": "下一站："
+		"next_stop": "下一站：",
+		"label": "车辆",
+		"to_headsign": "开往 {headsign} 的车辆"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "到站与发车"
@@ -150,18 +225,61 @@
 		"no_description": "该通知暂无详细描述",
 		"page": "页",
 		"show": "显示",
-		"hide": "隐藏"
+		"hide": "隐藏",
+		"open_alert": "打开{severity}服务通知详情：{summary}",
+		"affects_this_stop": "影响此站点",
+		"other_alerts": "其他通知",
+		"severity_severe": "严重",
+		"severity_warning": "警告",
+		"severity_info": "提示",
+		"cause": "原因",
+		"effect": "影响",
+		"active": "生效中",
+		"active_until": "截至 {date}",
+		"active_from": "自 {date} 起",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "未知",
+		"cause_other": "其他",
+		"cause_technical": "技术故障",
+		"cause_strike": "罢工",
+		"cause_demonstration": "示威活动",
+		"cause_accident": "事故",
+		"cause_holiday": "节假日",
+		"cause_weather": "天气",
+		"cause_maintenance": "维护作业",
+		"cause_construction": "施工",
+		"cause_police": "警务活动",
+		"cause_medical": "医疗紧急情况",
+		"cause_equipment": "设备问题",
+		"cause_environment": "环境因素",
+		"cause_personnel": "人员问题",
+		"cause_miscellaneous": "其他情况",
+		"cause_security": "安全警报",
+		"effect_no_service": "停止服务",
+		"effect_reduced_service": "服务缩减",
+		"effect_significant_delays": "严重延误",
+		"effect_detour": "绕行",
+		"effect_additional_service": "增加服务",
+		"effect_modified_service": "服务调整",
+		"effect_other": "其他影响",
+		"effect_unknown": "未知影响",
+		"effect_stop_moved": "站点迁移",
+		"effect_no_effect": "无影响",
+		"effect_accessibility": "无障碍问题"
 	},
 	"view_stop_information": "查看站点信息",
 	"stop_details": {
-		"view_details": "查看详情"
+		"view_details": "查看详情",
+		"stop_info": "站点信息"
 	},
 	"language_switcher": {
 		"select_language": "选择语言: {language}",
 		"available_languages": "可用语言"
 	},
 	"map": {
-		"find_my_location": "查找我的位置"
+		"find_my_location": "查找我的位置",
+		"routes_shown": "显示的线路",
+		"live_vehicle_count": "实时 {count} 辆"
 	},
 	"context-menu": {
 		"start_here": "从这里出发",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "返回首页",
 		"go_back": "返回"
+	},
+	"trip_details": {
+		"route": "线路",
+		"no_stops": "本次行程暂无站点时刻信息。",
+		"loading": "正在加载行程详情...",
+		"live_vehicle": "实时 · 车辆 {vehicleId}",
+		"collapsed_stops": "{count, plural, other {# 个站点}}"
 	},
 	"skip_to_main_content": "跳转至主要内容"
 }

@@ -310,4 +310,22 @@ describe('formatActiveWindowLabel', () => {
 		);
 		expect(label).toMatch(/^Until /);
 	});
+
+	it('formats the dates in the locale it is given', () => {
+		const range = { from: null, to: Date.UTC(2025, 1, 23, 15, 30) };
+		const english = formatActiveWindowLabel(range, translate, 'UTC', 'en');
+		const german = formatActiveWindowLabel(range, translate, 'UTC', 'de');
+
+		// en puts the month first and uses a 12-hour clock; de does neither. Matched
+		// loosely because ICU varies the separators (e.g. U+202F before PM) by version.
+		expect(english).toMatch(/^Until Feb 23, 3:30.PM$/);
+		expect(german).toMatch(/^Until 23\. Feb\.,? 15:30$/);
+	});
+
+	it('falls back to the runtime default locale when none is given', () => {
+		const range = { from: null, to: Date.UTC(2025, 1, 23, 15, 30) };
+		expect(formatActiveWindowLabel(range, translate, 'UTC')).toBe(
+			formatActiveWindowLabel(range, translate, 'UTC', undefined)
+		);
+	});
 });

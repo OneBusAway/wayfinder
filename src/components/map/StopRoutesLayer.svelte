@@ -47,8 +47,21 @@
 	// transform and has no cross-provider primitive — see the design spec.
 	const BASE_WEIGHT = 7;
 	const MIN_WEIGHT = 4;
+	// Bound the degraded path: a busy route can have dozens of arrivals in the
+	// loaded window, but trying all of them serially would amplify an upstream
+	// outage. Three candidates cover the immediate service without an unbounded
+	// request chain.
+	const MAX_TRIP_SHAPE_CANDIDATES = 3;
+	// GTFS shapes are immutable for the lifetime of this layer. Cache successes
+	// indefinitely and failures briefly, so redraws do not repeat healthy requests
+	// or hammer an unhealthy upstream forever.
+	const SHAPE_FAILURE_CACHE_MS = 30_000;
 
 	let vehicleIntervalId = null;
+	// Kept separately from polylinesByRouteId because vehicle polling starts for
+	// every active route, including a route whose shape ultimately cannot draw.
+	// Teardown must still remove that route's vehicle markers.
+	let polledRouteIds = new Set();
 	// Forces an immediate vehicle refresh (see fetchAndUpdateVehiclesForRoutes)
 	// rather than waiting up to 30s for the next scheduled poll. Set once the
 	// poll started by the main redraw effect below resolves; read by the
@@ -61,8 +74,9 @@
 	// currently on the map, so a redraw can be skipped when a new
 	// activeRoutes/routeColors identity carries identical content.
 	let lastSignature = null;
-	// routeId -> the polyline drawn for it, so the promotion effect below can
-	// re-pane a route without re-fetching or re-creating anything. Named
+	// routeId -> the polylines drawn for it, so the promotion effect below can
+	// re-pane a route without re-fetching or re-creating anything. A route-level
+	// fallback can contain multiple shape segments, hence the array value. Named
 	// distinctly from drawRoutes' local `drawnPolylines` paint-order array
 	// below, which tracks something else (resolution order, for
 	// bringToFront). Populated as each route's shape resolves in drawRoutes;
@@ -76,6 +90,8 @@
 	// the polylines were actually drawn/weighted in. Populated alongside
 	// polylinesByRouteId in drawRoutes; cleared in teardown().
 	let routeDrawIndex = new Map();
+	const tripShapeCache = new Map();
+	const routeShapeCache = new Map();
 	// The route currently sitting in ROUTE_PANE.PROMOTED, so the promotion
 	// effect can demote it before promoting a new one. Reset in teardown()
 	// since a redraw discards every polyline, promoted or not.
@@ -85,32 +101,134 @@
 		return Math.max(MIN_WEIGHT, BASE_WEIGHT - index);
 	}
 
-	async function fetchRouteShape(route) {
-		// includeStatus=false: the endpoint defaults it to true, and we need only
-		// the shape id and the stop times.
-		const tripResponse = await fetch(`/api/oba/trip-details/${route.tripId}?includeStatus=false`);
-		if (!tripResponse.ok) {
-			throw new Error(`trip-details ${tripResponse.status} for trip ${route.tripId}`);
+	function cachedShapeRequest(cache, key, load) {
+		const cached = cache.get(key);
+		if (cached && cached.expiresAt > Date.now()) return cached.promise;
+
+		const entry = { expiresAt: Number.POSITIVE_INFINITY, promise: null };
+		entry.promise = load().catch((error) => {
+			entry.expiresAt = Date.now() + SHAPE_FAILURE_CACHE_MS;
+			throw error;
+		});
+		cache.set(key, entry);
+		return entry.promise;
+	}
+
+	function fetchTripShape(candidate) {
+		const cacheKey = `${candidate.id}@${candidate.serviceDate ?? ''}`;
+		return cachedShapeRequest(tripShapeCache, cacheKey, async () => {
+			// includeStatus=false: the endpoint defaults it to true, and we need only
+			// the shape id and the stop times. serviceDate disambiguates trips on OBA
+			// deployments that reuse a trip id across service days.
+			const query = new URLSearchParams({ includeStatus: 'false' });
+			if (candidate.serviceDate != null) query.set('serviceDate', String(candidate.serviceDate));
+			const tripResponse = await fetch(
+				`/api/oba/trip-details/${encodeURIComponent(candidate.id)}?${query}`
+			);
+			if (!tripResponse.ok) {
+				throw new Error(`trip-details ${tripResponse.status} for trip ${candidate.id}`);
+			}
+			const tripData = await tripResponse.json();
+
+			const entry = tripData?.data?.entry;
+			const tripRef = tripData?.data?.references?.trips?.find((trip) => trip.id === candidate.id);
+			// Most OBA servers put the trip in references; tolerate servers that put
+			// the expanded object directly on the entry instead.
+			const shapeId = tripRef?.shapeId ?? entry?.trip?.shapeId ?? entry?.shapeId;
+			if (!shapeId) {
+				throw new Error(`no shapeId for trip ${candidate.id}`);
+			}
+
+			const shapeResponse = await fetch(`/api/oba/shape/${encodeURIComponent(shapeId)}`);
+			if (!shapeResponse.ok) {
+				throw new Error(`shape ${shapeResponse.status} for shape ${shapeId}`);
+			}
+			const shapeData = await shapeResponse.json();
+			const points = shapeData?.data?.entry?.points;
+			if (!points) throw new Error(`shape ${shapeId} contains no points`);
+
+			const stopIds = (entry?.schedule?.stopTimes ?? [])
+				.map((stopTime) => stopTime.stopId)
+				.filter(Boolean);
+
+			return { points, stopIds, tripId: candidate.id, shapeId };
+		});
+	}
+
+	function fetchRouteFallback(route) {
+		return cachedShapeRequest(routeShapeCache, route.id, async () => {
+			const response = await fetch(`/api/oba/stops-for-route/${encodeURIComponent(route.id)}`);
+			if (!response.ok) {
+				throw new Error(`stops-for-route ${response.status} for route ${route.id}`);
+			}
+			const data = await response.json();
+			const stopIds = (data?.data?.references?.stops ?? []).map((stop) => stop.id).filter(Boolean);
+			const seenPoints = new Set();
+			const shapes = (data?.data?.entry?.polylines ?? [])
+				.map((polyline) => polyline?.points)
+				.filter((points) => {
+					if (!points || seenPoints.has(points)) return false;
+					seenPoints.add(points);
+					return true;
+				})
+				.map((points) => ({ points, stopIds }));
+
+			if (shapes.length === 0) {
+				throw new Error(`stops-for-route returned no points for route ${route.id}`);
+			}
+			return shapes;
+		});
+	}
+
+	async function fetchRouteShapes(route) {
+		const candidates = (
+			route.tripCandidates?.length
+				? route.tripCandidates
+				: route.tripId
+					? [{ id: route.tripId }]
+					: []
+		).slice(0, MAX_TRIP_SHAPE_CANDIDATES);
+		const failures = [];
+
+		// A single malformed or stale arrival must not remove the route. Try the
+		// remaining boardable trips for the same route in arrival order first, so
+		// the successful shape still represents a direction the rider can board.
+		for (const candidate of candidates) {
+			try {
+				const shape = await fetchTripShape(candidate);
+				if (failures.length > 0) {
+					console.warn('StopRoutesLayer: using alternate trip shape', {
+						routeId: route.id,
+						tripId: shape.tripId,
+						shapeId: shape.shapeId,
+						failedTripIds: candidates
+							.slice(0, failures.length)
+							.map((failedCandidate) => failedCandidate.id),
+						failures
+					});
+				}
+				return [shape];
+			} catch (error) {
+				failures.push(error);
+			}
 		}
-		const tripData = await tripResponse.json();
 
-		const tripRef = tripData?.data?.references?.trips?.find((trip) => trip.id === route.tripId);
-		const shapeId = tripRef?.shapeId;
-		if (!shapeId) {
-			throw new Error(`no shapeId for trip ${route.tripId}`);
+		// Last-resort degraded view: route-level geometry may include more than one
+		// direction, but is preferable to showing a live vehicle with no line at
+		// all. SearchPane already uses this endpoint for its route overview.
+		let shapes;
+		try {
+			shapes = await fetchRouteFallback(route);
+		} catch (error) {
+			throw new AggregateError([...failures, error], `no usable shape for route ${route.id}`);
 		}
 
-		const shapeResponse = await fetch(`/api/oba/shape/${shapeId}`);
-		if (!shapeResponse.ok) {
-			throw new Error(`shape ${shapeResponse.status} for shape ${shapeId}`);
-		}
-		const shapeData = await shapeResponse.json();
-
-		const stopIds = (tripData?.data?.entry?.schedule?.stopTimes ?? [])
-			.map((stopTime) => stopTime.stopId)
-			.filter(Boolean);
-
-		return { points: shapeData?.data?.entry?.points, stopIds };
+		console.warn('StopRoutesLayer: using route-level shape fallback', {
+			routeId: route.id,
+			tripIds: candidates.map((candidate) => candidate.id),
+			failures
+		});
+		return shapes;
 	}
 
 	let notificationId = null;
@@ -145,13 +263,12 @@
 		await Promise.all(
 			routes.map(async (route, index) => {
 				const color = colors.get(route.id)?.line;
-				let shape;
+				let shapes;
 				try {
-					shape = await fetchRouteShape(route);
+					shapes = await fetchRouteShapes(route);
 				} catch (error) {
-					// One missing shape degrades the map rather than breaking it: the
-					// other routes still draw, and this one is simply absent from the
-					// lines, the legend, and the ring dots.
+					// Exhausting every trip plus the route-level fallback degrades only
+					// this route; neighboring routes still draw.
 					console.error('StopRoutesLayer: could not load shape', route.id, error);
 					attemptedRoutes++;
 					return;
@@ -160,11 +277,6 @@
 
 				attemptedRoutes++;
 
-				if (!shape.points) {
-					console.error('StopRoutesLayer: route shape contains no points', route.id);
-					return;
-				}
-
 				// untrack: this read happens after an await, so Svelte would not treat
 				// it as an effect dependency anyway — but reading it explicitly through
 				// untrack makes that non-dependency intentional rather than incidental,
@@ -172,33 +284,41 @@
 				// turn trip-expansion into a full redraw.
 				const promoted = untrack(() => promotedRouteId);
 				const isPromoted = promoted != null && route.id === promoted;
-				let polyline = null;
+				const routePolylines = [];
 
-				try {
-					polyline = await mapProvider.createPolyline(shape.points, {
-						color,
-						casing: true,
-						weight: weightFor(index),
-						pane: isPromoted ? ROUTE_PANE.PROMOTED : ROUTE_PANE.LINE,
-						casingPane: ROUTE_PANE.CASING
-					});
-				} catch (error) {
-					console.error('StopRoutesLayer: could not create polyline', route.id, error);
-					return;
+				for (const shape of shapes) {
+					let polyline = null;
+					try {
+						polyline = await mapProvider.createPolyline(shape.points, {
+							color,
+							casing: true,
+							weight: weightFor(index),
+							pane: isPromoted ? ROUTE_PANE.PROMOTED : ROUTE_PANE.LINE,
+							casingPane: ROUTE_PANE.CASING
+						});
+					} catch (error) {
+						console.error('StopRoutesLayer: could not create polyline', route.id, error);
+						continue;
+					}
+
+					if (token !== loadToken) {
+						// Google creates polylines asynchronously. If a newer stop wins
+						// during a multi-segment fallback, remove every segment this stale
+						// route attached before returning.
+						if (polyline) mapProvider.removePolyline(polyline);
+						for (const created of routePolylines) mapProvider.removePolyline(created);
+						return;
+					}
+					if (!polyline) {
+						console.error('StopRoutesLayer: could not create polyline', route.id);
+						continue;
+					}
+
+					routePolylines.push(polyline);
+					drawnPolylines.push({ index, polyline });
 				}
 
-				if (token !== loadToken) {
-					// A supersede ran clearAllPolylines() before this create resolved
-					// (Google's createPolyline is async, awaiting importLibrary), so
-					// the polyline this call just attached to the map is an orphan of
-					// the selection that's already gone — take it back off.
-					mapProvider.removePolyline(polyline);
-					return;
-				}
-				if (!polyline) {
-					console.error('StopRoutesLayer: could not create polyline', route.id);
-					return;
-				}
+				if (routePolylines.length === 0) return;
 
 				drawnRoutes++;
 
@@ -207,13 +327,13 @@
 				// the untracked promotedRouteId read at the top of this callback),
 				// so the promotion effect's own idea of "currently promoted" starts
 				// in sync with what was actually drawn.
-				polylinesByRouteId.set(route.id, polyline);
+				polylinesByRouteId.set(route.id, routePolylines);
 				routeDrawIndex.set(route.id, index);
 				if (isPromoted) currentlyPromotedRouteId = route.id;
 
 				// Reveal only this route: its neighbors may already be drawn, and
 				// re-animating them on every resolution would look like a glitch.
-				mapProvider.revealPolylines({ only: [polyline], duration: 0.8 });
+				mapProvider.revealPolylines({ only: routePolylines, duration: 0.8 });
 
 				// Paint order is shape-fetch resolution order, not index order, so
 				// re-assert index order after every resolution: the widest route
@@ -226,7 +346,6 @@
 				// it's a no-op on Google's polyline object, whose paint order already
 				// comes from the pane's zIndex set at creation, so this line is
 				// harmless there.
-				drawnPolylines.push({ index, polyline });
 				drawnPolylines.sort((a, b) => a.index - b.index);
 				for (const drawn of drawnPolylines) {
 					drawn.polyline.bringToFront?.();
@@ -239,11 +358,13 @@
 				// resolved route's turn, so two routes resolving "at the same time"
 				// (already-resolved microtasks) still apply one at a time rather than
 				// clobbering each other's contribution.
-				for (const stopId of shape.stopIds) {
-					const claimedIndex = stopClaimIndex.get(stopId);
-					if (claimedIndex === undefined || index < claimedIndex) {
-						nextStopIds.set(stopId, color);
-						stopClaimIndex.set(stopId, index);
+				for (const shape of shapes) {
+					for (const stopId of shape.stopIds) {
+						const claimedIndex = stopClaimIndex.get(stopId);
+						if (claimedIndex === undefined || index < claimedIndex) {
+							nextStopIds.set(stopId, color);
+							stopClaimIndex.set(stopId, index);
+						}
 					}
 				}
 				routeStopIds = new Map(nextStopIds);
@@ -283,17 +404,20 @@
 		// new drawRoutes() starts, so it still reflects the *previous* draw,
 		// which is what needs clearing.
 		if (mapProvider) {
-			for (const polyline of polylinesByRouteId.values()) {
-				mapProvider.removePolyline(polyline);
+			for (const polylines of polylinesByRouteId.values()) {
+				for (const polyline of polylines) mapProvider.removePolyline(polyline);
 			}
-			// Array.from, not the live Map iterator: polylinesByRouteId.clear()
-			// below would otherwise empty the iterator's backing map out from
-			// under a caller (or a test spy) that reads it after this call returns.
-			removeVehicleMarkersForRoutes(Array.from(polylinesByRouteId.keys()), mapProvider);
+			// Snapshot the union: a failed route can have vehicle markers despite
+			// having no entry in polylinesByRouteId.
+			removeVehicleMarkersForRoutes(
+				Array.from(new Set([...polylinesByRouteId.keys(), ...polledRouteIds])),
+				mapProvider
+			);
 		}
 		// promotion effect's own bookkeeping must be reset here too, or it would
 		// try to re-pane a polyline that no longer exists.
 		polylinesByRouteId.clear();
+		polledRouteIds.clear();
 		routeDrawIndex.clear();
 		currentlyPromotedRouteId = null;
 	}
@@ -314,8 +438,8 @@
 		const nonPromoted = [];
 		for (const [routeId, index] of routeDrawIndex) {
 			if (routeId === currentlyPromotedRouteId) continue;
-			const polyline = polylinesByRouteId.get(routeId);
-			if (polyline) nonPromoted.push({ index, polyline });
+			const polylines = polylinesByRouteId.get(routeId) ?? [];
+			for (const polyline of polylines) nonPromoted.push({ index, polyline });
 		}
 		nonPromoted.sort((a, b) => a.index - b.index);
 		for (const { polyline } of nonPromoted) {
@@ -371,6 +495,10 @@
 		// current at the *first* draw of this route set, not the live
 		// soonest-first order; that's a far smaller price than refetching and
 		// re-animating every 30 seconds.
+		// Candidate trips deliberately do not participate in this signature.
+		// Arrival polling naturally adds/removes candidates every 30s; the drawn
+		// route remains valid, so rebuilding it would flash the line and restart
+		// vehicle polling for no user-visible benefit.
 		const signature = routes
 			.map((route) => `${route.id}:${colors.get(route.id)?.line ?? ''}`)
 			.sort()
@@ -399,6 +527,7 @@
 		// started. Wrapped in untrack() so that if a future refactor ever calls
 		// this getter synchronously from inside an effect, it still won't
 		// register highlightedTripId as that effect's dependency.
+		polledRouteIds = new Set(routes.map((route) => route.id));
 		fetchAndUpdateVehiclesForRoutes(routes, mapProvider, {
 			highlightedTripId: () => untrack(() => highlightedTripId),
 			colorsByRouteId: colors,
@@ -444,19 +573,19 @@
 				// Demote the previously promoted route first — if the polyline it
 				// named ever resolved. Tolerated as a no-op otherwise (its shape
 				// fetch may have failed, or nothing was promoted yet).
-				const previousPolyline = currentlyPromotedRouteId
+				const previousPolylines = currentlyPromotedRouteId
 					? polylinesByRouteId.get(currentlyPromotedRouteId)
-					: null;
-				if (previousPolyline) {
-					mapProvider.setPolylineLayer(previousPolyline, ROUTE_PANE.LINE);
+					: [];
+				for (const polyline of previousPolylines ?? []) {
+					mapProvider.setPolylineLayer(polyline, ROUTE_PANE.LINE);
 				}
 
 				// Promote the new one — same tolerance: promotedRouteId may name a
 				// route whose shape fetch failed, in which case there's no
 				// polyline to move and this is a no-op.
-				const nextPolyline = promoted ? polylinesByRouteId.get(promoted) : null;
-				if (nextPolyline) {
-					mapProvider.setPolylineLayer(nextPolyline, ROUTE_PANE.PROMOTED);
+				const nextPolylines = promoted ? polylinesByRouteId.get(promoted) : [];
+				for (const polyline of nextPolylines ?? []) {
+					mapProvider.setPolylineLayer(polyline, ROUTE_PANE.PROMOTED);
 				}
 
 				currentlyPromotedRouteId = promoted;
@@ -482,5 +611,7 @@
 		loadToken++;
 		isMounted = false;
 		teardown();
+		tripShapeCache.clear();
+		routeShapeCache.clear();
 	});
 </script>

@@ -13,7 +13,7 @@
 
 	let { data } = $props();
 	const stop = data.stopData.entry;
-	let arrivalsAndDeparturesResponse = $state(data.arrivalsAndDeparturesData || null);
+	let arrivalsAndDeparturesResponse = $state(data.arrivalsAndDeparturesResponse ?? null);
 
 	const currentUserLocation = $state($userLocation);
 
@@ -43,6 +43,13 @@
 </svelte:head>
 
 <StandalonePage>
-	<StopPageHeader stopName={stop.name} stopId={stop.id} stopDirection={stop.direction} />
+	<StopPageHeader
+		stopName={stop.name}
+		stopId={stop.id}
+		stopDirection={stop.direction}
+		stopLat={stop.lat}
+		stopLon={stop.lon}
+		stopCode={stop.code}
+	/>
 	<StopPane {stop} bind:arrivalsAndDeparturesResponse />
 </StandalonePage>

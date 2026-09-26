@@ -1,19 +1,26 @@
 import { json } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
 import { buildURL } from '$lib/urls.js';
-
-const REGION_PATH = `regions/${env.PRIVATE_REGION_ID}/`;
+import {
+	getSidecarBaseURL,
+	getSidecarRegionPath,
+	warnSidecarNotConfigured
+} from '$lib/sidecarConfig.js';
 
 export async function GET({ url }) {
-	if (!env.PRIVATE_OBACO_API_BASE_URL) {
-		console.warn('[surveys] PRIVATE_OBACO_API_BASE_URL not configured, skipping surveys');
+	const baseURL = getSidecarBaseURL();
+	const regionPath = getSidecarRegionPath();
+	const missing = [];
+	if (!baseURL) missing.push('PRIVATE_SIDECAR_API_BASE_URL');
+	if (!regionPath) missing.push('PRIVATE_SIDECAR_REGION_ID');
+	if (missing.length > 0) {
+		warnSidecarNotConfigured('surveys', missing);
 		return json({ surveys: [] });
 	}
 
 	const userId = url.searchParams.get('userId');
 
 	try {
-		const url = buildURL(env.PRIVATE_OBACO_API_BASE_URL, `${REGION_PATH}surveys.json`, {
+		const url = buildURL(baseURL, `${regionPath}surveys.json`, {
 			user_id: userId
 		});
 

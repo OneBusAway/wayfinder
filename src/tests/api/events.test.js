@@ -173,6 +173,33 @@ describe('POST /api/events', () => {
 		expect(data).toEqual({ error: 'aborted' });
 	});
 
+	it('forwards a valid envelope.id through to the Umami payload', async () => {
+		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'umami';
+		mockEnv.PUBLIC_ANALYTICS_API_HOST = 'https://umami.example.com';
+		mockEnv.PUBLIC_ANALYTICS_WEBSITE_ID = 'web-id-1';
+		global.fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			status: 200,
+			text: async () => JSON.stringify({ cache: 'c' })
+		});
+
+		const body = JSON.stringify({
+			name: 'pageview',
+			url: '/test',
+			id: 'stable-visitor-id',
+			props: {}
+		});
+		const response = await POST(buildEvent(body));
+
+		expect(response.status).toBe(200);
+		expect(global.fetch).toHaveBeenCalledWith(
+			'https://umami.example.com/api/send',
+			expect.objectContaining({
+				body: expect.stringContaining('"id":"stable-visitor-id"')
+			})
+		);
+	});
+
 	it('falls back to x-forwarded-for header when getClientAddress is unavailable', async () => {
 		mockEnv.PUBLIC_ANALYTICS_PROVIDER = 'umami';
 		mockEnv.PUBLIC_ANALYTICS_API_HOST = 'https://umami.example.com';

@@ -30,14 +30,54 @@
 		"trip_itineraries": "行程方案",
 		"show_steps": "顯示步驟",
 		"hide_steps": "隱藏步驟",
+		"options": "選項",
+		"trip_options": "行程選項",
+		"cancel": "取消",
+		"done": "完成",
+		"reset_to_defaults": "重設為預設值",
+		"departure_time": "出發時間",
+		"departure_date": "出發日期",
+		"leave_now": "立即出發",
+		"depart_at": "指定出發時間",
+		"arrive_by": "指定抵達時間",
+		"wheelchair_accessible": "無障礙路線",
+		"wheelchair_desc": "尋找適合行動輔具與輪椅使用的路線",
+		"wheelchair": "無障礙",
+		"route_optimization": "路線最佳化",
+		"fastest_trip": "最快行程",
+		"fewest_transfers": "最少轉乘",
+		"stay_on_board": "請留在車上。本班車將以路線 {route} 繼續行駛。",
+		"walking_distance": "步行距離",
+		"max_walking_distance": "最長步行距離",
 		"distance_unit": "距離單位",
 		"unit_auto": "自動偵測",
 		"unit_metric": "公制 (km, m)",
-		"unit_imperial": "英制 (mi, ft)"
+		"unit_imperial": "英制 (mi, ft)",
+		"swap_locations": "交換起點與終點",
+		"error_code": "錯誤代碼",
+		"remove_recent_trip": "移除最近的行程",
+		"recent_trip": "使用最近的行程：從 {from} 到 {to}",
+		"recent_searches": "最近搜尋",
+		"recents": "最近紀錄",
+		"clear_all": "全部清除",
+		"request_failed": "無法連線至行程規劃服務。請再試一次。",
+		"invalid_shared_link": "此行程分享連結似乎已失效。請重新規劃行程。"
 	},
 	"tabs": {
 		"stops-and-stations": "站牌與車站",
 		"plan_trip": "規劃行程"
+	},
+	"favorites": {
+		"title": "我的最愛",
+		"add": "加入我的最愛",
+		"remove": "從我的最愛移除",
+		"clear_all": "全部清除",
+		"open_panel": "開啟我的最愛",
+		"close_panel": "關閉我的最愛",
+		"empty": "尚未加入我的最愛。點選站牌或路線上的星號即可儲存於此。",
+		"stop_code": "編號",
+		"open_item": "開啟 {name}",
+		"remove_item": "將 {name} 從我的最愛移除"
 	},
 	"search": {
 		"placeholder": "搜尋站牌、路線和地點",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "查看可用路線列表",
 		"search_for_routes": "搜尋路線...",
 		"no_routes_found": "找不到路線",
-		"all_routes": "所有路線"
+		"all_routes": "所有路線",
+		"clear": "清除",
+		"collapse": "收合搜尋"
+	},
+	"sheet": {
+		"close": "關閉",
+		"resize_handle": "調整面板大小",
+		"snap_full": "完整高度",
+		"snap_half": "一半高度",
+		"snap_peek": "已收合"
+	},
+	"survey": {
+		"required_question": "必答題",
+		"required_answer": "此題為必答。",
+		"expand": "顯示問題",
+		"collapse": "隱藏問題",
+		"dismiss": "關閉問卷",
+		"submit": "送出",
+		"next": "下一題",
+		"submit_failed": "無法送出您的回答。請再試一次。"
 	},
 	"header": {
 		"home": "首頁",
@@ -88,13 +147,26 @@
 		"close": "關閉"
 	},
 	"arrivals_and_departures": "到站與發車",
+	"show_more": "顯示更多",
+	"show_less": "顯示較少",
 	"load_more_arrivals": "載入更多到站班次",
+	"refresh": "重新整理",
 	"no_arrivals_found_in_next_minutes": "未來 {minutes} 分鐘內沒有到站班次",
 	"no_more_arrivals_in_next_minutes": "未來{minutes}分鐘內沒有更多到站班次",
 	"stop": "站牌",
+	"direction_bound": "往 {direction}",
 	"routes": "路線",
 	"route": "路線",
 	"route_modal_title": "路線 {name}",
+	"notifications": {
+		"route_load_failed": "無法載入此路線。",
+		"route_shape_failed": "無法在地圖上繪製此路線。",
+		"route_shape_partial": "此路線有部分無法繪製，地圖上可能缺少部分路段。",
+		"favorite_saved": "已加入我的最愛。",
+		"favorite_removed": "已從我的最愛移除。",
+		"tap_to_retry": "點選以重試。",
+		"dismiss": "關閉"
+	},
 	"loading": "載入中",
 	"arrives": "到達",
 	"NA": "無資料",
@@ -105,13 +177,16 @@
 		"secs": "秒",
 		"min": "分鐘",
 		"mins": "分鐘",
-		"minutes": "分鐘"
+		"minutes": "分鐘",
+		"min_compact": "{n} 分"
 	},
 	"vehicle": {
 		"number": "車輛編號",
 		"data_updated": "資料更新時間",
 		"no_real_time_data": "目前沒有此車輛的即時資料。",
-		"next_stop": "下一站："
+		"next_stop": "下一站：",
+		"label": "車輛",
+		"to_headsign": "開往 {headsign} 的車輛"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "到站與發車"
@@ -150,18 +225,61 @@
 		"no_description": "此公告無詳細說明",
 		"page": "頁",
 		"show": "顯示",
-		"hide": "隱藏"
+		"hide": "隱藏",
+		"open_alert": "開啟服務公告詳細資訊（{severity}）：{summary}",
+		"affects_this_stop": "影響此站牌",
+		"other_alerts": "其他公告",
+		"severity_severe": "嚴重",
+		"severity_warning": "警告",
+		"severity_info": "資訊",
+		"cause": "原因",
+		"effect": "影響",
+		"active": "生效中",
+		"active_until": "至 {date} 止",
+		"active_from": "自 {date} 起",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "不明",
+		"cause_other": "其他",
+		"cause_technical": "技術問題",
+		"cause_strike": "罷工",
+		"cause_demonstration": "示威活動",
+		"cause_accident": "事故",
+		"cause_holiday": "假日",
+		"cause_weather": "天候因素",
+		"cause_maintenance": "維修",
+		"cause_construction": "施工",
+		"cause_police": "警方執勤",
+		"cause_medical": "緊急醫療事件",
+		"cause_equipment": "設備問題",
+		"cause_environment": "環境因素",
+		"cause_personnel": "人力因素",
+		"cause_miscellaneous": "其他因素",
+		"cause_security": "安全警示",
+		"effect_no_service": "停駛",
+		"effect_reduced_service": "減班",
+		"effect_significant_delays": "嚴重延誤",
+		"effect_detour": "改道行駛",
+		"effect_additional_service": "加開班次",
+		"effect_modified_service": "服務異動",
+		"effect_other": "其他影響",
+		"effect_unknown": "影響不明",
+		"effect_stop_moved": "站牌遷移",
+		"effect_no_effect": "無影響",
+		"effect_accessibility": "無障礙設施問題"
 	},
 	"view_stop_information": "查看站牌資訊",
 	"stop_details": {
-		"view_details": "查看詳情"
+		"view_details": "查看詳情",
+		"stop_info": "站牌資訊"
 	},
 	"language_switcher": {
 		"select_language": "選擇語言: {language}",
 		"available_languages": "可用語言"
 	},
 	"map": {
-		"find_my_location": "尋找我的位置"
+		"find_my_location": "尋找我的位置",
+		"routes_shown": "顯示中的路線",
+		"live_vehicle_count": "即時 {count} 輛"
 	},
 	"context-menu": {
 		"start_here": "從這裡出發",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "回首頁",
 		"go_back": "返回"
+	},
+	"trip_details": {
+		"route": "路線",
+		"no_stops": "此班次沒有停靠站時刻資料。",
+		"loading": "正在載入班次詳細資訊...",
+		"live_vehicle": "即時 · 車輛 {vehicleId}",
+		"collapsed_stops": "{count, plural, other {# 站}}"
 	},
 	"skip_to_main_content": "跳至主要內容"
 }

@@ -9,6 +9,11 @@
 	const captionId = `schedule-table-caption-${crypto.randomUUID()}`;
 
 	let scheduleData = $derived(renderScheduleTable(schedule));
+	let hasShortLines = $derived(
+		Object.values(schedule.stopTimes).some((times) =>
+			times.some((stopTime) => stopTime.isShortLine)
+		)
+	);
 
 	function renderScheduleTable(schedule) {
 		const stopTimes = Object.entries(schedule.stopTimes);
@@ -31,6 +36,18 @@
 	scrollable schedule table; role="region" + aria-labelledby name it via the caption. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div role="region" tabindex="0" aria-labelledby={captionId} class="overflow-x-auto dark:bg-black">
+	{#if hasShortLines}
+		<p
+			class="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
+		>
+			<span
+				class="mt-0.5 shrink-0 rounded bg-amber-200 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-950 dark:bg-amber-800 dark:text-amber-50"
+			>
+				{$isLoading ? '' : $t('schedule_for_stop.short_line')}
+			</span>
+			<span>{$isLoading ? '' : $t('schedule_for_stop.short_line_notice')}</span>
+		</p>
+	{/if}
 	<table
 		class="mt-4 w-full table-auto rounded-lg border border-gray-200 shadow-lg dark:border-gray-700 dark:bg-black"
 	>
@@ -80,9 +97,27 @@
 							class="flex items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white"
 						>
 							{#each times as stopTime, index (index)}
-								<span class="rounded bg-gray-50 px-2 dark:bg-gray-800">
-									{extractMinutes(stopTime.arrivalTime)}
-								</span>
+								{#if stopTime.isShortLine}
+									<span
+										class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-950 shadow-sm dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100"
+										data-short-line="true"
+									>
+										<span>{extractMinutes(stopTime.arrivalTime)}</span>
+										<span
+											class="border-l border-amber-300 pl-1.5 text-xs font-medium dark:border-amber-700"
+										>
+											{$isLoading
+												? ''
+												: $t('schedule_for_stop.short_line_to', {
+														values: { destination: stopTime.destination }
+													})}
+										</span>
+									</span>
+								{:else}
+									<span class="rounded bg-gray-50 px-2 py-1 dark:bg-gray-800">
+										{extractMinutes(stopTime.arrivalTime)}
+									</span>
+								{/if}
 							{/each}
 						</td>
 					</tr>
@@ -118,9 +153,27 @@
 							class="flex items-start gap-3 border px-6 py-3 text-lg dark:border-gray-700 dark:text-white"
 						>
 							{#each times as stopTime, index (index)}
-								<span class="rounded bg-gray-50 px-2 dark:bg-gray-800">
-									{extractMinutes(stopTime.arrivalTime)}
-								</span>
+								{#if stopTime.isShortLine}
+									<span
+										class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-950 shadow-sm dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100"
+										data-short-line="true"
+									>
+										<span>{extractMinutes(stopTime.arrivalTime)}</span>
+										<span
+											class="border-l border-amber-300 pl-1.5 text-xs font-medium dark:border-amber-700"
+										>
+											{$isLoading
+												? ''
+												: $t('schedule_for_stop.short_line_to', {
+														values: { destination: stopTime.destination }
+													})}
+										</span>
+									</span>
+								{:else}
+									<span class="rounded bg-gray-50 px-2 py-1 dark:bg-gray-800">
+										{extractMinutes(stopTime.arrivalTime)}
+									</span>
+								{/if}
 							{/each}
 						</td>
 					</tr>

@@ -1,8 +1,9 @@
-import { BusFront, CableCar, Ship, TrainFrontTunnel, TramFront } from '@lucide/svelte';
+import { BusFront, CableCar, Ship, TrainFront, TrainFrontTunnel, TramFront } from '@lucide/svelte';
 import {
 	BusFront as BusFrontNodes,
 	CableCar as CableCarNodes,
 	Ship as ShipNodes,
+	TrainFront as TrainFrontNodes,
 	TrainFrontTunnel as TrainFrontTunnelNodes,
 	TramFront as TramFrontNodes
 } from 'lucide';
@@ -38,7 +39,7 @@ const routeTypeIcons = {
 	[RouteType.FERRY]: { component: Ship, nodes: ShipNodes },
 	[RouteType.LIGHT_RAIL]: { component: TrainFrontTunnel, nodes: TrainFrontTunnelNodes },
 	[RouteType.SUBWAY]: { component: TrainFrontTunnel, nodes: TrainFrontTunnelNodes },
-	[RouteType.RAIL]: { component: TramFront, nodes: TramFrontNodes },
+	[RouteType.RAIL]: { component: TrainFront, nodes: TrainFrontNodes },
 	[RouteType.CABLE_CAR]: { component: CableCar, nodes: CableCarNodes },
 	[RouteType.GONDOLA]: { component: CableCar, nodes: CableCarNodes },
 	[RouteType.FUNICULAR]: { component: CableCar, nodes: CableCarNodes },

@@ -1,4 +1,4 @@
-name: Test
+name: Build
 
 on:
   push:
@@ -11,6 +11,33 @@ on:
       - develop
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache npm install artifacts
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Svelte Check
+        run: npm run check
+        env:
+          CI: true
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -45,13 +72,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           files: ./coverage/lcov.info
 
-      - name: Display test results
-        if: failure()
-        run: |
-          echo "Tests failed. Please check the test output for more details."
-        continue-on-error: true
-
   build:
+    needs: [check, test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

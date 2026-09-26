@@ -1,6 +1,6 @@
 <script>
 	import { t } from 'svelte-i18n';
-	import { BusFront, Footprints, Ship, TrainFrontTunnel, TramFront } from '@lucide/svelte';
+	import { BusFront, Footprints, Ship, TrainFront, TrainFrontTunnel, TramFront } from '@lucide/svelte';
 
 	let { index, activeTab, setActiveTab, itinerary } = $props();
 
@@ -27,7 +27,7 @@
 				return BusFront;
 			case 'TRAIN':
 			case 'RAIL':
-				return TramFront;
+				return TrainFront;
 			case 'FERRY':
 				return Ship;
 			case 'LIGHT_RAIL':

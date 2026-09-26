@@ -45,6 +45,8 @@ function makeProvider() {
 		enableContextMenu: vi.fn(),
 		getBoundingBox: vi.fn(() => ({ north: 1, south: 0, east: 1, west: 0 })),
 		getCenter: vi.fn(() => ({ lat: 0, lng: 0 })),
+		getZoom: vi.fn(() => 15),
+		destroy: vi.fn(),
 		map: { getZoom: () => 15 },
 		hasMarker: vi.fn(() => false),
 		addMarker: vi.fn(),
@@ -332,5 +334,33 @@ describe('addMarker emphasis seeding', () => {
 		expect(selected.emphasis).toBe('full');
 		expect(selected.isHighlighted).toBe(true);
 		expect(selected.dotColor).toBeNull();
+	});
+});
+
+describe('MapView teardown', () => {
+	test('does not register listeners after an initial stop request completes after unmount', async () => {
+		let finishRequest;
+		global.fetch = vi.fn(
+			() =>
+				new Promise((resolve) => {
+					finishRequest = resolve;
+				})
+		);
+		const mapProvider = makeProvider();
+		const { unmount } = render(MapView, {
+			props: { mapProvider, handleStopMarkerSelect: vi.fn() }
+		});
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+		await unmount();
+		finishRequest({
+			ok: true,
+			json: async () => ({ data: { list: [], references: { routes: [] } } })
+		});
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(mapProvider.destroy).toHaveBeenCalledOnce();
+		expect(mapProvider.eventListeners).not.toHaveBeenCalled();
+		expect(mapProvider.enableContextMenu).not.toHaveBeenCalled();
+		window.dispatchEvent(new CustomEvent('themeChange', { detail: { darkMode: true } }));
+		expect(mapProvider.setTheme).not.toHaveBeenCalled();
 	});
 });

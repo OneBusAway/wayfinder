@@ -4,6 +4,10 @@ const UPSTREAM_TIMEOUT_MS = 5000;
 
 const MAX_DATA_VALUE_LENGTH = 256;
 
+// Umami's distinct_id (payload.id) limit; UUID-shaped since the browser mints it via
+// crypto.randomUUID(), but this validates the shape rather than trusting the client.
+const ANALYTICS_ID_PATTERN = /^[A-Za-z0-9-]{1,50}$/;
+
 // Sent when no end-user User-Agent is available. Must survive Umami's isbot filter:
 // no bot token (isbot matches `server`/`bot`/etc. unanchored, case-insensitively) and
 // not a bare `Mozilla/x.x <token>` string (the `(` breaks isbot's anchored pattern).
@@ -32,6 +36,18 @@ export function sanitizeData(props) {
 		}
 	}
 	return out;
+}
+
+/**
+ * Validate a client-supplied analytics id before it reaches the outgoing Umami payload:
+ * must be a non-empty string within Umami's 50-char distinct_id limit, restricted to
+ * UUID-shaped characters. This is unauthenticated input forwarded from the browser, so
+ * an invalid or oversized value is dropped rather than passed through.
+ * @param {unknown} id
+ * @returns {boolean}
+ */
+export function isValidAnalyticsId(id) {
+	return typeof id === 'string' && ANALYTICS_ID_PATTERN.test(id);
 }
 
 /**
@@ -91,15 +107,16 @@ export class UmamiAdapter {
 		const {
 			name,
 			url,
+			id,
 			referrer = '',
 			title = '',
 			language = '',
 			screen = '',
 			props = {}
-		} = envelope;
+		} = envelope ?? {};
 
 		if (!name || !url) {
-			throw new Error('forwardEvent requires name and url');
+			throw insightsError('forwardEvent requires name and url', 400);
 		}
 
 		const body = {
@@ -113,7 +130,8 @@ export class UmamiAdapter {
 				referrer,
 				title,
 				name,
-				data: sanitizeData(props)
+				data: sanitizeData(props),
+				...(isValidAnalyticsId(id) ? { id } : {})
 			}
 		};
 

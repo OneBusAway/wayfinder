@@ -15,6 +15,7 @@
 <script>
 	import StopItem from '$components/StopItem.svelte';
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
+	import FavoriteToggle from '$components/favorites/FavoriteToggle.svelte';
 	import { X } from '@lucide/svelte';
 	import { keybinding } from '$lib/keybinding';
 	import { t } from 'svelte-i18n';
@@ -61,6 +62,16 @@
 			<p class="min-w-0 flex-1 truncate text-base font-semibold text-black dark:text-white">
 				{title()}
 			</p>
+			{#if selectedRoute}
+				<FavoriteToggle
+					type="route"
+					id={selectedRoute.id}
+					shortName={selectedRoute.shortName}
+					description={selectedRoute.description}
+					routeType={selectedRoute.type}
+					class="h-8 w-8"
+				/>
+			{/if}
 			<button
 				type="button"
 				onclick={closePane}

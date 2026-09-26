@@ -30,14 +30,54 @@
 		"trip_itineraries": "Karoorsawwan Imala",
 		"show_steps": "Tarkaanfii Agarsiisi",
 		"hide_steps": "Tarkaanfii Dhoksi",
+		"options": "Filannoowwan",
+		"trip_options": "Filannoowwan Imalaa",
+		"cancel": "Dhiisi",
+		"done": "Xumuri",
+		"reset_to_defaults": "Qindaa'ina jalqabaatti deebisi",
+		"departure_time": "Yeroo Ka'umsaa",
+		"departure_date": "Guyyaa ka'umsaa",
+		"leave_now": "Amma Ka'i",
+		"depart_at": "Yeroo Kanatti Ka'i",
+		"arrive_by": "Yeroo Kanaan Ga'i",
+		"wheelchair_accessible": "Wiilcheeriif mijataa",
+		"wheelchair_desc": "Sararawwan meeshaalee gargaarsa sochii fi wiilcheeriif mijatan barbaadi",
+		"wheelchair": "Wiilcheerii",
+		"route_optimization": "Fooyya'iinsa Sararaa",
+		"fastest_trip": "Imala Saffisaa",
+		"fewest_transfers": "Jijjiirraa Xiqqaa",
+		"stay_on_board": "Konkolaataa keessa turi. Imalli kun Sarara {route} ta'ee itti fufa.",
+		"walking_distance": "Fageenya Miilaa",
+		"max_walking_distance": "Fageenya miilaa ol'aanaa",
 		"distance_unit": "Safartuu Fageenya",
 		"unit_auto": "Ofumaan adda baasi",
 		"unit_metric": "Meetirikii (km, m)",
-		"unit_imperial": "Impeeriyaalii (mi, ft)"
+		"unit_imperial": "Impeeriyaalii (mi, ft)",
+		"swap_locations": "Bakkeewwan Irraa fi Gara wal jijjiiri",
+		"error_code": "Koodii dogoggoraa",
+		"remove_recent_trip": "Imala dhiyeenyaa haqi",
+		"recent_trip": "Imala dhiyeenyaa {from} irraa gara {to} fayyadami",
+		"recent_searches": "Barbaacha Dhiyeenyaa",
+		"recents": "Kan Dhiyeenyaa",
+		"clear_all": "Hunda Haqi",
+		"request_failed": "Tajaajila karoorsa imalaa argachuun hin danda'amne. Maaloo irra deebi'ii yaali.",
+		"invalid_shared_link": "Liinkiin imala qoodame kun sirrii hin fakkaatu. Imalicha irra deebi'ii karoorfadhu."
 	},
 	"tabs": {
 		"stops-and-stations": "Dhaabbii fi Buufataalee",
 		"plan_trip": "Imala Karoorfadhu"
+	},
+	"favorites": {
+		"title": "Jaalatamoo",
+		"add": "Jaalatamootti dabali",
+		"remove": "Jaalatamoo keessaa baasi",
+		"clear_all": "Hunda Haqi",
+		"open_panel": "Jaalatamoo bani",
+		"close_panel": "Jaalatamoo cufi",
+		"empty": "Hanga ammaa jaalatamoon hin jiru. Dhaabbii yookaan sarara tokko as kaa'uuf urjii isaa tuqi.",
+		"stop_code": "Koodii",
+		"open_item": "{name} bani",
+		"remove_item": "{name} jaalatamoo keessaa baasi"
 	},
 	"search": {
 		"placeholder": "Dhaabbii, sarara fi bakkeewwan barbaadi",
@@ -48,7 +88,26 @@
 		"for_a_list_of_available_routes": "tarree sararawwan jiraniif",
 		"search_for_routes": "Sarara barbaadi...",
 		"no_routes_found": "Sarari hin argamne",
-		"all_routes": "Sarara Hunda"
+		"all_routes": "Sarara Hunda",
+		"clear": "Haqi",
+		"collapse": "Barbaacha dhoksi"
+	},
+	"sheet": {
+		"close": "Cufi",
+		"resize_handle": "Guddina paanelii jijjiiri",
+		"snap_full": "Dheerina guutuu",
+		"snap_half": "Dheerina walakkaa",
+		"snap_peek": "Xiqqeeffame"
+	},
+	"survey": {
+		"required_question": "Gaaffii dirqamaa",
+		"required_answer": "Gaaffiin kun dirqamaadha.",
+		"expand": "Gaaffii agarsiisi",
+		"collapse": "Gaaffii dhoksi",
+		"dismiss": "Qorannoo cufi",
+		"submit": "Ergi",
+		"next": "Itti Aanu",
+		"submit_failed": "Deebii kee erguun hin danda'amne. Maaloo irra deebi'ii yaali."
 	},
 	"header": {
 		"home": "Mana",
@@ -88,13 +147,26 @@
 		"close": "Cufi"
 	},
 	"arrivals_and_departures": "Dhufaatii fi ka'umsa",
+	"show_more": "Dabalataa agarsiisi",
+	"show_less": "Dabalataa dhoksi",
 	"load_more_arrivals": "Dhufaatii dabalataa fe'i",
+	"refresh": "Haaromsi",
 	"no_arrivals_found_in_next_minutes": "Daqiiqaa {minutes} itti aanu keessatti dhufaatiin hin argamne",
 	"no_more_arrivals_in_next_minutes": "Daqiiqaa {minutes} itti aanu keessatti dhufaataa dabalataa hin jiru",
 	"stop": "Dhaabbii",
+	"direction_bound": "gara {direction}",
 	"routes": "Sararawwan",
 	"route": "sarara",
 	"route_modal_title": "Sarara {name}",
+	"notifications": {
+		"route_load_failed": "Sarara kana fe'uun hin danda'amne.",
+		"route_shape_failed": "Sarara kana kaartaa irratti agarsiisuun hin danda'amne.",
+		"route_shape_partial": "Kutaa sarara kanaa tokko agarsiisuun hin danda'amne. Kaartaa irraa kutaan tokko hir'achuu danda'a.",
+		"favorite_saved": "Jaalatamootti kaa'ame.",
+		"favorite_removed": "Jaalatamoo keessaa baafame.",
+		"tap_to_retry": "Irra deebi'ii yaaluuf tuqi.",
+		"dismiss": "Cufi"
+	},
 	"loading": "Fe'aa jira",
 	"arrives": "ni ga'a",
 	"NA": "Hin jiru",
@@ -105,13 +177,16 @@
 		"secs": "sek",
 		"min": "daqiiqaa",
 		"mins": "daqiiqaa",
-		"minutes": "daqiiqaawwan"
+		"minutes": "daqiiqaawwan",
+		"min_compact": "{n} daq"
 	},
 	"vehicle": {
 		"number": "Konkolaataa #",
 		"data_updated": "Odeeffannoon haaromfame",
 		"no_real_time_data": "Amma odeeffannoo yeroo qabatamaa konkolaataa kanaaf hin qabnu.",
-		"next_stop": "Dhaabbii itti aanu:"
+		"next_stop": "Dhaabbii itti aanu:",
+		"label": "Konkolaataa",
+		"to_headsign": "Konkolaataa gara {headsign} deemu"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Dhufaatii fi Ka'umsa"
@@ -150,18 +225,61 @@
 		"no_description": "Beeksisa kanaaf ibsi bal'aan hin jiru",
 		"page": "Fuula",
 		"show": "Agarsiisi",
-		"hide": "Dhoksi"
+		"hide": "Dhoksi",
+		"open_alert": "Bal'ina beeksisa tajaajilaa ({severity}) bani: {summary}",
+		"affects_this_stop": "Dhaabbii kana ilaallata",
+		"other_alerts": "Beeksisa biroo",
+		"severity_severe": "Cimaa",
+		"severity_warning": "Akeekkachiisa",
+		"severity_info": "Odeeffannoo",
+		"cause": "Sababa",
+		"effect": "Dhiibbaa",
+		"active": "Hojii irra jira",
+		"active_until": "Hanga {date}",
+		"active_from": "{date} irraa",
+		"active_range": "{from} – {to}",
+		"cause_unknown": "Hin beekamu",
+		"cause_other": "Kan biroo",
+		"cause_technical": "Rakkoo teeknikaa",
+		"cause_strike": "Hojii dhaabuu",
+		"cause_demonstration": "Hiriira",
+		"cause_accident": "Balaa",
+		"cause_holiday": "Ayyaana",
+		"cause_weather": "Haala qilleensaa",
+		"cause_maintenance": "Suphaa",
+		"cause_construction": "Ijaarsa",
+		"cause_police": "Sochii poolisii",
+		"cause_medical": "Hatattama fayyaa",
+		"cause_equipment": "Meeshaa",
+		"cause_environment": "Naannoo",
+		"cause_personnel": "Hojjettoota",
+		"cause_miscellaneous": "Adda addaa",
+		"cause_security": "Beeksisa nageenyaa",
+		"effect_no_service": "Tajaajilli hin jiru",
+		"effect_reduced_service": "Tajaajila hir'ate",
+		"effect_significant_delays": "Turtii guddaa",
+		"effect_detour": "Karaa jijjiirame",
+		"effect_additional_service": "Tajaajila dabalataa",
+		"effect_modified_service": "Tajaajila jijjiirame",
+		"effect_other": "Dhiibbaa biroo",
+		"effect_unknown": "Dhiibbaa hin beekamne",
+		"effect_stop_moved": "Dhaabbiin iddoo jijjiirate",
+		"effect_no_effect": "Dhiibbaa hin qabu",
+		"effect_accessibility": "Rakkoo mijatiinsaa"
 	},
 	"view_stop_information": "Odeeffannoo Dhaabbii Ilaali",
 	"stop_details": {
-		"view_details": "Bal'inaan Ilaali"
+		"view_details": "Bal'inaan Ilaali",
+		"stop_info": "Odeeffannoo Dhaabbii"
 	},
 	"language_switcher": {
 		"select_language": "Afaan filadhu: {language}",
 		"available_languages": "Afaanota jiran"
 	},
 	"map": {
-		"find_my_location": "Bakka Koo Barbaadi"
+		"find_my_location": "Bakka Koo Barbaadi",
+		"routes_shown": "Sararawwan agarsiifaman",
+		"live_vehicle_count": "{count} yeroo qabatamaa"
 	},
 	"context-menu": {
 		"start_here": "As'itti eegali",
@@ -186,6 +304,13 @@
 		},
 		"go_home": "Gara manaatti deebi'i",
 		"go_back": "Duubatti deebi'i"
+	},
+	"trip_details": {
+		"route": "Sarara",
+		"no_stops": "Imala kanaaf yeroon dhaabbii hin jiru.",
+		"loading": "Odeeffannoo imalaa fe'aa jira...",
+		"live_vehicle": "Yeroo qabatamaa · konkolaataa {vehicleId}",
+		"collapsed_stops": "{count, plural, one {Dhaabbii #} other {Dhaabbii #}}"
 	},
 	"skip_to_main_content": "Gara qabiyyee jalqabaa darbi"
 }

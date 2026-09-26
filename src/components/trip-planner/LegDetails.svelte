@@ -13,6 +13,7 @@
 		Footprints,
 		Ruler,
 		Ship,
+		TrainFront,
 		TrainFrontTunnel,
 		TramFront
 	} from '@lucide/svelte';
@@ -55,7 +56,7 @@
 			case 'TRAIN':
 			case 'RAIL':
 				return {
-					icon: TramFront,
+					icon: TrainFront,
 					iconColor: 'text-red-600',
 					bgColor: 'bg-red-100 dark:bg-red-900/50'
 				};
