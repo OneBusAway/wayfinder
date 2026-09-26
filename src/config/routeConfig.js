@@ -1,11 +1,10 @@
-import { BusFront, CableCar, Ship, TrainFront, TrainFrontTunnel, TramFront } from '@lucide/svelte';
+import { BusFront, CableCar, Ship, TrainFront, TrainFrontTunnel } from '@lucide/svelte';
 import {
 	BusFront as BusFrontNodes,
 	CableCar as CableCarNodes,
 	Ship as ShipNodes,
 	TrainFront as TrainFrontNodes,
-	TrainFrontTunnel as TrainFrontTunnelNodes,
-	TramFront as TramFrontNodes
+	TrainFrontTunnel as TrainFrontTunnelNodes
 } from 'lucide';
 
 const RouteType = {
