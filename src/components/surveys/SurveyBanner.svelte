@@ -13,13 +13,7 @@
 	 * @property {number} remainingQuestionsLength - Drives the Submit vs. Next label
 	 */
 	import { slide } from 'svelte/transition';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import {
-		faCommentDots,
-		faChevronDown,
-		faChevronUp,
-		faXmark
-	} from '@fortawesome/free-solid-svg-icons';
+	import { MessageCircleMore, ChevronDown, ChevronUp, X } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 	import SurveyQuestion from '$components/surveys/SurveyQuestion.svelte';
 
@@ -95,7 +89,7 @@
 				aria-hidden="true"
 				class="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-brand-accent text-xl text-brand-foreground"
 			>
-				<FontAwesomeIcon icon={faCommentDots} />
+				<MessageCircleMore class="h-5 w-5" />
 			</span>
 
 			<button
@@ -114,7 +108,11 @@
 					</span>
 				</span>
 				<span class="flex-none text-gray-500 dark:text-gray-400">
-					<FontAwesomeIcon icon={expanded ? faChevronUp : faChevronDown} />
+					{#if expanded}
+						<ChevronUp class="h-4 w-4" />
+					{:else}
+						<ChevronDown class="h-4 w-4" />
+					{/if}
 				</span>
 				<span class="sr-only">{expanded ? $t('survey.collapse') : $t('survey.expand')}</span>
 			</button>
@@ -125,7 +123,7 @@
 				aria-label={$t('survey.dismiss')}
 				class="flex-none px-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
 			>
-				<FontAwesomeIcon icon={faXmark} />
+				<X class="h-4 w-4" />
 			</button>
 		</div>
 

@@ -3,9 +3,10 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import FavoriteToggle from '../FavoriteToggle.svelte';
 
-vi.mock('@fortawesome/svelte-fontawesome', () => ({
-	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
-}));
+vi.mock('@lucide/svelte', async () => {
+	const { default: LucideStub } = await import('../../../tests/mocks/LucideStub.svelte');
+	return { Star: LucideStub };
+});
 
 vi.mock('svelte-i18n', () => {
 	const translations = {

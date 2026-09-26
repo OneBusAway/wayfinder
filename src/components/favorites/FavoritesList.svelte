@@ -9,8 +9,7 @@
 <script>
 	import { t } from 'svelte-i18n';
 	import { favorites } from '$stores/favoritesStore';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faStar, faSignsPost, faTimes } from '@fortawesome/free-solid-svg-icons';
+	import { SignpostBig, Star, X } from '@lucide/svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
 	import { removeAgencyPrefix, stopSubtitle } from '$lib/utils';
 
@@ -44,7 +43,7 @@
 	}
 
 	function itemIcon(item) {
-		if (item.type === 'stop') return faSignsPost;
+		if (item.type === 'stop') return SignpostBig;
 		return prioritizedRouteTypeForDisplay(item.routeType);
 	}
 
@@ -56,7 +55,7 @@
 <div class={className}>
 	<div class="mb-2 flex items-center justify-between">
 		<h2 class="flex items-center gap-1.5 text-sm font-semibold text-gray-500 dark:text-gray-400">
-			<FontAwesomeIcon icon={faStar} class="h-3.5 w-3.5" />
+			<Star class="h-3.5 w-3.5" fill="currentColor" />
 			{$t('favorites.title')}
 		</h2>
 		{#if items.length > 0}
@@ -77,6 +76,7 @@
 			{#each items as item (`${item.type}:${item.id}`)}
 				{@const subtitle = itemSubtitle(item)}
 				{@const title = itemTitle(item)}
+				{@const ItemIcon = itemIcon(item)}
 				<div
 					class="group relative flex items-stretch rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
 				>
@@ -87,7 +87,7 @@
 						onclick={() => handleItemClick(item)}
 					>
 						<div class="mr-3 text-gray-400">
-							<FontAwesomeIcon icon={itemIcon(item)} class="h-3.5 w-3.5" />
+							<ItemIcon class="h-3.5 w-3.5" />
 						</div>
 						<div class="min-w-0 flex-1 text-left">
 							<div class="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -107,7 +107,7 @@
 						onclick={() => handleRemove(item)}
 						aria-label={$t('favorites.remove_item', { values: { name: title } })}
 					>
-						<FontAwesomeIcon icon={faTimes} class="h-3 w-3" />
+						<X class="h-3 w-3" />
 					</button>
 				</div>
 			{/each}

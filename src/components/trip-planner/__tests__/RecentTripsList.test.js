@@ -3,11 +3,6 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import RecentTripsList from '../RecentTripsList.svelte';
 
-// Mock FontAwesome (same pattern as TripPlanSearchField.test.js)
-vi.mock('@fortawesome/svelte-fontawesome', () => ({
-	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
-}));
-
 // Mock svelte-i18n (same pattern as TripPlanSearchField.test.js)
 vi.mock('svelte-i18n', () => {
 	const translations = {

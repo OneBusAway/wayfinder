@@ -16,9 +16,7 @@
 	@prop {string} [class] - Extra classes on the button (include h-/w- to override default size)
 -->
 <script>
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faStar as faStarSolid } from '@fortawesome/free-solid-svg-icons';
-	import { faStar as faStarRegular } from '@fortawesome/free-regular-svg-icons';
+	import { Star } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 	import { favorites } from '$stores/favoritesStore';
 	import { notifyFavoriteSaved, notifyFavoriteRemoved } from '$lib/favoriteNotifications';
@@ -42,7 +40,6 @@
 	let isFav = $derived($favorites.some((f) => f.type === type && f.id === id));
 
 	let label = $derived(isFav ? $t('favorites.remove') : $t('favorites.add'));
-	let icon = $derived(isFav ? faStarSolid : faStarRegular);
 	// Omit default size when the caller passes size classes — Tailwind cannot
 	// override conflicting utilities by HTML class order.
 	let sizeClass = $derived(className ? '' : 'h-10 w-12');
@@ -77,9 +74,8 @@
 	title={label}
 	class="flex {sizeClass} flex-none items-center justify-center rounded-xl border border-gray-300 text-black hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700 {className}"
 >
-	<!-- {#key} remounts FontAwesome when the glyph swaps; the SVG component
-	     does not always update in place when only the icon prop changes. -->
-	{#key isFav}
-		<FontAwesomeIcon {icon} class={isFav ? 'text-black dark:text-white' : ''} />
-	{/key}
+	<Star
+		class="h-5 w-5 {isFav ? 'text-black dark:text-white' : ''}"
+		fill={isFav ? 'currentColor' : 'none'}
+	/>
 </button>

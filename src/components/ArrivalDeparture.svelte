@@ -2,8 +2,7 @@
 	import { t } from 'svelte-i18n';
 	import { msToLocalArrivalDepartureTimeString } from '$lib/dateTimeFormat';
 	import RouteBadge from '$components/RouteBadge.svelte';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faClock, faRss } from '@fortawesome/free-solid-svg-icons';
+	import { Clock, Rss } from '@lucide/svelte';
 	let {
 		arrivalDeparture,
 		includeArrivalDepartureInStatusLabel = true,
@@ -248,10 +247,11 @@
 	<div class="flex shrink-0 flex-col items-center gap-1">
 		<div class="flex items-start gap-0.5">
 			<span class="text-xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
-			<FontAwesomeIcon
-				icon={arrivalInfo.isPredicted ? faRss : faClock}
-				class="text-xs {arrivalInfo.color}"
-			/>
+			{#if arrivalInfo.isPredicted}
+				<Rss class="h-3 w-3 {arrivalInfo.color}" />
+			{:else}
+				<Clock class="h-3 w-3 {arrivalInfo.color}" />
+			{/if}
 		</div>
 		<!-- Expand/collapse chevron, stacked under the ETA (AccordionItem's own
 		     chevron is hidden via hideChevron). -->

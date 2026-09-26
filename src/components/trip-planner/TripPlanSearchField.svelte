@@ -1,6 +1,5 @@
 <script>
-	import { faMapMarkerAlt, faX } from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { MapPin, X } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 	/**
 	 * @typedef {Object} Props
@@ -101,7 +100,7 @@
 			onclick={handleClear}
 			aria-label={$t('search.clear')}
 		>
-			<FontAwesomeIcon icon={faX} class="size-5 text-gray-400" />
+			<X class="size-5 text-gray-400" />
 		</button>
 	{/if}
 	{#if isLoading}
@@ -133,7 +132,7 @@
 							: ''}"
 						onclick={() => handleSelect(result)}
 					>
-						<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 text-gray-400  " />
+						<MapPin class="mr-2 h-4 w-4 text-gray-400" />
 						{result.displayText}
 					</button>
 				</li>

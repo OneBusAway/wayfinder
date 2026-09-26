@@ -18,10 +18,6 @@ vi.mock('$app/navigation', () => ({
 	goto: vi.fn()
 }));
 
-vi.mock('@fortawesome/svelte-fontawesome', () => ({
-	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
-}));
-
 /**
  * Populate the From and To pins by dispatching the same setTripPlanLocation event
  * the map context menu uses. This avoids mocking the geocode fetch and exercises

@@ -1,13 +1,13 @@
 <script>
 	import { t } from 'svelte-i18n';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import {
-		faWalking,
-		faBus,
-		faTrain,
-		faFerry,
-		faTrainSubway
-	} from '@fortawesome/free-solid-svg-icons';
+		BusFront,
+		Footprints,
+		Ship,
+		TrainFront,
+		TrainFrontTunnel,
+		TramFront
+	} from '@lucide/svelte';
 
 	let { index, activeTab, setActiveTab, itinerary } = $props();
 
@@ -29,18 +29,18 @@
 	function getModeIcon(mode) {
 		switch (mode) {
 			case 'WALK':
-				return faWalking;
+				return Footprints;
 			case 'BUS':
-				return faBus;
+				return BusFront;
 			case 'TRAIN':
 			case 'RAIL':
-				return faTrain;
+				return TrainFront;
 			case 'FERRY':
-				return faFerry;
+				return Ship;
 			case 'LIGHT_RAIL':
-				return faTrainSubway;
+				return TrainFrontTunnel;
 			case 'TRAM':
-				return faTrainSubway;
+				return TramFront;
 			default:
 				return null;
 		}
@@ -59,12 +59,12 @@
 	{#if transportModes.length > 0}
 		<span class="flex items-center gap-1 text-xs opacity-80">
 			{#each transportModes as mode, i}
-				{@const icon = getModeIcon(mode)}
-				{#if icon}
+				{@const Icon = getModeIcon(mode)}
+				{#if Icon}
 					{#if i > 0}
 						<span class="text-[10px]">&rarr;</span>
 					{/if}
-					<FontAwesomeIcon {icon} class="h-3 w-3" />
+					<Icon class="h-3 w-3" />
 				{/if}
 			{/each}
 		</span>

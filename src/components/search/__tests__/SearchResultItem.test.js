@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
-import { faMapPin, faSignsPost, faBus } from '@fortawesome/free-solid-svg-icons';
+import { BusFront, MapPin, Signpost } from '@lucide/svelte';
 import SearchResultItem from '../SearchResultItem.svelte';
 
 describe('SearchResultItem', () => {
@@ -19,7 +19,7 @@ describe('SearchResultItem', () => {
 		test('renders with basic props', () => {
 			render(SearchResultItem, {
 				props: {
-					icon: faMapPin,
+					icon: MapPin,
 					title: 'Test Location',
 					subtitle: 'Test Description'
 				}
@@ -49,18 +49,17 @@ describe('SearchResultItem', () => {
 			expect(button).toBeInTheDocument();
 		});
 
-		test('displays FontAwesome icon correctly', () => {
+		test('displays Lucide icon correctly', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faMapPin,
+					icon: MapPin,
 					title: 'Test Location',
 					subtitle: 'Test Description'
 				}
 			});
 
-			// FontAwesome icon should be present
-			const iconElement = container.querySelector('.fa-map-pin, [data-icon="map-pin"]');
-			expect(iconElement || container.querySelector('svg')).toBeInTheDocument();
+			const iconElement = container.querySelector('svg');
+			expect(iconElement).toBeInTheDocument();
 		});
 	});
 
@@ -70,7 +69,7 @@ describe('SearchResultItem', () => {
 
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faMapPin,
+					icon: MapPin,
 					title: 'Test Location',
 					subtitle: 'Test Description'
 				}
@@ -90,7 +89,7 @@ describe('SearchResultItem', () => {
 
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faSignsPost,
+					icon: Signpost,
 					title: 'Bus Stop',
 					subtitle: 'Route 44'
 				}
@@ -118,7 +117,7 @@ describe('SearchResultItem', () => {
 
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faBus,
+					icon: BusFront,
 					title: 'Route 44',
 					subtitle: 'University District'
 				}
@@ -141,7 +140,7 @@ describe('SearchResultItem', () => {
 		test('has proper button role and semantics', () => {
 			render(SearchResultItem, {
 				props: {
-					icon: faMapPin,
+					icon: MapPin,
 					title: 'Transit Center',
 					subtitle: 'Downtown Hub'
 				}
@@ -154,7 +153,7 @@ describe('SearchResultItem', () => {
 		test('provides accessible name from title and subtitle', () => {
 			render(SearchResultItem, {
 				props: {
-					icon: faSignsPost,
+					icon: Signpost,
 					title: 'Pine Street Station',
 					subtitle: 'Westbound; Code: 12345'
 				}
@@ -170,7 +169,7 @@ describe('SearchResultItem', () => {
 		test('supports screen reader navigation', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faBus,
+					icon: BusFront,
 					title: 'Route 8',
 					subtitle: 'Capitol Hill - South Lake Union'
 				}
@@ -195,7 +194,7 @@ describe('SearchResultItem', () => {
 
 			render(SearchResultItem, {
 				props: {
-					icon: faMapPin,
+					icon: MapPin,
 					title: longTitle,
 					subtitle: longSubtitle
 				}
@@ -210,7 +209,7 @@ describe('SearchResultItem', () => {
 		test('applies correct CSS classes for layout', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faMapPin,
+					icon: MapPin,
 					title: 'Test Location',
 					subtitle: 'Test Description'
 				}
@@ -223,7 +222,7 @@ describe('SearchResultItem', () => {
 		test('renders icon container with proper dimensions', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faSignsPost,
+					icon: Signpost,
 					title: 'Stop Name',
 					subtitle: 'Stop Details'
 				}
@@ -244,7 +243,7 @@ describe('SearchResultItem', () => {
 		test('applies hover styles correctly', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faBus,
+					icon: BusFront,
 					title: 'Route Info',
 					subtitle: 'Route Details'
 				}
@@ -257,7 +256,7 @@ describe('SearchResultItem', () => {
 		test('uses semantic heading tags for title', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faMapPin,
+					icon: MapPin,
 					title: 'Important Transit Hub',
 					subtitle: 'Major Transfer Point'
 				}
@@ -272,7 +271,7 @@ describe('SearchResultItem', () => {
 		test('styles subtitle as paragraph', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faSignsPost,
+					icon: Signpost,
 					title: 'Stop Name',
 					subtitle: 'Direction and Code Info'
 				}
@@ -286,8 +285,8 @@ describe('SearchResultItem', () => {
 	});
 
 	describe('Icon Handling', () => {
-		test('handles different FontAwesome icons', () => {
-			const icons = [faMapPin, faSignsPost, faBus];
+		test('handles different Lucide icons', () => {
+			const icons = [MapPin, Signpost, BusFront];
 
 			icons.forEach((icon) => {
 				const { container, unmount } = render(SearchResultItem, {
@@ -298,8 +297,7 @@ describe('SearchResultItem', () => {
 					}
 				});
 
-				// Should render an icon (FontAwesome or SVG)
-				const iconElement = container.querySelector('svg, [class*="fa-"]');
+				const iconElement = container.querySelector('svg');
 				expect(iconElement).toBeInTheDocument();
 
 				unmount();
@@ -341,7 +339,7 @@ describe('SearchResultItem', () => {
 
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faMapPin,
+					icon: MapPin,
 					title: 'Test Item',
 					subtitle: 'Test Description'
 				}
@@ -365,7 +363,7 @@ describe('SearchResultItem', () => {
 
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: faBus,
+					icon: BusFront,
 					title: 'Route Item',
 					subtitle: 'Route Description'
 				}
@@ -403,7 +401,7 @@ describe('SearchResultItem', () => {
 			testCases.forEach((testCase) => {
 				const { unmount } = render(SearchResultItem, {
 					props: {
-						icon: faMapPin,
+						icon: MapPin,
 						...testCase
 					}
 				});
@@ -417,13 +415,13 @@ describe('SearchResultItem', () => {
 
 		test('maintains consistent layout with different content lengths', () => {
 			const shortProps = {
-				icon: faMapPin,
+				icon: MapPin,
 				title: 'A',
 				subtitle: 'B'
 			};
 
 			const longProps = {
-				icon: faMapPin,
+				icon: MapPin,
 				title: 'This is a very long title that contains many words and might wrap',
 				subtitle:
 					'This is also a very long subtitle with extensive details about the location or transit route'
@@ -454,7 +452,7 @@ describe('SearchResultItem', () => {
 			// Test that component can handle different props without crashing
 			const { unmount } = render(SearchResultItem, {
 				props: {
-					icon: faMapPin,
+					icon: MapPin,
 					title: 'Initial Title',
 					subtitle: 'Initial Subtitle'
 				}
@@ -468,7 +466,7 @@ describe('SearchResultItem', () => {
 			// Render with different props
 			render(SearchResultItem, {
 				props: {
-					icon: faSignsPost,
+					icon: Signpost,
 					title: 'Final Title',
 					subtitle: 'Final Subtitle'
 				}
@@ -481,7 +479,7 @@ describe('SearchResultItem', () => {
 		test('cleans up event listeners properly', () => {
 			const { container, unmount } = render(SearchResultItem, {
 				props: {
-					icon: faBus,
+					icon: BusFront,
 					title: 'Test Component',
 					subtitle: 'Test Description'
 				}

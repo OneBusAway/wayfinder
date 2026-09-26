@@ -1,5 +1,5 @@
 <!--
-    This Svelte component renders a FontAwesome arrow icon that rotates based on the provided `stopDirection` prop.
+    This Svelte component renders an arrow icon that rotates based on the provided `stopDirection` prop.
 
     Props:
     - `stopDirection` (string): The direction in which the arrow should point.
@@ -8,8 +8,7 @@
 -->
 
 <script>
-	import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { ArrowRight } from '@lucide/svelte';
 
 	/**
 	 * @typedef {Object} Props
@@ -33,12 +32,10 @@
 	};
 
 	// Wrap the icon in a span we control so the rotation class updates
-	// reactively when `stopDirection` changes. The FontAwesome component
-	// only reads its `class` prop during initialization, so later changes
-	// aren't reflected on the rendered SVG.
+	// reactively when `stopDirection` changes.
 	let rotationClass = $derived(ROTATION_CLASS_BY_DIRECTION[stopDirection] ?? 'hidden');
 </script>
 
 <span class="inline-block {rotationClass}" data-testid="compass-arrow">
-	<FontAwesomeIcon icon={faArrowRight} />
+	<ArrowRight class="h-4 w-4" />
 </span>

@@ -110,7 +110,7 @@ describe('ArrivalDeparture', () => {
 	});
 
 	test('renders its own chevron that rotates only when expanded', async () => {
-		// the chevron is the plain svg with `transition-transform` (not a FontAwesome icon)
+		// the chevron is the plain svg with `transition-transform` (not the status icon)
 		const chevronOf = (container) =>
 			[...container.querySelectorAll('svg')].find((s) =>
 				s.getAttribute('class')?.includes('transition-transform')

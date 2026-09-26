@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, test, expect, vi } from 'vitest';
-import { faBus } from '@fortawesome/free-solid-svg-icons';
+import { BusFront } from '@lucide/svelte';
 import StopMarker from '../StopMarker.svelte';
 
 const stop = {
@@ -12,7 +12,7 @@ const stop = {
 
 function renderMarker(props = {}) {
 	return render(StopMarker, {
-		props: { stop, icon: faBus, onClick: vi.fn(), ...props }
+		props: { stop, icon: BusFront, onClick: vi.fn(), ...props }
 	});
 }
 
@@ -55,7 +55,7 @@ describe('StopMarker emphasis', () => {
 	// getComputedStyle assertion would be meaningless either way. What actually
 	// makes `:global(.dark) .highlight .direction-arrow { @apply text-brand; }`
 	// win is the caret's <svg> staying classless: an element's own directly
-	// matching class (e.g. a `dark:text-white` FontAwesomeIcon class landing on
+	// matching class (e.g. a `dark:text-white` class landing on
 	// the rendered <svg>) always beats a rule inherited from an ancestor,
 	// regardless of the ancestor's specificity. Lock down that markup contract.
 	test('highlighted caret svg has no color class of its own, so it inherits from .direction-arrow', () => {
@@ -79,7 +79,7 @@ describe('StopMarker emphasis', () => {
 	test.each(['routeDot', 'muted'])('hides the routes label in the %s tier', (emphasis) => {
 		const withRoutes = { ...stop, routes: [{ shortName: 'C' }, { shortName: '22' }] };
 		render(StopMarker, {
-			props: { stop: withRoutes, icon: faBus, onClick: vi.fn(), showRoutesLabel: true, emphasis }
+			props: { stop: withRoutes, icon: BusFront, onClick: vi.fn(), showRoutesLabel: true, emphasis }
 		});
 		expect(screen.queryByText('C, 22')).not.toBeInTheDocument();
 	});
@@ -89,7 +89,7 @@ describe('StopMarker emphasis', () => {
 		render(StopMarker, {
 			props: {
 				stop: withRoutes,
-				icon: faBus,
+				icon: BusFront,
 				onClick: vi.fn(),
 				showRoutesLabel: true,
 				emphasis: 'full'

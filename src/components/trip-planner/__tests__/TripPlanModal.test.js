@@ -13,10 +13,6 @@ vi.mock('$app/environment', () => ({
 	version: '1.0.0'
 }));
 
-vi.mock('@fortawesome/svelte-fontawesome', () => ({
-	FontAwesomeIcon: vi.fn(() => ({ $$: { component: 'div' } }))
-}));
-
 function makeLeg(overrides = {}) {
 	return {
 		mode: 'BUS',

@@ -1,12 +1,11 @@
 <script>
-	import { faCaretUp } from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	// No Lucide caret exists; inline SVG matches the old FA faCaretUp filled triangle.
 
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} stop
 	 * @property {any} onClick
-	 * @property {any} icon
+	 * @property {import('svelte').Component} icon - Lucide icon component for the route type
 	 * @property {boolean} [isHighlighted]
 	 * @property {boolean} [showRoutesLabel]
 	 * @property {'full'|'routeDot'|'muted'} [emphasis] - Marker prominence,
@@ -18,7 +17,7 @@
 	let {
 		stop,
 		onClick,
-		icon,
+		icon: Icon,
 		isHighlighted = false,
 		showRoutesLabel = false,
 		emphasis = 'full',
@@ -93,10 +92,21 @@
 		{#if isFullPin}
 			<span class="custom-marker dark:border-[#5a2c2c] {isHighlighted ? 'highlight' : ''}">
 				<span class="bus-icon dark:text-white">
-					<FontAwesomeIcon {icon} class=" text-black" />
+					<Icon class="h-6 w-6 text-black" strokeWidth={2.75} />
 					{#if stop.direction}
 						<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
-							<FontAwesomeIcon icon={faCaretUp} />
+							<!-- 12.5x20 matches the old faCaretUp element box (0.625em x 1em at
+							     the .direction-arrow font-size: 20px), so the eight positional
+							     offsets below stay correct without retuning them. -->
+							<svg
+								width="12.5"
+								height="20"
+								viewBox="0 0 24 24"
+								fill="currentColor"
+								aria-hidden="true"
+							>
+								<polygon points="12,4 22,20 2,20" />
+							</svg>
 						</span>
 					{/if}
 				</span>
@@ -206,7 +216,6 @@
 	}
 
 	.bus-icon {
-		font-size: 20px;
 		color: #000;
 	}
 

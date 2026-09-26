@@ -1,6 +1,5 @@
 <script>
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faLocationCrosshairs } from '@fortawesome/free-solid-svg-icons';
+	import { LocateFixed } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 
 	let { handleLocationObtained } = $props();
@@ -28,7 +27,7 @@
 	class="custom-map-control-button"
 	aria-label={$t('map.find_my_location')}
 >
-	<FontAwesomeIcon icon={faLocationCrosshairs} />
+	<LocateFixed class="h-6 w-6" />
 </button>
 
 <style>

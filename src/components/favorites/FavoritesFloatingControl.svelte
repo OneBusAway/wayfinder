@@ -8,8 +8,7 @@
 -->
 <script>
 	import { tick } from 'svelte';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faStar } from '@fortawesome/free-solid-svg-icons';
+	import { Star } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 	import { favorites } from '$stores/favoritesStore';
 	import FavoritesList from '$components/favorites/FavoritesList.svelte';
@@ -107,7 +106,7 @@
 		title={toggleLabel}
 		class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-300 bg-white/95 text-black shadow-md backdrop-blur-sm hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800/95 dark:text-white dark:hover:bg-gray-700"
 	>
-		<FontAwesomeIcon icon={faStar} />
+		<Star class="h-5 w-5" fill="currentColor" />
 		{#if count > 0}
 			<span
 				class="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-accent px-1 text-[10px] font-bold text-white"
