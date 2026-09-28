@@ -2,10 +2,7 @@
 	// @ts-check
 	import { browser } from '$app/environment';
 	import { onMount, onDestroy } from 'svelte';
-	import {
-		PUBLIC_OBA_REGION_CENTER_LAT as initialLat,
-		PUBLIC_OBA_REGION_CENTER_LNG as initialLng
-	} from '$env/static/public';
+	import * as staticEnv from '$env/static/public';
 	import { env } from '$env/dynamic/public';
 
 	import { debounce } from '$lib/utils';
@@ -16,6 +13,10 @@
 
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { userLocation } from '$src/stores/userLocationStore';
+	// Static exports depend on the build environment; a clean checkout may omit them.
+	/** @type {Record<string, string | undefined>} */
+	const { PUBLIC_OBA_REGION_CENTER_LAT: initialLat, PUBLIC_OBA_REGION_CENTER_LNG: initialLng } =
+		staticEnv;
 	/**
 	 * @typedef {import('onebusaway-sdk/resources/arrival-and-departure').ArrivalAndDepartureListResponse.Data.Entry.ArrivalsAndDeparture} ArrivalAndDeparture
 	 * @typedef {import('$lib/activeRoutes.js').ActiveRoute} ActiveRoute
