@@ -196,7 +196,7 @@ export async function bingAutoSuggestPlaces({ apiKey, query, bounds = null }) {
 }
 
 /**
- * @param {string} provider
+ * @param {string|undefined} provider
  * @param {string} query
  * @param {string|undefined} apiKey
  * @param {import('./types').GeoBounds|null} [bounds]

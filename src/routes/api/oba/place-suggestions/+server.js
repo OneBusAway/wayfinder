@@ -3,9 +3,13 @@ import { json } from '@sveltejs/kit';
 import { fetchAutocompleteResults } from '$lib/geocoder';
 import { getBoundsCache } from '$lib/serverCache.js';
 
-import { PRIVATE_OBA_GEOCODER_PROVIDER as geocoderProvider } from '$env/static/private';
+import * as staticEnv from '$env/static/private';
 
 import { env } from '$env/dynamic/private';
+
+// Static exports depend on the build environment; a clean checkout may omit them.
+/** @type {Record<string, string | undefined>} */
+const { PRIVATE_OBA_GEOCODER_PROVIDER: geocoderProvider } = staticEnv;
 
 let geocoderApiKey = env.PRIVATE_OBA_GEOCODER_API_KEY;
 
