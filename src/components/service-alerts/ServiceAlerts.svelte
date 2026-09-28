@@ -1,4 +1,5 @@
 <script>
+	// @ts-check
 	import { modalOpen } from '$src/stores/modalOpen';
 	import {
 		faChevronLeft,
@@ -20,7 +21,7 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any[]} [serviceAlerts]
+	 * @property {import('$lib/types').ServiceAlert[]} [serviceAlerts]
 	 * @property {string | null} [stopId]
 	 * @property {string[]} [routeIds]
 	 */
@@ -28,7 +29,7 @@
 	/** @type {Props} */
 	let { serviceAlerts = $bindable([]), stopId = null, routeIds = [] } = $props();
 
-	let modalAlert = $state(null);
+	let modalAlert = $state(/** @type {import('$lib/types').ServiceAlert | null} */ (null));
 	let isAlertsHidden = $state(false);
 	let currentPage = $state(1);
 	const alertsPerPage = 3;
@@ -53,6 +54,7 @@
 		modalAlert ? formatEffectLabel(modalAlert?.consequences?.[0]?.condition, $t) : null
 	);
 
+	/** @param {import('$lib/types').ServiceAlert} alert */
 	function openModal(alert) {
 		modalAlert = alert;
 		modalOpen.set(true);
@@ -71,11 +73,13 @@
 		}
 	}
 
+	/** @param {number} page */
 	function goToPage(page) {
 		currentPage = Math.max(1, Math.min(page, totalPages));
 		isAlertsHidden = false;
 	}
 
+	/** @param {KeyboardEvent} event */
 	function handleKeydown(event) {
 		if (!$modalOpen) return;
 		if (event.key === 'Escape') {
@@ -158,7 +162,7 @@
 		outsideclose={true}
 		title={modalAlert?.summary?.value || $t('service_alerts.service_alert')}
 		bind:open={$modalOpen}
-		size="3xl"
+		size="lg"
 		class="relative w-full max-w-3xl rounded-xl bg-white p-8 text-gray-900 shadow-2xl dark:bg-gray-800 dark:text-gray-100"
 	>
 		{#if modalSeverity}

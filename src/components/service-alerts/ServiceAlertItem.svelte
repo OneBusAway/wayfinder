@@ -1,4 +1,5 @@
 <script>
+	// @ts-check
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import {
 		faCircleExclamation,
@@ -14,6 +15,13 @@
 		formatActiveWindowLabel
 	} from '$components/service-alerts/serviceAlertsHelper';
 
+	/**
+	 * @typedef {Object} Props
+	 * @property {import('$lib/types').ServiceAlert} [alert]
+	 * @property {(alert: import('$lib/types').ServiceAlert) => void} openModal
+	 */
+
+	/** @type {Props} */
 	let { alert = $bindable({}), openModal } = $props();
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;

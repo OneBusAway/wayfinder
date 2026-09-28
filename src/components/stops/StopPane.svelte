@@ -57,6 +57,7 @@
 	let error = $state();
 	// Seed alerts from the same server-rendered response so they show on first
 	// render instead of waiting for the initial client fetch to complete.
+	/** @type {import('$lib/types').ServiceAlert[]} */
 	let serviceAlerts = $state(
 		filterActiveAlerts(arrivalsAndDeparturesResponse?.data?.references?.situations ?? [])
 	);

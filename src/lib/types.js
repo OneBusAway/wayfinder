@@ -26,4 +26,17 @@
  * 	& { routes?: (import('onebusaway-sdk/resources/shared').References.Route & { code?: string })[] }} Stop
  */
 
+/**
+ * OBA situation fields consumed by the alert UI. Metadata and content can be
+ * absent, so minimal notices need no response envelope or creation timestamp.
+ * Some feeds also supply advice and free-form reason codes beyond the SDK enum.
+ *
+ * @typedef {import('onebusaway-sdk/resources/shared').References.Situation} OBASituation
+ * @typedef {import('onebusaway-sdk/resources/shared').References.Situation.AllAffect} OBAAlertAffect
+ * @typedef {{ [Key in keyof OBAAlertAffect]?: OBAAlertAffect[Key] | null }} ServiceAlertAffect
+ * @typedef {Partial<Pick<OBASituation,
+ * 	'id' | 'summary' | 'description' | 'severity' | 'activeWindows' | 'consequences'>>
+ * 	& { allAffects?: ServiceAlertAffect[], reason?: string, advice?: OBASituation['description'] }} ServiceAlert
+ */
+
 export {};
