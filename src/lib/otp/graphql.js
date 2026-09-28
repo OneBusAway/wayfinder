@@ -48,6 +48,42 @@ query planTrip(
 }`;
 
 /**
+ * @typedef {Object} GraphQLPlanPlace
+ * @property {string|null} [name]
+ * @property {number|null} [lat]
+ * @property {number|null} [lon]
+ * @property {{ scheduledTime?: string|null, estimated?: { time?: string|null }|null }|null} [departure]
+ * @property {{ scheduledTime?: string|null, estimated?: { time?: string|null }|null }|null} [arrival]
+ */
+
+/**
+ * @typedef {Object} GraphQLPlanLeg
+ * @property {string} mode
+ * @property {number|{total?: number|null}|null} [duration]
+ * @property {number} distance
+ * @property {string|null} [headsign]
+ * @property {boolean|null} [interlineWithPreviousLeg]
+ * @property {GraphQLPlanPlace|null} [from]
+ * @property {GraphQLPlanPlace|null} [to]
+ * @property {{ shortName?: string|null, longName?: string|null, color?: string|null, textColor?: string|null }|null} [route]
+ * @property {{ points?: string|null }|null} [legGeometry]
+ * @property {import('$lib/types').ItineraryStep[]|null} [steps]
+ */
+
+/**
+ * @typedef {Object} GraphQLPlanNode
+ * @property {string} start
+ * @property {string} end
+ * @property {GraphQLPlanLeg[]} legs
+ */
+
+/**
+ * @typedef {Object} GraphQLPlanResponse
+ * @property {{ planConnection?: { edges?: { node: GraphQLPlanNode }[]|null }|null }|null} [data]
+ * @property {{ message?: string|null }[]|null} [errors]
+ */
+
+/**
  * Convert comma-separated mode string (e.g. "TRANSIT,WALK") to GraphQL modes input.
  * When "TRANSIT" is present, expands to BUS, RAIL, FERRY, and TRAM.
  * SUBWAY is intentionally excluded from the "TRANSIT" umbrella but can be
@@ -154,14 +190,13 @@ export function buildGraphQLQueryBody(params) {
  * ({ plan: { itineraries: [...] } }) so downstream components can consume
  * either API version without changes.
  *
- * @param {Object} graphqlData - Raw JSON from the OTP GraphQL endpoint
- *   (may contain .data, .errors, or both)
- * @returns {{ plan: { itineraries: Array } } | { error: { id: string, msg: string } }}
+ * @param {GraphQLPlanResponse} graphqlData - Raw response from OTP GraphQL.
+ * @returns {import('$lib/types').TripPlanResponse}
  */
 export function mapGraphQLResponse(graphqlData) {
 	// GraphQL can return both data and errors for partial results;
 	// only treat as an error when there is no usable data at all.
-	if (graphqlData.errors && !graphqlData.data) {
+	if (graphqlData.errors?.length && !graphqlData.data) {
 		return {
 			error: {
 				id: 'GRAPHQL_ERROR',
@@ -172,7 +207,7 @@ export function mapGraphQLResponse(graphqlData) {
 
 	// Log partial errors — these might indicate deprecations, rate limits,
 	// or incomplete results
-	if (graphqlData.errors && graphqlData.data) {
+	if (graphqlData.errors?.length && graphqlData.data) {
 		console.warn(
 			'GraphQL returned partial errors alongside data:',
 			graphqlData.errors.map((e) => e.message).join('; ')

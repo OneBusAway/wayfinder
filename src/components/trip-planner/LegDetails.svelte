@@ -1,4 +1,5 @@
 <script>
+	// @ts-check
 	import { msToTimeString } from '$lib/dateTimeFormat';
 	import { env } from '$env/dynamic/public';
 	import { slide } from 'svelte/transition';
@@ -21,6 +22,17 @@
 	import { formatDistance } from '$lib/distanceUtils';
 	import { effectiveDistanceUnit } from '$stores/tripOptionsStore';
 
+	/**
+	 * @typedef {Object} Props
+	 * @property {import('$lib/types').ItineraryLeg} leg
+	 * @property {number} index
+	 * @property {Record<number, boolean>} expandedSteps
+	 * @property {(index: number) => void} toggleSteps
+	 * @property {boolean} [isLast]
+	 * @property {boolean} [isInterline]
+	 * @property {string} [nextLegRouteName]
+	 */
+	/** @type {Props} */
 	let {
 		leg,
 		index,
@@ -39,6 +51,7 @@
 	let routeTextColorHex = $derived(leg.routeTextColor ? `#${leg.routeTextColor}` : '#ffffff');
 
 	// Get icon and colors based on transport mode
+	/** @param {string} mode */
 	function getModeConfig(mode) {
 		switch (mode) {
 			case 'WALK':
@@ -160,12 +173,16 @@
 			<div class="flex items-center text-gray-600 dark:text-gray-300">
 				<FontAwesomeIcon icon={faClock} class="mr-1.5 h-3 w-3 text-blue-500" />
 				<span>{$t('trip-planner.start')}:</span>
-				<span class="ml-1 font-semibold">{msToTimeString(leg.startTime, regionTz)}</span>
+				<span class="ml-1 font-semibold">
+					{leg.startTime == null ? '—' : msToTimeString(leg.startTime, regionTz)}
+				</span>
 			</div>
 			<div class="flex items-center text-gray-600 dark:text-gray-300">
 				<FontAwesomeIcon icon={faClock} class="mr-1.5 h-3 w-3 text-red-500" />
 				<span>{$t('trip-planner.end')}:</span>
-				<span class="ml-1 font-semibold">{msToTimeString(leg.endTime, regionTz)}</span>
+				<span class="ml-1 font-semibold">
+					{leg.endTime == null ? '—' : msToTimeString(leg.endTime, regionTz)}
+				</span>
 			</div>
 		</div>
 
@@ -205,7 +222,7 @@
 		</div>
 
 		<!-- Walking steps toggle -->
-		{#if isWalking && leg.steps?.length > 0}
+		{#if isWalking && (leg.steps?.length ?? 0) > 0}
 			<button
 				class="mt-3 flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-brand-accent transition-colors hover:bg-gray-100 dark:text-brand dark:hover:bg-gray-800"
 				onclick={() => toggleSteps(index)}
