@@ -1,4 +1,5 @@
 <script>
+	// @ts-check
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import ItineraryDetails from './ItineraryDetails.svelte';
@@ -17,15 +18,15 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {import('$lib/types').MapProvider} mapProvider
-	 * @property {any} [itineraries]
-	 * @property {string | null} [error]
+	 * @property {import('$lib/types').Itinerary[]} [itineraries]
+	 * @property {import('$lib/types').TripPlanError | null} [error]
 	 * @property {boolean} [loading]
-	 * @property {Function} closePane
+	 * @property {() => void} closePane
 	 * @property {('peek'|'half'|'full')} [snap]
 	 * @property {boolean} [showForm] - When true (mobile plan sheet), embed From/To form in this sheet
 	 * @property {boolean} [hasPlanned] - True after the rider submits a plan (even if zero results)
-	 * @property {Function} [handleTripPlan] - Required when showForm is true
-	 * @property {Function} [clearTripItineraries] - Required when showForm is true
+	 * @property {((result: { data: import('$lib/types').TripPlanResponse }) => void) | null} [handleTripPlan] - Required when showForm is true
+	 * @property {(() => void) | null} [clearTripItineraries] - Required when showForm is true
 	 */
 
 	/** @type {Props} */
@@ -42,28 +43,32 @@
 		clearTripItineraries = null
 	} = $props();
 
-	let expandedSteps = $state({});
+	let expandedSteps = $state(/** @type {Record<number, boolean>} */ ({}));
 	let activeTab = $state(0);
-	let itineraryTabsContainer = $state(null);
-	let prevItinerariesRef = $state(null);
+	let itineraryTabsContainer = $state(/** @type {HTMLDivElement|null} */ (null));
+	let prevItinerariesRef = $state(/** @type {import('$lib/types').Itinerary[]|null} */ (null));
 	// Id of the toast this modal raised, so closing it clears only its own.
-	let notificationId = null;
-	let sheetElement = $state(null);
+	let notificationId = /** @type {number|null} */ (null);
+	let sheetElement = $state(/** @type {HTMLElement|null} */ (null));
 
+	/** @param {number} index */
 	function toggleSteps(index) {
 		expandedSteps[index] = !expandedSteps[index];
 		expandedSteps = { ...expandedSteps };
 	}
 
+	/** @param {number} index */
 	function setActiveTab(index) {
 		activeTab = index;
 		drawRoute();
 	}
 
+	/** @type {Awaited<ReturnType<import('$lib/types').MapProvider['createPolyline']>>[]} */
 	let currPolylines = [];
 	let drawToken = 0;
 
 	// Build per-leg polyline style based on mode and route color
+	/** @param {import('$lib/types').ItineraryLeg} leg */
 	function getLegPolylineStyle(leg) {
 		if (leg.mode === 'WALK') {
 			return {
@@ -161,7 +166,9 @@
 			const endpoints = [legs[0]?.from, legs.at(-1)?.to].filter(
 				(point) => Number.isFinite(point?.lat) && Number.isFinite(point?.lon)
 			);
-			const midpoint = calculateMidpoint(endpoints);
+			const midpoint = /** @type {{ lat: number, lon: number }|null} */ (
+				calculateMidpoint(endpoints)
+			);
 			if (midpoint) {
 				mapProvider.flyTo(midpoint.lat, midpoint.lon, 13);
 			}

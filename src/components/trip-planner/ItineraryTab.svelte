@@ -1,10 +1,20 @@
 <script>
+	// @ts-check
 	import { t } from 'svelte-i18n';
 	import { BusFront, Footprints, Ship, TrainFrontTunnel, TramFront } from '@lucide/svelte';
 
+	/**
+	 * @typedef {Object} Props
+	 * @property {number} index
+	 * @property {number} activeTab
+	 * @property {(index: number) => void} setActiveTab
+	 * @property {import('$lib/types').Itinerary} itinerary
+	 */
+	/** @type {Props} */
 	let { index, activeTab, setActiveTab, itinerary } = $props();
 
 	// Get unique transport modes from itinerary legs
+	/** @param {import('$lib/types').ItineraryLeg[]|undefined} legs */
 	function getTransportModes(legs) {
 		if (!legs) return [];
 		const modes = [];
@@ -19,6 +29,7 @@
 		return modes;
 	}
 
+	/** @param {string} mode */
 	function getModeIcon(mode) {
 		switch (mode) {
 			case 'WALK':

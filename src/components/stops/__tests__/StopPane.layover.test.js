@@ -4,9 +4,11 @@
 // AccordionItem are used; the row body (ArrivalDeparture) and the unrelated
 // panes are stubbed, so each rendered row shows up as one call to the
 // ArrivalDeparture mock with its arrival.
-import { render, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach } from 'vitest';
 import StopPane from '../StopPane.svelte';
+import analytics from '$lib/Insights';
+import { tick } from 'svelte';
 import ArrivalDeparture from '$components/ArrivalDeparture.svelte';
 import {
 	mockStopData,
@@ -102,6 +104,117 @@ describe('StopPane layover collapsing', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		global.fetch.mockReset();
+	});
+
+	test('forwards the selected arrival to the map and clears it on toggle-off', async () => {
+		const { departure } = makeLayoverPair(Date.now());
+		global.fetch.mockImplementation(() => new Promise(() => {}));
+		const tripSelected = vi.fn();
+		const handleUpdateRouteMap = vi.fn();
+		const { container } = render(StopPane, {
+			props: {
+				stop: mockStopData,
+				tripSelected,
+				handleUpdateRouteMap,
+				arrivalsAndDeparturesResponse: responseWith([departure])
+			}
+		});
+
+		const button = container.querySelector('button[aria-expanded]');
+		await fireEvent.click(button);
+		expect(tripSelected).toHaveBeenLastCalledWith({ detail: departure });
+		expect(handleUpdateRouteMap).toHaveBeenLastCalledWith({ detail: { show: true } });
+		await fireEvent.click(button);
+		expect(tripSelected).toHaveBeenLastCalledWith({ detail: null });
+		expect(handleUpdateRouteMap).toHaveBeenLastCalledWith({ detail: { show: false } });
+	});
+
+	test.each(['manual', 'poll'])(
+		'keeps the selected trip and route visible after a completed %s refresh',
+		async (refreshType) => {
+			const { departure } = makeLayoverPair(Date.now());
+			const refreshedDeparture = {
+				...departure,
+				predictedArrivalTime: departure.predictedArrivalTime + 60000
+			};
+			global.fetch
+				.mockResolvedValueOnce({ ok: true, json: async () => responseWith([departure]) })
+				.mockResolvedValueOnce({ ok: true, json: async () => responseWith([refreshedDeparture]) });
+			const tripSelected = vi.fn();
+			const handleUpdateRouteMap = vi.fn();
+			const intervalSpy = vi.spyOn(global, 'setInterval');
+			const { container, component } = render(StopPane, {
+				props: { stop: mockStopData, tripSelected, handleUpdateRouteMap }
+			});
+
+			try {
+				await waitFor(() => expect(ArrivalDeparture).toHaveBeenCalledTimes(1));
+				await tick();
+				const button = container.querySelector('button[aria-expanded]');
+				await fireEvent.click(button);
+				expect(button).toHaveAttribute('aria-expanded', 'true');
+				expect(tripSelected).toHaveBeenLastCalledWith({ detail: departure });
+				expect(handleUpdateRouteMap).toHaveBeenLastCalledWith({ detail: { show: true } });
+				const selectionCalls = tripSelected.mock.calls.length;
+				const routeCalls = handleUpdateRouteMap.mock.calls.length;
+				const analyticsCalls = analytics.reportArrivalClicked.mock.calls.length;
+
+				if (refreshType === 'manual') {
+					component.refresh();
+				} else {
+					const [poll] = intervalSpy.mock.calls.find(([, delay]) => delay === 30000);
+					poll();
+				}
+
+				// Wait for the new arrival object to reach the row, proving that the
+				// refresh completed and replaced the previous reactive response.
+				await waitFor(() => {
+					expect(ArrivalDeparture.mock.lastCall[1].arrivalDeparture).toEqual(refreshedDeparture);
+				});
+				await tick();
+				expect(global.fetch).toHaveBeenCalledTimes(2);
+				expect(button).toHaveAttribute('aria-expanded', 'true');
+				expect(tripSelected).toHaveBeenCalledTimes(selectionCalls);
+				expect(tripSelected).toHaveBeenLastCalledWith({ detail: departure });
+				expect(handleUpdateRouteMap).toHaveBeenCalledTimes(routeCalls);
+				expect(handleUpdateRouteMap).toHaveBeenLastCalledWith({ detail: { show: true } });
+				expect(analytics.reportArrivalClicked).toHaveBeenCalledTimes(analyticsCalls);
+
+				await fireEvent.click(button);
+				expect(button).toHaveAttribute('aria-expanded', 'false');
+				expect(tripSelected).toHaveBeenLastCalledWith({ detail: null });
+				expect(handleUpdateRouteMap).toHaveBeenLastCalledWith({ detail: { show: false } });
+			} finally {
+				intervalSpy.mockRestore();
+			}
+		}
+	);
+
+	test('does not report an arrival click when an unselected list refreshes', async () => {
+		const { departure } = makeLayoverPair(Date.now());
+		const refreshedDeparture = {
+			...departure,
+			predictedArrivalTime: departure.predictedArrivalTime + 60000
+		};
+		global.fetch
+			.mockResolvedValueOnce({ ok: true, json: async () => responseWith([departure]) })
+			.mockResolvedValueOnce({ ok: true, json: async () => responseWith([refreshedDeparture]) });
+		const { container, component } = render(StopPane, { props: defaultProps });
+		await waitFor(() => expect(ArrivalDeparture).toHaveBeenCalledTimes(1));
+		await tick();
+		const analyticsCalls = analytics.reportArrivalClicked.mock.calls.length;
+
+		component.refresh();
+		await waitFor(() => {
+			expect(ArrivalDeparture.mock.lastCall[1].arrivalDeparture).toEqual(refreshedDeparture);
+		});
+		await tick();
+		expect(global.fetch).toHaveBeenCalledTimes(2);
+		expect(container.querySelector('button[aria-expanded]')).toHaveAttribute(
+			'aria-expanded',
+			'false'
+		);
+		expect(analytics.reportArrivalClicked).toHaveBeenCalledTimes(analyticsCalls);
 	});
 
 	test('renders a single departure row for a laid-over vehicle', async () => {
