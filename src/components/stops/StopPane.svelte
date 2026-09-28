@@ -241,8 +241,13 @@
 		new Map((arrivalsAndDeparturesResponse?.data?.references?.routes ?? []).map((r) => [r.id, r]))
 	);
 
+	/** @param {import('$lib/types').AccordionSelection} event */
 	function handleAccordionSelectionChanged(event) {
-		const data = event.activeData; // this is the ArrivalDeparture object plumbed into the AccordionItem
+		// Resolve the opaque container payload against the arrivals we supplied.
+		// This also treats removal of a selected arrival as an empty selection.
+		/** @type {import('onebusaway-sdk/resources/arrival-and-departure').ArrivalAndDepartureListResponse.Data.Entry.ArrivalsAndDeparture[]} */
+		const arrivals = arrivalsAndDepartures?.arrivalsAndDepartures ?? [];
+		const data = arrivals.find((arrival) => arrival === event.activeData) ?? null;
 		const show = !!data;
 		if (tripSelected) {
 			tripSelected({ detail: data });

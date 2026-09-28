@@ -1,14 +1,19 @@
 <script>
+	// @ts-check
 	import { setContext } from 'svelte';
-	import { get, writable, derived } from 'svelte/store';
+	import { get, writable, derived, readable } from 'svelte/store';
 
 	// Create a store to track the active item and data.
+	/** @type {import('svelte/store').Writable<string | null>} */
 	const activeItem = writable(null);
+	/** @type {import('svelte/store').Writable<unknown>} */
 	const activeData = writable(null);
+	const skipAnimation = readable(false);
 
 	/**
 	 * @typedef {Object} Props
 	 * @property {import('svelte').Snippet} [children]
+	 * @property {(event: import('$lib/types').AccordionSelection) => void} handleAccordionSelectionChanged
 	 */
 
 	/** @type {Props} */
@@ -23,7 +28,8 @@
 	});
 
 	// Provide context for child AccordionItems
-	setContext('accordion', {
+	/** @type {import('$lib/types').AccordionContext} */
+	const context = {
 		registerItem: (id) => {
 			// An item can disappear while selected (for example, when a real-time
 			// arrival is filtered out). Clear its selection so consumers do not
@@ -38,6 +44,7 @@
 			const isActive = derived(activeItem, ($activeItem) => $activeItem === id);
 			return {
 				isActive,
+				skipAnimation,
 				activate: (data) => {
 					const newId = $activeItem === id ? null : id;
 					activeItem.set(newId);
@@ -45,7 +52,8 @@
 				}
 			};
 		}
-	});
+	};
+	setContext('accordion', context);
 </script>
 
 <!-- border-b only (not border-y): the first item sits directly under a header

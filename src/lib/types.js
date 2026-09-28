@@ -26,4 +26,21 @@
  * 	& { routes?: (import('onebusaway-sdk/resources/shared').References.Route & { code?: string })[] }} Stop
  */
 
+/**
+ * Accordion payloads are opaque to the containers. Selection consumers must
+ * resolve or narrow them before accessing fields; null represents no selection.
+ * Item IDs are the UUID strings created by AccordionItem.
+ *
+ * @typedef {{ activeItem: string | null, activeData: unknown }} AccordionSelection
+ * @typedef {Object} AccordionRegistration
+ * @property {import('svelte/store').Readable<boolean>} isActive
+ * @property {import('svelte/store').Readable<boolean>} skipAnimation
+ * @property {(data: unknown) => void} activate
+ *
+ * @typedef {Object} AccordionContext
+ * @property {(id: string) => AccordionRegistration} registerItem
+ * @property {(animate?: boolean) => void} [openAll]
+ * @property {(animate?: boolean) => void} [closeAll]
+ */
+
 export {};

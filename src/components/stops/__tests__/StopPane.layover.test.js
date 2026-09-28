@@ -4,7 +4,7 @@
 // AccordionItem are used; the row body (ArrivalDeparture) and the unrelated
 // panes are stubbed, so each rendered row shows up as one call to the
 // ArrivalDeparture mock with its arrival.
-import { render, waitFor } from '@testing-library/svelte';
+import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach } from 'vitest';
 import StopPane from '../StopPane.svelte';
 import ArrivalDeparture from '$components/ArrivalDeparture.svelte';
@@ -102,6 +102,29 @@ describe('StopPane layover collapsing', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		global.fetch.mockReset();
+	});
+
+	test('forwards the selected arrival to the map and clears it on toggle-off', async () => {
+		const { departure } = makeLayoverPair(Date.now());
+		global.fetch.mockImplementation(() => new Promise(() => {}));
+		const tripSelected = vi.fn();
+		const handleUpdateRouteMap = vi.fn();
+		const { container } = render(StopPane, {
+			props: {
+				stop: mockStopData,
+				tripSelected,
+				handleUpdateRouteMap,
+				arrivalsAndDeparturesResponse: responseWith([departure])
+			}
+		});
+
+		const button = container.querySelector('button[aria-expanded]');
+		await fireEvent.click(button);
+		expect(tripSelected).toHaveBeenLastCalledWith({ detail: departure });
+		expect(handleUpdateRouteMap).toHaveBeenLastCalledWith({ detail: { show: true } });
+		await fireEvent.click(button);
+		expect(tripSelected).toHaveBeenLastCalledWith({ detail: null });
+		expect(handleUpdateRouteMap).toHaveBeenLastCalledWith({ detail: { show: false } });
 	});
 
 	test('renders a single departure row for a laid-over vehicle', async () => {
