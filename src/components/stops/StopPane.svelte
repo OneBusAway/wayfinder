@@ -289,11 +289,10 @@
 		return !heroAnswer || heroAnswer.trim() === '';
 	}
 
-	async function handleSurveyButtonClick() {
-		if (currentStopSurvey == null) return;
-
-		let heroQuestion = currentStopSurvey.questions[0];
-		remainingSurveyQuestions = currentStopSurvey.questions.slice(1);
+	/** @param {StopSurvey} survey */
+	async function handleSurveyButtonClick(survey) {
+		let heroQuestion = survey.questions[0];
+		remainingSurveyQuestions = survey.questions.slice(1);
 
 		if (heroQuestion.content.type !== 'label' && heroAnswerIsEmpty()) {
 			return;
@@ -301,7 +300,7 @@
 
 		/** @type {{ survey_id: StopSurvey['id'], user_identifier: ReturnType<typeof getUserId>, stop_identifier: Stop['id'], stop_latitude: Stop['lat'], stop_longitude: Stop['lon'], responses: SurveyAnswerResponse[] }} */
 		let surveyResponse = {
-			survey_id: currentStopSurvey.id,
+			survey_id: survey.id,
 			user_identifier: getUserId(),
 			stop_identifier: stop.id,
 			stop_latitude: stop.lat,
@@ -332,7 +331,7 @@
 		nextSurveyQuestion = true;
 
 		showHeroQuestion = false;
-		markSurveyAnswered(currentStopSurvey.id);
+		markSurveyAnswered(survey.id);
 	}
 
 	function handleSkip() {

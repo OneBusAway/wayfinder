@@ -74,7 +74,7 @@
 		submitFailed = false;
 
 		try {
-			await handleSurveyButtonClick();
+			await handleSurveyButtonClick(currentStopSurvey);
 		} catch {
 			// StopPane leaves the banner mounted on failure so the user can retry.
 			submitFailed = true;
