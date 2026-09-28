@@ -1,3 +1,5 @@
+// @ts-check
+import { json } from '@sveltejs/kit';
 import { fetchAutocompleteResults } from '$lib/geocoder';
 import { getBoundsCache } from '$lib/serverCache.js';
 
@@ -7,8 +9,9 @@ import { env } from '$env/dynamic/private';
 
 let geocoderApiKey = env.PRIVATE_OBA_GEOCODER_API_KEY;
 
+/** @param {import('@sveltejs/kit').RequestEvent} event */
 export async function GET({ url }) {
-	const searchInput = url.searchParams.get('query')?.trim();
+	const searchInput = url.searchParams.get('query')?.trim() ?? '';
 
 	const bounds = getBoundsCache();
 
@@ -19,14 +22,7 @@ export async function GET({ url }) {
 		bounds
 	);
 
-	return new Response(
-		JSON.stringify({
-			suggestions
-		}),
-		{
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		}
-	);
+	/** @type {import('$lib/types').PlaceSuggestionsResponse} */
+	const body = { suggestions };
+	return json(body);
 }

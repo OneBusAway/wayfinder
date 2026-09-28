@@ -1,4 +1,5 @@
 <script>
+	// @ts-check
 	import { ChevronRight, CircleAlert, Info, TriangleAlert } from '@lucide/svelte';
 	import { t, locale } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';
@@ -8,6 +9,13 @@
 		formatActiveWindowLabel
 	} from '$components/service-alerts/serviceAlertsHelper';
 
+	/**
+	 * @typedef {Object} Props
+	 * @property {import('$lib/types').ServiceAlert} [alert]
+	 * @property {(alert: import('$lib/types').ServiceAlert) => void} openModal
+	 */
+
+	/** @type {Props} */
 	let { alert = $bindable({}), openModal } = $props();
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
