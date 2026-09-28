@@ -28,10 +28,16 @@ describe('CompassArrow', () => {
 	});
 
 	test('hides the arrow when direction is missing', () => {
-		const { container } = render(CompassArrow, { props: { stopDirection: '' } });
+		const { container } = render(CompassArrow);
 		const span = getArrowSpan(container);
 
 		expect(span).toHaveClass('hidden');
+	});
+
+	test('hides the arrow when direction is empty', () => {
+		const { container } = render(CompassArrow, { props: { stopDirection: '' } });
+
+		expect(getArrowSpan(container)).toHaveClass('hidden');
 	});
 
 	test('hides the arrow when direction is unrecognized', () => {
@@ -64,4 +70,28 @@ describe('CompassArrow', () => {
 
 		expect(span.querySelector('svg')).toBeInTheDocument();
 	});
+
+	test('replaces the previous rotation when changing between valid directions', async () => {
+		const { container, rerender } = render(CompassArrow, { props: { stopDirection: 'N' } });
+
+		await rerender({ stopDirection: 'W' });
+
+		const span = getArrowSpan(container);
+		expect(span).toHaveClass('rotate-180');
+		expect(span).not.toHaveClass('-rotate-90');
+		expect(span).not.toHaveClass('hidden');
+	});
+
+	test.each(['', 'X'])(
+		'hides a previously visible arrow when direction becomes "%s"',
+		async (direction) => {
+			const { container, rerender } = render(CompassArrow, { props: { stopDirection: 'N' } });
+
+			await rerender({ stopDirection: direction });
+
+			const span = getArrowSpan(container);
+			expect(span).toHaveClass('hidden');
+			expect(span).not.toHaveClass('-rotate-90');
+		}
+	);
 });

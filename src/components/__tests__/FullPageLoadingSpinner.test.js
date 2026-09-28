@@ -58,6 +58,14 @@ describe('FullPageLoadingSpinner', () => {
 		expect(screen.getByText('Loading...')).toBeInTheDocument();
 	});
 
+	test('hides the decorative spinner SVG from assistive technology', () => {
+		render(FullPageLoadingSpinner);
+
+		const spinner = screen.getByRole('status', { name: 'Loading' }).querySelector('svg');
+		expect(spinner).toBeInTheDocument();
+		expect(spinner).toHaveAttribute('aria-hidden', 'true');
+	});
+
 	test('updates the visible text and aria-label when the locale changes to Spanish', async () => {
 		render(FullPageLoadingSpinner);
 
