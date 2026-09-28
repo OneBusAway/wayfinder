@@ -1,4 +1,5 @@
 <script>
+	// @ts-check
 	import { faMapMarkerAlt, faX } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { t } from 'svelte-i18n';
@@ -6,11 +7,11 @@
 	 * @typedef {Object} Props
 	 * @property {string} [inputId]
 	 * @property {string} [place]
-	 * @property {any} [results]
+	 * @property {import('$lib/types').PlaceSuggestion[]} [results]
 	 * @property {boolean} [isLoading]
 	 * @property {(value: string) => void} onInput
 	 * @property {() => void} onClear
-	 * @property {any} onSelect
+	 * @property {(suggestion: import('$lib/types').PlaceSuggestion) => void} onSelect
 	 * @property {() => void} [onDismiss]
 	 */
 
@@ -30,24 +31,28 @@
 	let listboxId = $derived(`${inputId}-listbox`);
 	let hasResults = $derived(!isLoading && Array.isArray(results) && results.length > 0);
 
+	/** @param {Event & { currentTarget: HTMLInputElement }} event */
 	function handleInput(event) {
 		activeIndex = -1;
-		onInput(event.target.value);
+		onInput(event.currentTarget.value);
 	}
 
 	function handleClear() {
 		onClear();
 	}
 
+	/** @param {import('$lib/types').PlaceSuggestion} result */
 	function handleSelect(result) {
 		activeIndex = -1;
 		onSelect(result);
 	}
 
+	/** @param {number} index */
 	function optionId(index) {
 		return `${listboxId}-option-${index}`;
 	}
 
+	/** @param {KeyboardEvent} event */
 	function handleKeydown(event) {
 		if (event.key === 'Escape') {
 			if (!hasResults && !isLoading) return;

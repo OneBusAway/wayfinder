@@ -26,4 +26,21 @@
  * 	& { routes?: (import('onebusaway-sdk/resources/shared').References.Route & { code?: string })[] }} Stop
  */
 
+/**
+ * A provider result shown by the trip planner's place autocomplete. Bing does
+ * not return a stable place identifier, so selection must also work by name.
+ *
+ * @typedef {Object} PlaceSuggestion
+ * @property {string} name - Query passed to the selected geocoder.
+ * @property {string} displayText - Human-readable suggestion label.
+ * @property {string} [placeId] - Provider identifier, when available.
+ */
+
+/** @typedef {{ north: number, south: number, east: number, west: number }} GeoBounds */
+
+/**
+ * @typedef {Object} PlaceSuggestionsResponse
+ * @property {PlaceSuggestion[]} suggestions
+ */
+
 export {};
