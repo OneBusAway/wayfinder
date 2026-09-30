@@ -141,7 +141,8 @@ server: `supported`, `unsupported` or `unknown`.
 - **While the verdict is `unsupported`,** both proxies answer
   `501 {error: 'ondemand_unsupported'}` without calling upstream.
 - **A 404 from `service/[id]`** is an ordinary not-found (`404 {error: 'not_found'}`) and
-  never changes the verdict.
+  never changes the verdict. A 2xx non-envelope from `service/[id]` (the stock maglev SPA)
+  does record `unsupported`, so a cold `/map/ondemand/[id]` load redirects home.
 - **Any other upstream failure** is transient: network errors, 5xx, and envelope codes other
   than 200 or 404. The proxy returns `502 {error: 'upstream_error'}`, and the verdict is
   unchanged.
@@ -292,12 +293,15 @@ Colours come from `assignZoneColors` over the current service set.
 | region | 0.2  | 2 px, opacity 1 | none                | yes: click opens the detail sheet |
 | street | 0    | 4 px, opacity 1 | 10 px, opacity 0.25 | no                                |
 
-**Highlight.** When `onDemandState.highlightedServiceId` is set (by the detail sheet):
+**Highlight.** When `onDemandState.highlighted` is set (by the detail sheet, to the service
+object it loaded):
 
 - that service is drawn with stroke weight +2;
 - the others are drawn at opacity 0.6 (stroke and fill scaled);
 - the highlighted service is drawn even when the current viewport fetch didn't return it,
-  using the geometry the sheet loaded.
+  using the geometry the sheet loaded;
+- it stays drawn even when the map is zoomed out past region level, so the selected service
+  is never invisible.
 
 ## 4. Stop card and detail sheet
 
@@ -349,8 +353,10 @@ service is available."
 The sheet:
 
 1. loads `fetchService(id, 'simplified')`;
-2. sets `onDemandState.highlightedServiceId`;
-3. fits the map to the service's area bboxes with the existing fit padding helper.
+2. sets `onDemandState.highlighted` to the loaded service;
+3. fits the map to the service's area bboxes with the existing fit padding helper, once per
+   service id, as soon as both the service and the map provider are available (on a cold
+   load the provider arrives after the service).
 
 On close, it clears the highlight.
 
@@ -396,13 +402,16 @@ the first booking rule in references. This matches iOS `contactBookingRule`.
 
 ### 4.3 Cold load
 
-`+page.server.js` calls `fetchOnDemand` directly with `geometryDetail=simplified`, using the
-same support-detection path as the proxies.
+`+page.server.js` calls `loadServiceEntry(id, 'simplified')`, the same upstream path as the
+service proxy, with the same support detection.
 
-- It returns `{serviceId, entry}`, or `{serviceId, notFound: true}`.
-- On unsupported, it returns `{serviceId, unsupported: true}`, and the page redirects to `/`.
+- It returns `{onDemandServiceId, onDemandEntry}`, where `onDemandEntry` is the service
+  envelope, or null when the service was not found or the load failed.
+- On unsupported, it redirects to `/` instead of returning.
 
-The sheet seeds `fetchService`'s cache from that data.
+`+page.svelte` seeds `fetchService`'s cache from `onDemandEntry`. The sheet itself derives
+not-found from its own load: with a null entry nothing is seeded, the sheet fetches, and a 404
+shows the not-found message.
 
 ## 5. Pure logic (`src/lib/onDemand/`)
 
@@ -448,7 +457,8 @@ evaluateBooking(rule, bookingRule, D, now, tz, calendarsById)
 **`countBack(D, n, calId)`**
 
 - `n = 0` gives D.
-- A null `calId` gives D − n civil days.
+- A null `calId`, or one absent from `references.calendars`, gives D − n civil days. The
+  absent case matches iOS.
 - Otherwise it steps back day by day, counting only days on which that calendar is active,
   and returns the n-th. The count fails, making the result `unknown`, when:
   - it passes the calendar's `startDate`;
@@ -527,7 +537,9 @@ agency timezone with the active locale through `Intl.DateTimeFormat`.
 ### 5.3 `availability.js`
 
 This is a port of DRT UI §2.5 and iOS `OnDemandAvailability`:
-`evaluateAvailability(service, now) → {status, tier, tag, nextChangeInstant, bookingLine}`.
+`evaluateAvailability(service, now) → {status, tier, bookingTier, nextBookableServiceDate,
+nextChangeInstant, resolution, timeZone, today}`. `resolution` is the booking resolution
+(§5.2) the booking line is formatted from; `today` is the agency-local date.
 
 **Timezone.** The timezone is `service.agency.timezone`. When it is missing or invalid, the
 status is `unknown`, the tier is 5, and there is no `nextChangeInstant`.
@@ -572,10 +584,11 @@ status is `unknown`, the tier is 5, and there is no `nextChangeInstant`.
 
 Tier 4 (eligibility) is never produced in v1.
 
-**`tag`**: `noNotice` for `realTime`, `sameDay`, or `advance`.
+**Tag**: `bookingTagKey(bookingTier)` gives "No notice needed" for `realTime`, "Same-day
+booking" for `sameDay`, or "Advance booking" for `advance`.
 
-**`nextChangeInstant`**: the minimum of `runningUntil`, `nextRunStart` and the resolution's
-`nextChangeInstant`.
+**`nextChangeInstant`**: the earliest of `runningUntil`, `nextRunStart`, the resolution's
+`nextChangeInstant` and the next agency-local midnight that falls after now.
 
 **Status copy** (`formatStatus`)
 
@@ -591,9 +604,10 @@ Tier 4 (eligibility) is never produced in v1.
 
 ### 5.4 Sorting
 
-`sortServices(services, now)` orders by tier ascending, then by `name` with a locale-aware
-numeric `Intl.Collator`. There is no distance term in core, because no probe point exists
-until phase 2.
+`sortByAvailability(items, locale)` takes `{service, availability}` pairs, already evaluated
+against one `now`, and orders them by tier ascending, then by `service.name` with a
+locale-aware numeric `Intl.Collator`. There is no distance term in core, because no probe
+point exists until phase 2.
 
 ### 5.5 `hours.js`
 
