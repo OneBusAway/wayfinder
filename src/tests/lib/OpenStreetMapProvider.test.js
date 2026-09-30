@@ -123,6 +123,14 @@ function makeFakeL(fakeMarker) {
 			this.getLatLngs = vi.fn(() => latlngs);
 			this.getBounds = vi.fn(() => ({}));
 		}),
+		Polygon: vi.fn(function FakePolygon(latlngs, options) {
+			this.latlngs = latlngs;
+			this.options = options;
+			this.addTo = vi.fn().mockReturnThis();
+			this.on = vi.fn();
+			this.setStyle = vi.fn();
+			this.remove = vi.fn();
+		}),
 		polylineDecorator: vi.fn(() => ({ addTo: vi.fn().mockReturnThis(), remove: vi.fn() })),
 		Symbol: { arrowHead: vi.fn(() => ({})) }
 	};
@@ -1051,5 +1059,101 @@ describe('mounted marker cleanup', () => {
 		expect(unmount).toHaveBeenCalledOnce();
 		expect(unmount).toHaveBeenCalledWith(component);
 		expect(provider.pinMarkers.size).toBe(0);
+	});
+});
+
+describe('polygons', () => {
+	function makeProvider() {
+		const provider = new OpenStreetMapProvider(vi.fn());
+		provider.L = makeFakeL(makeFakeMarker());
+		provider.map = { hasLayer: () => true, removeLayer: vi.fn(), fitBounds: vi.fn() };
+		return provider;
+	}
+	const geometry = {
+		type: 'Polygon',
+		coordinates: [
+			[
+				[-77.1, 38.8],
+				[-77.0, 38.8],
+				[-77.0, 38.9],
+				[-77.1, 38.9],
+				[-77.1, 38.8]
+			],
+			[
+				[-77.06, 38.84],
+				[-77.04, 38.84],
+				[-77.04, 38.86],
+				[-77.06, 38.86],
+				[-77.06, 38.84]
+			]
+		]
+	};
+
+	test('draws lat/lng rings with holes on the zone pane', () => {
+		const provider = makeProvider();
+		const polygon = provider.createPolygon(geometry, {
+			color: '#78aa36',
+			fillOpacity: 0.2,
+			weight: 2,
+			opacity: 1
+		});
+		expect(polygon.latlngs[0][0][0]).toEqual([38.8, -77.1]);
+		expect(polygon.latlngs[0]).toHaveLength(2);
+		expect(polygon.options).toMatchObject({
+			pane: 'obaZones',
+			fillOpacity: 0.2,
+			interactive: false
+		});
+	});
+
+	test('draws a halo underneath and wires clicks only when interactive', () => {
+		const provider = makeProvider();
+		const onClick = vi.fn();
+		const polygon = provider.createPolygon(geometry, {
+			color: '#78aa36',
+			fillOpacity: 0,
+			weight: 4,
+			opacity: 1,
+			halo: { weight: 10, opacity: 0.25 },
+			interactive: true,
+			onClick
+		});
+		expect(polygon._halo.options).toMatchObject({
+			fill: false,
+			weight: 10,
+			opacity: 0.25,
+			interactive: false
+		});
+		const clickHandler = polygon.on.mock.calls.find(([event]) => event === 'click')[1];
+		clickHandler({ originalEvent: {} });
+		expect(onClick).toHaveBeenCalled();
+	});
+
+	test('clearAllPolylines leaves polygons, clearAllPolygons removes them and their halos', () => {
+		const provider = makeProvider();
+		const polygon = provider.createPolygon(geometry, {
+			color: '#000000',
+			halo: { weight: 10, opacity: 0.25 }
+		});
+		provider.clearAllPolylines();
+		expect(polygon.remove).not.toHaveBeenCalled();
+		provider.clearAllPolygons();
+		expect(polygon.remove).toHaveBeenCalled();
+		expect(polygon._halo.remove).toHaveBeenCalled();
+		expect(provider.polygons).toEqual([]);
+	});
+
+	test('returns null for geometry with no drawable ring', () => {
+		expect(makeProvider().createPolygon({ type: 'Polygon', coordinates: [] }, {})).toBeNull();
+	});
+
+	test('fitToBounds frames the bounds with Leaflet padding', () => {
+		const provider = makeProvider();
+		provider.L.latLngBounds = vi.fn((a, b) => ({ a, b }));
+		provider.fitToBounds({ north: 38.9, south: 38.8, east: -77.0, west: -77.1 }, { padding: 40 });
+		expect(provider.map.fitBounds).toHaveBeenCalledWith(
+			{ a: [38.8, -77.1], b: [38.9, -77.0] },
+			expect.objectContaining({ padding: [40, 40] })
+		);
 	});
 });

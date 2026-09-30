@@ -21,3 +21,10 @@ export const ROUTE_PANE_Z_INDEX = {
 	[ROUTE_PANE.LINE]: 403,
 	[ROUTE_PANE.PROMOTED]: 404
 };
+
+/**
+ * On-demand zones sit below every route layer so routes and stops stay legible
+ * over a filled zone.
+ */
+export const ZONE_PANE = 'obaZones';
+export const ZONE_PANE_Z_INDEX = 401;

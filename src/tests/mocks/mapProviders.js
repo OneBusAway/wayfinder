@@ -118,6 +118,25 @@ export function createMockMapProvider() {
 		// Map management
 		map: mockLeafletMap,
 
+		// On-demand zones
+		polygons: [],
+		createPolygon: vi.fn(function (geometry, style = {}) {
+			const polygon = { id: `polygon_${this.polygons.length}`, geometry, style };
+			this.polygons.push(polygon);
+			return polygon;
+		}),
+		setPolygonStyle: vi.fn((polygon, style) => {
+			if (polygon) polygon.style = style;
+		}),
+		removePolygon: vi.fn(function (polygon) {
+			this.polygons = this.polygons.filter((item) => item !== polygon);
+		}),
+		clearAllPolygons: vi.fn(function () {
+			this.polygons = [];
+		}),
+		fitToBounds: vi.fn(),
+		getBoundingBox: vi.fn(() => ({ north: 47.7, south: 47.5, east: -122.2, west: -122.4 })),
+
 		// Pin marker management for trip planning
 		addPinMarker: vi.fn((location, label) => {
 			const markerId = `pin_marker_${markerIdCounter++}`;
