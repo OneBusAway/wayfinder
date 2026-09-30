@@ -35,6 +35,7 @@
 	import { formatStatus, formatBookingLine, bookingTagKey } from '$lib/onDemand/copy.js';
 	import { hoursRows } from '$lib/onDemand/hours.js';
 	import { scheduleAt } from '$lib/onDemand/instants.js';
+	import { httpUrlOrNull } from '$lib/urls.js';
 
 	let { serviceId, closePane, mapProvider = null, snap = $bindable('half') } = $props();
 
@@ -134,9 +135,10 @@
 			: $t('ondemand.booking_unknown')
 	);
 	let tagKey = $derived(availability ? bookingTagKey(availability.bookingTier) : null);
-	let moreInfoUrl = $derived(
-		contact?.infoUrl && contact.infoUrl !== service?.url ? contact.infoUrl : null
-	);
+	let serviceUrl = $derived(httpUrlOrNull(service?.url));
+	let bookingUrl = $derived(httpUrlOrNull(contact?.bookingUrl));
+	let infoUrl = $derived(httpUrlOrNull(contact?.infoUrl));
+	let moreInfoUrl = $derived(infoUrl && infoUrl !== serviceUrl ? infoUrl : null);
 	let messages = $derived(
 		[contact?.message, contact?.pickupMessage, contact?.dropOffMessage].filter(Boolean)
 	);
@@ -223,9 +225,9 @@
 						<FontAwesomeIcon icon={faPhone} />
 						{$t('ondemand.call', { values: { phone: contact.phoneNumber } })}
 					</a>
-				{:else if contact?.bookingUrl}
+				{:else if bookingUrl}
 					<a
-						href={contact.bookingUrl}
+						href={bookingUrl}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="inline-flex h-11 items-center gap-2 rounded-full bg-brand-accent px-5 text-sm font-semibold text-white hover:bg-brand"
@@ -296,9 +298,9 @@
 					<FontAwesomeIcon icon={faClock} class="mt-0.5" />
 					<span>{bookingLine}</span>
 				</p>
-				{#if service.url}
+				{#if serviceUrl}
 					<a
-						href={service.url}
+						href={serviceUrl}
 						target="_blank"
 						rel="noopener noreferrer"
 						class="flex items-center gap-2 text-brand-accent hover:underline"

@@ -149,6 +149,20 @@ describe('OnDemandServiceSheet', () => {
 		expect(screen.queryByRole('link', { name: 'ondemand.more_information' })).toBeNull();
 	});
 
+	it('links only http(s) feed urls', async () => {
+		const unsafeRule = bookingRuleJson({
+			phoneNumber: null,
+			bookingUrl: 'javascript:alert(1)',
+			infoUrl: 'data:text/html,hi'
+		});
+		setup(entry({ url: 'javascript:alert(2)' }, { bookingRules: [unsafeRule] }));
+		await flush();
+		expect(screen.getByText('DASH On Demand')).toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'ondemand.book_online' })).toBeNull();
+		expect(screen.queryByRole('link', { name: 'ondemand.open_agency_website' })).toBeNull();
+		expect(screen.queryByRole('link', { name: 'ondemand.more_information' })).toBeNull();
+	});
+
 	it('says the service is not available on a not-found', async () => {
 		setup({ notFound: true });
 		await flush();

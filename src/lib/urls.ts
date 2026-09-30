@@ -20,3 +20,19 @@ export function buildURL(
 export function onDemandServicePath(id) {
 	return `/map/ondemand/${encodeURIComponent(id)}`;
 }
+
+/**
+ * Guards feed-supplied URLs before they reach an href: only absolute http(s)
+ * URLs survive, so a `javascript:` or `data:` value can never become a link.
+ * @param {unknown} value
+ * @returns {string | null} the value unchanged, or null
+ */
+export function httpUrlOrNull(value) {
+	if (typeof value !== 'string') return null;
+	try {
+		const { protocol } = new URL(value);
+		return protocol === 'http:' || protocol === 'https:' ? value : null;
+	} catch {
+		return null;
+	}
+}
