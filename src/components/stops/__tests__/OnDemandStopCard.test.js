@@ -68,6 +68,35 @@ describe('OnDemandStopCard', () => {
 		expect(fetchService).toHaveBeenCalledTimes(1);
 	});
 
+	it("drops the previous stop's services while a new id set loads", async () => {
+		fetchService.mockResolvedValue(entry());
+		const { rerender } = render(OnDemandStopCard, {
+			stop: { id: '1_1', onDemandServiceIds: ['5088_77652'] }
+		});
+		await flush();
+		expect(screen.getByText('DASH On Demand')).toBeInTheDocument();
+
+		fetchService.mockReturnValue(new Promise(() => {}));
+		await rerender({ stop: { id: '1_2', onDemandServiceIds: ['5088_99999'] } });
+		await flush();
+		expect(fetchService).toHaveBeenLastCalledWith('5088_99999', 'none');
+		expect(screen.queryByText('DASH On Demand')).toBeNull();
+	});
+
+	it('does not refetch when support flips from unknown to supported', async () => {
+		// Like the real fetchService, read support synchronously.
+		fetchService.mockImplementation(async () => {
+			void onDemandState.support;
+			return entry();
+		});
+		onDemandState.support = 'unknown';
+		render(OnDemandStopCard, { stop: { id: '1_1', onDemandServiceIds: ['5088_77652'] } });
+		await flush();
+		onDemandState.support = 'supported';
+		await flush();
+		expect(fetchService).toHaveBeenCalledTimes(1);
+	});
+
 	it('hides when the server is unsupported', async () => {
 		onDemandState.support = 'unsupported';
 		const { container } = render(OnDemandStopCard, {

@@ -10,6 +10,7 @@
     @prop {Array} services - Bindable; the services that loaded
 -->
 <script>
+	import { untrack } from 'svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faPhone } from '@fortawesome/free-solid-svg-icons';
 	import { locale, t } from 'svelte-i18n';
@@ -28,19 +29,21 @@
 
 	$effect(() => {
 		const key = idsKey;
-		if (!key || !isSupported) {
-			services = [];
-			return;
-		}
+		services = [];
+		if (!key || !isSupported) return;
 		let cancelled = false;
-		Promise.all(key.split('|').map((id) => fetchService(id, 'none'))).then((results) => {
-			if (cancelled) return;
-			services = results.filter((result) => result?.service).map((result) => result.service);
-		});
+		// fetchService reads onDemandState.support; only the id set and support verdict may re-run this.
+		untrack(() => loadServices(key.split('|'), () => cancelled));
 		return () => {
 			cancelled = true;
 		};
 	});
+
+	async function loadServices(ids, isCancelled) {
+		const results = await Promise.all(ids.map((id) => fetchService(id, 'none')));
+		if (isCancelled()) return;
+		services = results.filter((result) => result?.service).map((result) => result.service);
+	}
 
 	let rows = $derived(
 		sortByAvailability(
