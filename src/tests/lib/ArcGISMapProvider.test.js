@@ -49,6 +49,11 @@ const sdk = vi.hoisted(() => {
 			Object.assign(this, properties);
 		}
 	}
+	class Polygon {
+		constructor(properties) {
+			Object.assign(this, properties);
+		}
+	}
 	class Symbol {
 		constructor(properties) {
 			Object.assign(this, properties);
@@ -110,6 +115,7 @@ const sdk = vi.hoisted(() => {
 		Graphic,
 		Point,
 		Polyline,
+		Polygon,
 		Symbol,
 		Map,
 		Basemap,
@@ -129,6 +135,8 @@ vi.mock('@arcgis/core/layers/GraphicsLayer.js', () => ({ default: sdk.GraphicsLa
 vi.mock('@arcgis/core/Graphic.js', () => ({ default: sdk.Graphic }));
 vi.mock('@arcgis/core/geometry/Point.js', () => ({ default: sdk.Point }));
 vi.mock('@arcgis/core/geometry/Polyline.js', () => ({ default: sdk.Polyline }));
+vi.mock('@arcgis/core/geometry/Polygon.js', () => ({ default: sdk.Polygon }));
+vi.mock('@arcgis/core/symbols/SimpleFillSymbol.js', () => ({ default: sdk.Symbol }));
 vi.mock('@arcgis/core/symbols/SimpleMarkerSymbol.js', () => ({ default: sdk.Symbol }));
 vi.mock('@arcgis/core/symbols/PictureMarkerSymbol.js', () => ({ default: sdk.Symbol }));
 vi.mock('@arcgis/core/config.js', () => ({ default: sdk.arcgisConfig }));
@@ -142,6 +150,8 @@ import {
 	getCIMSymbolColor,
 	getCIMSymbolSize
 } from '@arcgis/core/symbols/support/cimSymbolUtils.js';
+
+import { isClockwise } from '$lib/MapHelpers/zoneGeometry.js';
 
 const SHAPE = '_p~iF~ps|U_ulLnnqC_mqNvxq`@';
 
@@ -524,5 +534,171 @@ describe('ArcGISMapProvider', () => {
 		expect(provider.viewportLoadHandle).toBeNull();
 		expect(provider.contextMenuHandle).toBeNull();
 		expect(provider.mapClickHandle).toBeNull();
+	});
+});
+
+describe('ArcGISMapProvider polygons', () => {
+	const geometry = {
+		type: 'Polygon',
+		coordinates: [
+			[
+				[-77.1, 38.8],
+				[-77.0, 38.8],
+				[-77.0, 38.9],
+				[-77.1, 38.9],
+				[-77.1, 38.8]
+			]
+		]
+	};
+
+	test('adds zone graphics to a layer below the route layers', async () => {
+		const provider = await initializedProvider();
+		const graphic = provider.createPolygon(geometry, {
+			color: '#78aa36',
+			fillOpacity: 0.2,
+			weight: 2,
+			opacity: 1
+		});
+		const layers = provider.map.layers;
+		expect(layers.indexOf(provider.zoneLayer)).toBe(0);
+		expect(layers.indexOf(provider.zoneLayer)).toBeLessThan(
+			layers.indexOf(provider.routeCasingLayer)
+		);
+		expect(provider.zoneLayer.graphics).toContain(graphic);
+	});
+
+	test('orients the exterior ring clockwise and holes counter-clockwise', async () => {
+		const provider = await initializedProvider();
+		const counterClockwise = [
+			[0, 0],
+			[10, 0],
+			[10, 10],
+			[0, 10],
+			[0, 0]
+		];
+		const hole = [
+			[2, 2],
+			[2, 4],
+			[4, 4],
+			[4, 2],
+			[2, 2]
+		];
+		const graphic = provider.createPolygon(
+			{ type: 'Polygon', coordinates: [counterClockwise, hole] },
+			{ color: '#000000' }
+		);
+		expect(isClockwise(graphic.geometry.rings[0])).toBe(true);
+		expect(isClockwise(graphic.geometry.rings[1])).toBe(false);
+	});
+
+	test('draws a halo graphic and removes it with the zone', async () => {
+		const provider = await initializedProvider();
+		const graphic = provider.createPolygon(geometry, {
+			color: '#000000',
+			halo: { weight: 6, opacity: 0.4 }
+		});
+		expect(provider.zoneLayer.graphics).toHaveLength(2);
+		provider.removePolygon(graphic);
+		expect(provider.zoneLayer.graphics).toHaveLength(0);
+		expect(provider.polygons).toHaveLength(0);
+	});
+
+	test('setPolygonStyle replaces the symbol', async () => {
+		const provider = await initializedProvider();
+		const graphic = provider.createPolygon(geometry, { color: '#000000' });
+		const before = graphic.symbol;
+		provider.setPolygonStyle(graphic, { color: '#ff0000', weight: 4 });
+		expect(graphic.symbol).not.toBe(before);
+		expect(graphic.symbol.outline.width).toBe(4);
+	});
+
+	test('returns null for empty geometry', async () => {
+		const provider = await initializedProvider();
+		expect(provider.createPolygon({ type: 'Polygon', coordinates: [] })).toBeNull();
+	});
+
+	test('a click on an interactive zone calls onClick', async () => {
+		const provider = await initializedProvider();
+		const onClick = vi.fn();
+		const graphic = provider.createPolygon(geometry, {
+			color: '#000000',
+			interactive: true,
+			onClick
+		});
+		provider._handleHitTestResults([{ graphic }]);
+		expect(onClick).toHaveBeenCalledTimes(1);
+	});
+
+	test('a non-interactive zone ignores clicks', async () => {
+		const provider = await initializedProvider();
+		const onClick = vi.fn();
+		const graphic = provider.createPolygon(geometry, { color: '#000000', onClick });
+		provider._handleHitTestResults([{ graphic }]);
+		expect(onClick).not.toHaveBeenCalled();
+	});
+
+	test('a stop hit wins over a zone hit', async () => {
+		const provider = await initializedProvider();
+		const onClick = vi.fn();
+		const zone = provider.createPolygon(geometry, {
+			color: '#000000',
+			interactive: true,
+			onClick
+		});
+		const stop = { id: 'stop-1', name: 'Stop', lat: 47.6, lon: -122.3 };
+		provider.stopsMap.set(stop.id, stop);
+		const openStop = vi.spyOn(provider, 'openStopMarker').mockImplementation(() => {});
+		const stopGraphic = {
+			layer: provider.routeStopLayer,
+			attributes: { kind: 'route-stop', stopId: stop.id }
+		};
+		provider._handleHitTestResults([{ graphic: zone }, { graphic: stopGraphic }]);
+		expect(openStop).toHaveBeenCalledWith(stop, null);
+		expect(onClick).not.toHaveBeenCalled();
+	});
+
+	test('clearAllPolylines leaves polygons', async () => {
+		const provider = await initializedProvider();
+		provider.createPolygon(geometry, { color: '#000000' });
+		provider.clearAllPolylines();
+		expect(provider.polygons).toHaveLength(1);
+		provider.clearAllPolygons();
+		expect(provider.polygons).toHaveLength(0);
+		expect(provider.zoneLayer.graphics).toHaveLength(0);
+	});
+
+	test('fitToBounds goes to the extent with the padding applied, then restores it', async () => {
+		const provider = await initializedProvider();
+		const previousPadding = { top: 5, right: 6, bottom: 7, left: 8 };
+		provider.view.padding = previousPadding;
+		const padding = { top: 10, right: 20, bottom: 300, left: 40 };
+		let paddingDuringGoTo;
+		provider.view.goTo.mockImplementation(async () => {
+			paddingDuringGoTo = { ...provider.view.padding };
+		});
+
+		await provider.fitToBounds({ north: 48, south: 47, east: -122, west: -123 }, { padding });
+
+		const [target] = provider.view.goTo.mock.calls[0];
+		expect([target.xmin, target.ymin, target.xmax, target.ymax]).toEqual([-123, 47, -122, 48]);
+		expect(paddingDuringGoTo).toEqual(padding);
+		expect(provider.view.padding).toEqual(previousPadding);
+	});
+
+	test('fitToBounds restores padding when goTo fails', async () => {
+		const provider = await initializedProvider();
+		const previousPadding = { top: 5, right: 6, bottom: 7, left: 8 };
+		provider.view.padding = previousPadding;
+		provider.view.goTo.mockRejectedValue(new Error('interrupted'));
+		await provider.fitToBounds({ north: 48, south: 47, east: -122, west: -123 }, { padding: 100 });
+		expect(provider.view.padding).toEqual(previousPadding);
+	});
+
+	test('destroy clears polygons and the zone layer', async () => {
+		const provider = await initializedProvider();
+		provider.createPolygon(geometry, { color: '#000000' });
+		provider.destroy();
+		expect(provider.polygons).toHaveLength(0);
+		expect(provider.zoneLayer).toBeNull();
 	});
 });
