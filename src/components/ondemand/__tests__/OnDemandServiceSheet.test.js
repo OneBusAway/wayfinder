@@ -63,6 +63,28 @@ describe('OnDemandServiceSheet', () => {
 		);
 	});
 
+	it('frames the service once the map provider arrives after the load', async () => {
+		fetchService.mockResolvedValue(entry());
+		const { rerender } = render(OnDemandServiceSheet, {
+			serviceId: '5088_77652',
+			closePane: vi.fn(),
+			mapProvider: null
+		});
+		await flush();
+		const provider = createMockMapProvider();
+		await rerender({ mapProvider: provider });
+		await flush();
+		expect(provider.fitToBounds).toHaveBeenCalledTimes(1);
+
+		await rerender({ mapProvider: provider, snap: 'full' });
+		await flush();
+		const anotherProvider = createMockMapProvider();
+		await rerender({ mapProvider: anotherProvider });
+		await flush();
+		expect(provider.fitToBounds).toHaveBeenCalledTimes(1);
+		expect(anotherProvider.fitToBounds).not.toHaveBeenCalled();
+	});
+
 	it('promotes the deadline for an advance service and offers a call', async () => {
 		setup(entry());
 		await flush();

@@ -71,22 +71,33 @@
 		}
 		loadState = { kind: 'ready', service: result.service };
 		setHighlightedService(result.service);
-		frame(result.service);
 	}
 
-	function frame(service) {
+	function frame(service, provider) {
 		const bounds = serviceBounds(service);
-		if (!bounds || !mapProvider?.fitToBounds) return;
+		if (!bounds || !provider.fitToBounds) return;
 		const padding = panelFitPadding(sheetElement?.getBoundingClientRect(), {
 			width: window.innerWidth,
 			height: window.innerHeight
 		});
-		mapProvider.fitToBounds(bounds, { padding });
+		provider.fitToBounds(bounds, { padding });
 	}
 
 	onDestroy(() => setHighlightedService(null));
 
 	let service = $derived(loadState.kind === 'ready' ? loadState.service : null);
+
+	// Frame once per service, whichever of the load and the map provider arrives last
+	// (on a cold load the provider is still null when the service resolves).
+	let framedServiceId = null;
+	$effect(() => {
+		const readyService = service;
+		const provider = mapProvider;
+		if (!readyService || !provider || readyService.id === framedServiceId) return;
+		framedServiceId = readyService.id;
+		untrack(() => frame(readyService, provider));
+	});
+
 	let availability = $derived(service ? evaluateAvailability(service, now) : null);
 	let copyContext = $derived(
 		availability?.timeZone
