@@ -70,7 +70,9 @@
 		});
 		if (seq !== requestSeq) return;
 		level = nextLevel;
-		services = result?.services ?? [];
+		// A failed fetch keeps the last zones rather than blinking them off; an unsupported
+		// verdict clears them through isEnabled instead.
+		if (result) services = result.services;
 	}
 
 	// The highlighted service stays drawn even when this viewport's fetch

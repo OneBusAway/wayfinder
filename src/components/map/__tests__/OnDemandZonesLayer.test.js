@@ -93,6 +93,28 @@ describe('OnDemandZonesLayer', () => {
 		expect(provider.removePolygon).toHaveBeenCalled();
 	});
 
+	it('keeps the drawn zones when a viewport fetch fails transiently', async () => {
+		const { provider, rerender } = setup(REGION);
+		await flush();
+		fetchServicesForViewport.mockResolvedValue(null);
+		await rerender({ viewportTick: 2 });
+		await flush();
+		expect(provider.removePolygon).not.toHaveBeenCalled();
+		expect(provider.polygons).toHaveLength(1);
+	});
+
+	it('still clears on zooming out past region level after a failed fetch', async () => {
+		const { provider, rerender } = setup(REGION);
+		await flush();
+		fetchServicesForViewport.mockResolvedValue(null);
+		await rerender({ viewportTick: 2 });
+		await flush();
+		provider.getBoundingBox.mockReturnValue(HIDDEN);
+		await rerender({ viewportTick: 3 });
+		await flush();
+		expect(provider.removePolygon).toHaveBeenCalled();
+	});
+
 	it('clears when the map leaves normal mode or the server is unsupported', async () => {
 		const { provider, rerender } = setup(REGION);
 		await flush();
