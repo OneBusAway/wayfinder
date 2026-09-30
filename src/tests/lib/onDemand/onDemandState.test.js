@@ -4,6 +4,7 @@ import {
 	fetchServicesForViewport,
 	fetchService,
 	seedService,
+	setHighlightedService,
 	resetOnDemandStateForTesting,
 	CACHE_TTL_MS
 } from '$lib/onDemand/onDemandState.svelte.js';
@@ -72,5 +73,12 @@ describe('onDemandState', () => {
 		seedService('x', 'none', entryBody());
 		await fetchService('x', 'simplified');
 		expect(fetchMock).toHaveBeenCalledTimes(1);
+	});
+
+	it('stores the highlighted service as-is, without a deep proxy', () => {
+		const service = { id: '5088_77652', areas: [{ geometry: { coordinates: [[[0, 0]]] } }] };
+		setHighlightedService(service);
+		expect(onDemandState.highlighted).toBe(service);
+		expect(onDemandState.highlighted.areas[0]).toBe(service.areas[0]);
 	});
 });

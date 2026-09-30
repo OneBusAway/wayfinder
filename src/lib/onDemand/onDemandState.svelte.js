@@ -1,5 +1,7 @@
 import { parseServiceEntry, parseServiceList } from '$lib/onDemand/models.js';
 
+let highlightedService = $state.raw(null);
+
 /**
  * Browser-side on-demand state shared by the zones layer, the stop card and the
  * detail sheet. `support` flips to 'unsupported' on the first 501 from a proxy;
@@ -8,8 +10,17 @@ import { parseServiceEntry, parseServiceList } from '$lib/onDemand/models.js';
 export const onDemandState = $state({
 	/** @type {'unknown' | 'supported' | 'unsupported'} */
 	support: 'unknown',
-	/** @type {import('./models.js').OnDemandService | null} */
-	highlighted: null
+	/**
+	 * Held raw: a service carries its zone geometry, which a deep proxy would wrap
+	 * vertex by vertex for no benefit (it is only ever replaced, never mutated).
+	 * @type {import('./models.js').OnDemandService | null}
+	 */
+	get highlighted() {
+		return highlightedService;
+	},
+	set highlighted(service) {
+		highlightedService = service;
+	}
 });
 
 export const CACHE_TTL_MS = 10 * 60 * 1000;
