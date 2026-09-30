@@ -203,4 +203,20 @@ describe('OnDemandServiceSheet', () => {
 		expect(fetchService).toHaveBeenLastCalledWith('other_1', 'simplified');
 		expect(onDemandState.highlighted).toBeNull();
 	});
+
+	it('ignores a retried load that resolves after unmount', async () => {
+		const { provider, unmount } = setup(null);
+		await flush();
+		let resolve;
+		fetchService.mockReturnValue(new Promise((r) => (resolve = r)));
+		await userEvent
+			.setup({ advanceTimers: vi.advanceTimersByTime })
+			.click(screen.getByRole('button', { name: 'ondemand.retry' }));
+		await flush();
+		unmount();
+		resolve(entry());
+		await flush();
+		expect(onDemandState.highlighted).toBeNull();
+		expect(provider.fitToBounds).not.toHaveBeenCalled();
+	});
 });

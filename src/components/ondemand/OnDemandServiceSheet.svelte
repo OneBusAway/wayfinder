@@ -42,9 +42,11 @@
 	let loadState = $state({ kind: 'loading' });
 	let now = $state(Temporal.Now.instant());
 	let sheetElement = $state(null);
+	let retryCount = $state(0);
 
 	$effect(() => {
 		const id = serviceId;
+		retryCount; // Retry re-runs this effect so every load shares its cancellation.
 		let cancelled = false;
 		// fetchService reads onDemandState.support; a support flip must not re-run the load.
 		untrack(() => load(id, () => cancelled));
@@ -53,7 +55,7 @@
 		};
 	});
 
-	async function load(id, isCancelled = () => false) {
+	async function load(id, isCancelled) {
 		loadState = { kind: 'loading' };
 		setHighlightedService(null);
 		const result = await fetchService(id, 'simplified');
@@ -176,7 +178,7 @@
 				<p class="text-sm text-gray-600 dark:text-gray-400">{$t('ondemand.load_failed')}</p>
 				<button
 					type="button"
-					onclick={() => load(serviceId)}
+					onclick={() => (retryCount += 1)}
 					class="rounded-lg bg-brand-accent px-4 py-2 text-sm font-medium text-white hover:bg-brand"
 				>
 					{$t('ondemand.retry')}
