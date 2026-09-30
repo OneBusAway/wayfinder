@@ -175,4 +175,32 @@ describe('OnDemandServiceSheet', () => {
 		unmount();
 		expect(onDemandState.highlighted).toBeNull();
 	});
+
+	it('ignores a load that resolves after unmount', async () => {
+		let resolve;
+		fetchService.mockReturnValue(new Promise((r) => (resolve = r)));
+		const provider = createMockMapProvider();
+		const { unmount } = render(OnDemandServiceSheet, {
+			serviceId: '5088_77652',
+			closePane: vi.fn(),
+			mapProvider: provider
+		});
+		await flush();
+		unmount();
+		resolve(entry());
+		await flush();
+		expect(onDemandState.highlighted).toBeNull();
+		expect(provider.fitToBounds).not.toHaveBeenCalled();
+	});
+
+	it('clears the previous highlight when switching to a not-found service', async () => {
+		const { rerender } = setup(entry());
+		await flush();
+		expect(onDemandState.highlighted).not.toBeNull();
+		fetchService.mockResolvedValue({ notFound: true });
+		await rerender({ serviceId: 'other_1' });
+		await flush();
+		expect(fetchService).toHaveBeenLastCalledWith('other_1', 'simplified');
+		expect(onDemandState.highlighted).toBeNull();
+	});
 });

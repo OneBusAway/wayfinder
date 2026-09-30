@@ -45,14 +45,19 @@
 
 	$effect(() => {
 		const id = serviceId;
+		let cancelled = false;
 		// fetchService reads onDemandState.support; a support flip must not re-run the load.
-		untrack(() => load(id));
+		untrack(() => load(id, () => cancelled));
+		return () => {
+			cancelled = true;
+		};
 	});
 
-	async function load(id) {
+	async function load(id, isCancelled = () => false) {
 		loadState = { kind: 'loading' };
+		setHighlightedService(null);
 		const result = await fetchService(id, 'simplified');
-		if (id !== serviceId) return;
+		if (isCancelled()) return;
 		if (!result) {
 			if (onDemandState.support === 'unsupported') closePane();
 			else loadState = { kind: 'error' };
