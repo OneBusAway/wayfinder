@@ -42,6 +42,14 @@ vi.mock('$components/containers/AccordionItem.svelte', () => ({
 	}))
 }));
 
+// Stub card: sets its bound `services` only when a test opts in via onDemandStub.
+const onDemandStub = vi.hoisted(() => ({ services: [] }));
+vi.mock('$components/stops/OnDemandStopCard.svelte', () => ({
+	default: vi.fn((anchor, props) => {
+		props.services = onDemandStub.services;
+	})
+}));
+
 vi.mock('$components/surveys/SurveyModal.svelte', () => ({
 	default: vi.fn().mockImplementation(() => ({
 		$set: vi.fn(),
@@ -147,6 +155,7 @@ global.fetch = vi.fn();
 describe('StopPane', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		onDemandStub.services = [];
 
 		// Reset fetch mock
 		global.fetch.mockReset();
@@ -256,6 +265,22 @@ describe('StopPane', () => {
 		await waitFor(() => {
 			expect(screen.getByText('No arrivals found in the next 35 minutes')).toBeInTheDocument();
 		});
+	});
+
+	test('tells riders at a flex-only stop that on-demand service is available', async () => {
+		onDemandStub.services = [{ id: 'x' }];
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('ondemand.flex_only_empty_arrivals')).toBeInTheDocument();
+		});
+		expect(screen.queryByText(/No arrivals found in the next/)).not.toBeInTheDocument();
 	});
 
 	test('displays stop information correctly', async () => {

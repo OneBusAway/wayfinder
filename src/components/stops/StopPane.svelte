@@ -6,6 +6,7 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import SurveyModal from '$components/surveys/SurveyModal.svelte';
 	import ServiceAlerts from '$components/service-alerts/ServiceAlerts.svelte';
+	import OnDemandStopCard from '$components/stops/OnDemandStopCard.svelte';
 	import { onDestroy, tick, untrack } from 'svelte';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
@@ -38,6 +39,7 @@
 	 * @property {ArrivalAndDepartureListResponse | null} [arrivalsAndDeparturesResponse]
 	 * @property {boolean} [loading]
 	 * @property {Map<string, RouteColors> | null} [routeColors]
+	 * @property {((id: string) => void) | null} [onOnDemandServiceSelect] - Open an on-demand service in place
 	 */
 
 	/** @type {Props} */
@@ -50,7 +52,8 @@
 		// Exposed so a parent (e.g. the bottom-sheet toolbar refresh button) can
 		// reflect whether a fetch — initial, manual, or the 30s poll — is in flight.
 		loading = $bindable(false),
-		routeColors = null
+		routeColors = null,
+		onOnDemandServiceSelect = null
 	} = $props();
 
 	// Time window (in minutes) for upcoming arrivals. Defaults to the OBA
@@ -72,6 +75,8 @@
 	let serviceAlerts = $state(
 		filterActiveAlerts(arrivalsAndDeparturesResponse?.data?.references?.situations ?? [])
 	);
+	// Bound from OnDemandStopCard; a flex-only stop has no arrivals but is not empty.
+	let onDemandServices = $state([]);
 	let minutesAfter = $state(DEFAULT_MINUTES_AFTER);
 	let loadingMore = $state(false);
 	let noMoreArrivals = $state(false);
@@ -418,6 +423,12 @@
 					</div>
 				{/if}
 
+				<OnDemandStopCard
+					{stop}
+					onSelectService={onOnDemandServiceSelect}
+					bind:services={onDemandServices}
+				/>
+
 				{#if showHeroQuestion && currentStopSurvey}
 					<!-- Keyed on the stop: StopBottomSheet is not remounted when the
 					     user selects a different stop, so without this the previous
@@ -440,7 +451,9 @@
 					<div class="flex flex-col items-center gap-2">
 						{#if emptyResults}
 							<p class="text-sm text-gray-600 dark:text-gray-400">
-								{$t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
+								{onDemandServices.length
+									? $t('ondemand.flex_only_empty_arrivals')
+									: $t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
 							</p>
 						{:else if noMoreArrivals}
 							<p class="text-sm text-gray-600 dark:text-gray-400">
