@@ -335,7 +335,11 @@
 		const serviceId = selectedOnDemandServiceId; // track
 		const provider = mapProvider; // track
 		if (serviceId == null || !provider) return;
-		untrack(() => supersedeRouteAndTripSelection(provider));
+		untrack(() => {
+			supersedeRouteAndTripSelection(provider);
+			searchCollapsed = true;
+			if (browser && window.innerWidth >= 768) sheetSnap = 'full';
+		});
 	});
 
 	function handleOnDemandServiceSelect(id) {
@@ -661,7 +665,7 @@
 					{handleStopMarkerSelect}
 					{handleMapStopMarkerSelect}
 					{clearTripItineraries}
-					onCollapse={stopSheetOpen ? collapseSearch : null}
+					onCollapse={stopSheetOpen || onDemandSheetOpen ? collapseSearch : null}
 				>
 					{#snippet childContent()}
 						<SurveyLauncher />

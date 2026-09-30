@@ -68,6 +68,14 @@ vi.mock('$components/ondemand/OnDemandServiceSheet.svelte', () => ({
 	}
 }));
 
+// The desktop sheet-snap rule is gated on `browser`, which the global setup mocks false.
+vi.mock('$app/environment', () => ({
+	browser: true,
+	dev: false,
+	building: false,
+	version: 'test'
+}));
+
 vi.mock('$lib/vehicleUtils.js', () => ({ clearVehicleMarkersMap: vi.fn() }));
 
 vi.mock('$app/navigation', () => ({
@@ -481,4 +489,48 @@ test('opening an on-demand sheet clears an open route modal', async () => {
 	await vi.waitFor(() => expect(capturedMapContainerProps.selectedRoute).toBeNull());
 	expect(capturedMapContainerProps.isRouteSelected).toBe(false);
 	expect(queryByTestId('ondemand-sheet')).not.toBeNull();
+	const provider = capturedMapContainerProps.mapProvider;
+	expect(provider.clearAllPolylines).toHaveBeenCalled();
+	expect(provider.removeStopMarkers).toHaveBeenCalled();
+	expect(provider.clearVehicleMarkers).toHaveBeenCalled();
+});
+
+test('opening an on-demand sheet gives it the stop sheet layout', async () => {
+	setPage(pageWithoutStop());
+	render(MapExperience);
+	capturedMapContainerProps.mapProvider = {
+		clearAllPolylines: vi.fn(),
+		removeStopMarkers: vi.fn(),
+		clearVehicleMarkers: vi.fn()
+	};
+	await tick();
+	expect(capturedSearchPaneProps.onCollapse).toBeNull();
+	setPage(pageWithOnDemandService());
+	await vi.waitFor(() => expect(capturedSearchPaneProps.collapsed).toBe(true));
+	expect(capturedOnDemandSheetProps.snap).toBe('full');
+	expect(capturedSearchPaneProps.collapsed).toBe(true);
+	expect(capturedSearchPaneProps.onCollapse).toBeTypeOf('function');
+});
+
+test('picking a route while the on-demand sheet is open closes it and keeps the route', async () => {
+	setPage(pageWithOnDemandService());
+	render(MapExperience);
+	capturedMapContainerProps.mapProvider = {
+		clearAllPolylines: vi.fn(),
+		removeStopMarkers: vi.fn(),
+		clearVehicleMarkers: vi.fn(),
+		cleanupInfoWindow: vi.fn()
+	};
+	await tick();
+	const route = { id: 'route_1', shortName: 'C' };
+	capturedSearchPaneProps.handleRouteSelected({
+		route,
+		polylines: [],
+		stops: [],
+		currentIntervalId: null
+	});
+	expect(pushState).toHaveBeenCalledWith('/', {});
+	setPage(pageWithoutStop());
+	await tick();
+	expect(capturedMapContainerProps.selectedRoute).toEqual(route);
 });
