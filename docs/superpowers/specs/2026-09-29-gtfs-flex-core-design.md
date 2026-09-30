@@ -234,7 +234,7 @@ clearAllPolygons()
 
 ### 3.2 Zoom level
 
-`src/lib/onDemand/zoomLevel.js`:
+`src/lib/onDemand/zones.js`:
 
 ```js
 zoneLevel({north, south}) → 'street' | 'region' | 'hidden'
@@ -452,7 +452,7 @@ evaluateBooking(rule, bookingRule, D, now, tz, calendarsById)
 - Otherwise it steps back day by day, counting only days on which that calendar is active,
   and returns the n-th. The count fails, making the result `unknown`, when:
   - it passes the calendar's `startDate`;
-  - the calendar is missing, has no active days, or has an unparseable `startDate`;
+  - the calendar has no active days or has an unparseable `startDate`;
   - completing it would need more than 400 days of walking.
 
 **State:** `notYetOpen` when `now < open`; `closedForDate` when `now > cutoff`; otherwise
