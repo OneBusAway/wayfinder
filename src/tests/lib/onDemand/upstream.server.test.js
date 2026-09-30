@@ -151,6 +151,12 @@ describe('loadServiceEntry', () => {
 		expect(isKnownUnsupported()).toBe(false);
 	});
 
+	it('marks the server unsupported on stock maglev HTML', async () => {
+		vi.spyOn(globalThis, 'fetch').mockResolvedValue(reply(200, '<html></html>', 'text/html'));
+		expect(await loadServiceEntry('1_a', null)).toEqual({ kind: 'unsupported' });
+		expect(isKnownUnsupported()).toBe(true);
+	});
+
 	it('is not found when the service belongs to a filtered-out agency', async () => {
 		mockPrivateEnv.PRIVATE_OBA_AGENCY_FILTER = '1';
 		vi.spyOn(globalThis, 'fetch').mockResolvedValue(

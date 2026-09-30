@@ -64,6 +64,12 @@ export async function loadServiceEntry(id, geometryDetail) {
 	if (!reply) return { kind: 'error' };
 	const isNotFound = reply.status === 404 || (reply.isEnvelope && reply.body.code === 404);
 	if (isNotFound) return { kind: 'notFound' };
+	// A 404 here is an ordinary not-found, so only a 2xx non-envelope reply (stock maglev's
+	// HTML single-page app) counts as a probe.
+	if (isSuccessWithoutEnvelope(reply)) {
+		recordProbeReply(reply);
+		return { kind: 'unsupported' };
+	}
 	if (!isOkEnvelope(reply)) return { kind: 'error' };
 	const agencyIds = getAgencyFilter();
 	if (agencyIds && !agencyIds.has(reply.body.data?.entry?.agencyId)) return { kind: 'notFound' };
@@ -94,6 +100,10 @@ async function fetchOrNull(path, params) {
 		console.error(`ondemand ${path} request failed:`, error);
 		return null;
 	}
+}
+
+function isSuccessWithoutEnvelope(reply) {
+	return reply.status >= 200 && reply.status < 300 && !reply.isEnvelope;
 }
 
 function isOkEnvelope(reply) {

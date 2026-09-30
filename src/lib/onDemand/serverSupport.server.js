@@ -1,8 +1,9 @@
 /**
  * Whether this deployment's OBA server serves `/api/ondemand`. One verdict per
- * process: a Wayfinder deployment talks to exactly one OBA server. Only the
- * services-for-location reply is a probe; a 404 for one service id is an
- * ordinary not-found and never reaches here.
+ * process: a Wayfinder deployment talks to exactly one OBA server. Every
+ * services-for-location reply is a probe; a service/{id} reply is one only
+ * when it is a 2xx without an envelope, since a 404 for one service id is an
+ * ordinary not-found.
  */
 
 /** An unsupported verdict expires so an upgraded server is noticed without a restart. */
