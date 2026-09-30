@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildURL } from '$lib/urls';
+import { buildURL, onDemandServicePath } from '$lib/urls';
 
 describe('buildURL', () => {
 	it('should build a basic URL with query parameters', () => {
@@ -70,5 +70,11 @@ describe('buildURL', () => {
 	it('should handle number values', () => {
 		const result = buildURL('http://example.com', 'api/data', { count: 42, price: 19.99 });
 		expect(result).toBe('http://example.com/api/data?count=42&price=19.99');
+	});
+});
+
+describe('onDemandServicePath', () => {
+	it('encodes the service id into the map path', () => {
+		expect(onDemandServicePath('1_a b')).toBe('/map/ondemand/1_a%20b');
 	});
 });
