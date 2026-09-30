@@ -19,9 +19,12 @@ export function polygonsOf(geometry) {
 			: geometry.type === 'MultiPolygon'
 				? geometry.coordinates
 				: [];
-	return polygons
-		.map((rings) => (Array.isArray(rings) ? rings.filter(isDrawableRing) : []))
-		.filter((rings) => rings.length > 0);
+	return polygons.filter(hasDrawableExterior).map((rings) => rings.filter(isDrawableRing));
+}
+
+// Ring 0 is the exterior; without it the holes would be drawn as filled areas.
+function hasDrawableExterior(rings) {
+	return Array.isArray(rings) && isDrawableRing(rings[0]);
 }
 
 function isDrawableRing(ring) {

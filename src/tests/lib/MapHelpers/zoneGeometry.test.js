@@ -33,6 +33,28 @@ describe('zoneGeometry', () => {
 		expect(polygonsOf(null)).toEqual([]);
 	});
 
+	it('drops a polygon whose exterior is invalid instead of promoting a hole', () => {
+		const degenerate = [
+			[0, 0],
+			[1, 1]
+		];
+		const hole = [
+			[0.2, 0.2],
+			[0.2, 0.8],
+			[0.8, 0.8],
+			[0.2, 0.2]
+		];
+		expect(
+			polygonsOf({
+				type: 'MultiPolygon',
+				coordinates: [
+					[degenerate, hole],
+					[ccwSquare, degenerate, hole]
+				]
+			})
+		).toEqual([[ccwSquare, hole]]);
+	});
+
 	it('detects and fixes winding', () => {
 		expect(isClockwise(ccwSquare)).toBe(false);
 		expect(isClockwise(orientRing(ccwSquare, true))).toBe(true);
