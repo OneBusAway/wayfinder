@@ -163,6 +163,19 @@ describe('OnDemandServiceSheet', () => {
 		expect(screen.queryByRole('link', { name: 'ondemand.more_information' })).toBeNull();
 	});
 
+	it('gives the muted row and the links dark-mode colours', async () => {
+		setup(entry({}, { bookingRules: [bookingRuleJson({ infoUrl: 'https://dashbus.com/info' })] }));
+		await flush();
+		const noServiceRow = screen.getByText('ondemand.no_service').closest('div');
+		expect(noServiceRow).toHaveClass('text-gray-500', 'dark:text-gray-400');
+		for (const name of ['ondemand.open_agency_website', 'ondemand.more_information']) {
+			expect(screen.getByRole('link', { name })).toHaveClass(
+				'text-brand-accent',
+				'dark:text-brand'
+			);
+		}
+	});
+
 	it('says the service is not available on a not-found', async () => {
 		setup({ notFound: true });
 		await flush();

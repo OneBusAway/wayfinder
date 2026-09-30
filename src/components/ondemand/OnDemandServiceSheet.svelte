@@ -281,8 +281,9 @@
 					<dl class="space-y-1 text-sm">
 						{#each hours as row, index (index)}
 							<div
-								class="flex justify-between gap-4"
-								class:text-gray-500={row.kind === 'noService'}
+								class="flex justify-between gap-4 {row.kind === 'noService'
+									? 'text-gray-500 dark:text-gray-400'
+									: ''}"
 							>
 								<dt>{row.days}</dt>
 								<dd>{hoursText(row)}</dd>
@@ -303,7 +304,7 @@
 						href={serviceUrl}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="flex items-center gap-2 text-brand-accent hover:underline"
+						class="flex items-center gap-2 text-brand-accent hover:underline dark:text-brand"
 					>
 						<FontAwesomeIcon icon={faArrowUpRightFromSquare} />
 						{$t('ondemand.open_agency_website')}
@@ -314,7 +315,7 @@
 						href={moreInfoUrl}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="flex items-center gap-2 text-brand-accent hover:underline"
+						class="flex items-center gap-2 text-brand-accent hover:underline dark:text-brand"
 					>
 						<FontAwesomeIcon icon={faCircleInfo} />
 						{$t('ondemand.more_information')}
