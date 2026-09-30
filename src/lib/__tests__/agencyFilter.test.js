@@ -155,6 +155,14 @@ describe('agencyFilter', () => {
 			expect(result).toEqual([]);
 		});
 
+		it('keeps a flex-only stop whose on-demand service belongs to a target agency', () => {
+			const flexStops = [
+				{ id: '1_flex', routeIds: [], onDemandServiceIds: ['1_77652'] },
+				{ id: '2_flex', routeIds: [], onDemandServiceIds: ['2_1'] }
+			];
+			expect(filterStops(flexStops, new Set(['1'])).map((s) => s.id)).toEqual(['1_flex']);
+		});
+
 		it('handles empty stops array', () => {
 			expect(filterStops([], new Set(['19']))).toEqual([]);
 		});
