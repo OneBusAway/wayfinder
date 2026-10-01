@@ -12,14 +12,21 @@ export const UNSUPPORTED_TTL_MS = 60 * 60 * 1000;
 let verdict = { state: 'unknown', at: 0 };
 
 /**
+ * Stock maglev answers unknown paths with its HTML single-page app and a 200.
+ * @param {{ status: number, body: any, isEnvelope: boolean }} reply
+ * @returns {boolean}
+ */
+export function isSuccessWithoutEnvelope(reply) {
+	return reply.status >= 200 && reply.status < 300 && !reply.isEnvelope;
+}
+
+/**
  * @param {{ status: number, body: any, isEnvelope: boolean }} reply
  * @returns {boolean}
  */
 export function isUnsupportedReply(reply) {
 	if (reply.status === 404) return true;
-	const isSuccess = reply.status >= 200 && reply.status < 300;
-	// Stock maglev answers unknown paths with its HTML single-page app and a 200.
-	if (isSuccess && !reply.isEnvelope) return true;
+	if (isSuccessWithoutEnvelope(reply)) return true;
 	return reply.isEnvelope && reply.body.code === 404;
 }
 

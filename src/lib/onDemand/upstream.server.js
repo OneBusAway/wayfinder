@@ -5,6 +5,7 @@ import { buildURL } from '$lib/urls.js';
 import { getAgencyFilter } from '$lib/agencyFilter.js';
 import {
 	isKnownUnsupported,
+	isSuccessWithoutEnvelope,
 	isUnsupportedReply,
 	recordProbeReply
 } from '$lib/onDemand/serverSupport.server.js';
@@ -100,10 +101,6 @@ async function fetchOrNull(path, params) {
 		console.error(`ondemand ${path} request failed:`, error);
 		return null;
 	}
-}
-
-function isSuccessWithoutEnvelope(reply) {
-	return reply.status >= 200 && reply.status < 300 && !reply.isEnvelope;
 }
 
 function isOkEnvelope(reply) {
