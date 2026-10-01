@@ -6,7 +6,8 @@ import {
 	seedService,
 	setHighlightedService,
 	resetOnDemandStateForTesting,
-	CACHE_TTL_MS
+	CACHE_TTL_MS,
+	MAX_CACHE_ENTRIES
 } from '$lib/onDemand/onDemandState.svelte.js';
 import { entryBody, listBody } from '../../fixtures/onDemand.js';
 
@@ -40,6 +41,25 @@ describe('onDemandState', () => {
 		vi.advanceTimersByTime(CACHE_TTL_MS + 1);
 		await fetchServicesForViewport(viewport);
 		expect(fetchMock).toHaveBeenCalledTimes(2);
+	});
+
+	it('evicts expired viewports and caps the cache on write', async () => {
+		vi.useFakeTimers();
+		const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => ok(listBody()));
+		const pan = (step) => fetchServicesForViewport({ ...viewport, lat: 10 + step });
+		for (let step = 0; step < MAX_CACHE_ENTRIES + 5; step++) await pan(step);
+		expect(fetchMock).toHaveBeenCalledTimes(MAX_CACHE_ENTRIES + 5);
+
+		await pan(MAX_CACHE_ENTRIES + 4); // newest survives the cap
+		expect(fetchMock).toHaveBeenCalledTimes(MAX_CACHE_ENTRIES + 5);
+		await pan(0); // oldest was dropped
+		expect(fetchMock).toHaveBeenCalledTimes(MAX_CACHE_ENTRIES + 6);
+
+		vi.advanceTimersByTime(CACHE_TTL_MS + 1);
+		await pan(100); // the write sweeps everything expired
+		fetchMock.mockClear();
+		await pan(MAX_CACHE_ENTRIES + 4);
+		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('shares one in-flight request between identical callers', async () => {

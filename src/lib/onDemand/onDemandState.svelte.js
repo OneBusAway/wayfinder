@@ -24,6 +24,7 @@ export const onDemandState = $state({
 });
 
 export const CACHE_TTL_MS = 10 * 60 * 1000;
+export const MAX_CACHE_ENTRIES = 50;
 
 // Which cached geometry levels can answer a request for each level.
 const SATISFIES = { none: ['none', 'simplified'], simplified: ['simplified'], full: ['full'] };
@@ -32,18 +33,29 @@ const viewportCache = new Map();
 const serviceCache = new Map();
 const inFlight = new Map();
 
+function isExpired(entry) {
+	return Date.now() - entry.at > CACHE_TTL_MS;
+}
+
 function readCache(cache, key) {
 	const hit = cache.get(key);
 	if (!hit) return undefined;
-	if (Date.now() - hit.at > CACHE_TTL_MS) {
+	if (isExpired(hit)) {
 		cache.delete(key);
 		return undefined;
 	}
 	return hit.value;
 }
 
+// Reads only evict the key they ask for, so panning would otherwise grow the
+// cache without bound: sweep expired entries and cap the size on every write.
 function writeCache(cache, key, value) {
+	for (const [cachedKey, entry] of cache) {
+		if (isExpired(entry)) cache.delete(cachedKey);
+	}
+	cache.delete(key); // re-insert so a rewritten key counts as the newest
 	cache.set(key, { at: Date.now(), value });
+	while (cache.size > MAX_CACHE_ENTRIES) cache.delete(cache.keys().next().value);
 }
 
 function shared(key, request) {
