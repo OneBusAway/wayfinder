@@ -131,6 +131,7 @@ function makeFakeL(fakeMarker) {
 			this.setStyle = vi.fn();
 			this.remove = vi.fn();
 		}),
+		DomEvent: { stopPropagation: vi.fn() },
 		polylineDecorator: vi.fn(() => ({ addTo: vi.fn().mockReturnThis(), remove: vi.fn() })),
 		Symbol: { arrowHead: vi.fn(() => ({})) }
 	};
@@ -1125,7 +1126,9 @@ describe('polygons', () => {
 			interactive: false
 		});
 		const clickHandler = polygon.on.mock.calls.find(([event]) => event === 'click')[1];
-		clickHandler({ originalEvent: {} });
+		const clickEvent = { originalEvent: {} };
+		clickHandler(clickEvent);
+		expect(provider.L.DomEvent.stopPropagation).toHaveBeenCalledWith(clickEvent);
 		expect(onClick).toHaveBeenCalled();
 	});
 

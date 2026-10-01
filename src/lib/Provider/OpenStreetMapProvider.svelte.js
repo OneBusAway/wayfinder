@@ -1001,7 +1001,7 @@ export default class OpenStreetMapProvider {
 		if (style.interactive && style.onClick) {
 			polygon.on('click', (event) => {
 				// Keep the click from reaching the map (context menu, deselect).
-				this.L.DomEvent?.stopPropagation?.(event);
+				this.L.DomEvent.stopPropagation(event);
 				style.onClick();
 			});
 		}
