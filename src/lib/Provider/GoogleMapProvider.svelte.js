@@ -1065,7 +1065,9 @@ export default class GoogleMapProvider {
 	}
 
 	getBoundingBox() {
-		const bounds = this.map.getBounds();
+		// Undefined until the map has rendered once; callers treat null as "no extent yet".
+		const bounds = this.map?.getBounds();
+		if (!bounds) return null;
 		const ne = bounds.getNorthEast();
 		const sw = bounds.getSouthWest();
 		return {

@@ -800,3 +800,15 @@ describe('polygons', () => {
 		expect(provider.map.fitBounds).toHaveBeenCalledWith(expect.anything(), 40);
 	});
 });
+
+describe('getBoundingBox', () => {
+	test('returns null before the map has rendered its bounds', () => {
+		const provider = new GoogleMapProvider('key', vi.fn());
+		provider.map = { getBounds: () => undefined };
+		expect(provider.getBoundingBox()).toBeNull();
+	});
+
+	test('returns null without a map', () => {
+		expect(new GoogleMapProvider('key', vi.fn()).getBoundingBox()).toBeNull();
+	});
+});
