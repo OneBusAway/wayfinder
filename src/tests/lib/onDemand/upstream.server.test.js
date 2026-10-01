@@ -21,12 +21,12 @@ import {
 	resetOnDemandSupportForTesting,
 	UNSUPPORTED_TTL_MS
 } from '$lib/onDemand/serverSupport.server.js';
+import { envelope } from '../../fixtures/onDemand.js';
 
 function reply(status, body, contentType = 'application/json') {
 	const text = typeof body === 'string' ? body : JSON.stringify(body);
 	return new Response(text, { status, headers: { 'content-type': contentType } });
 }
-const envelope = (data, code = 200) => ({ code, currentTime: 0, text: 'OK', version: 2, data });
 
 describe('serverSupport', () => {
 	beforeEach(() => resetOnDemandSupportForTesting());

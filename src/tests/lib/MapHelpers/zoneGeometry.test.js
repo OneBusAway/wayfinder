@@ -1,13 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { polygonsOf, isClockwise, orientRing } from '$lib/MapHelpers/zoneGeometry.js';
+import { square } from '../../fixtures/onDemand.js';
 
-const ccwSquare = [
-	[0, 0],
-	[1, 0],
-	[1, 1],
-	[0, 1],
-	[0, 0]
-];
+const ccwSquare = square(0, 0, 1, 1).coordinates[0];
 
 describe('zoneGeometry', () => {
 	it('wraps a Polygon and passes a MultiPolygon through', () => {

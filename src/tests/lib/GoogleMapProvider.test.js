@@ -4,6 +4,7 @@ import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 import { nightModeStyles } from '$lib/googleMaps';
 import { polylineArrowColor } from '$lib/colorUtils';
 import { isClockwise } from '$lib/MapHelpers/zoneGeometry.js';
+import { square } from '../fixtures/onDemand.js';
 
 vi.mock('$components/map/StopMarker.svelte', () => ({ default: {} }));
 vi.mock('$components/map/PopupContent.svelte', () => ({ default: {} }));
@@ -748,25 +749,10 @@ describe('polygons', () => {
 		provider = new GoogleMapProvider('key', vi.fn());
 		provider.map = { fitBounds: vi.fn() };
 	});
-	const geometry = {
-		type: 'Polygon',
-		coordinates: [
-			[
-				[-77.1, 38.8],
-				[-77.0, 38.8],
-				[-77.0, 38.9],
-				[-77.1, 38.9],
-				[-77.1, 38.8]
-			],
-			[
-				[-77.06, 38.84],
-				[-77.06, 38.86],
-				[-77.04, 38.86],
-				[-77.04, 38.84],
-				[-77.06, 38.84]
-			]
-		]
-	};
+	const outer = square(-77.1, 38.8, -77.0, 38.9);
+	// Wound opposite to square()'s counter-clockwise ring, as a GeoJSON hole is.
+	const hole = square(-77.06, 38.84, -77.04, 38.86).coordinates[0].reverse();
+	const geometry = { ...outer, coordinates: [...outer.coordinates, hole] };
 
 	test('draws exterior and hole paths with opposite winding below the routes', () => {
 		const polygon = provider.createPolygon(geometry, {

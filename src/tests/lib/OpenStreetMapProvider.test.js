@@ -5,6 +5,7 @@ import OpenStreetMapProvider, {
 } from '$lib/Provider/OpenStreetMapProvider.svelte.js';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 import { polylineArrowColor } from '$lib/colorUtils';
+import { square } from '../fixtures/onDemand.js';
 
 // Minimal Svelte component stubs — only imported by the module, never called
 // during these unit tests because we mock openStopMarker directly and never
@@ -1070,25 +1071,9 @@ describe('polygons', () => {
 		provider.map = { hasLayer: () => true, removeLayer: vi.fn(), fitBounds: vi.fn() };
 		return provider;
 	}
-	const geometry = {
-		type: 'Polygon',
-		coordinates: [
-			[
-				[-77.1, 38.8],
-				[-77.0, 38.8],
-				[-77.0, 38.9],
-				[-77.1, 38.9],
-				[-77.1, 38.8]
-			],
-			[
-				[-77.06, 38.84],
-				[-77.04, 38.84],
-				[-77.04, 38.86],
-				[-77.06, 38.86],
-				[-77.06, 38.84]
-			]
-		]
-	};
+	const outer = square(-77.1, 38.8, -77.0, 38.9);
+	const hole = square(-77.06, 38.84, -77.04, 38.86).coordinates[0];
+	const geometry = { ...outer, coordinates: [...outer.coordinates, hole] };
 
 	test('draws lat/lng rings with holes on the zone pane', () => {
 		const provider = makeProvider();

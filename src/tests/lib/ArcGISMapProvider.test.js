@@ -152,6 +152,7 @@ import {
 } from '@arcgis/core/symbols/support/cimSymbolUtils.js';
 
 import { isClockwise } from '$lib/MapHelpers/zoneGeometry.js';
+import { square } from '../fixtures/onDemand.js';
 
 const SHAPE = '_p~iF~ps|U_ulLnnqC_mqNvxq`@';
 
@@ -538,18 +539,7 @@ describe('ArcGISMapProvider', () => {
 });
 
 describe('ArcGISMapProvider polygons', () => {
-	const geometry = {
-		type: 'Polygon',
-		coordinates: [
-			[
-				[-77.1, 38.8],
-				[-77.0, 38.8],
-				[-77.0, 38.9],
-				[-77.1, 38.9],
-				[-77.1, 38.8]
-			]
-		]
-	};
+	const geometry = square(-77.1, 38.8, -77.0, 38.9);
 
 	test('adds zone graphics to a layer below the route layers', async () => {
 		const provider = await initializedProvider();
