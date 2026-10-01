@@ -97,6 +97,7 @@
 	// Fraction of map height to lift a selected stop above center so the mobile
 	// bottom sheet (half detent, ~55% tall) doesn't cover it — lands it ~25% down.
 	const MOBILE_STOP_MAP_OFFSET_Y = 0.25;
+	const DESKTOP_MIN_WIDTH_PX = 768;
 
 	// The open stop is driven by page.state.stopData. A marker tap sets it via shallow
 	// pushState; a cold load / share seeds it from the server load's page.data in
@@ -236,10 +237,10 @@
 			// selection state so no modal reappears when the stop sheet closes.
 			supersedeRouteAndTripSelection(provider);
 
-			searchCollapsed = true;
-			if (browser && window.innerWidth >= 768) sheetSnap = 'full';
+			openSheetChrome();
 
-			const offsetY = browser && window.innerWidth < 768 ? MOBILE_STOP_MAP_OFFSET_Y : 0;
+			const offsetY =
+				browser && window.innerWidth < DESKTOP_MIN_WIDTH_PX ? MOBILE_STOP_MAP_OFFSET_Y : 0;
 			// mapWasReady is false only on the very first framing (cold load) → snap
 			// instantly; later in-app selections animate.
 			provider.flyTo(data.lat, data.lon, 16, { offsetY, animate: mapWasReady });
@@ -337,16 +338,22 @@
 		if (serviceId == null || !provider) return;
 		untrack(() => {
 			supersedeRouteAndTripSelection(provider);
-			searchCollapsed = true;
-			if (browser && window.innerWidth >= 768) sheetSnap = 'full';
+			openSheetChrome();
 		});
 	});
+
+	// Collapse the search field behind a selection sheet; on desktop (md+) the
+	// sheet is a fixed side panel, so open it fully instead of at the half detent.
+	function openSheetChrome() {
+		searchCollapsed = true;
+		if (browser && window.innerWidth >= DESKTOP_MIN_WIDTH_PX) sheetSnap = 'full';
+	}
 
 	function handleViewAllRoutes() {
 		currentModal = Modal.ALL_ROUTES;
 		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
 		// bottom sheet, so open it fully instead of at the half detent.
-		if (browser && window.innerWidth >= 768) {
+		if (browser && window.innerWidth >= DESKTOP_MIN_WIDTH_PX) {
 			sheetSnap = 'full';
 		}
 	}
@@ -449,7 +456,7 @@
 		isRouteSelected = true;
 		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
 		// bottom sheet, so open it fully instead of at the half detent.
-		if (browser && window.innerWidth >= 768) {
+		if (browser && window.innerWidth >= DESKTOP_MIN_WIDTH_PX) {
 			sheetSnap = 'full';
 		}
 		analytics.reportRouteClicked(selectedRoute.id);
