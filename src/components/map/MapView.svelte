@@ -406,6 +406,7 @@
 
 	onDestroy(() => {
 		isDestroyed = true;
+		isMapLoaded.set(false);
 		debouncedLoadMarkers?.cancel?.();
 		debouncedLoadMarkers = null;
 

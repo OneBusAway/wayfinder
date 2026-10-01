@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
+import { isMapLoaded } from '$src/stores/mapStore';
 
 const fetchService = vi.hoisted(() => vi.fn());
 vi.mock('$lib/onDemand/onDemandState.svelte.js', async (importOriginal) => {
@@ -46,6 +47,7 @@ function setup(result) {
 describe('OnDemandServiceSheet', () => {
 	beforeEach(() => {
 		resetOnDemandStateForTesting();
+		isMapLoaded.set(true);
 		fetchService.mockReset();
 		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
 		vi.setSystemTime(new Date('2026-03-10T23:59:00Z')); // 16:59 PDT, before the 17:00 cutoff
@@ -83,6 +85,17 @@ describe('OnDemandServiceSheet', () => {
 		await flush();
 		expect(provider.fitToBounds).toHaveBeenCalledTimes(1);
 		expect(anotherProvider.fitToBounds).not.toHaveBeenCalled();
+	});
+
+	it('waits for the map to load before framing, then frames once', async () => {
+		isMapLoaded.set(false);
+		const { provider } = setup(entry());
+		await flush();
+		expect(provider.fitToBounds).not.toHaveBeenCalled();
+
+		isMapLoaded.set(true);
+		await flush();
+		expect(provider.fitToBounds).toHaveBeenCalledTimes(1);
 	});
 
 	it('promotes the deadline for an advance service and offers a call', async () => {

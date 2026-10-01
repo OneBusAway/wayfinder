@@ -36,6 +36,7 @@
 	import { hoursRows } from '$lib/onDemand/hours.js';
 	import { scheduleAt } from '$lib/onDemand/instants.js';
 	import { httpUrlOrNull } from '$lib/urls.js';
+	import { isMapLoaded } from '$src/stores/mapStore';
 
 	let { serviceId, closePane, mapProvider = null, snap = $bindable('half') } = $props();
 
@@ -88,13 +89,14 @@
 
 	let service = $derived(loadState.kind === 'ready' ? loadState.service : null);
 
-	// Frame once per service, whichever of the load and the map provider arrives last
-	// (on a cold load the provider is still null when the service resolves).
+	// Frame once per service, whichever of the load and the map arrives last. On a cold
+	// load the provider exists before its map does, and fitToBounds is a no-op until then.
 	let framedServiceId = null;
 	$effect(() => {
 		const readyService = service;
 		const provider = mapProvider;
-		if (!readyService || !provider || readyService.id === framedServiceId) return;
+		const mapReady = $isMapLoaded;
+		if (!readyService || !provider || !mapReady || readyService.id === framedServiceId) return;
 		framedServiceId = readyService.id;
 		untrack(() => frame(readyService, provider));
 	});
