@@ -1,16 +1,20 @@
 <script>
+	// @ts-check
 	import { faCaretUp } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 
 	/**
+	 * @typedef {import('@fortawesome/free-solid-svg-icons').IconDefinition} IconDefinition
+	 * @typedef {import('$lib/types').Stop} Stop
+	 *
 	 * @typedef {Object} Props
-	 * @property {any} stop
-	 * @property {any} onClick
-	 * @property {any} icon
+	 * @property {Stop} stop
+	 * @property {(event: MouseEvent) => void} onClick
+	 * @property {IconDefinition} icon
 	 * @property {boolean} [isHighlighted]
 	 * @property {boolean} [showRoutesLabel]
-	 * @property {'full'|'routeDot'|'muted'} [emphasis] - Marker prominence,
-	 *   decided by the map layer from the current selection. `full` is today's pin.
+	 * @property {'full'|'routeDot'|'muted'} [emphasis] - Marker prominence, decided by the map
+	 *     layer from the current selection. `full` is today's pin.
 	 * @property {string|null} [dotColor] - Ring color for the `routeDot` tier.
 	 */
 
@@ -64,12 +68,18 @@
 		})()
 	);
 
+	/**
+	 * @param {Event} event
+	 */
 	function toggleRoutesList(event) {
 		event.preventDefault();
 		event.stopPropagation();
 		isExpanded = !isExpanded;
 	}
 
+	/**
+	 * @param {KeyboardEvent} event
+	 */
 	function handleRoutesLabelKeydown(event) {
 		if (event.key === 'Enter' || event.key === ' ') {
 			event.preventDefault();
