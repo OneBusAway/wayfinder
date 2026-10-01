@@ -81,6 +81,12 @@
 		return [...visible, highlighted];
 	}
 
+	function highlightFor(service, highlighted) {
+		if (!highlighted) return 'none';
+		if (service.id === highlighted.id) return 'selected';
+		return 'dimmed';
+	}
+
 	function draw(provider, visible, currentLevel, highlighted) {
 		const list = servicesToDraw(currentLevel === 'hidden' ? [] : visible, highlighted);
 		const drawLevel = currentLevel === 'street' ? 'street' : 'region';
@@ -95,11 +101,7 @@
 		}
 
 		for (const service of list) {
-			const highlight = !highlighted
-				? 'none'
-				: service.id === highlighted.id
-					? 'selected'
-					: 'dimmed';
+			const highlight = highlightFor(service, highlighted);
 			const style = zoneStyle({ level: drawLevel, color: colors.get(service.id), highlight });
 			const existing = drawn.get(service.id);
 			if (existing) {
