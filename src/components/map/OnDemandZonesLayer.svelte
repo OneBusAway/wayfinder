@@ -11,12 +11,11 @@
 -->
 <script>
 	import { onDestroy, untrack } from 'svelte';
-	import { pushState } from '$app/navigation';
 	import { onDemandState, fetchServicesForViewport } from '$lib/onDemand/onDemandState.svelte.js';
 	import { zoneLevel, zoneStyle } from '$lib/onDemand/zones.js';
 	import { assignZoneColors } from '$lib/onDemand/colors.js';
 	import { drawableAreas } from '$lib/onDemand/models.js';
-	import { onDemandServicePath } from '$lib/urls.js';
+	import { openOnDemandService } from '$lib/onDemand/navigation.js';
 
 	let { mapProvider = null, active = true, viewportTick = 0 } = $props();
 
@@ -111,7 +110,7 @@
 				.map((area) =>
 					provider.createPolygon(area.geometry, {
 						...style,
-						onClick: () => openService(service.id)
+						onClick: () => openOnDemandService(service.id)
 					})
 				)
 				.filter(Boolean);
@@ -123,9 +122,5 @@
 		for (const entry of drawn.values())
 			entry.handles.forEach((handle) => provider.removePolygon(handle));
 		drawn.clear();
-	}
-
-	function openService(id) {
-		pushState(onDemandServicePath(id), { onDemandServiceId: id });
 	}
 </script>

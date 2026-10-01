@@ -10,7 +10,7 @@
 	import { isLoading } from 'svelte-i18n';
 	import AlertsModal from '$components/navigation/AlertsModal.svelte';
 	import { onMount, onDestroy, untrack } from 'svelte';
-	import { onDemandServicePath } from '$lib/urls.js';
+	import { openOnDemandService } from '$lib/onDemand/navigation.js';
 	import StopBottomSheet from '$components/stops/StopBottomSheet.svelte';
 	import OnDemandServiceSheet from '$components/ondemand/OnDemandServiceSheet.svelte';
 	import CollapsedSearchField from '$components/search/CollapsedSearchField.svelte';
@@ -341,10 +341,6 @@
 			if (browser && window.innerWidth >= 768) sheetSnap = 'full';
 		});
 	});
-
-	function handleOnDemandServiceSelect(id) {
-		pushState(onDemandServicePath(id), { onDemandServiceId: id });
-	}
 
 	function handleViewAllRoutes() {
 		currentModal = Modal.ALL_ROUTES;
@@ -694,7 +690,7 @@
 						{tripSelected}
 						{handleUpdateRouteMap}
 						{routeColors}
-						onOnDemandServiceSelect={handleOnDemandServiceSelect}
+						onOnDemandServiceSelect={openOnDemandService}
 						bind:arrivalsAndDeparturesResponse={stopArrivals}
 						bind:snap={sheetSnap}
 					/>
