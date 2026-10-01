@@ -3,6 +3,17 @@ import { parseGtfsTime } from '$lib/onDemand/bookingDeadline.js';
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const SECONDS_PER_DAY = 86400;
 
+// Constructing an Intl.DateTimeFormat is costly, so build each once per locale.
+const wallClockFormats = new Map();
+const weekdayFormats = new Map();
+
+function formatterFor(cache, locale, options) {
+	if (!cache.has(locale)) {
+		cache.set(locale, new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }));
+	}
+	return cache.get(locale);
+}
+
 /**
  * Rows for the detail sheet's "When" section: rules merged by identical hours,
  * then one muted row for weekdays no current calendar covers.
@@ -75,11 +86,9 @@ function toRow(group, locale) {
 
 function formatWallClock(seconds, locale) {
 	const date = new Date((seconds % SECONDS_PER_DAY) * 1000);
-	return new Intl.DateTimeFormat(locale, {
-		hour: 'numeric',
-		minute: '2-digit',
-		timeZone: 'UTC'
-	}).format(date);
+	return formatterFor(wallClockFormats, locale, { hour: 'numeric', minute: '2-digit' }).format(
+		date
+	);
 }
 
 /**
@@ -98,10 +107,8 @@ export function formatDayRanges(days, locale) {
 		else runs.push([index]);
 	}
 	// 2024-01-01 was a Monday.
-	const name = (index) =>
-		new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' }).format(
-			new Date(Date.UTC(2024, 0, 1 + index))
-		);
+	const weekdayFormat = formatterFor(weekdayFormats, locale, { weekday: 'short' });
+	const name = (index) => weekdayFormat.format(new Date(Date.UTC(2024, 0, 1 + index)));
 	return runs
 		.map((run) => (run.length >= 2 ? `${name(run[0])}–${name(run.at(-1))}` : name(run[0])))
 		.join(', ');
