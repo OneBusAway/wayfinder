@@ -23,7 +23,7 @@ export function toDirection(orientation) {
 /**
  * calculate midpoint of a list of stops so we can show the route on the map
  * @param {Array} stops - List of stops with {lat, lon}
- * @returns {Object} Midpoint with {lat, lon}
+ * @returns {{lat: number, lon: number} | null} Midpoint with {lat, lon}, or null if there are no stops
  */
 export function calculateMidpoint(stops) {
 	// return null if stops is null or empty

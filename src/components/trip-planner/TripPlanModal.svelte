@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import ItineraryDetails from './ItineraryDetails.svelte';
@@ -13,58 +13,70 @@
 	import { notifications } from '$stores/notificationStore';
 	import { panelFitPadding } from '$lib/mapFitPadding.js';
 	import { calculateMidpoint } from '$lib/mathUtils.js';
+	import type {
+		Itinerary,
+		ItineraryLeg,
+		MapProvider,
+		TripPlanError,
+		TripPlanResponse
+	} from '$lib/types';
 
-	/**
-	 * @typedef {Object} Props
-	 * @property {import('$lib/types').MapProvider} mapProvider
-	 * @property {any} [itineraries]
-	 * @property {string | null} [error]
-	 * @property {boolean} [loading]
-	 * @property {Function} closePane
-	 * @property {('peek'|'half'|'full')} [snap]
-	 * @property {boolean} [showForm] - When true (mobile plan sheet), embed From/To form in this sheet
-	 * @property {boolean} [hasPlanned] - True after the rider submits a plan (even if zero results)
-	 * @property {Function} [handleTripPlan] - Required when showForm is true
-	 * @property {Function} [clearTripItineraries] - Required when showForm is true
-	 */
+	// Opaque provider handle, only ever passed back to `removePolyline`.
+	type Polyline = NonNullable<Awaited<ReturnType<MapProvider['createPolyline']>>>;
 
-	/** @type {Props} */
+	interface Props {
+		// Required when `showForm` is true
+		clearTripItineraries?: () => void;
+		closePane: () => void;
+		error?: TripPlanError | null;
+		// Required when `showForm` is true
+		handleTripPlan?: (tripPlanData: { data: TripPlanResponse }) => void;
+		// True after the rider submits a plan (even if zero results)
+		hasPlanned?: boolean;
+		itineraries?: Itinerary[];
+		loading?: boolean;
+		mapProvider: MapProvider;
+		// When true (mobile plan sheet), embed From/To form in this sheet
+		showForm?: boolean;
+		snap?: 'peek' | 'half' | 'full';
+	}
+
 	let {
-		mapProvider,
-		itineraries = [],
-		error = null,
-		loading = false,
+		clearTripItineraries,
 		closePane,
-		snap = $bindable('half'),
-		showForm = false,
+		error = null,
+		handleTripPlan,
 		hasPlanned = false,
-		handleTripPlan = null,
-		clearTripItineraries = null
-	} = $props();
+		itineraries = [],
+		loading = false,
+		mapProvider,
+		showForm = false,
+		snap = $bindable('half')
+	}: Props = $props();
 
-	let expandedSteps = $state({});
+	let expandedSteps: Record<number, boolean> = $state({});
 	let activeTab = $state(0);
-	let itineraryTabsContainer = $state(null);
-	let prevItinerariesRef = $state(null);
+	let itineraryTabsContainer: HTMLElement | null = $state(null);
+	let prevItinerariesRef: Itinerary[] | null = $state(null);
 	// Id of the toast this modal raised, so closing it clears only its own.
-	let notificationId = null;
-	let sheetElement = $state(null);
+	let notificationId: number | null = null;
+	let sheetElement: HTMLElement | null = $state(null);
 
-	function toggleSteps(index) {
+	function toggleSteps(index: number) {
 		expandedSteps[index] = !expandedSteps[index];
 		expandedSteps = { ...expandedSteps };
 	}
 
-	function setActiveTab(index) {
+	function setActiveTab(index: number) {
 		activeTab = index;
 		drawRoute();
 	}
 
-	let currPolylines = [];
+	let currPolylines: Polyline[] = [];
 	let drawToken = 0;
 
 	// Build per-leg polyline style based on mode and route color
-	function getLegPolylineStyle(leg) {
+	function getLegPolylineStyle(leg: ItineraryLeg) {
 		if (leg.mode === 'WALK') {
 			return {
 				color: '#888888',
@@ -99,7 +111,7 @@
 
 		let drawnCount = 0;
 		let legCount = 0;
-		const drawn = [];
+		const drawn: Polyline[] = [];
 
 		for (const leg of itineraries[activeTab].legs) {
 			// Counted before the geometry check: a leg with no geometry at all is
@@ -171,9 +183,8 @@
 	/**
 	 * Converts vertical wheel input into horizontal scrolling for the itinerary tabs.
 	 * Only active on screens at or above the md breakpoint (768px).
-	 * @param {WheelEvent} e
 	 */
-	function handleWheel(e) {
+	function handleWheel(e: WheelEvent) {
 		if (!browser || !itineraryTabsContainer) return;
 
 		// Only apply on large screens (md breakpoint and above)
@@ -204,7 +215,8 @@
 
 	onDestroy(() => {
 		drawToken++;
-		mapProvider.resetPadding?.();
+		// Only the ArcGIS provider keeps view padding that needs resetting.
+		if ('resetPadding' in mapProvider) mapProvider.resetPadding();
 		// Partial-shape warnings auto-dismiss, but clear ours immediately on close
 		// so it doesn't linger over the next view.
 		notifications.dismiss(notificationId);
