@@ -46,7 +46,7 @@
 			class="mt-4 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
 		>
 			<span
-				class="mt-0.5 shrink-0 rounded bg-amber-200 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-amber-950 dark:bg-amber-800 dark:text-amber-50"
+				class="mt-0.5 shrink-0 rounded bg-amber-200 px-1.5 py-0.5 text-xs font-bold tracking-wide text-amber-950 uppercase dark:bg-amber-800 dark:text-amber-50"
 			>
 				{$isLoading ? '' : $t('schedule_for_stop.short_line')}
 			</span>

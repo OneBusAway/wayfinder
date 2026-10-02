@@ -109,7 +109,7 @@
 	{:else if tripDetails}
 		{#if tripDetails.status?.vehicleId}
 			<h2 class="flex items-center gap-2 text-sm font-semibold">
-				<RadioTower class="h-4 w-4 text-brand" />
+				<RadioTower class="text-brand h-4 w-4" />
 				{$_('trip_details.live_vehicle', { values: { vehicleId: tripDetails.status.vehicleId } })}
 			</h2>
 		{:else if routeInfo}
@@ -159,7 +159,7 @@
 								{#if !(isFirst && isLast)}
 									<div
 										class="absolute w-px bg-neutral-400 {isFirst
-											? 'bottom-0 top-1/2'
+											? 'top-1/2 bottom-0'
 											: isLast
 												? 'top-0 h-1/2'
 												: 'inset-y-0'}"
@@ -178,12 +178,12 @@
 										/>
 										{#if tripStop.stopId === stop.id}
 											<Check
-												class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-0.5 text-white"
+												class="bg-brand absolute -top-1 -right-1 rounded-full border border-white p-0.5 text-white"
 												size={14}
 											/>
 										{/if}
 									{:else if tripStop.stopId === stop.id}
-										<MapPin class="h-5 w-5 text-brand-accent" />
+										<MapPin class="text-brand-accent h-5 w-5" />
 									{:else}
 										<div
 											class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"
@@ -199,7 +199,7 @@
 								>
 									{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 								</div>
-								<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+								<div class="text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 									{formatSecondsFromMidnight(tripStop.arrivalTime)}
 								</div>
 							</div>

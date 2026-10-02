@@ -40,7 +40,7 @@
 
 		<button
 			onclick={launchSurvey}
-			class="focus:ring-opacity-50 mt-4 flex w-full items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-green-700 focus:ring-2 focus:ring-green-400"
+			class="mt-4 flex w-full items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-green-700 focus:ring-2 focus:ring-green-400/50"
 		>
 			Take Survey
 		</button>

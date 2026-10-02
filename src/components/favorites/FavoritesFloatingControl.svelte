@@ -109,7 +109,7 @@
 		<Star class="h-4 w-4" fill="currentColor" />
 		{#if count > 0}
 			<span
-				class="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-accent px-1 text-[10px] font-bold text-white"
+				class="bg-brand-accent absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
 			>
 				{count > 99 ? '99+' : count}
 			</span>
@@ -123,7 +123,7 @@
 			role="dialog"
 			aria-label={$t('favorites.title')}
 			tabindex="-1"
-			class="absolute right-0 top-full z-40 mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 p-3 shadow-lg outline-none backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800/95"
+			class="absolute top-full right-0 z-40 mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 p-3 shadow-lg backdrop-blur-sm outline-none dark:border-gray-600 dark:bg-gray-800/95"
 		>
 			<FavoritesList onStopClick={handleStopClick} onRouteClick={handleRouteClick} />
 		</div>

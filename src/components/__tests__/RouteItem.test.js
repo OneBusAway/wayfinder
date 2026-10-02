@@ -147,7 +147,7 @@ describe('RouteItem', () => {
 		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
 		expect(button).toHaveClass('border-b', 'border-gray-200', 'bg-[#f9f9f9]');
 		expect(button).toHaveClass('p-4', 'text-left');
-		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-none');
+		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-hidden');
 	});
 
 	test('route name has proper styling classes', () => {

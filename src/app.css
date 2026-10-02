@@ -4,6 +4,16 @@
    on the same node — e.g. modal-pane's dark:bg-surface-dark vs bg-white/80. */
 @custom-variant dark (&:is(.dark, .dark *));
 
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentColor);
+	}
+}
+
 @layer components {
 	.h1 {
 		@apply text-surface-foreground dark:text-surface-foreground-dark mb-4 text-2xl font-semibold;
