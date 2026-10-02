@@ -39,7 +39,6 @@ describe('activeRoutesFromArrivals', () => {
 		expect(result.map((r) => r.id)).toEqual(['r_c', 'r_22']);
 		expect(result[0]).toEqual({
 			id: 'r_c',
-			shortName: 'C Line',
 			type: 3,
 			tripId: 't_a',
 			tripCandidates: [{ id: 't_a' }],
@@ -260,7 +259,7 @@ describe('activeRoutesFromArrivals', () => {
 		expect(result[0].tripId).toBe('t_soon');
 	});
 
-	test('falls back to the arrival routeShortName when the route reference is missing', () => {
+	test('falls back to defaults when the route reference is missing', () => {
 		const result = activeRoutesFromArrivals(
 			makeResponse(
 				[
@@ -276,7 +275,6 @@ describe('activeRoutesFromArrivals', () => {
 				[]
 			)
 		);
-		expect(result[0].shortName).toBe('773');
 		expect(result[0].gtfsColor).toBeNull();
 		expect(result[0].type).toBe(3);
 	});

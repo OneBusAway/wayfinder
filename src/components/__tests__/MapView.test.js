@@ -178,8 +178,8 @@ describe('stop selection layer', () => {
 	});
 });
 
-// Finding 1: MapView is the integration point between the stop-selection layer
-// and its two children. These tests exist to catch a broken bind: or a
+// MapView is the integration point between the stop selection and
+// StopRoutesLayer. These tests exist to catch a broken bind: or a
 // mis-wired prop, which a bare `() => null` stub can never surface.
 describe('StopRoutesLayer integration', () => {
 	beforeEach(() => {
