@@ -83,7 +83,7 @@ describe('StopItem', () => {
 		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
 		expect(button).toHaveClass('border-b', 'border-gray-200');
 		expect(button).toHaveClass('bg-[#f9f9f9]', 'p-4', 'text-left');
-		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-none');
+		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-hidden');
 	});
 
 	test('has proper dark mode classes', () => {

@@ -15,7 +15,7 @@
 
 	const baseClasses = {
 		label: `relative block font-semibold tracking-tight text-gray-900 dark:text-gray-100`,
-		input: `w-full rounded border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100`,
+		input: `w-full rounded border bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100`,
 		option: `rounded font-medium text-gray-800 transition-all hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700`
 	};
 

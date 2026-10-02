@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 /**
  * flowbite-svelte 0.47 ships a few components that import from the package barrel
  * (`from ".."`). Vite SSR then loads index.js → Badge.svelte → index.js and
@@ -13,6 +16,21 @@ dotenv.config();
  * imports to the real files so the cycle never starts.
  */
 function flowbiteSvelteNoCircular() {
+	// Assert flowbite-svelte version
+	try {
+		const pkgPath = fileURLToPath(
+			new URL('./node_modules/flowbite-svelte/package.json', import.meta.url)
+		);
+		const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+		if (!pkg.version.startsWith('0.47.')) {
+			console.warn(
+				`flowbiteSvelteNoCircular plugin expects flowbite-svelte@0.47.x, found ${pkg.version}. Please verify if the patch is still needed or update the regex.`
+			);
+		}
+	} catch (e) {
+		// Ignore if package.json cannot be read
+	}
+
 	const closeButtonFromBarrel = /import\s*\{\s*CloseButton\s*\}\s*from\s*["']\.\.["']\s*;/;
 	const buttonFromBarrel = /import\s*\{\s*Button\s*\}\s*from\s*["']\.\.["']\s*;/;
 
