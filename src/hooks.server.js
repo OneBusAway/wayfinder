@@ -18,15 +18,19 @@ export async function metricsHandle({ event, resolve }) {
 	}
 
 	const start = process.hrtime.bigint();
-	const response = await resolve(event);
-	const durationSeconds = Number(process.hrtime.bigint() - start) / 1_000_000_000;
-	observeRequest({
-		method: event.request.method,
-		uri: event.route?.id ?? 'unmatched',
-		status: response.status,
-		seconds: durationSeconds
-	});
-	return response;
+	let status = 500;
+	try {
+		const response = await resolve(event);
+		status = response.status;
+		return response;
+	} finally {
+		observeRequest({
+			method: event.request.method,
+			uri: event.route?.id ?? 'unmatched',
+			status,
+			seconds: Number(process.hrtime.bigint() - start) / 1_000_000_000
+		});
+	}
 }
 
 export async function appHandle({ event, resolve }) {

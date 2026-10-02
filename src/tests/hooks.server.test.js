@@ -166,6 +166,25 @@ describe('hooks.server', () => {
 		);
 	});
 
+	it('records a 500 request when resolve rejects and rethrows the original error', async () => {
+		const { metricsHandle } = await import('../hooks.server.js');
+		const { registry } = await import('$lib/server/metrics.js');
+		const error = new Error('resolve failed');
+		const resolve = vi.fn().mockRejectedValue(error);
+
+		await expect(metricsHandle({ event: makeEvent(), resolve })).rejects.toBe(error);
+
+		const text = await registry.metrics();
+		const samples = text
+			.split('\n')
+			.filter(
+				(line) =>
+					line.startsWith('http_server_requests_seconds_count{') && line.includes('status="500"')
+			);
+		expect(samples).toHaveLength(1);
+		expect(samples[0]).toMatch(/} 1$/);
+	});
+
 	it('throws during startup when enabled without an organization', async () => {
 		mockPublicEnv.PUBLIC_METRICS_ENABLED = 'true';
 		mockPublicEnv.PUBLIC_METRICS_ORGANIZATION = '   ';
