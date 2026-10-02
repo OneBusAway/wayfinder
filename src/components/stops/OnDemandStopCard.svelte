@@ -11,15 +11,14 @@
 -->
 <script>
 	import { untrack } from 'svelte';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faPhone } from '@fortawesome/free-solid-svg-icons';
+	import { Phone } from '@lucide/svelte';
 	import { locale, t } from 'svelte-i18n';
 	import { fetchService, onDemandState } from '$lib/onDemand/onDemandState.svelte.js';
 	import { contactBookingRule, onDemandServiceIds } from '$lib/onDemand/models.js';
 	import { evaluateAvailability, sortByAvailability } from '$lib/onDemand/availability.js';
 	import { formatStatus } from '$lib/onDemand/copy.js';
 	import { minInstant, scheduleAt } from '$lib/onDemand/instants.js';
-	import { onDemandServicePath } from '$lib/urls.js';
+	import { onDemandServicePath } from '$lib/urls';
 
 	let { stop, onSelectService = null, services = $bindable([]) } = $props();
 
@@ -98,7 +97,7 @@
 							aria-label={$t('ondemand.call', { values: { phone } })}
 							class="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-brand-accent text-white hover:bg-brand"
 						>
-							<FontAwesomeIcon icon={faPhone} />
+							<Phone class="h-4 w-4" />
 						</a>
 					{/if}
 				</li>

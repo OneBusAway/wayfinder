@@ -14,20 +14,18 @@ export function buildURL(
 /**
  * Path for an on-demand service opened on the map; shareable and pushed onto
  * history when a zone or a stop-card row is tapped.
- * @param {string} id - combined service id (e.g. "5088_77652")
- * @returns {string}
+ * @param id - combined service id (e.g. "5088_77652")
  */
-export function onDemandServicePath(id) {
+export function onDemandServicePath(id: string): string {
 	return `/map/ondemand/${encodeURIComponent(id)}`;
 }
 
 /**
  * Guards feed-supplied URLs before they reach an href: only absolute http(s)
  * URLs survive, so a `javascript:` or `data:` value can never become a link.
- * @param {unknown} value
- * @returns {string | null} the value unchanged, or null
+ * @returns the value unchanged, or null
  */
-export function httpUrlOrNull(value) {
+export function httpUrlOrNull(value: unknown): string | null {
 	if (typeof value !== 'string') return null;
 	try {
 		const { protocol } = new URL(value);

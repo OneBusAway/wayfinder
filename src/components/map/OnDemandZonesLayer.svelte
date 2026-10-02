@@ -28,7 +28,7 @@
 	let isEnabled = $derived(active && onDemandState.support !== 'unsupported');
 
 	$effect(() => {
-		viewportTick;
+		void viewportTick;
 		const provider = mapProvider;
 		if (!provider || !isEnabled) {
 			requestSeq++;

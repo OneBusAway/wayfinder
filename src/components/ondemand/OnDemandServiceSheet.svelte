@@ -12,14 +12,7 @@
 -->
 <script>
 	import { onDestroy, untrack } from 'svelte';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import {
-		faX,
-		faPhone,
-		faClock,
-		faArrowUpRightFromSquare,
-		faCircleInfo
-	} from '@fortawesome/free-solid-svg-icons';
+	import { Clock, Info, Phone, SquareArrowOutUpRight, X } from '@lucide/svelte';
 	import { locale, t } from 'svelte-i18n';
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import { keybinding } from '$lib/keybinding';
@@ -35,7 +28,7 @@
 	import { formatStatus, formatBookingLine, bookingTagKey } from '$lib/onDemand/copy.js';
 	import { hoursRows } from '$lib/onDemand/hours.js';
 	import { scheduleAt } from '$lib/onDemand/instants.js';
-	import { httpUrlOrNull } from '$lib/urls.js';
+	import { httpUrlOrNull } from '$lib/urls';
 	import { isMapLoaded } from '$src/stores/mapStore';
 
 	let { serviceId, closePane, mapProvider = null, snap = $bindable('half') } = $props();
@@ -48,7 +41,7 @@
 
 	$effect(() => {
 		const id = serviceId;
-		retryCount; // Retry re-runs this effect so every load shares its cancellation.
+		void retryCount; // Retry re-runs this effect so every load shares its cancellation.
 		let cancelled = false;
 		// fetchService reads onDemandState.support; a support flip must not re-run the load.
 		untrack(() => load(id, () => cancelled));
@@ -179,7 +172,7 @@
 					aria-label={$t('ondemand.close')}
 					class="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-gray-200 text-sm text-black hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
 				>
-					<FontAwesomeIcon icon={faX} />
+					<X class="h-4 w-4" />
 				</button>
 			</div>
 		</div>
@@ -224,7 +217,7 @@
 						href={`tel:${contact.phoneNumber}`}
 						class="inline-flex h-11 items-center gap-2 rounded-full bg-brand-accent px-5 text-sm font-semibold text-white hover:bg-brand"
 					>
-						<FontAwesomeIcon icon={faPhone} />
+						<Phone class="h-4 w-4" />
 						{$t('ondemand.call', { values: { phone: contact.phoneNumber } })}
 					</a>
 				{:else if bookingUrl}
@@ -244,7 +237,7 @@
 					data-testid="ondemand-deadline"
 					class="flex items-start gap-2 text-sm text-gray-900 dark:text-white"
 				>
-					<FontAwesomeIcon icon={faClock} class="mt-0.5" />
+					<Clock class="mt-0.5 h-4 w-4 shrink-0" />
 					<span>{deadlineLine}</span>
 				</p>
 			{/if}
@@ -298,7 +291,7 @@
 			<section class="space-y-2 text-sm">
 				<h3 class="font-semibold text-gray-900 dark:text-white">{$t('ondemand.how_to_book')}</h3>
 				<p class="flex items-start gap-2 text-gray-700 dark:text-gray-300">
-					<FontAwesomeIcon icon={faClock} class="mt-0.5" />
+					<Clock class="mt-0.5 h-4 w-4 shrink-0" />
 					<span>{bookingLine}</span>
 				</p>
 				{#if serviceUrl}
@@ -308,7 +301,7 @@
 						rel="noopener noreferrer"
 						class="flex items-center gap-2 text-brand-accent hover:underline dark:text-brand"
 					>
-						<FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+						<SquareArrowOutUpRight class="h-4 w-4" />
 						{$t('ondemand.open_agency_website')}
 					</a>
 				{/if}
@@ -319,7 +312,7 @@
 						rel="noopener noreferrer"
 						class="flex items-center gap-2 text-brand-accent hover:underline dark:text-brand"
 					>
-						<FontAwesomeIcon icon={faCircleInfo} />
+						<Info class="h-4 w-4" />
 						{$t('ondemand.more_information')}
 					</a>
 				{/if}

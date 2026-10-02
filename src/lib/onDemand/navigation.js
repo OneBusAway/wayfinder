@@ -1,5 +1,5 @@
 import { pushState } from '$app/navigation';
-import { onDemandServicePath } from '$lib/urls.js';
+import { onDemandServicePath } from '$lib/urls';
 
 /**
  * Open an on-demand service's sheet via shallow routing, so the map stays
