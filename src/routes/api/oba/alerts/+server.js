@@ -1,5 +1,5 @@
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
-import { buildURL } from '$lib/urls.js';
+import { buildURL } from '$lib/urls';
 import { getAgencyFilter, alertBelongsToAgency } from '$lib/agencyFilter.js';
 import { isValidAlert } from '$lib/alerts.js';
 import {

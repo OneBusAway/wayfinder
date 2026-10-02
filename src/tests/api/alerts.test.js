@@ -12,7 +12,7 @@ vi.mock('$env/dynamic/private', () => ({
 	}
 }));
 
-vi.mock('$lib/urls.js', () => ({
+vi.mock('$lib/urls', () => ({
 	buildURL: vi.fn((...args) => `${args[0]}/${args[1]}`)
 }));
 
@@ -38,7 +38,7 @@ vi.mock('gtfs-realtime-bindings', () => ({
 }));
 
 import { GET } from '../../routes/api/oba/alerts/+server.js';
-import { buildURL } from '$lib/urls.js';
+import { buildURL } from '$lib/urls';
 import { isStartDateWithin24Hours, isHighSeverity } from '$lib/alerts.js';
 
 describe('GET /api/oba/alerts', () => {

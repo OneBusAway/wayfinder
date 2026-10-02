@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { buildURL } from '$lib/urls.js';
+import { buildURL } from '$lib/urls';
 import {
 	getSidecarBaseURL,
 	getSidecarRegionPath,

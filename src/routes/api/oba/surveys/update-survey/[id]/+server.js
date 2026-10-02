@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { buildURL } from '$lib/urls.js';
+import { buildURL } from '$lib/urls';
 import { getSidecarBaseURL, warnSidecarNotConfigured } from '$lib/sidecarConfig.js';
 
 export async function POST({ request, params }) {

@@ -10,7 +10,7 @@ vi.mock('$env/dynamic/private', () => ({
 	}
 }));
 
-vi.mock('$lib/urls.js', () => ({
+vi.mock('$lib/urls', () => ({
 	buildURL: vi.fn((...args) => `${args[0]}/${args[1]}`)
 }));
 

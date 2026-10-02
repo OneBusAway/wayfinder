@@ -11,12 +11,12 @@ vi.mock('$env/dynamic/private', () => ({
 	}
 }));
 
-vi.mock('$lib/urls.js', () => ({
+vi.mock('$lib/urls', () => ({
 	buildURL: vi.fn((...args) => `${args[0]}/${args[1]}`)
 }));
 
 import { GET } from '../../routes/api/oba/surveys/+server.js';
-import { buildURL } from '$lib/urls.js';
+import { buildURL } from '$lib/urls';
 
 describe('GET /api/oba/surveys', () => {
 	beforeEach(() => {
