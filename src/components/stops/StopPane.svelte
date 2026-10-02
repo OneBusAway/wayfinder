@@ -77,6 +77,9 @@
 	);
 	// Bound from OnDemandStopCard; a flex-only stop has no arrivals but is not empty.
 	let onDemandServices = $state([]);
+	// Only a stop with no fixed routes may say it has no scheduled departures; a
+	// stop that also has routes just has none in the current window.
+	let isFlexOnlyStop = $derived(onDemandServices.length > 0 && !stop?.routeIds?.length);
 	let minutesAfter = $state(DEFAULT_MINUTES_AFTER);
 	let loadingMore = $state(false);
 	let noMoreArrivals = $state(false);
@@ -451,7 +454,7 @@
 					<div class="flex flex-col items-center gap-2">
 						{#if emptyResults}
 							<p class="text-sm text-gray-600 dark:text-gray-400">
-								{onDemandServices.length
+								{isFlexOnlyStop
 									? $t('ondemand.flex_only_empty_arrivals')
 									: $t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
 							</p>

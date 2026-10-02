@@ -275,12 +275,28 @@ describe('StopPane', () => {
 			json: async () => mockEmptyArrivalsAndDeparturesResponse
 		});
 
-		render(StopPane, { props: defaultProps });
+		render(StopPane, { props: { ...defaultProps, stop: { ...mockStopData, routeIds: [] } } });
 
 		await waitFor(() => {
 			expect(screen.getByText('ondemand.flex_only_empty_arrivals')).toBeInTheDocument();
 		});
 		expect(screen.queryByText(/No arrivals found in the next/)).not.toBeInTheDocument();
+	});
+
+	test('keeps the time-window empty message at a stop with routes and on-demand service', async () => {
+		onDemandStub.services = [{ id: 'x' }];
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('No arrivals found in the next 35 minutes')).toBeInTheDocument();
+		});
+		expect(screen.queryByText('ondemand.flex_only_empty_arrivals')).not.toBeInTheDocument();
 	});
 
 	test('displays stop information correctly', async () => {
