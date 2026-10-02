@@ -239,6 +239,18 @@
 		"type": "string",
 		"description": "Defines a style for MapLibre map. Defaults to positron if not set"
 	},
+	"PUBLIC_METRICS_ENABLED": {
+		"required": false,
+		"type": "boolean",
+		"allowEmpty": true,
+		"description": "Whether to expose the Prometheus /metrics endpoint and observe request latency histograms"
+	},
+	"PUBLIC_METRICS_ORGANIZATION": {
+		"required": false,
+		"type": "string",
+		"allowEmpty": true,
+		"description": "Required when PUBLIC_METRICS_ENABLED=true. Must match the OBACloud Organization.name exactly."
+	},
 	"METRICS_PORT": {
 		"required": false,
 		"type": "number",

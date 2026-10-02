@@ -1,15 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const mockRecordHttpRequest = vi.fn();
-const mockStartMetricsServer = vi.fn();
-let mockBuilding = false;
+const mockPublicEnv = vi.hoisted(() => ({
+	PUBLIC_METRICS_ENABLED: 'true',
+	PUBLIC_METRICS_ORGANIZATION: 'Sound Transit'
+}));
 
 vi.mock('$app/environment', () => ({
-	get building() {
-		return mockBuilding;
+	building: false
+}));
+vi.mock('$env/dynamic/public', () => ({
+	get env() {
+		return mockPublicEnv;
 	}
 }));
-vi.mock('$env/dynamic/private', () => ({ env: { METRICS_PORT: '9200' } }));
 vi.mock('$lib/serverCache.js', () => ({
 	preloadRoutesData: vi.fn().mockResolvedValue(undefined),
 	getRoutesCache: vi.fn(),
@@ -19,76 +22,157 @@ vi.mock('$lib/serverCache.js', () => ({
 vi.mock('$lib/otpServerCache.js', () => ({
 	preloadOtpVersion: vi.fn().mockResolvedValue(undefined)
 }));
-vi.mock('$lib/metrics/registry.js', async (importOriginal) => {
-	const actual = await importOriginal();
-	return {
-		...actual,
-		recordHttpRequest: mockRecordHttpRequest
-	};
-});
-vi.mock('$lib/metrics/server.js', () => ({
-	startMetricsServer: mockStartMetricsServer
-}));
 
-function makeEvent({ method = 'GET', routeId = '/stops/[stopID]' } = {}) {
+function makeEvent({
+	method = 'GET',
+	routeId = '/stops/[stopID]',
+	pathname = '/stops/1_100'
+} = {}) {
 	return {
-		request: new Request('http://localhost/stops/1_100', { method }),
+		url: new URL(`http://localhost${pathname}`),
+		request: new Request(`http://localhost${pathname}`, { method }),
 		route: { id: routeId }
 	};
 }
 
 describe('hooks.server', () => {
 	beforeEach(() => {
+		mockPublicEnv.PUBLIC_METRICS_ENABLED = 'true';
+		mockPublicEnv.PUBLIC_METRICS_ORGANIZATION = 'Sound Transit';
 		vi.clearAllMocks();
-	});
-
-	it('starts the metrics server on the configured port', async () => {
+		vi.unstubAllEnvs();
+		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
+		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
 		vi.resetModules();
-		mockBuilding = false;
-		await import('../hooks.server.js');
-		expect(mockStartMetricsServer).toHaveBeenCalledWith(9200);
+		delete globalThis.__wayfinderMetrics;
 	});
 
-	it('does not start the metrics server during the build', async () => {
+	afterEach(() => {
+		vi.unstubAllEnvs();
 		vi.resetModules();
-		mockBuilding = true;
-		await import('../hooks.server.js');
-		expect(mockStartMetricsServer).not.toHaveBeenCalled();
+		delete globalThis.__wayfinderMetrics;
 	});
 
-	it('records method, route template, status, and duration for each request', async () => {
-		const { handle } = await import('../hooks.server.js');
-		const response = new Response('ok', { status: 200 });
-		const resolve = vi.fn().mockResolvedValue(response);
+	it('serves Prometheus metrics with the expected content type when enabled', async () => {
+		mockPublicEnv.PUBLIC_METRICS_ENABLED = 'true';
+		mockPublicEnv.PUBLIC_METRICS_ORGANIZATION = 'Sound Transit';
+		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
+		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
 
-		const result = await handle({ event: makeEvent(), resolve });
+		const { metricsHandle, metricsEnabled } = await import('../hooks.server.js');
+		expect(metricsEnabled).toBe(true);
 
-		expect(result).toBe(response);
-		expect(mockRecordHttpRequest).toHaveBeenCalledWith({
-			method: 'GET',
-			route: '/stops/[stopID]',
-			status: 200,
-			durationSeconds: expect.any(Number)
+		const response = await metricsHandle({
+			event: makeEvent({ pathname: '/metrics', routeId: '/metrics' }),
+			resolve: vi.fn().mockResolvedValue(new Response('should not be used', { status: 200 }))
 		});
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get('content-type')).toContain('text/plain; version=0.0.4');
+		const metricsText = await response.text();
+		expect(metricsText).toContain('service="wayfinder"');
+		expect(metricsText).toContain('organization="Sound Transit"');
 	});
 
-	it('labels unmatched routes as (unmatched)', async () => {
-		const { handle } = await import('../hooks.server.js');
-		const resolve = vi.fn().mockResolvedValue(new Response('nope', { status: 404 }));
+	it('passes through to resolve when metrics are disabled', async () => {
+		mockPublicEnv.PUBLIC_METRICS_ENABLED = 'false';
+		mockPublicEnv.PUBLIC_METRICS_ORGANIZATION = 'Sound Transit';
+		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
+		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
 
-		await handle({ event: makeEvent({ routeId: null }), resolve });
+		const { metricsHandle } = await import('../hooks.server.js');
+		const expected = new Response('ok', { status: 404 });
+		const resolve = vi.fn().mockResolvedValue(expected);
+		const response = await metricsHandle({ event: makeEvent({ pathname: '/metrics' }), resolve });
 
-		expect(mockRecordHttpRequest).toHaveBeenCalledWith(
-			expect.objectContaining({ route: '(unmatched)', status: 404 })
+		expect(response).toBe(expected);
+		expect(resolve).toHaveBeenCalledTimes(1);
+	});
+
+	it('falls through when the env is unset, not exactly "true"', async () => {
+		delete mockPublicEnv.PUBLIC_METRICS_ENABLED;
+		delete mockPublicEnv.PUBLIC_METRICS_ORGANIZATION;
+		vi.unstubAllEnvs();
+
+		const { metricsHandle } = await import('../hooks.server.js');
+		const expected = new Response('not found', { status: 404 });
+		const resolve = vi.fn().mockResolvedValue(expected);
+		const response = await metricsHandle({ event: makeEvent({ pathname: '/metrics' }), resolve });
+
+		expect(response).toBe(expected);
+		expect(resolve).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not record /metrics scrapes in the HTTP histogram', async () => {
+		mockPublicEnv.PUBLIC_METRICS_ENABLED = 'true';
+		mockPublicEnv.PUBLIC_METRICS_ORGANIZATION = 'Sound Transit';
+		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
+		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
+
+		const { metricsHandle } = await import('../hooks.server.js');
+		const { registry } = await import('$lib/server/metrics.js');
+		const resolve = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
+		const before = await registry.metrics();
+		expect(before).not.toMatch(/uri="\/metrics"/);
+
+		const response = await metricsHandle({
+			event: makeEvent({ pathname: '/metrics', routeId: '/metrics' }),
+			resolve
+		});
+
+		expect(response.status).toBe(200);
+		const after = await registry.metrics();
+		expect(after).not.toMatch(/uri="\/metrics"/);
+		expect(resolve).not.toHaveBeenCalled();
+	});
+
+	it('records unmatched paths as uri="unmatched"', async () => {
+		mockPublicEnv.PUBLIC_METRICS_ENABLED = 'true';
+		mockPublicEnv.PUBLIC_METRICS_ORGANIZATION = 'Sound Transit';
+		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
+		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
+
+		const { metricsHandle } = await import('../hooks.server.js');
+		const { registry } = await import('$lib/server/metrics.js');
+		const resolve = vi.fn().mockResolvedValue(new Response('not found', { status: 404 }));
+		await metricsHandle({
+			event: makeEvent({ pathname: '/random/path', routeId: null }),
+			resolve
+		});
+
+		const text = await registry.metrics();
+		expect(text).toMatch(/uri="unmatched"/);
+		expect(text).toMatch(/status="404"/);
+	});
+
+	it('records the route template, status, and default labels for each request', async () => {
+		mockPublicEnv.PUBLIC_METRICS_ENABLED = 'true';
+		mockPublicEnv.PUBLIC_METRICS_ORGANIZATION = 'Sound Transit';
+		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
+		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
+
+		const { metricsHandle } = await import('../hooks.server.js');
+		const { registry } = await import('$lib/server/metrics.js');
+		const resolve = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
+		const result = await metricsHandle({ event: makeEvent({ pathname: '/stops/1_100' }), resolve });
+
+		expect(result.status).toBe(200);
+		const text = await registry.metrics();
+		expect(text).toContain('service="wayfinder"');
+		expect(text).toContain('organization="Sound Transit"');
+		expect(text).toContain('uri="/stops/[stopID]"');
+		expect(text).toMatch(
+			/http_server_requests_seconds_count\{.*method="GET".*uri="\/stops\/\[stopID\]".*status="200".*\}/
 		);
 	});
 
-	it('records a 500 and rethrows when resolve fails', async () => {
-		const { handle } = await import('../hooks.server.js');
-		const boom = new Error('boom');
-		const resolve = vi.fn().mockRejectedValue(boom);
-
-		await expect(handle({ event: makeEvent(), resolve })).rejects.toThrow(boom);
-		expect(mockRecordHttpRequest).toHaveBeenCalledWith(expect.objectContaining({ status: 500 }));
+	it('throws during startup when enabled without an organization', async () => {
+		mockPublicEnv.PUBLIC_METRICS_ENABLED = 'true';
+		mockPublicEnv.PUBLIC_METRICS_ORGANIZATION = '   ';
+		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
+		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		await expect(import('../hooks.server.js')).rejects.toThrow(/PUBLIC_METRICS_ORGANIZATION/);
+		errorSpy.mockRestore();
 	});
 });
