@@ -4,7 +4,7 @@ import PopupContent from '$components/map/PopupContent.svelte';
 import VehiclePopupContent from '$components/map/VehiclePopupContent.svelte';
 import ContextMenuPopup from '$components/map/ContextMenuPopup.svelte';
 import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte';
-import { faBus } from '@fortawesome/free-solid-svg-icons';
+import { BusFront } from '@lucide/svelte';
 import {
 	RouteType,
 	routePriorities,
@@ -25,7 +25,7 @@ const DARK_BASEMAP = 'dark-gray-vector';
 
 function chooseStopIcon(stop, requestedIcon) {
 	if (requestedIcon) return requestedIcon;
-	if (!stop.routes?.length) return faBus;
+	if (!stop.routes?.length) return BusFront;
 
 	const routeTypes = stop.routes.map((route) => route.type);
 	for (const priority of routePriorities) {

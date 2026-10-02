@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi } from 'vitest';
 import StopMarker from '../map/StopMarker.svelte';
-import { faBus } from '@fortawesome/free-solid-svg-icons';
+import { BusFront } from '@lucide/svelte';
 import { SHOW_ROUTE_LABELS_AT_ZOOM } from '$config/routeConfig';
 
 describe('Route Labels Feature', () => {
@@ -37,7 +37,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: mockStop,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: false
 				}
 			});
@@ -51,7 +51,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: mockStop,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
@@ -65,7 +65,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: mockStopWithManyRoutes,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
@@ -80,7 +80,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: mockStopWithManyRoutes,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
@@ -97,7 +97,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: mockStopWithManyRoutes,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
@@ -119,7 +119,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: mockStopWithManyRoutes,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
@@ -142,7 +142,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: mockStopWithManyRoutes,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
@@ -159,7 +159,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: mockStop,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
@@ -176,7 +176,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: stopSouth,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
@@ -193,7 +193,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: mockStopWithManyRoutes,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
@@ -214,7 +214,7 @@ describe('Route Labels Feature', () => {
 				props: {
 					stop: stopNoRoutes,
 					onClick,
-					icon: faBus,
+					icon: BusFront,
 					showRoutesLabel: true
 				}
 			});
