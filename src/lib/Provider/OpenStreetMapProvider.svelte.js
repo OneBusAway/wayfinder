@@ -729,7 +729,7 @@ export default class OpenStreetMapProvider {
 
 		let styleUrl;
 		if (theme === 'dark') {
-			styleUrl = 'https://tiles.openfreemap.org/styles/dark';
+			styleUrl = 'https://tiles.openfreemap.org/styles/fiord';
 		} else {
 			styleUrl = 'https://tiles.openfreemap.org/styles/positron';
 		}
