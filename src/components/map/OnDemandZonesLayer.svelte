@@ -112,12 +112,19 @@
 				.map((area) =>
 					provider.createPolygon(area.geometry, {
 						...style,
-						onClick: () => openOnDemandService(service.id)
+						onClick: () => selectService(service.id)
 					})
 				)
 				.filter(Boolean);
 			drawn.set(service.id, { handles, level: drawLevel });
 		}
+	}
+
+	// Re-tapping the open service's zone would push a duplicate history entry, so
+	// Back would land on the same sheet instead of closing it.
+	function selectService(id) {
+		if (onDemandState.highlighted?.id === id) return;
+		openOnDemandService(id);
 	}
 
 	function clearDrawn(provider) {

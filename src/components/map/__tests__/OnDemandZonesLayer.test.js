@@ -59,6 +59,17 @@ describe('OnDemandZonesLayer', () => {
 		});
 	});
 
+	it('does not push history again when the open service zone is tapped', async () => {
+		const { provider } = setup(REGION);
+		await flush();
+		const service = parseServiceList(listBody()).services.find(({ id }) => id === '5088_77652');
+		onDemandState.highlighted = service;
+		await flush();
+		const [, style] = provider.createPolygon.mock.calls[0];
+		style.onClick();
+		expect(pushState).not.toHaveBeenCalled();
+	});
+
 	it('draws stroke-only, non-interactive zones at street level', async () => {
 		const { provider } = setup(STREET);
 		await flush();
