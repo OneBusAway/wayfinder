@@ -277,9 +277,7 @@
 		"available_languages": "የሚገኙ ቋንቋዎች"
 	},
 	"map": {
-		"find_my_location": "ቦታዬን ፈልግ",
-		"routes_shown": "የሚታዩ መንገዶች",
-		"live_vehicle_count": "{count} በቀጥታ"
+		"find_my_location": "ቦታዬን ፈልግ"
 	},
 	"context-menu": {
 		"start_here": "ከዚህ ጀምር",

@@ -277,9 +277,7 @@
 		"available_languages": "利用可能な言語"
 	},
 	"map": {
-		"find_my_location": "現在地を表示",
-		"routes_shown": "表示中の路線",
-		"live_vehicle_count": "リアルタイム{count}台"
+		"find_my_location": "現在地を表示"
 	},
 	"context-menu": {
 		"start_here": "ここから出発",

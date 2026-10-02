@@ -6,11 +6,10 @@ import MapView from '$components/map/MapView.svelte';
 vi.mock('$components/map/RouteMap.svelte', () => ({ default: () => null }));
 vi.mock('$lib/LocationButton/LocationButton.svelte', () => ({ default: () => null }));
 
-// StopRoutesLayer and RouteLegend are unit-tested on their own (their tests
-// cover shape-fetch races, redraw signatures, vehicle polling, i18n). But
-// MapView's own job is the wiring between them — which props reach them, and
-// whether the routeStopIds/liveCounts bindings it exposes are actually live —
-// so unlike a bare stub, these mocks capture the props each child receives
+// StopRoutesLayer is unit-tested on its own (its tests cover shape-fetch
+// races, redraw signatures, vehicle polling). But MapView's own job is the
+// wiring to it — which props reach it, and whether the routeStopIds binding it
+// exposes is actually live — so unlike a bare stub, this mock captures the props
 // (mirroring the MapContainer/SearchPane pattern in MapExperience.test.js).
 // Assigning onto the captured props object exercises the same setter a real
 // bind: would, letting a test drive the bindable props back into MapView.
@@ -18,14 +17,6 @@ let capturedStopRoutesLayerProps = null;
 vi.mock('$components/map/StopRoutesLayer.svelte', () => ({
 	default: function StopRoutesLayer(anchor, props) {
 		capturedStopRoutesLayerProps = props;
-		return {};
-	}
-}));
-
-let capturedRouteLegendProps = null;
-vi.mock('$components/map/RouteLegend.svelte', () => ({
-	default: function RouteLegend(anchor, props) {
-		capturedRouteLegendProps = props;
 		return {};
 	}
 }));
@@ -71,7 +62,6 @@ const ROUTE_COLORS = new Map([['r_c', { line: '#b02a37', badgeBg: 'b02a37', badg
 describe('MapView map mode', () => {
 	beforeEach(() => {
 		capturedStopRoutesLayerProps = null;
-		capturedRouteLegendProps = null;
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: true,
 			json: async () => ({ data: { list: [], references: { routes: [] } } })
@@ -115,7 +105,6 @@ describe('MapView map mode', () => {
 describe('stop selection layer', () => {
 	beforeEach(() => {
 		capturedStopRoutesLayerProps = null;
-		capturedRouteLegendProps = null;
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: true,
 			json: async () => ({ data: { list: [], references: { routes: [] } } })
@@ -192,17 +181,16 @@ describe('stop selection layer', () => {
 // Finding 1: MapView is the integration point between the stop-selection layer
 // and its two children. These tests exist to catch a broken bind: or a
 // mis-wired prop, which a bare `() => null` stub can never surface.
-describe('StopRoutesLayer / RouteLegend integration', () => {
+describe('StopRoutesLayer integration', () => {
 	beforeEach(() => {
 		capturedStopRoutesLayerProps = null;
-		capturedRouteLegendProps = null;
 		global.fetch = vi.fn().mockResolvedValue({
 			ok: true,
 			json: async () => ({ data: { list: [], references: { routes: [] } } })
 		});
 	});
 
-	test('StopRoutesLayer and RouteLegend receive the live map instance, activeRoutes, and routeColors', async () => {
+	test('StopRoutesLayer receives the live map instance, activeRoutes, and routeColors', async () => {
 		const mapProvider = makeProvider();
 		render(MapView, {
 			props: {
@@ -227,10 +215,6 @@ describe('StopRoutesLayer / RouteLegend integration', () => {
 		);
 		expect(capturedStopRoutesLayerProps.activeRoutes).toEqual([ROUTE_C]);
 		expect(capturedStopRoutesLayerProps.routeColors).toBe(ROUTE_COLORS);
-
-		expect(capturedRouteLegendProps).not.toBeNull();
-		expect(capturedRouteLegendProps.routes).toEqual([ROUTE_C]);
-		expect(capturedRouteLegendProps.routeColors).toBe(ROUTE_COLORS);
 	});
 
 	// The bindable that drives the whole ring-dot tier: routeStopIds flows out of
@@ -267,7 +251,6 @@ describe('StopRoutesLayer / RouteLegend integration', () => {
 describe('addMarker emphasis seeding', () => {
 	beforeEach(() => {
 		capturedStopRoutesLayerProps = null;
-		capturedRouteLegendProps = null;
 	});
 
 	test('seeds routeDot, muted, and full emphasis onto newly created markers', async () => {

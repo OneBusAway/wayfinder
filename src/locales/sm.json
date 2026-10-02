@@ -277,9 +277,7 @@
 		"available_languages": "Gagana avanoa"
 	},
 	"map": {
-		"find_my_location": "Su'e Lo'u Nofoaga",
-		"routes_shown": "Auala o loʻo faʻaalia",
-		"live_vehicle_count": "{count} taʻavale i le taimi moni"
+		"find_my_location": "Su'e Lo'u Nofoaga"
 	},
 	"context-menu": {
 		"start_here": "Amata mai iinei",

@@ -277,9 +277,7 @@
 		"available_languages": "ພາສາທີ່ມີ"
 	},
 	"map": {
-		"find_my_location": "ຊອກຫາທີ່ຕັ້ງຂອງຂ້ອຍ",
-		"routes_shown": "ເສັ້ນທາງທີ່ສະແດງ",
-		"live_vehicle_count": "ລົດເວລາຈິງ {count} ຄັນ"
+		"find_my_location": "ຊອກຫາທີ່ຕັ້ງຂອງຂ້ອຍ"
 	},
 	"context-menu": {
 		"start_here": "ເລີ່ມຈາກບ່ອນນີ້",

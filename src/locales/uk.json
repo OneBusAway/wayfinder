@@ -277,9 +277,7 @@
 		"available_languages": "Доступні мови"
 	},
 	"map": {
-		"find_my_location": "Знайти моє місцезнаходження",
-		"routes_shown": "Показані маршрути",
-		"live_vehicle_count": "{count} онлайн"
+		"find_my_location": "Знайти моє місцезнаходження"
 	},
 	"context-menu": {
 		"start_here": "Почати звідси",

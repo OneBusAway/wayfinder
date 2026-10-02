@@ -277,9 +277,7 @@
 		"available_languages": "Доступные языки"
 	},
 	"map": {
-		"find_my_location": "Найти моё местоположение",
-		"routes_shown": "Маршруты на карте",
-		"live_vehicle_count": "{count} онлайн"
+		"find_my_location": "Найти моё местоположение"
 	},
 	"context-menu": {
 		"start_here": "Начать отсюда",
