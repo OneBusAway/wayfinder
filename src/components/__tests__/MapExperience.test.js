@@ -210,13 +210,7 @@ test('handleStopMarkerSelect snapshots reactive stopData before pushState (DataC
 });
 
 test('a map marker tap does not replace an open stop', () => {
-	setPage({
-		url: new URL('https://example.com/map/stops/1_75403'),
-		params: {},
-		route: { id: '/(map)' },
-		state: { stopData: STOP },
-		data: {}
-	});
+	setPage(pageWithStop());
 	render(MapExperience);
 
 	capturedMapContainerProps.handleStopMarkerSelect(STOP_B);
@@ -224,14 +218,17 @@ test('a map marker tap does not replace an open stop', () => {
 	expect(pushState).not.toHaveBeenCalled();
 });
 
+test('tapping the marker a search result dropped does not replace an open stop', () => {
+	setPage(pageWithStop());
+	render(MapExperience);
+
+	capturedSearchPaneProps.handleMapStopMarkerSelect(STOP_B);
+
+	expect(pushState).not.toHaveBeenCalled();
+});
+
 test('picking a stop from search still replaces an open stop', () => {
-	setPage({
-		url: new URL('https://example.com/map/stops/1_75403'),
-		params: {},
-		route: { id: '/(map)' },
-		state: { stopData: STOP },
-		data: {}
-	});
+	setPage(pageWithStop());
 	render(MapExperience);
 
 	capturedSearchPaneProps.handleStopMarkerSelect(STOP_B);

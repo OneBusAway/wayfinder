@@ -314,6 +314,37 @@ describe('SearchPane', () => {
 		});
 	});
 
+	describe('Stop result marker', () => {
+		test('tapping the dropped marker uses the map handler, not the search-pick handler', async () => {
+			const user = userEvent.setup();
+			global.fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: vi.fn().mockResolvedValue({
+					stops: [
+						{ id: 'stop-1', name: 'Stop 1', lat: 47.6, lon: -122.3, code: '1', direction: 'N' }
+					],
+					query: 'Stop 1'
+				})
+			});
+			const handleStopMarkerSelect = vi.fn();
+			const handleMapStopMarkerSelect = vi.fn();
+			render(SearchPane, {
+				props: { ...mockProps, handleStopMarkerSelect, handleMapStopMarkerSelect }
+			});
+
+			await user.type(screen.getByRole('textbox'), 'Stop 1');
+			await user.click(screen.getByRole('button', { name: /search/i }));
+			await user.click((await screen.findByText('Stop 1')).closest('button'));
+
+			const { onClick } = mockMapProvider.addMarker.mock.calls[0][0];
+			onClick();
+
+			expect(handleMapStopMarkerSelect).toHaveBeenCalledWith(
+				expect.objectContaining({ id: 'stop-1' })
+			);
+		});
+	});
+
 	describe('Error Handling', () => {
 		test('handles API errors gracefully during route selection', async () => {
 			const user = userEvent.setup();

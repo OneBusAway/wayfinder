@@ -156,7 +156,8 @@
 
 	// Map taps (markers and their popups) can't swap out an open stop — only the
 	// sheet's close button or the Plan a Trip tab dismisses it. Search results and
-	// favorites still go through handleStopMarkerSelect: those are deliberate picks.
+	// favorites still go through handleStopMarkerSelect: those are deliberate picks,
+	// but the markers they drop on the map use this guarded handler.
 	function handleMapStopMarkerSelect(stopData) {
 		if (stopSheetOpen) return;
 		handleStopMarkerSelect(stopData);
@@ -626,6 +627,7 @@
 					{clearPolylines}
 					{handleTripPlan}
 					{handleStopMarkerSelect}
+					{handleMapStopMarkerSelect}
 					{clearTripItineraries}
 					onCollapse={stopSheetOpen ? collapseSearch : null}
 				>
