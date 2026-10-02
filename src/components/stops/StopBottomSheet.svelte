@@ -5,17 +5,10 @@
     replaced by a condensed header (stop name; stop number, direction and routes)
     with a Close button, plus a Refresh / Stop Info action row, inside the
     drag-handle row.
-
-    @prop {Object} stop - Stop object containing stop details
-    @prop {('peek'|'half'|'full')} snap - Bindable current snap point of the sheet
-    @prop {Function} closePane - Called when the close button is tapped (or Escape is pressed)
-    @prop {Function} tripSelected - Forwarded to StopPane; called when a trip is selected
-    @prop {Function} handleUpdateRouteMap - Forwarded to StopPane; called when the route map needs updating
-    @prop {any} arrivalsAndDeparturesResponse - Bindable; the latest arrivals response, bound up to MapExperience so the map can draw the routes behind it
-    @prop {Map<string, any>} [routeColors] - Resolved by MapExperience; one color per route, forwarded to the arrival badges
 -->
 
 <script>
+	// @ts-check
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import StopPane from '$components/stops/StopPane.svelte';
 	import FavoriteToggle from '$components/favorites/FavoriteToggle.svelte';
@@ -26,6 +19,24 @@
 	import { isLoading, t } from 'svelte-i18n';
 	import { directionLabel, removeAgencyPrefix, routeShortNamesForStop } from '$lib/utils';
 
+	/**
+	 * @typedef {import('onebusaway-sdk/resources/arrival-and-departure').ArrivalAndDepartureListResponse} ArrivalsResponse
+	 * @typedef {import('$lib/activeRoutes').RouteColors} RouteColors
+	 * @typedef {import('$lib/types').Stop} Stop
+	 *
+	 * @typedef {ArrivalsResponse['data']['entry']['arrivalsAndDepartures'][number]} Arrival
+	 *
+	 * @typedef {Object} Props
+	 * @property {Stop} stop - Stop to display
+	 * @property {() => void} closePane - Called by the Close button or Escape key
+	 * @property {((event: { detail: Arrival | null }) => void) | null} [tripSelected] - Forwarded to StopPane; null detail clears the selection
+	 * @property {((event: { detail: { show: boolean } }) => void) | null} [handleUpdateRouteMap] - Forwarded to StopPane to toggle the route map
+	 * @property {'peek' | 'half' | 'full'} [snap] - Bindable current snap point; defaults to half
+	 * @property {ArrivalsResponse | null} [arrivalsAndDeparturesResponse] - Bindable latest arrivals response, shared with the map
+	 * @property {Map<string, RouteColors> | null} [routeColors] - Resolved route colors, forwarded to arrival badges
+	 */
+
+	/** @type {Props} */
 	let {
 		stop,
 		closePane,
@@ -40,6 +51,7 @@
 
 	// Bound from StopPane so the toolbar refresh button can spin while any fetch
 	// (initial, manual, or the 30s poll) is in flight, and trigger a manual one.
+	/** @type {ReturnType<typeof StopPane> | null} */
 	let stopPane = $state(null);
 	let stopPaneLoading = $state(false);
 

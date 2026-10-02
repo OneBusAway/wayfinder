@@ -52,6 +52,27 @@ describe('createVehicleIconSvg', () => {
 		expect(svg).toContain('filter="url(#vehicle-highlight-blur)"');
 	});
 
+	it.each([null, undefined, Number.NaN, Infinity])(
+		'renders no direction arrow when orientation is %s',
+		(orientation) => {
+			const svg = createVehicleIconSvg(orientation);
+			expect(svg).not.toContain('transform="rotate(');
+			expect(svg).toContain('<circle');
+		}
+	);
+
+	it('points the arrow north when orientation is 90 (OBA 90° = north)', () => {
+		expect(createVehicleIconSvg(90)).toContain('transform="rotate(0)"');
+	});
+
+	it('points the arrow east when orientation is 0 (OBA 0° = east)', () => {
+		expect(createVehicleIconSvg(0)).toContain('transform="rotate(90)"');
+	});
+
+	it('points the arrow west when orientation is 180 (OBA 180° = west)', () => {
+		expect(createVehicleIconSvg(180)).toContain('transform="rotate(270)"');
+	});
+
 	it('always produces a valid <svg> element', () => {
 		expect(createVehicleIconSvg(90, '#007BFF', undefined, true)).toContain('<svg');
 		expect(createVehicleIconSvg(90)).toContain('<svg');

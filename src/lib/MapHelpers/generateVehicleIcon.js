@@ -57,27 +57,31 @@ function createVehicleIconSvg(
 	highlighted = false,
 	dark = false
 ) {
-	const direction = getDirectionFromOrientation(toDirection(orientation));
-	const angle = DIRECTIONS.find((d) => d.icon === direction).angle;
 	const contrastColor = getVehicleMarkerContrastColor(color);
 	// Keep a light silhouette on dark tiles without forcing pale glyphs onto
 	// white. In light mode the route-coloured ring supplies the silhouette.
 	const haloColor = dark ? '#ffffff' : contrastColor;
-	const arrowHalo =
-		haloColor !== contrastColor
-			? `<line x1="0" y1="0" x2="0" y2="-15" stroke="${haloColor}" stroke-width="8" stroke-linecap="round" transform="rotate(${angle})"/>
+	const compassAngle = toDirection(orientation);
+	let arrowPath = '';
+	if (compassAngle !== null) {
+		const direction = getDirectionFromOrientation(compassAngle);
+		const angle = DIRECTIONS.find((d) => d.icon === direction).angle;
+		const arrowHalo =
+			haloColor !== contrastColor
+				? `<line x1="0" y1="0" x2="0" y2="-15" stroke="${haloColor}" stroke-width="8" stroke-linecap="round" transform="rotate(${angle})"/>
     <polygon points="0,-25 5,-15 -5,-15" fill="${haloColor}" stroke="${haloColor}" stroke-width="6" stroke-linejoin="round" transform="rotate(${angle})"/>`
-			: '';
+				: '';
 
-	// Draw the route-coloured arrow over a contrasting outline, with an extra
-	// outer halo when needed to distinguish that outline from the basemap.
-	const arrowPath = `
+		// Draw the route-coloured arrow over a contrasting outline, with an extra
+		// outer halo when needed to distinguish that outline from the basemap.
+		arrowPath = `
     ${arrowHalo}
     <line x1="0" y1="0" x2="0" y2="-15" stroke="${contrastColor}" stroke-width="6" stroke-linecap="round" transform="rotate(${angle})"/>
     <polygon points="0,-25 5,-15 -5,-15" fill="${contrastColor}" stroke="${contrastColor}" stroke-width="4" stroke-linejoin="round" transform="rotate(${angle})"/>
     <line x1="0" y1="0" x2="0" y2="-15" stroke="${color}" stroke-width="2" stroke-linecap="round" transform="rotate(${angle})"/>
     <polygon points="0,-25 5,-15 -5,-15" fill="${color}" stroke="${color}" stroke-width="1" stroke-linejoin="round" transform="rotate(${angle})"/>
 `;
+	}
 
 	// A soft blurred halo behind the marker for the selected trip. Drawn first so
 	// the arrow and icon render crisply on top (no hard ring clashing with the
