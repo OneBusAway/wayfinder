@@ -5,17 +5,11 @@ import globals from 'globals';
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 
-/** @type {import('eslint').Linter.FlatConfig[]} */
+/** @type {import('eslint').Linter.Config[]} */
 export default [
 	js.configs.recommended,
-	...tsPlugin.configs['flat/recommended'].map((config) => ({
-		...config,
-		files: ['**/*.svelte', '**/*.ts']
-	})),
-	...tsPlugin.configs['flat/stylistic'].map((config) => ({
-		...config,
-		files: ['**/*.svelte', '**/*.ts']
-	})),
+	...withSvelteAndTsFiles(tsPlugin.configs['flat/recommended']),
+	...withSvelteAndTsFiles(tsPlugin.configs['flat/stylistic']),
 	...svelte.configs['flat/recommended'],
 	prettier,
 	...svelte.configs['flat/prettier'],
@@ -27,9 +21,6 @@ export default [
 			}
 		},
 		rules: {
-			// 2026-09-25: When TS's "flat/recommended" was added the codebase used `let` in many
-			// places so `const` was not preferred.
-			'prefer-const': 'off',
 			'@typescript-eslint/no-unused-expressions': ['error', { allowTernary: true }]
 		}
 	},
@@ -51,3 +42,18 @@ export default [
 		ignores: ['build/', '.svelte-kit/', 'dist/', 'src/lib/googleMaps.js', 'coverage']
 	}
 ];
+
+/**
+ * Applies typescript-eslint configs to Svelte components as well as TS files. Entries that are
+ * already scoped keep their `files`, notably "typescript-eslint/eslint-recommended", which turns
+ * off core rules like `no-undef` and `no-dupe-keys` that the TS compiler covers in `.ts` files.
+ * Most Svelte components are plain JS that isn't type-checked so they need those core rules.
+ *
+ * @param {import('eslint').Linter.Config[]} configs
+ */
+function withSvelteAndTsFiles(configs) {
+	return configs.map((config) => ({
+		...config,
+		files: config.files ?? ['**/*.svelte', '**/*.ts']
+	}));
+}
