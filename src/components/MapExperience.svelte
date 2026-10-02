@@ -154,6 +154,14 @@
 		pushState(mapStopPath(stopData.id), { stopData: $state.snapshot(stopData) });
 	}
 
+	// Map taps (markers and their popups) can't swap out an open stop — only the
+	// sheet's close button or the Plan a Trip tab dismisses it. Search results and
+	// favorites still go through handleStopMarkerSelect: those are deliberate picks.
+	function handleMapStopMarkerSelect(stopData) {
+		if (stopSheetOpen) return;
+		handleStopMarkerSelect(stopData);
+	}
+
 	/**
 	 * Open a favorited stop from the map floating control.
 	 * @param {Object} favorite
@@ -165,7 +173,7 @@
 		mapProvider.addMarker({
 			stop: favorite,
 			position: { lat: favorite.lat, lng: favorite.lon },
-			onClick: () => handleStopMarkerSelect(favorite)
+			onClick: () => handleMapStopMarkerSelect(favorite)
 		});
 		handleStopMarkerSelect(favorite);
 	}
@@ -697,7 +705,7 @@
 		{selectedTrip}
 		{selectedRoute}
 		stop={selectedStopData}
-		{handleStopMarkerSelect}
+		handleStopMarkerSelect={handleMapStopMarkerSelect}
 		{isRouteSelected}
 		{showRouteMap}
 		{initialCoords}
