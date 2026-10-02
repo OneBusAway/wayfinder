@@ -25,6 +25,15 @@ import { get } from 'svelte/store';
 import { t } from 'svelte-i18n';
 import { ROUTE_PANE_Z_INDEX } from '$lib/mapPanes.js';
 
+// OpenFreeMap styles for each app theme. fiord, not OpenFreeMap's own "dark"
+// style, because dark's streets barely contrast with the background (#639).
+const LIGHT_STYLE = 'positron';
+const DARK_STYLE = 'fiord';
+
+function styleUrl(name) {
+	return `https://tiles.openfreemap.org/styles/${name}`;
+}
+
 // activeTrip is always truthy here: the sole caller (vehicleUtils.js) guards on
 // it, and buildVehiclePopupData reads activeTrip.tripHeadsign without optional
 // chaining. Keep this contract consistent rather than implying null is expected.
@@ -70,7 +79,7 @@ export default class OpenStreetMapProvider {
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
 		this.pinMarkers = new Set();
-		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || 'positron';
+		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || LIGHT_STYLE;
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.showStopsRoutesAtZoom = SHOW_ROUTE_LABELS_AT_ZOOM;
@@ -78,7 +87,7 @@ export default class OpenStreetMapProvider {
 		this.contextMenuPopup = null;
 		this.contextMenuComponent = null;
 		this.userLocationMarker = null;
-		this._darkTheme = this.maplibreLayer === 'dark';
+		this._darkTheme = this.maplibreLayer === DARK_STYLE;
 		// Incremented on each fitToPolylines() so a superseded route load's
 		// pending reveal can detect it's stale and bail out.
 		this._fitToken = 0;
@@ -102,7 +111,7 @@ export default class OpenStreetMapProvider {
 		this.L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 		// Record the applied style URL so setTheme() can skip a redundant layer
 		// rebuild when the theme already matches the boot style (see setTheme).
-		this.currentStyleUrl = `https://tiles.openfreemap.org/styles/${this.maplibreLayer}`;
+		this.currentStyleUrl = styleUrl(this.maplibreLayer);
 		this.maplibreLayer = this.L.maplibreGL({
 			style: this.currentStyleUrl,
 			interactive: true,
@@ -727,26 +736,21 @@ export default class OpenStreetMapProvider {
 		if (!browser || !this.map) return;
 		this._refreshVehicleMarkerIcons();
 
-		let styleUrl;
-		if (theme === 'dark') {
-			styleUrl = 'https://tiles.openfreemap.org/styles/fiord';
-		} else {
-			styleUrl = 'https://tiles.openfreemap.org/styles/positron';
-		}
+		const url = styleUrl(theme === 'dark' ? DARK_STYLE : LIGHT_STYLE);
 
 		// Rebuilding the MapLibre layer re-fetches the style, sprites, glyph fonts,
 		// and vector tiles. Skip it when the style is unchanged — otherwise the
 		// themeChange dispatched right after initMap tears down and rebuilds the
 		// layer with the identical style, doubling the map's cold-load network cost.
-		if (styleUrl === this.currentStyleUrl) return;
-		this.currentStyleUrl = styleUrl;
+		if (url === this.currentStyleUrl) return;
+		this.currentStyleUrl = url;
 
 		if (this.maplibreLayer) {
 			this.map.removeLayer(this.maplibreLayer);
 		}
 
 		this.maplibreLayer = this.L.maplibreGL({
-			style: styleUrl
+			style: url
 		}).addTo(this.map);
 	}
 

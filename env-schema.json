@@ -237,7 +237,7 @@
 	"PUBLIC_MAPLIBRE_STYLE": {
 		"required": false,
 		"type": "string",
-		"description": "Defines a style for MapLibre map. Defaults to positron if not set"
+		"description": "OpenFreeMap style the OSM map boots with. Defaults to positron. The light (positron) and dark (fiord) themes replace it at runtime"
 	},
 	"METRICS_PORT": {
 		"required": false,
