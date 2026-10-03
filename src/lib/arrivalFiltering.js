@@ -106,11 +106,50 @@ export function collapseLayovers(arrivals) {
 	);
 }
 
+function lastFixTime(arrival) {
+	return arrival.tripStatus?.lastLocationUpdateTime ?? 0;
+}
+
 /**
- * The rows a rider should see for a stop: departed rows removed (when a clock
- * is supplied), then layover pairs collapsed. Every consumer that renders or
- * reasons about the arrival list (StopPane, the map's active-route picker)
- * goes through this so they cannot disagree about which trips are boardable.
+ * Drops duplicate rows for the same trip visit (same makeKey), keeping the one
+ * with the most recent GPS fix. Puget Sound sometimes reports one trip twice:
+ * once for the real bus and once for a phantom vehicle whose id is the trip's
+ * block id and which has no GPS fix (tripStatus.lastLocationUpdateTime is 0).
+ * The top-level lastUpdateTime cannot tell them apart -- the phantom's is
+ * often newer. Left in, the duplicate crashes keyed {#each} blocks with
+ * each_key_duplicate.
+ *
+ * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
+ * @returns {Array<object>} One row per trip visit, in first-seen order
+ */
+export function dedupeTripVisits(arrivals) {
+	if (!arrivals || arrivals.length === 0) return [];
+
+	const byKey = new Map();
+	const result = [];
+	for (const arrival of arrivals) {
+		if (!arrival) {
+			result.push(arrival);
+			continue;
+		}
+		const key = makeKey(arrival);
+		const index = byKey.get(key);
+		if (index === undefined) {
+			byKey.set(key, result.length);
+			result.push(arrival);
+		} else if (lastFixTime(arrival) > lastFixTime(result[index])) {
+			result[index] = arrival;
+		}
+	}
+	return result;
+}
+
+/**
+ * The rows a rider should see for a stop: duplicate trip visits removed, then
+ * departed rows removed (when a clock is supplied), then layover pairs
+ * collapsed. Every consumer that renders or reasons about the arrival list
+ * (StopPane, the map's active-route picker) goes through this so they cannot
+ * disagree about which trips are boardable.
  *
  * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
  * @param {number} [now] - Current time in ms since epoch; omit to skip the
@@ -119,6 +158,7 @@ export function collapseLayovers(arrivals) {
  * @returns {Array<object>} Boardable arrivals in their original order
  */
 export function visibleArrivals(arrivals, now) {
-	const upcoming = Number.isFinite(now) ? filterDeparted(arrivals, now) : arrivals;
+	const unique = dedupeTripVisits(arrivals);
+	const upcoming = Number.isFinite(now) ? filterDeparted(unique, now) : unique;
 	return collapseLayovers(upcoming);
 }

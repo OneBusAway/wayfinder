@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { collapseLayovers, filterDeparted, makeKey, visibleArrivals } from '../arrivalFiltering';
+import {
+	collapseLayovers,
+	dedupeTripVisits,
+	filterDeparted,
+	makeKey,
+	visibleArrivals
+} from '../arrivalFiltering';
 
 // Factory function for creating test arrival objects
 function makeArrival({
@@ -317,6 +323,61 @@ describe('collapseLayovers', () => {
 	});
 });
 
+describe('dedupeTripVisits', () => {
+	// Puget Sound occasionally returns the same trip visit twice: once for the
+	// real bus and once for a phantom vehicle whose id is the block id. Only
+	// the real bus has a GPS fix; the phantom's top-level lastUpdateTime is
+	// often the newer of the two, so it must not drive the choice.
+	function makeDuplicatePair() {
+		const phantom = makeArrival({
+			tripId: '1_800787261',
+			scheduledArrivalTime: t(1200),
+			vehicleId: '1_8246489',
+			lastUpdateTime: t(1191),
+			tripStatus: { vehicleId: '1_8246489', lastLocationUpdateTime: 0 }
+		});
+		const real = {
+			...phantom,
+			vehicleId: '1_8074',
+			lastUpdateTime: t(1188),
+			tripStatus: { vehicleId: '1_8074', lastLocationUpdateTime: t(1188) }
+		};
+		return { phantom, real };
+	}
+
+	it('keeps one row per trip visit, preferring the one with the latest GPS fix', () => {
+		const { phantom, real } = makeDuplicatePair();
+		expect(dedupeTripVisits([phantom, real])).toEqual([real]);
+		expect(dedupeTripVisits([real, phantom])).toEqual([real]);
+	});
+
+	it('keeps the first row when GPS fix times tie or are missing', () => {
+		const first = makeArrival({ scheduledArrivalTime: t(1200), vehicleId: '1_a' });
+		const second = { ...first, vehicleId: '1_b' };
+		expect(dedupeTripVisits([first, second])).toEqual([first]);
+	});
+
+	it('preserves order and leaves distinct visits alone', () => {
+		const { phantom, real } = makeDuplicatePair();
+		const before = makeArrival({ tripId: '1_before', scheduledArrivalTime: t(1195) });
+		const sameTripLaterStop = { ...real, stopSequence: real.stopSequence + 5 };
+		const after = makeArrival({ tripId: '1_after', scheduledArrivalTime: t(1210) });
+		expect(dedupeTripVisits([before, phantom, sameTripLaterStop, real, after])).toEqual([
+			before,
+			real,
+			sameTripLaterStop,
+			after
+		]);
+	});
+
+	it('returns an empty array for null or empty input and passes null rows through', () => {
+		expect(dedupeTripVisits(null)).toEqual([]);
+		expect(dedupeTripVisits([])).toEqual([]);
+		const row = makeArrival({ scheduledArrivalTime: t(1200) });
+		expect(dedupeTripVisits([null, row])).toEqual([null, row]);
+	});
+});
+
 describe('visibleArrivals', () => {
 	it('drops departed rows and then collapses layover pairs', () => {
 		const departed = makeArrival({ tripId: '1_gone', serviceDate, scheduledArrivalTime: t(1170) });
@@ -331,5 +392,15 @@ describe('visibleArrivals', () => {
 		const departed = makeArrival({ tripId: '1_gone', serviceDate, scheduledArrivalTime: t(1170) });
 		const { arrival, departure } = makeLayoverPair();
 		expect(visibleArrivals([departed, arrival, departure])).toEqual([departed, departure]);
+	});
+
+	it('removes duplicate trip visits so keyed lists never collide', () => {
+		const row = makeArrival({
+			scheduledArrivalTime: t(1200),
+			vehicleId: '1_a',
+			tripStatus: { lastLocationUpdateTime: 0 }
+		});
+		const fresher = { ...row, vehicleId: '1_b', tripStatus: { lastLocationUpdateTime: 2 } };
+		expect(visibleArrivals([row, fresher], t(1175))).toEqual([fresher]);
 	});
 });
