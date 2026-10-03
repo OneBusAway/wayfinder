@@ -277,9 +277,7 @@
 		"available_languages": "ዝርከቡ ቋንቋታት"
 	},
 	"map": {
-		"find_my_location": "ቦታይ ፈልጥ",
-		"routes_shown": "ዝረኣዩ መስመራት",
-		"live_vehicle_count": "{count} ብቐጥታ"
+		"find_my_location": "ቦታይ ፈልጥ"
 	},
 	"context-menu": {
 		"start_here": "ካብዚ ጀምር",

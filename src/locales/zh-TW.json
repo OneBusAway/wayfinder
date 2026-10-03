@@ -277,9 +277,7 @@
 		"available_languages": "可用語言"
 	},
 	"map": {
-		"find_my_location": "尋找我的位置",
-		"routes_shown": "顯示中的路線",
-		"live_vehicle_count": "即時 {count} 輛"
+		"find_my_location": "尋找我的位置"
 	},
 	"context-menu": {
 		"start_here": "從這裡出發",

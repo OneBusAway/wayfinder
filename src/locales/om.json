@@ -277,9 +277,7 @@
 		"available_languages": "Afaanota jiran"
 	},
 	"map": {
-		"find_my_location": "Bakka Koo Barbaadi",
-		"routes_shown": "Sararawwan agarsiifaman",
-		"live_vehicle_count": "{count} yeroo qabatamaa"
+		"find_my_location": "Bakka Koo Barbaadi"
 	},
 	"context-menu": {
 		"start_here": "As'itti eegali",

@@ -277,9 +277,7 @@
 		"available_languages": "Mga available na wika"
 	},
 	"map": {
-		"find_my_location": "Hanapin ang Aking Lokasyon",
-		"routes_shown": "Mga ipinapakitang ruta",
-		"live_vehicle_count": "{count} live"
+		"find_my_location": "Hanapin ang Aking Lokasyon"
 	},
 	"context-menu": {
 		"start_here": "Magsimula dito",

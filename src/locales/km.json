@@ -277,9 +277,7 @@
 		"available_languages": "ភាសាដែលមាន"
 	},
 	"map": {
-		"find_my_location": "រកទីតាំងរបស់ខ្ញុំ",
-		"routes_shown": "ផ្លូវដែលបង្ហាញ",
-		"live_vehicle_count": "{count} តាមពេលវេលាជាក់ស្តែង"
+		"find_my_location": "រកទីតាំងរបស់ខ្ញុំ"
 	},
 	"context-menu": {
 		"start_here": "ចាប់ផ្ដើមនៅទីនេះ",

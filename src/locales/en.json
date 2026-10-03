@@ -280,9 +280,7 @@
 		"available_languages": "Available languages"
 	},
 	"map": {
-		"find_my_location": "Find My Location",
-		"routes_shown": "Routes shown",
-		"live_vehicle_count": "{count} live"
+		"find_my_location": "Find My Location"
 	},
 	"context-menu": {
 		"start_here": "Start Here",

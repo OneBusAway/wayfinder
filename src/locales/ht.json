@@ -277,9 +277,7 @@
 		"available_languages": "Lang ki disponib"
 	},
 	"map": {
-		"find_my_location": "Jwenn kote mwen ye",
-		"routes_shown": "Wout ki afiche",
-		"live_vehicle_count": "{count} an tan reyèl"
+		"find_my_location": "Jwenn kote mwen ye"
 	},
 	"context-menu": {
 		"start_here": "Kòmanse isit",

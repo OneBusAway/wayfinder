@@ -277,9 +277,7 @@
 		"available_languages": "Idiomas disponíveis"
 	},
 	"map": {
-		"find_my_location": "Encontrar minha localização",
-		"routes_shown": "Linhas exibidas",
-		"live_vehicle_count": "{count} em tempo real"
+		"find_my_location": "Encontrar minha localização"
 	},
 	"context-menu": {
 		"start_here": "Começar aqui",

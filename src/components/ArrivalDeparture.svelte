@@ -8,8 +8,8 @@
 		includeArrivalDepartureInStatusLabel = true,
 		route = null,
 		expanded = false,
-		// Resolved by the map layer so the badge, the polyline, the vehicle markers,
-		// and the legend all use one color per route. mapContrastColor adjusts most
+		// Resolved by the map layer so the badge, the polyline, and the vehicle
+		// markers all use one color per route. mapContrastColor adjusts most
 		// GTFS colors for the basemap, so without this the badge and the line would
 		// differ for nearly every route in dark mode.
 		routeColors = null

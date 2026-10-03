@@ -14,7 +14,6 @@
     @prop {string|null} promotedRouteId - the expanded arrival's route, drawn on top
     @prop {string|null} highlightedTripId - the expanded arrival's trip; its vehicle glows
     @prop {Map<string,string>} routeStopIds - bindable out: stop id -> ring-dot color
-    @prop {Map<string,number>} liveCounts - bindable out: route id -> live vehicle count
 -->
 <script>
 	import { onDestroy, untrack } from 'svelte';
@@ -35,8 +34,7 @@
 		routeColors = new Map(),
 		promotedRouteId = null,
 		highlightedTripId = null,
-		routeStopIds = $bindable(new Map()),
-		liveCounts = $bindable(new Map())
+		routeStopIds = $bindable(new Map())
 	} = $props();
 
 	// Widest route draws first and each subsequent route is a little narrower, so
@@ -530,10 +528,7 @@
 		polledRouteIds = new Set(routes.map((route) => route.id));
 		fetchAndUpdateVehiclesForRoutes(routes, mapProvider, {
 			highlightedTripId: () => untrack(() => highlightedTripId),
-			colorsByRouteId: colors,
-			onCounts: (counts) => {
-				if (token === loadToken) liveCounts = counts;
-			}
+			colorsByRouteId: colors
 		})
 			.then(({ intervalId, tick }) => {
 				// A newer load took over while this poll was starting; don't leak it.

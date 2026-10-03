@@ -277,9 +277,7 @@
 		"available_languages": "زبان‌های موجود"
 	},
 	"map": {
-		"find_my_location": "موقعیت من را پیدا کن",
-		"routes_shown": "خطوط نمایش‌داده‌شده",
-		"live_vehicle_count": "{count} وسیله لحظه‌ای"
+		"find_my_location": "موقعیت من را پیدا کن"
 	},
 	"context-menu": {
 		"start_here": "شروع از اینجا",
