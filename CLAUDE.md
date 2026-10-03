@@ -16,8 +16,8 @@ npm run build            # Build for production
 npm run preview          # Preview production build
 
 # Testing
-npm run test             # Run tests once
-npm run test:watch       # Run tests in watch mode
+npx vitest run           # Run tests once
+npm run test             # Run tests in watch mode
 npm run test:coverage    # Run tests with coverage report
 npm run test:ui          # Run tests with Vitest UI
 npm run test:components  # Run only component tests (src/components)
