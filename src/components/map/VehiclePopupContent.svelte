@@ -21,7 +21,7 @@
 >
 	<div class="mb-2 flex items-center">
 		<div
-			class="rounded bg-green-100 px-2 py-1 text-lg font-bold text-brand-accent dark:bg-green-900/30"
+			class="text-brand-accent rounded bg-green-100 px-2 py-1 text-lg font-bold dark:bg-green-900/30"
 		>
 			{nextDestination}
 		</div>

@@ -21,14 +21,14 @@
 
 <div
 	bind:this={menuRef}
-	class="absolute end-0 top-full z-[9999] mt-1 min-w-[150px] rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+	class="bg-surface dark:bg-surface-dark absolute inset-e-0 top-full z-9999 mt-1 min-w-[150px] rounded-md border border-gray-300 shadow-lg dark:border-gray-600"
 >
 	<div class="flex flex-col py-1">
 		{#each links as { key, value }}
 			<a
 				href={value}
 				onclick={onClose}
-				class="block px-4 py-2 text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700"
+				class="text-surface-foreground dark:text-surface-foreground-dark block px-4 py-2 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-700"
 			>
 				{key}
 			</a>

@@ -368,6 +368,43 @@
 	</div>
 {/snippet}
 
+{#snippet loadMoreButton(emptyResults = false)}
+	<div class="flex flex-col items-center gap-2">
+		{#if emptyResults}
+			<p class="text-sm text-gray-600 dark:text-gray-400">
+				{$t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
+			</p>
+		{:else if noMoreArrivals}
+			<p class="text-sm text-gray-600 dark:text-gray-400">
+				{$t('no_more_arrivals_in_next_minutes', { values: { minutes: minutesAfter } })}
+			</p>
+		{/if}
+		<button
+			type="button"
+			onclick={loadMoreArrivals}
+			disabled={loadingMore}
+			class="border-brand-accent bg-brand-accent hover:bg-brand inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-60"
+		>
+			{loadingMore ? $t('loading') : $t('load_more_arrivals')}
+		</button>
+	</div>
+{/snippet}
+
+{#snippet accordionHeader(isActive, arrival)}
+	<!-- min-w-0 lets this flex child shrink below its content width so the
+		 card's headsign wraps/clamps instead of pushing the ETA off-screen.
+		 ArrivalDeparture renders the chevron itself (stacked under the ETA),
+		 so the built-in AccordionItem chevron is hidden. -->
+	<span class="block min-w-0 flex-1">
+		<ArrivalDeparture
+			arrivalDeparture={arrival}
+			route={routeById.get(arrival.routeId)}
+			routeColors={routeColors?.get(arrival.routeId) ?? null}
+			expanded={isActive}
+		/>
+	</span>
+{/snippet}
+
 {#if $isLoading}
 	{@render skeletonList()}
 {:else}
@@ -381,7 +418,7 @@
 			<div>
 				{#if showHeroCard}
 					<div class="mb-4">
-						<div class="relative flex flex-col gap-y-1 rounded-lg bg-brand-accent p-4">
+						<div class="bg-brand-accent relative flex flex-col gap-y-1 rounded-lg p-4">
 							<h1 class="h1 mb-0 text-white">{stop.name}</h1>
 							<h2 class="h2 mb-0 text-white">
 								{$isLoading ? '' : $t('stop')} #{removeAgencyPrefix(stop.id)}
@@ -396,13 +433,13 @@
 								<div class="mt-auto flex justify-end gap-2">
 									<a
 										href={`/stops/${stop.id}`}
-										class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
+										class="border-brand-accent bg-brand-accent hover:bg-brand-accent-dark inline-block rounded-lg border px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out"
 									>
 										{$isLoading ? '' : $t('stop_details.view_details')}
 									</a>
 									<a
 										href={`/stops/${stop.id}/schedule`}
-										class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
+										class="border-brand-accent bg-brand-accent hover:bg-brand-accent-dark inline-block rounded-lg border px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out"
 									>
 										{$isLoading ? '' : $t('schedule_for_stop.view_schedule')}
 									</a>
@@ -436,27 +473,7 @@
 					<SurveyModal {stop} skipHeroQuestion={true} surveyPublicId={surveyPublicIdentifier} />
 				{/if}
 
-				{#snippet loadMoreButton(emptyResults = false)}
-					<div class="flex flex-col items-center gap-2">
-						{#if emptyResults}
-							<p class="text-sm text-gray-600 dark:text-gray-400">
-								{$t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
-							</p>
-						{:else if noMoreArrivals}
-							<p class="text-sm text-gray-600 dark:text-gray-400">
-								{$t('no_more_arrivals_in_next_minutes', { values: { minutes: minutesAfter } })}
-							</p>
-						{/if}
-						<button
-							type="button"
-							onclick={loadMoreArrivals}
-							disabled={loadingMore}
-							class="inline-flex items-center gap-2 rounded-lg border border-brand-accent bg-brand-accent px-4 py-2 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand disabled:cursor-not-allowed disabled:opacity-60"
-						>
-							{loadingMore ? $t('loading') : $t('load_more_arrivals')}
-						</button>
-					</div>
-				{/snippet}
+				<!-- Extracted loadMoreButton -->
 
 				{#if arrivalsAndDepartures.arrivalsAndDepartures.length === 0}
 					<div class="mt-4 flex flex-col items-center justify-center gap-3 first:mt-0">
@@ -467,21 +484,7 @@
 						<Accordion {handleAccordionSelectionChanged}>
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival (makeKey(arrival))}
 								<div in:fade={{ duration: isFirstLoad ? 0 : 300 }} out:fade={{ duration: 200 }}>
-									<AccordionItem data={arrival} fullBleed hideChevron>
-										{#snippet header(isActive)}
-											<!-- min-w-0 lets this flex child shrink below its content width so the
-											     card's headsign wraps/clamps instead of pushing the ETA off-screen.
-											     ArrivalDeparture renders the chevron itself (stacked under the ETA),
-											     so the built-in AccordionItem chevron is hidden. -->
-											<span class="block min-w-0 flex-1">
-												<ArrivalDeparture
-													arrivalDeparture={arrival}
-													route={routeById.get(arrival.routeId)}
-													routeColors={routeColors?.get(arrival.routeId) ?? null}
-													expanded={isActive}
-												/>
-											</span>
-										{/snippet}
+									<AccordionItem data={arrival} fullBleed hideChevron header={accordionHeader}>
 										<TripDetailsPane
 											{stop}
 											tripId={arrival.tripId}

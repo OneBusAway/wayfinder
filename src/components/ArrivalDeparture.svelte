@@ -246,7 +246,7 @@
 
 	<div class="flex shrink-0 flex-col items-center gap-1">
 		<div class="flex items-start gap-0.5">
-			<span class="text-xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
+			<span class="text-xl leading-none font-bold {arrivalInfo.color}">{arrivalInfo.timeText}</span>
 			{#if arrivalInfo.isPredicted}
 				<Rss class="h-3 w-3 {arrivalInfo.color}" />
 			{:else}

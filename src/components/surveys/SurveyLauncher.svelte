@@ -21,14 +21,14 @@
 
 {#if shouldShowSurvey(currentSurvey)}
 	<div
-		class="rounded-x w-full border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-black"
+		class="w-full rounded-xs border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-700 dark:bg-black"
 	>
 		<div class="flex items-center justify-between">
 			<h2 class="text-lg font-semibold text-gray-900 dark:text-white">
 				{currentSurvey.name}
 			</h2>
 			<span
-				class="rounded-full bg-brand-accent px-3 py-1 text-xs font-medium text-brand-foreground"
+				class="bg-brand-accent text-brand-foreground rounded-full px-3 py-1 text-xs font-medium"
 			>
 				New Survey
 			</span>
@@ -40,7 +40,7 @@
 
 		<button
 			onclick={launchSurvey}
-			class="mt-4 flex w-full items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-green-700 focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
+			class="mt-4 flex w-full items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-green-700 focus:ring-2 focus:ring-green-400/50"
 		>
 			Take Survey
 		</button>

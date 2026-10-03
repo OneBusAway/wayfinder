@@ -109,7 +109,7 @@ describe('RouteItem', () => {
 		expect(routeNameElement).toHaveStyle('--route-color-light: #0066CC');
 		expect(routeNameElement).toHaveAttribute(
 			'class',
-			expect.stringContaining('text-[var(--route-color-light)]')
+			expect.stringContaining('text-(--route-color-light)')
 		);
 	});
 
@@ -147,7 +147,7 @@ describe('RouteItem', () => {
 		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
 		expect(button).toHaveClass('border-b', 'border-gray-200', 'bg-[#f9f9f9]');
 		expect(button).toHaveClass('p-4', 'text-left');
-		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-none');
+		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-hidden');
 	});
 
 	test('route name has proper styling classes', () => {
@@ -227,7 +227,7 @@ describe('RouteItem', () => {
 		expect(routeNameElement).toHaveStyle('--route-color-light: #0077C0');
 		expect(routeNameElement).toHaveAttribute(
 			'class',
-			expect.stringContaining('text-[var(--route-color-light)]')
+			expect.stringContaining('text-(--route-color-light)')
 		);
 	});
 
@@ -251,7 +251,7 @@ describe('RouteItem', () => {
 		expect(routeNameElement).toHaveStyle('--route-color-light: #018571');
 		expect(routeNameElement).toHaveAttribute(
 			'class',
-			expect.stringContaining('text-[var(--route-color-light)]')
+			expect.stringContaining('text-(--route-color-light)')
 		);
 	});
 
@@ -271,7 +271,7 @@ describe('RouteItem', () => {
 		expect(routeNameElement).toHaveStyle('--route-color-light: #8CC8A0');
 		expect(routeNameElement).toHaveAttribute(
 			'class',
-			expect.stringContaining('text-[var(--route-color-light)]')
+			expect.stringContaining('text-(--route-color-light)')
 		);
 	});
 

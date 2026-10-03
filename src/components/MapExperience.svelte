@@ -588,6 +588,10 @@
 	});
 </script>
 
+{#snippet searchPaneChildContent()}
+	<SurveyLauncher />
+{/snippet}
+
 <svelte:head>
 	<title>{PUBLIC_OBA_REGION_NAME}</title>
 	<link
@@ -607,7 +611,7 @@
 	<p>Loading...</p>
 {:else}
 	<h1 class="sr-only">{PUBLIC_OBA_REGION_NAME}</h1>
-	<div class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 z-40">
+	<div class="pointer-events-none absolute top-0 right-0 bottom-0 left-0 z-40">
 		<!-- Top spacing is padding (not margin) so h-full keeps the column's bottom
 		     edge — where the sheet anchors — exactly at the viewport bottom. Below md,
 		     horizontal margins live on the search wrapper and on each pane (not the
@@ -630,11 +634,8 @@
 					{handleMapStopMarkerSelect}
 					{clearTripItineraries}
 					onCollapse={stopSheetOpen ? collapseSearch : null}
-				>
-					{#snippet childContent()}
-						<SurveyLauncher />
-					{/snippet}
-				</SearchPane>
+					childContent={searchPaneChildContent}
+				/>
 			</div>
 
 			<!-- Mobile: sit in flow below the search pane. Desktop: pin to the map's
@@ -642,7 +643,7 @@
 			     Wrapper stays pointer-events transparent (and shrink-wrapped) so it
 			     cannot steal map pans; the control itself opts back in. -->
 			<div
-				class="relative z-30 mx-2 mt-2 w-fit self-end md:absolute md:right-4 md:top-4 md:mx-0 md:mt-0"
+				class="relative z-30 mx-2 mt-2 w-fit self-end md:absolute md:top-4 md:right-4 md:mx-0 md:mt-0"
 			>
 				<FavoritesFloatingControl
 					onStopClick={handleFavoriteStopClick}

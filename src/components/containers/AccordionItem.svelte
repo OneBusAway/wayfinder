@@ -27,7 +27,7 @@
 </script>
 
 <div class="relative">
-	<div class="sticky -top-[17px] z-10 bg-white px-4 dark:bg-gray-800 {fullBleed ? '-mx-4' : ''}">
+	<div class="sticky top-[-17px] z-10 bg-white px-4 dark:bg-gray-800 {fullBleed ? '-mx-4' : ''}">
 		<button
 			type="button"
 			class="flex w-full items-center justify-between py-3 text-left text-base font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
@@ -36,7 +36,7 @@
 			onclick={toggle}
 			aria-expanded={$isActive}
 		>
-			{@render header?.($isActive)}
+			{@render header?.($isActive, data)}
 			{#if !hideChevron}
 				<svg
 					class="h-6 w-6 shrink-0 transition-transform"

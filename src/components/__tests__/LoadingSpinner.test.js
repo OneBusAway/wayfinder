@@ -81,7 +81,7 @@ describe('LoadingSpinner', () => {
 			'items-center',
 			'justify-center'
 		);
-		expect(outerDiv).toHaveClass('bg-neutral-800', 'bg-opacity-80', 'md:rounded-lg');
+		expect(outerDiv).toHaveClass('bg-neutral-800/80', 'md:rounded-lg');
 	});
 
 	test('spinner SVG has correct attributes', () => {

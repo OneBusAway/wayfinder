@@ -6,7 +6,7 @@
 	import { groupStopTimesByHour } from '$lib/scheduleForStop.js';
 	import Accordion from '$components/containers/Accordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
-	import { Datepicker } from 'flowbite-svelte';
+	import Datepicker from 'flowbite-svelte/Datepicker.svelte';
 	import { onMount } from 'svelte';
 	import { t, isLoading } from 'svelte-i18n';
 	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
@@ -128,6 +128,10 @@
 	});
 </script>
 
+{#snippet accordionHeader(_isActive, schedule)}
+	<span>{schedule.tripHeadsign}</span>
+{/snippet}
+
 <svelte:head>
 	<title>{stopName}{$isLoading ? '' : ` - ${$t('schedule_for_stop.route_schedules')}`}</title>
 	{#if stopName}
@@ -182,10 +186,7 @@
 				{:else}
 					<Accordion bind:this={accordionComponent}>
 						{#each schedules as schedule}
-							<AccordionItem>
-								{#snippet header()}
-									<span>{schedule.tripHeadsign}</span>
-								{/snippet}
+							<AccordionItem data={schedule} header={accordionHeader}>
 								<RouteScheduleTable {schedule} />
 							</AccordionItem>
 						{/each}
