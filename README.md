@@ -35,6 +35,8 @@ See `.env.example` for an example of the required keys and values.
 - `PUBLIC_METRICS_ENABLED` - boolean: (optional) Set to `"true"` to expose the Prometheus `/metrics` endpoint and record request latency histograms. Defaults to `false`.
 - `PUBLIC_METRICS_ORGANIZATION` - string: (required when `PUBLIC_METRICS_ENABLED` is `"true"`) Set to the exact OBACloud Organization.name value, for example `"Sound Transit"`.
 
+When `PUBLIC_METRICS_ENABLED=true`, `/metrics` is served without authentication on the public app port. Restrict access at the proxy or network level.
+
 ### Text and Images
 
 - `PUBLIC_OBA_REGION_NAME` - string: (required) displayed in the header.

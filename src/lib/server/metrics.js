@@ -2,10 +2,7 @@ import { building } from '$app/environment';
 import { env } from '$env/dynamic/public';
 import { collectDefaultMetrics, Histogram, Registry } from 'prom-client';
 
-const enabledValue = String(env.PUBLIC_METRICS_ENABLED ?? '')
-	.trim()
-	.toLowerCase();
-export const metricsEnabled = enabledValue === 'true';
+export const metricsEnabled = env.PUBLIC_METRICS_ENABLED === 'true';
 
 const organizationValue = (env.PUBLIC_METRICS_ORGANIZATION ?? '').trim();
 
@@ -24,7 +21,7 @@ const defaultLabels = {
 const registry = (() => {
 	if (!metricsEnabled) return null;
 
-	const existing = globalThis.__wayfinderMetrics;
+	const existing = globalThis.__wayfinderAppMetrics;
 	if (existing) {
 		return existing.registry;
 	}
@@ -42,18 +39,18 @@ const registry = (() => {
 	});
 
 	const metrics = { registry: register, histogram };
-	globalThis.__wayfinderMetrics = metrics;
+	globalThis.__wayfinderAppMetrics = metrics;
 	return register;
 })();
 
 export { registry };
 
 export function observeRequest({ method, uri, status, seconds }) {
-	if (!metricsEnabled || !globalThis.__wayfinderMetrics) return;
+	if (!metricsEnabled || !globalThis.__wayfinderAppMetrics) return;
 	const labelUri = uri || 'unmatched';
 	const labelMethod = method || 'GET';
 	const labelStatus = String(status ?? '0');
-	globalThis.__wayfinderMetrics.histogram.observe(
+	globalThis.__wayfinderAppMetrics.histogram.observe(
 		{ method: labelMethod, uri: labelUri, status: labelStatus },
 		seconds
 	);
