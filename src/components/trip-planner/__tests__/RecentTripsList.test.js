@@ -231,7 +231,10 @@ describe('RecentTripsList', () => {
 
 		it('closes and clears the recent searches when Clear is confirmed', async () => {
 			mockStoreValue.current = sampleTrips;
-			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			const { container } = render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			const nextFocusTarget = document.createElement('input');
+			nextFocusTarget.id = 'from-location-input';
+			container.append(nextFocusTarget);
 
 			await user.click(screen.getByRole('button', { name: 'Clear All' }));
 			await user.click(screen.getByRole('button', { name: 'Clear' }));
@@ -242,6 +245,7 @@ describe('RecentTripsList', () => {
 				expect(screen.queryByText('Downtown')).not.toBeInTheDocument();
 			});
 			expect(mockClearAll).toHaveBeenCalledTimes(1);
+			expect(nextFocusTarget).toHaveFocus();
 		});
 
 		it('closes on Escape and keeps the recent searches', async () => {

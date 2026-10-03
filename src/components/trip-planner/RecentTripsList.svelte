@@ -31,6 +31,8 @@
 	async function confirmClearAll() {
 		await closeClearConfirmation();
 		recentTrips.clearAll();
+		await tick();
+		document.getElementById('from-location-input')?.focus();
 	}
 
 	function handleDialogKeydown(event) {
