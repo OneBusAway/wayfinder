@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import StopMarker from '$components/map/StopMarker.svelte';
-import { BusFront } from '@lucide/svelte';
+import { faBus } from '@fortawesome/free-solid-svg-icons';
 import {
 	RouteType,
 	routePriorities,
@@ -148,7 +148,7 @@ export default class OpenStreetMapProvider {
 			return this.markersMap.get(options.stop.id);
 		}
 
-		let icon = options.icon || BusFront;
+		let icon = options.icon || faBus;
 
 		if (!options.icon && options.stop.routes && options.stop.routes.length > 0) {
 			const routeTypes = options.stop.routes.map((r) => r.type);

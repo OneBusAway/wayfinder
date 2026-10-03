@@ -1,7 +1,9 @@
 <script>
 	import { _ } from 'svelte-i18n';
 	import { onMount, onDestroy } from 'svelte';
-	import { BusFront, Check, MapPin, RadioTower } from '@lucide/svelte';
+	import { Check, MapPin, RadioTower } from '@lucide/svelte';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faBus } from '@fortawesome/free-solid-svg-icons';
 	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
 	import { resolveVehicleStopIndex, buildStopSegments } from '$lib/tripDetailsUtils';
 
@@ -170,7 +172,10 @@
 										: ''}"
 								>
 									{#if index === busPosition}
-										<BusFront class="h-4 w-4 text-white dark:text-neutral-900" />
+										<FontAwesomeIcon
+											icon={faBus}
+											class="text-sm text-white dark:text-neutral-900"
+										/>
 										{#if tripStop.stopId === stop.id}
 											<Check
 												class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-0.5 text-white"

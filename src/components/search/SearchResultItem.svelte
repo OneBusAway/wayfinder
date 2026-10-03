@@ -1,16 +1,18 @@
 <script>
 	import { createBubbler } from 'svelte/legacy';
 
+	import AppIcon from '$components/icons/AppIcon.svelte';
+
 	const bubble = createBubbler();
 	/**
 	 * @typedef {Object} Props
-	 * @property {import('svelte').Component | null} [icon]
+	 * @property {import('svelte').Component | import('@fortawesome/fontawesome-svg-core').IconDefinition | null} [icon] - Lucide component, or Font Awesome definition for route types
 	 * @property {string | null} [title]
 	 * @property {string | null} [subtitle]
 	 */
 
 	/** @type {Props} */
-	let { icon: Icon = null, title = null, subtitle = null } = $props();
+	let { icon = null, title = null, subtitle = null } = $props();
 </script>
 
 <button
@@ -22,8 +24,8 @@
 		<div
 			class="flex h-12 w-12 min-w-12 max-w-12 items-center justify-center rounded-full bg-gray-200"
 		>
-			{#if Icon}
-				<Icon class="h-6 w-6 text-gray-800" />
+			{#if icon}
+				<AppIcon {icon} class="h-6 w-6 text-gray-800" />
 			{/if}
 		</div>
 
