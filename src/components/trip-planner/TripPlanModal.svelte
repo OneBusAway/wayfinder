@@ -173,7 +173,9 @@
 			const endpoints = [legs[0]?.from, legs.at(-1)?.to].filter(
 				(point) => Number.isFinite(point?.lat) && Number.isFinite(point?.lon)
 			);
-			const midpoint = calculateMidpoint(endpoints);
+			const midpoint = /** @type {{ lat: number, lon: number }|null} */ (
+				calculateMidpoint(endpoints)
+			);
 			if (midpoint) {
 				mapProvider.flyTo(midpoint.lat, midpoint.lon, 13);
 			}
@@ -216,7 +218,7 @@
 	onDestroy(() => {
 		drawToken++;
 		// Only the ArcGIS provider keeps view padding that needs resetting.
-		if ('resetPadding' in mapProvider) mapProvider.resetPadding();
+		mapProvider.resetPadding?.();
 		// Partial-shape warnings auto-dismiss, but clear ours immediately on close
 		// so it doesn't linger over the next view.
 		notifications.dismiss(notificationId);

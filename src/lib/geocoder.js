@@ -32,6 +32,10 @@ export async function googleGeocode({ apiKey, query, bounds = null }) {
 	});
 }
 
+/**
+ * @param {{ apiKey: string|undefined, input: string, bounds?: import('./types').GeoBounds|null }} options
+ * @returns {Promise<import('./types').PlaceSuggestion[]>}
+ */
 export async function googlePlacesAutocomplete({ apiKey, input, bounds = null }) {
 	const requestBody = { input };
 
@@ -126,6 +130,10 @@ export async function bingGeocode({ apiKey, query, bounds = null }) {
 	});
 }
 
+/**
+ * @param {{ apiKey: string|undefined, query: string, bounds?: import('./types').GeoBounds|null }} options
+ * @returns {Promise<import('./types').PlaceSuggestion[]>}
+ */
 export async function bingAutoSuggestPlaces({ apiKey, query, bounds = null }) {
 	let url = `https://dev.virtualearth.net/REST/v1/Autosuggest?query=${encodeURIComponent(query)}&key=${apiKey}`;
 
@@ -187,6 +195,13 @@ export async function bingAutoSuggestPlaces({ apiKey, query, bounds = null }) {
 	return suggestions;
 }
 
+/**
+ * @param {string|undefined} provider
+ * @param {string} query
+ * @param {string|undefined} apiKey
+ * @param {import('./types').GeoBounds|null} [bounds]
+ * @returns {Promise<import('./types').PlaceSuggestion[]>}
+ */
 export async function fetchAutocompleteResults(provider, query, apiKey, bounds = null) {
 	switch (provider) {
 		case 'google':
@@ -200,10 +215,10 @@ export async function fetchAutocompleteResults(provider, query, apiKey, bounds =
 
 /**
  *
- * @param {string} placeId     optional - some providers return a placeId
- * @param {string} name    	   required - used for geocoding the selected place
- * @param {string} displayText required - used for displaying the selected place
- * @returns
+ * @param {string|null} placeId Some providers return a placeId.
+ * @param {string} name Used for geocoding the selected place.
+ * @param {string} displayText Used for displaying the selected place.
+ * @returns {import('./types').PlaceSuggestion|null}
  */
 function createSuggestion(placeId, name, displayText) {
 	if (!name || !displayText) return null;

@@ -1,8 +1,9 @@
 <script>
+	// @ts-check
 	/**
 	 * @typedef {Object} Props
 	 * @property {boolean} [current]
-	 * @property {any} href
+	 * @property {string} href
 	 * @property {import('svelte').Snippet} [children]
 	 */
 

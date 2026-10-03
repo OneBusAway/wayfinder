@@ -1,3 +1,12 @@
+// @ts-check
+
+/** @typedef {import('$lib/types').ServiceAlert} ServiceAlert */
+
+/**
+ * @template {ServiceAlert} Alert
+ * @param {Alert[]} situations
+ * @returns {Alert[]}
+ */
 export function filterActiveAlerts(situations) {
 	const now = Date.now();
 	return situations.filter((situation) =>
@@ -57,7 +66,7 @@ const INFO_VALUES = new Set(['info', 'slight', 'veryslight', 'noimpact']);
  * Covers both SIRI-style (`verySevere`, `normal`, `slight`) and GTFS-style
  * (`severe`, `warning`, `info`) vocabularies. Missing / unknown → `info`.
  *
- * @param {{ severity?: string } | null | undefined} alert
+ * @param {Pick<ServiceAlert, 'severity'> | null | undefined} alert
  * @returns {NormalizedSeverity}
  */
 export function normalizeSeverity(alert) {
@@ -74,7 +83,7 @@ export function normalizeSeverity(alert) {
 /**
  * True when any `allAffects` entry names this stop or one of its routes.
  *
- * @param {{ allAffects?: Array<{ stopId?: string, routeId?: string }> } | null | undefined} alert
+ * @param {Pick<ServiceAlert, 'allAffects'> | null | undefined} alert
  * @param {{ stopId?: string | null, routeIds?: string[] }} ctx
  * @returns {boolean}
  */
@@ -96,16 +105,19 @@ export function alertAffects(alert, { stopId = null, routeIds = [] } = {}) {
  * Returns a flat ordered array plus the count of relevant alerts so the UI
  * can place a group heading without re-filtering.
  *
- * @param {Array} alerts
+ * @template {ServiceAlert} Alert
+ * @param {Alert[]} alerts
  * @param {{ stopId?: string | null, routeIds?: string[] }} ctx
- * @returns {{ ordered: Array, relevantCount: number }}
+ * @returns {{ ordered: Alert[], relevantCount: number }}
  */
 export function orderAlertsByRelevance(alerts, { stopId = null, routeIds = [] } = {}) {
 	if (!Array.isArray(alerts) || alerts.length === 0) {
 		return { ordered: [], relevantCount: 0 };
 	}
 
+	/** @type {Alert[]} */
 	const relevant = [];
+	/** @type {Alert[]} */
 	const general = [];
 
 	for (const alert of alerts) {
@@ -116,7 +128,7 @@ export function orderAlertsByRelevance(alerts, { stopId = null, routeIds = [] } 
 		}
 	}
 
-	const bySeverityDesc = (a, b) =>
+	const bySeverityDesc = (/** @type {Alert} */ a, /** @type {Alert} */ b) =>
 		SEVERITY_RANK[normalizeSeverity(b)] - SEVERITY_RANK[normalizeSeverity(a)];
 
 	relevant.sort(bySeverityDesc);
@@ -132,7 +144,7 @@ export function orderAlertsByRelevance(alerts, { stopId = null, routeIds = [] } 
  * Active date range for display: the window that contains now, else the first
  * window. Bounds are milliseconds, or null when open-ended / missing.
  *
- * @param {{ activeWindows?: Array<{ from?: number, to?: number }> } | null | undefined} alert
+ * @param {Pick<ServiceAlert, 'activeWindows'> | null | undefined} alert
  * @returns {{ from: number | null, to: number | null } | null}
  */
 export function activeWindowRange(alert) {
@@ -272,12 +284,12 @@ export function formatEffectLabel(effect, translate) {
  *
  * @param {number | null | undefined} ms
  * @param {string | undefined} timeZone
- * @param {string | undefined} locale - the app's active locale; falls back to the
+ * @param {string | null | undefined} locale - the app's active locale; falls back to the
  *   browser's when absent.
  * @returns {string | null}
  */
 function formatAlertDate(ms, timeZone, locale) {
-	if (!Number.isFinite(ms)) return null;
+	if (ms == null || !Number.isFinite(ms)) return null;
 	return new Intl.DateTimeFormat(locale || undefined, {
 		month: 'short',
 		day: 'numeric',
@@ -293,8 +305,8 @@ function formatAlertDate(ms, timeZone, locale) {
  *
  * @param {{ from: number | null, to: number | null } | null | undefined} range
  * @param {(key: string, opts?: { values?: Record<string, string> }) => string} translate
- * @param {string | undefined} timeZone
- * @param {string | undefined} locale
+ * @param {string | undefined} [timeZone]
+ * @param {string | null | undefined} [locale]
  * @returns {string | null}
  */
 export function formatActiveWindowLabel(range, translate, timeZone, locale) {

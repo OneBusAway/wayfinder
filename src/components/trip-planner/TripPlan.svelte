@@ -267,6 +267,7 @@
 				throw new Error(`Error planning trip: ${response.statusText}`);
 			}
 
+			/** @type {import('$lib/types').TripPlanResponse} */
 			const data = await response.json();
 
 			return data;
