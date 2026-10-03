@@ -48,6 +48,10 @@ vi.mock('$components/service-alerts/ServiceAlerts.svelte', () => ({
 	default: vi.fn().mockImplementation(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
 }));
 
+vi.mock('$components/stops/OnDemandStopCard.svelte', () => ({
+	default: vi.fn().mockImplementation(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
+}));
+
 vi.mock('$components/LoadingSpinner.svelte', () => ({
 	default: vi.fn().mockImplementation(() => ({ $set: vi.fn(), $destroy: vi.fn(), $on: vi.fn() }))
 }));

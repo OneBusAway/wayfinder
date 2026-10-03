@@ -9,8 +9,10 @@
 	import FavoritesFloatingControl from '$components/favorites/FavoritesFloatingControl.svelte';
 	import { isLoading } from 'svelte-i18n';
 	import AlertsModal from '$components/navigation/AlertsModal.svelte';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
+	import { openOnDemandService } from '$lib/onDemand/navigation.js';
 	import StopBottomSheet from '$components/stops/StopBottomSheet.svelte';
+	import OnDemandServiceSheet from '$components/ondemand/OnDemandServiceSheet.svelte';
 	import CollapsedSearchField from '$components/search/CollapsedSearchField.svelte';
 	import TripPlanModal from '$components/trip-planner/TripPlanModal.svelte';
 	import { browser } from '$app/environment';
@@ -95,6 +97,7 @@
 	// Fraction of map height to lift a selected stop above center so the mobile
 	// bottom sheet (half detent, ~55% tall) doesn't cover it — lands it ~25% down.
 	const MOBILE_STOP_MAP_OFFSET_Y = 0.25;
+	const DESKTOP_MIN_WIDTH_PX = 768;
 
 	// The open stop is driven by page.state.stopData. A marker tap sets it via shallow
 	// pushState; a cold load / share seeds it from the server load's page.data in
@@ -131,7 +134,13 @@
 	let searchCollapsed = $state(false);
 	let sheetSnap = $state('half');
 	let stopSheetOpen = $derived(selectedStopId != null);
-	let showCollapsedSearch = $derived(stopSheetOpen && searchCollapsed);
+
+	// Like stops, the open on-demand service is driven by page.state (shallow
+	// routing); a cold load copies it across in afterNavigate below.
+	let selectedOnDemandServiceId = $derived($page.state?.onDemandServiceId ?? null);
+	let onDemandSheetOpen = $derived(!stopSheetOpen && selectedOnDemandServiceId != null);
+
+	let showCollapsedSearch = $derived((stopSheetOpen || onDemandSheetOpen) && searchCollapsed);
 
 	// Mobile: form + recent + results in the bottom sheet (#577). Desktop: form stays
 	// in SearchPane; sheet below is only for itinerary results after planning.
@@ -226,35 +235,12 @@
 			// or trip left behind only when one was active, but always clear currentModal
 			// (including ALL_ROUTES / TRIP_PLANNER, which draw no map overlays) and its
 			// selection state so no modal reappears when the stop sheet closes.
-			if (
-				currentModal === Modal.ROUTE ||
-				currentModal === Modal.TRIP_PLANNER ||
-				selectedRoute ||
-				isRouteSelected
-			) {
-				provider.clearAllPolylines();
-				provider.removeStopMarkers();
-				provider.clearVehicleMarkers();
-				if (currentIntervalId) {
-					clearInterval(currentIntervalId);
-					currentIntervalId = null;
-				}
-				selectedRoute = null;
-				isRouteSelected = false;
-				selectedTrip = null;
-				tripItineraries = [];
-				tripPlanError = null;
-			}
-			currentModal = null;
-			// The stop now owns the map, so any route/trip toast still on screen is
-			// stale — and tapping its Retry would tear down the stop's own markers
-			// and polylines. Unscoped: this supersedes whichever component raised it.
-			notifications.dismiss();
+			supersedeRouteAndTripSelection(provider);
 
-			searchCollapsed = true;
-			if (browser && window.innerWidth >= 768) sheetSnap = 'full';
+			openSheetChrome();
 
-			const offsetY = browser && window.innerWidth < 768 ? MOBILE_STOP_MAP_OFFSET_Y : 0;
+			const offsetY =
+				browser && window.innerWidth < DESKTOP_MIN_WIDTH_PX ? MOBILE_STOP_MAP_OFFSET_Y : 0;
 			// mapWasReady is false only on the very first framing (cold load) → snap
 			// instantly; later in-app selections animate.
 			provider.flyTo(data.lat, data.lon, 16, { offsetY, animate: mapWasReady });
@@ -313,11 +299,61 @@
 		mapWasReady = true;
 	});
 
+	// Tear down the map overlays a route or trip left behind only when one was
+	// active, but always clear currentModal (including ALL_ROUTES / TRIP_PLANNER,
+	// which draw no overlays) so no modal reappears when the sheet that superseded
+	// it closes. Shared by the stop and on-demand sheets.
+	function supersedeRouteAndTripSelection(provider) {
+		if (
+			currentModal === Modal.ROUTE ||
+			currentModal === Modal.TRIP_PLANNER ||
+			selectedRoute ||
+			isRouteSelected
+		) {
+			provider.clearAllPolylines();
+			provider.removeStopMarkers();
+			provider.clearVehicleMarkers();
+			if (currentIntervalId) {
+				clearInterval(currentIntervalId);
+				currentIntervalId = null;
+			}
+			selectedRoute = null;
+			isRouteSelected = false;
+			selectedTrip = null;
+			tripItineraries = [];
+			tripPlanError = null;
+		}
+		currentModal = null;
+		// The sheet now owns the map, so any route/trip toast still on screen is
+		// stale — and tapping its Retry would tear down the sheet's own markers
+		// and polylines. Unscoped: this supersedes whichever component raised it.
+		notifications.dismiss();
+	}
+
+	// Keyed on the service id only (the rest is untracked), so a route picked while
+	// the sheet is open isn't torn down again; handleRouteSelected closes the sheet.
+	$effect(() => {
+		const serviceId = selectedOnDemandServiceId; // track
+		const provider = mapProvider; // track
+		if (serviceId == null || !provider) return;
+		untrack(() => {
+			supersedeRouteAndTripSelection(provider);
+			openSheetChrome();
+		});
+	});
+
+	// Collapse the search field behind a selection sheet; on desktop (md+) the
+	// sheet is a fixed side panel, so open it fully instead of at the half detent.
+	function openSheetChrome() {
+		searchCollapsed = true;
+		if (browser && window.innerWidth >= DESKTOP_MIN_WIDTH_PX) sheetSnap = 'full';
+	}
+
 	function handleViewAllRoutes() {
 		currentModal = Modal.ALL_ROUTES;
 		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
 		// bottom sheet, so open it fully instead of at the half detent.
-		if (browser && window.innerWidth >= 768) {
+		if (browser && window.innerWidth >= DESKTOP_MIN_WIDTH_PX) {
 			sheetSnap = 'full';
 		}
 	}
@@ -333,7 +369,7 @@
 	}
 
 	function closePane() {
-		if (stopSheetOpen) {
+		if (stopSheetOpen || onDemandSheetOpen) {
 			pushState('/', {}); // selection effect runs the map/stop teardown
 			return;
 		}
@@ -411,7 +447,7 @@
 	 * @param {number} routeData.currentIntervalId - The current interval ID.
 	 */
 	function handleRouteSelected(routeData) {
-		if (stopSheetOpen) pushState('/', {});
+		if (stopSheetOpen || onDemandSheetOpen) pushState('/', {});
 		selectedRoute = routeData.route;
 		polylines = routeData.polylines;
 		stops = routeData.stops;
@@ -420,7 +456,7 @@
 		isRouteSelected = true;
 		// On desktop (md+) the sheet is a fixed side panel rather than a mobile
 		// bottom sheet, so open it fully instead of at the half detent.
-		if (browser && window.innerWidth >= 768) {
+		if (browser && window.innerWidth >= DESKTOP_MIN_WIDTH_PX) {
 			sheetSnap = 'full';
 		}
 		analytics.reportRouteClicked(selectedRoute.id);
@@ -567,6 +603,9 @@
 			if ($page.data?.stopData && !$page.state?.stopData) {
 				replaceState('', { stopData: $page.data.stopData });
 			}
+			if ($page.data?.onDemandServiceId && !$page.state?.onDemandServiceId) {
+				replaceState('', { onDemandServiceId: $page.data.onDemandServiceId });
+			}
 		}, 0);
 	});
 
@@ -629,7 +668,7 @@
 					{handleStopMarkerSelect}
 					{handleMapStopMarkerSelect}
 					{clearTripItineraries}
-					onCollapse={stopSheetOpen ? collapseSearch : null}
+					onCollapse={stopSheetOpen || onDemandSheetOpen ? collapseSearch : null}
 				>
 					{#snippet childContent()}
 						<SurveyLauncher />
@@ -658,7 +697,15 @@
 						{tripSelected}
 						{handleUpdateRouteMap}
 						{routeColors}
+						onOnDemandServiceSelect={openOnDemandService}
 						bind:arrivalsAndDeparturesResponse={stopArrivals}
+						bind:snap={sheetSnap}
+					/>
+				{:else if onDemandSheetOpen}
+					<OnDemandServiceSheet
+						serviceId={selectedOnDemandServiceId}
+						{closePane}
+						{mapProvider}
 						bind:snap={sheetSnap}
 					/>
 				{:else if currentModal === Modal.ROUTE}
