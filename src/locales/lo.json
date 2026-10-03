@@ -58,6 +58,8 @@
 		"remove_recent_trip": "ລຶບການເດີນທາງລ່າສຸດ",
 		"recent_trip": "ໃຊ້ການເດີນທາງລ່າສຸດຈາກ {from} ໄປ {to}",
 		"recent_searches": "ການຄົ້ນຫາລ່າສຸດ",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "ລ່າສຸດ",
 		"clear_all": "ລຶບທັງໝົດ",
 		"request_failed": "ພວກເຮົາບໍ່ສາມາດເຊື່ອມຕໍ່ຫາບໍລິການວາງແຜນການເດີນທາງໄດ້. ກະລຸນາລອງໃໝ່.",

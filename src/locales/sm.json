@@ -58,6 +58,8 @@
 		"remove_recent_trip": "Aveʻese le malaga talu ai nei",
 		"recent_trip": "Faʻaaoga le malaga talu ai nei mai {from} i {to}",
 		"recent_searches": "Sailiga Talu Ai Nei",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "Talu Ai Nei",
 		"clear_all": "Tapeʻe Uma",
 		"request_failed": "E leʻi mafai ona faʻafesoʻotaʻi le auaunaga fuafua malaga. Faʻamolemole toe taumafai.",

@@ -58,6 +58,8 @@
 		"remove_recent_trip": "Remover viagem recente",
 		"recent_trip": "Usar viagem recente de {from} para {to}",
 		"recent_searches": "Buscas Recentes",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "Recentes",
 		"clear_all": "Limpar Tudo",
 		"request_failed": "Não foi possível conectar ao serviço de planejamento de viagens. Tente novamente.",

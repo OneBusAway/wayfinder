@@ -58,6 +58,8 @@
 		"remove_recent_trip": "លុបការធ្វើដំណើរថ្មីៗនេះ",
 		"recent_trip": "ប្រើការធ្វើដំណើរថ្មីៗ ពី {from} ទៅ {to}",
 		"recent_searches": "ការស្វែងរកថ្មីៗ",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "ថ្មីៗ",
 		"clear_all": "សម្អាតទាំងអស់",
 		"request_failed": "យើងមិនអាចភ្ជាប់ទៅសេវាកម្មរៀបចំការធ្វើដំណើរបានទេ។ សូមព្យាយាមម្តងទៀត។",

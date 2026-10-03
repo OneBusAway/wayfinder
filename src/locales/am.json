@@ -58,6 +58,8 @@
 		"remove_recent_trip": "የቅርብ ጊዜ ጉዞን አስወግድ",
 		"recent_trip": "ከ{from} ወደ {to} የቅርብ ጊዜ ጉዞን ተጠቀም",
 		"recent_searches": "የቅርብ ጊዜ ፍለጋዎች",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "የቅርብ ጊዜ ጉዞዎች",
 		"clear_all": "ሁሉንም አጥፋ",
 		"request_failed": "የጉዞ እቅድ አገልግሎትን ማግኘት አልተቻለም። እባክዎ እንደገና ይሞክሩ።",

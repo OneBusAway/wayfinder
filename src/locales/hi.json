@@ -58,6 +58,8 @@
 		"remove_recent_trip": "हाल की यात्रा हटाएं",
 		"recent_trip": "{from} से {to} तक की हाल की यात्रा उपयोग करें",
 		"recent_searches": "हाल की खोजें",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "हाल की यात्राएं",
 		"clear_all": "सभी साफ़ करें",
 		"request_failed": "हम यात्रा योजना सेवा तक नहीं पहुंच सके। कृपया पुनः प्रयास करें।",

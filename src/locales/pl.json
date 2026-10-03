@@ -58,6 +58,8 @@
 		"remove_recent_trip": "Usuń podróż z historii",
 		"recent_trip": "Użyj podróży z historii: {from} – {to}",
 		"recent_searches": "Ostatnie wyszukiwania",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "Ostatnie",
 		"clear_all": "Wyczyść wszystko",
 		"request_failed": "Nie udało się połączyć z usługą planowania podróży. Spróbuj ponownie.",

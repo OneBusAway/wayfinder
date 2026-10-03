@@ -58,6 +58,8 @@
 		"remove_recent_trip": "Alisin ang kamakailang biyahe",
 		"recent_trip": "Gamitin ang kamakailang biyahe mula sa {from} papuntang {to}",
 		"recent_searches": "Mga Kamakailang Paghahanap",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "Kamakailan",
 		"clear_all": "I-clear Lahat",
 		"request_failed": "Hindi namin maabot ang serbisyo sa pagpaplano ng biyahe. Pakisubukang muli.",

@@ -58,6 +58,8 @@
 		"remove_recent_trip": "删除最近行程",
 		"recent_trip": "使用从 {from} 到 {to} 的最近行程",
 		"recent_searches": "最近搜索",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "最近",
 		"clear_all": "全部清除",
 		"request_failed": "无法连接行程规划服务，请稍后重试。",
