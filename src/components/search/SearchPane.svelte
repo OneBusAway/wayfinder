@@ -23,6 +23,9 @@
 		handleRouteSelected,
 		handleViewAllRoutes,
 		handleStopMarkerSelect,
+		// For taps on the marker this pane drops on the map. Unlike picking a search
+		// result, a map tap must not replace an already-open stop.
+		handleMapStopMarkerSelect = null,
 		handleTripPlan,
 		clearTripItineraries,
 		cssClasses = '',
@@ -67,7 +70,7 @@
 		const markerOptions = {
 			stop: stop,
 			position: { lat: stop.lat, lng: stop.lon },
-			onClick: () => handleStopMarkerSelect(stop)
+			onClick: () => (handleMapStopMarkerSelect ?? handleStopMarkerSelect)(stop)
 		};
 		mapProvider.addMarker(markerOptions);
 

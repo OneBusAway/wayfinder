@@ -9,7 +9,6 @@
 	import LocationButton from '$lib/LocationButton/LocationButton.svelte';
 	import RouteMap from './RouteMap.svelte';
 	import StopRoutesLayer from './StopRoutesLayer.svelte';
-	import RouteLegend from './RouteLegend.svelte';
 
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { userLocation } from '$src/stores/userLocationStore';
@@ -63,7 +62,6 @@
 	);
 
 	let routeStopIds = $state(new Map());
-	let liveCounts = $state(new Map());
 
 	// The layer only draws once the arrivals belong to this stop, so gate everything
 	// on there actually being routes. A stop with no arrivals in-window keeps
@@ -500,7 +498,6 @@
 			promotedRouteId={selectedRoute?.id ?? null}
 			{highlightedTripId}
 			bind:routeStopIds
-			bind:liveCounts
 		/>
 	{/if}
 
@@ -510,11 +507,6 @@
 	{#if selectedTrip && showRouteMap && !stop}
 		<RouteMap mapProvider={mapInstance} tripId={selectedTrip?.tripId} currentSelectedStop={stop} />
 	{/if}
-
-	<!-- The `stop ? … : []` ternary is defensive, not load-bearing: upstream,
-	     MapExperience already gates activeRoutes on arrivalsMatchSelection, so
-	     activeRoutes is guaranteed empty whenever stop is null. -->
-	<RouteLegend routes={stop ? activeRoutes : []} {routeColors} {liveCounts} />
 </div>
 
 <div class="controls">

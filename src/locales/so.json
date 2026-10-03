@@ -277,9 +277,7 @@
 		"available_languages": "Luuqadaha la heli karo"
 	},
 	"map": {
-		"find_my_location": "Raadi Goobteeyda",
-		"routes_shown": "Waddooyinka la muujiyay",
-		"live_vehicle_count": "{count} toos ah"
+		"find_my_location": "Raadi Goobteeyda"
 	},
 	"context-menu": {
 		"start_here": "Halkan ka bilow",

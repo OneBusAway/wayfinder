@@ -128,7 +128,7 @@ const VEHICLE_POLL_INTERVAL_MS = 30000;
  *
  * @param {Array<{id: string, type?: number}>} routes
  * @param {Object} mapProvider
- * @param {{highlightedTripId?: string|null|(() => string|null), colorsByRouteId?: Map<string,{line:string}>, onCounts?: Function}} [options]
+ * @param {{highlightedTripId?: string|null|(() => string|null), colorsByRouteId?: Map<string,{line:string}>}} [options]
  * `highlightedTripId` may be a plain value (captured once, for callers that
  * genuinely never change it) or a getter function, resolved fresh on every
  * tick — the trip-expansion glow needs the latter: the poll is started once
@@ -145,7 +145,7 @@ const VEHICLE_POLL_INTERVAL_MS = 30000;
 export async function fetchAndUpdateVehiclesForRoutes(
 	routes,
 	mapProvider,
-	{ highlightedTripId = null, colorsByRouteId = new Map(), onCounts = null } = {}
+	{ highlightedTripId = null, colorsByRouteId = new Map() } = {}
 ) {
 	const resolveHighlightedTripId = () =>
 		typeof highlightedTripId === 'function' ? highlightedTripId() : highlightedTripId;
@@ -183,7 +183,6 @@ export async function fetchAndUpdateVehiclesForRoutes(
 
 		const activeKeys = new Set();
 		const polledRouteIds = new Set();
-		const counts = new Map();
 
 		routes.forEach((route, index) => {
 			const data = results[index];
@@ -206,7 +205,6 @@ export async function fetchAndUpdateVehiclesForRoutes(
 				lastData.set(route.id, data);
 				polledRouteIds.add(route.id);
 				routeKeys.forEach((key) => activeKeys.add(key));
-				counts.set(route.id, routeKeys.size);
 			} catch (error) {
 				console.error(
 					'fetchAndUpdateVehiclesForRoutes: applying route vehicles failed',
@@ -217,7 +215,6 @@ export async function fetchAndUpdateVehiclesForRoutes(
 		});
 
 		removeInactiveMarkers(activeKeys, mapProvider, polledRouteIds);
-		if (onCounts) onCounts(counts);
 	};
 
 	try {

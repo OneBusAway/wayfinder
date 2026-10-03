@@ -130,7 +130,6 @@ test.each(['older first', 'newer first'])(
 			updateVehicleMarker: vi.fn(),
 			removeVehicleMarker: vi.fn()
 		};
-		const onCounts = vi.fn();
 		const olderData = tripsResponse('route-1', [{ tripId: 'trip-1', vehicleId: 'v-1' }]);
 		const newerData = tripsResponse('route-1', [
 			{ tripId: 'trip-1', vehicleId: 'v-1' },
@@ -139,7 +138,7 @@ test.each(['older first', 'newer first'])(
 		newerData.data.list[0].status.position.lat = 48;
 		const response = (data) => ({ ok: true, json: async () => data });
 		vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(olderData)));
-		const poll = await fetchAndUpdateVehiclesForRoutes([{ id: 'route-1' }], provider, { onCounts });
+		const poll = await fetchAndUpdateVehiclesForRoutes([{ id: 'route-1' }], provider);
 		try {
 			let finishOlder;
 			let finishNewer;
@@ -161,19 +160,16 @@ test.each(['older first', 'newer first'])(
 				finishNewer(response(newerData));
 				await newer;
 				expect(provider.updateVehicleMarker.mock.calls.at(-1)[1].position.lat).toBe(48);
-				expect(onCounts).toHaveBeenLastCalledWith(new Map([['route-1', 2]]));
 			};
 			if (completionOrder === 'newer first') await finishLatest();
 			provider.addVehicleMarker.mockClear();
 			provider.updateVehicleMarker.mockClear();
 			provider.removeVehicleMarker.mockClear();
-			onCounts.mockClear();
 			finishOlder(response(olderData));
 			await older;
 			expect(provider.addVehicleMarker).not.toHaveBeenCalled();
 			expect(provider.updateVehicleMarker).not.toHaveBeenCalled();
 			expect(provider.removeVehicleMarker).not.toHaveBeenCalled();
-			expect(onCounts).not.toHaveBeenCalled();
 			if (completionOrder === 'older first') await finishLatest();
 			provider.updateVehicleMarker.mockClear();
 			poll.refresh();
@@ -501,34 +497,6 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 		expect(provider.removeVehicleMarker).not.toHaveBeenCalled();
 	});
 
-	test('reports a live vehicle count per route', async () => {
-		const provider = makeMultiRouteProvider();
-		global.fetch = vi.fn(async (url) => {
-			const routeId = url.split('/').pop();
-			const count = routeId === 'r_a' ? 2 : 1;
-			const vehicles = Array.from({ length: count }, (_, i) => ({
-				tripId: `t_${routeId}_${i}`,
-				vehicleId: `v_${routeId}_${i}`
-			}));
-			return { ok: true, json: async () => tripsResponse(routeId, vehicles) };
-		});
-		const onCounts = vi.fn();
-
-		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
-			[
-				{ id: 'r_a', type: 3 },
-				{ id: 'r_b', type: 3 }
-			],
-			provider,
-			{ onCounts }
-		);
-		clearInterval(intervalId);
-
-		const counts = onCounts.mock.calls.at(-1)[0];
-		expect(counts.get('r_a')).toBe(2);
-		expect(counts.get('r_b')).toBe(1);
-	});
-
 	// A physical vehicle can move between routes across a shift (e.g. a driver
 	// swap). `applyRouteVehicles` re-stamps `existing.routeId` on marker reuse
 	// specifically so ownership transfers to whichever route reports the
@@ -583,8 +551,8 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 	// Only the fetch is isolated per route inside Promise.all. If
 	// applyRouteVehicles throws synchronously for one route (e.g. a
 	// map-provider bug in addVehicleMarker), that must not skip the routes
-	// ordered after it in the forEach, nor abort removeInactiveMarkers/onCounts
-	// for the tick.
+	// ordered after it in the forEach, nor abort removeInactiveMarkers for the
+	// tick.
 	test('a route whose applyRouteVehicles throws does not block other routes from updating', async () => {
 		const provider = makeMultiRouteProvider();
 		provider.addVehicleMarker.mockImplementation((status) => {
@@ -599,15 +567,13 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 					tripsResponse(routeId, [{ tripId: `t_${routeId}`, vehicleId: `v_${routeId}` }])
 			};
 		});
-		const onCounts = vi.fn();
 
 		const { intervalId } = await fetchAndUpdateVehiclesForRoutes(
 			[
 				{ id: 'r_a', type: 3 },
 				{ id: 'r_b', type: 3 }
 			],
-			provider,
-			{ onCounts }
+			provider
 		);
 		clearInterval(intervalId);
 
@@ -615,9 +581,6 @@ describe('fetchAndUpdateVehiclesForRoutes', () => {
 			(call) => call[0].vehicleId === 'v_r_b'
 		);
 		expect(calledForB).toBe(true);
-
-		const counts = onCounts.mock.calls.at(-1)[0];
-		expect(counts.get('r_b')).toBe(1);
 	});
 });
 

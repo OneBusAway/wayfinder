@@ -277,9 +277,7 @@
 		"available_languages": "사용 가능한 언어"
 	},
 	"map": {
-		"find_my_location": "내 위치 찾기",
-		"routes_shown": "표시된 노선",
-		"live_vehicle_count": "실시간 {count}대"
+		"find_my_location": "내 위치 찾기"
 	},
 	"context-menu": {
 		"start_here": "여기에서 출발",

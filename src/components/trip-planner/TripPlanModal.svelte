@@ -1,5 +1,4 @@
-<script>
-	// @ts-check
+<script lang="ts">
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import ItineraryDetails from './ItineraryDetails.svelte';
@@ -14,62 +13,70 @@
 	import { notifications } from '$stores/notificationStore';
 	import { panelFitPadding } from '$lib/mapFitPadding.js';
 	import { calculateMidpoint } from '$lib/mathUtils.js';
+	import type {
+		Itinerary,
+		ItineraryLeg,
+		MapProvider,
+		TripPlanError,
+		TripPlanResponse
+	} from '$lib/types';
 
-	/**
-	 * @typedef {Object} Props
-	 * @property {import('$lib/types').MapProvider} mapProvider
-	 * @property {import('$lib/types').Itinerary[]} [itineraries]
-	 * @property {import('$lib/types').TripPlanError | null} [error]
-	 * @property {boolean} [loading]
-	 * @property {() => void} closePane
-	 * @property {('peek'|'half'|'full')} [snap]
-	 * @property {boolean} [showForm] - When true (mobile plan sheet), embed From/To form in this sheet
-	 * @property {boolean} [hasPlanned] - True after the rider submits a plan (even if zero results)
-	 * @property {((result: { data: import('$lib/types').TripPlanResponse }) => void) | null} [handleTripPlan] - Required when showForm is true
-	 * @property {(() => void) | null} [clearTripItineraries] - Required when showForm is true
-	 */
+	// Opaque provider handle, only ever passed back to `removePolyline`.
+	type Polyline = NonNullable<Awaited<ReturnType<MapProvider['createPolyline']>>>;
 
-	/** @type {Props} */
+	interface Props {
+		// Required when `showForm` is true
+		clearTripItineraries?: () => void;
+		closePane: () => void;
+		error?: TripPlanError | null;
+		// Required when `showForm` is true
+		handleTripPlan?: (tripPlanData: { data: TripPlanResponse }) => void;
+		// True after the rider submits a plan (even if zero results)
+		hasPlanned?: boolean;
+		itineraries?: Itinerary[];
+		loading?: boolean;
+		mapProvider: MapProvider;
+		// When true (mobile plan sheet), embed From/To form in this sheet
+		showForm?: boolean;
+		snap?: 'peek' | 'half' | 'full';
+	}
+
 	let {
-		mapProvider,
-		itineraries = [],
-		error = null,
-		loading = false,
+		clearTripItineraries,
 		closePane,
-		snap = $bindable('half'),
-		showForm = false,
+		error = null,
+		handleTripPlan,
 		hasPlanned = false,
-		handleTripPlan = null,
-		clearTripItineraries = null
-	} = $props();
+		itineraries = [],
+		loading = false,
+		mapProvider,
+		showForm = false,
+		snap = $bindable('half')
+	}: Props = $props();
 
-	let expandedSteps = $state(/** @type {Record<number, boolean>} */ ({}));
+	let expandedSteps: Record<number, boolean> = $state({});
 	let activeTab = $state(0);
-	let itineraryTabsContainer = $state(/** @type {HTMLDivElement|null} */ (null));
-	let prevItinerariesRef = $state(/** @type {import('$lib/types').Itinerary[]|null} */ (null));
+	let itineraryTabsContainer: HTMLElement | null = $state(null);
+	let prevItinerariesRef: Itinerary[] | null = $state(null);
 	// Id of the toast this modal raised, so closing it clears only its own.
-	let notificationId = /** @type {number|null} */ (null);
-	let sheetElement = $state(/** @type {HTMLElement|null} */ (null));
+	let notificationId: number | null = null;
+	let sheetElement: HTMLElement | null = $state(null);
 
-	/** @param {number} index */
-	function toggleSteps(index) {
+	function toggleSteps(index: number) {
 		expandedSteps[index] = !expandedSteps[index];
 		expandedSteps = { ...expandedSteps };
 	}
 
-	/** @param {number} index */
-	function setActiveTab(index) {
+	function setActiveTab(index: number) {
 		activeTab = index;
 		drawRoute();
 	}
 
-	/** @type {Awaited<ReturnType<import('$lib/types').MapProvider['createPolyline']>>[]} */
-	let currPolylines = [];
+	let currPolylines: Polyline[] = [];
 	let drawToken = 0;
 
 	// Build per-leg polyline style based on mode and route color
-	/** @param {import('$lib/types').ItineraryLeg} leg */
-	function getLegPolylineStyle(leg) {
+	function getLegPolylineStyle(leg: ItineraryLeg) {
 		if (leg.mode === 'WALK') {
 			return {
 				color: '#888888',
@@ -104,7 +111,7 @@
 
 		let drawnCount = 0;
 		let legCount = 0;
-		const drawn = [];
+		const drawn: Polyline[] = [];
 
 		for (const leg of itineraries[activeTab].legs) {
 			// Counted before the geometry check: a leg with no geometry at all is
@@ -178,9 +185,8 @@
 	/**
 	 * Converts vertical wheel input into horizontal scrolling for the itinerary tabs.
 	 * Only active on screens at or above the md breakpoint (768px).
-	 * @param {WheelEvent} e
 	 */
-	function handleWheel(e) {
+	function handleWheel(e: WheelEvent) {
 		if (!browser || !itineraryTabsContainer) return;
 
 		// Only apply on large screens (md breakpoint and above)
@@ -211,6 +217,7 @@
 
 	onDestroy(() => {
 		drawToken++;
+		// Only the ArcGIS provider keeps view padding that needs resetting.
 		mapProvider.resetPadding?.();
 		// Partial-shape warnings auto-dismiss, but clear ours immediately on close
 		// so it doesn't linger over the next view.

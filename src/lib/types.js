@@ -41,7 +41,7 @@
 
 /** @typedef {{ north: number, south: number, east: number, west: number }} GeoBounds */
 
-/** @typedef {{ id: string, msg: string }} TripPlanError */
+/** @typedef {{ id: string | number, msg: string }} TripPlanError */
 
 /**
  * @typedef {Object} PlaceSuggestionsResponse
@@ -91,8 +91,8 @@
  * @property {string|null} [headsign]
  * @property {number} [startTime] - Unix milliseconds.
  * @property {number} [endTime] - Unix milliseconds.
- * @property {ItineraryPlace} from
- * @property {ItineraryPlace} to
+ * @property {ItineraryPlace} [from]
+ * @property {ItineraryPlace} [to]
  * @property {{ points?: string|null }|null} [legGeometry]
  * @property {ItineraryStep[]} [steps]
  * @property {boolean} [interlineWithPreviousLeg]

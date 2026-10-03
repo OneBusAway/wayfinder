@@ -1,7 +1,9 @@
 <script>
 	// @ts-check
 	import { t } from 'svelte-i18n';
-	import { BusFront, Footprints, Ship, TrainFrontTunnel, TramFront } from '@lucide/svelte';
+	import { Footprints } from '@lucide/svelte';
+	import { faBus, faFerry, faTrain, faTrainSubway } from '@fortawesome/free-solid-svg-icons';
+	import AppIcon from '$components/icons/AppIcon.svelte';
 
 	/**
 	 * @typedef {Object} Props
@@ -35,16 +37,16 @@
 			case 'WALK':
 				return Footprints;
 			case 'BUS':
-				return BusFront;
+				return faBus;
 			case 'TRAIN':
 			case 'RAIL':
-				return TramFront;
+				return faTrain;
 			case 'FERRY':
-				return Ship;
+				return faFerry;
 			case 'LIGHT_RAIL':
-				return TrainFrontTunnel;
+				return faTrainSubway;
 			case 'TRAM':
-				return TramFront;
+				return faTrainSubway;
 			default:
 				return null;
 		}
@@ -63,12 +65,12 @@
 	{#if transportModes.length > 0}
 		<span class="flex items-center gap-1 text-xs opacity-80">
 			{#each transportModes as mode, i}
-				{@const Icon = getModeIcon(mode)}
-				{#if Icon}
+				{@const icon = getModeIcon(mode)}
+				{#if icon}
 					{#if i > 0}
 						<span class="text-[10px]">&rarr;</span>
 					{/if}
-					<Icon class="h-3 w-3" />
+					<AppIcon {icon} class="h-3 w-3" />
 				{/if}
 			{/each}
 		</span>

@@ -15,7 +15,6 @@ import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';
 /**
  * @typedef {Object} ActiveRoute
  * @property {string} id
- * @property {string} shortName
  * @property {number} type
  * @property {string|null} tripId
  * @property {{id: string, serviceDate?: number}[]} tripCandidates
@@ -76,7 +75,6 @@ export function activeRoutesFromArrivals(response, { now } = {}) {
 	return grouped
 		.sort((a, b) => a[1][0].time - b[1][0].time || a[1][0].index - b[1][0].index)
 		.map(([routeId, candidates]) => {
-			const arrival = candidates[0].arrival;
 			const ref = routeRefs.get(routeId);
 			const seenTrips = new Set();
 			const tripCandidates = candidates
@@ -92,7 +90,6 @@ export function activeRoutesFromArrivals(response, { now } = {}) {
 				});
 			return {
 				id: routeId,
-				shortName: ref?.shortName ?? arrival.routeShortName ?? '',
 				type: ref?.type ?? 3,
 				tripId: tripCandidates[0]?.id ?? null,
 				tripCandidates,
@@ -138,7 +135,7 @@ function badgeForeground(hex) {
 
 /**
  * Resolves one color per route, used identically by the polyline, the vehicle
- * markers, the legend, and the arrival badge.
+ * markers, and the arrival badge.
  *
  * @param {ActiveRoute[]} routes - in draw order (soonest arrival first)
  * @param {{ dark?: boolean }} options

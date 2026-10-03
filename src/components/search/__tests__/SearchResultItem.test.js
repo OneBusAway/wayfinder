@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
-import { BusFront, MapPin, Signpost } from '@lucide/svelte';
+import { MapPin, Signpost } from '@lucide/svelte';
+import { faBus } from '@fortawesome/free-solid-svg-icons';
 import SearchResultItem from '../SearchResultItem.svelte';
 
 describe('SearchResultItem', () => {
@@ -117,7 +118,7 @@ describe('SearchResultItem', () => {
 
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: BusFront,
+					icon: faBus,
 					title: 'Route 44',
 					subtitle: 'University District'
 				}
@@ -169,7 +170,7 @@ describe('SearchResultItem', () => {
 		test('supports screen reader navigation', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: BusFront,
+					icon: faBus,
 					title: 'Route 8',
 					subtitle: 'Capitol Hill - South Lake Union'
 				}
@@ -243,7 +244,7 @@ describe('SearchResultItem', () => {
 		test('applies hover styles correctly', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: BusFront,
+					icon: faBus,
 					title: 'Route Info',
 					subtitle: 'Route Details'
 				}
@@ -285,8 +286,8 @@ describe('SearchResultItem', () => {
 	});
 
 	describe('Icon Handling', () => {
-		test('handles different Lucide icons', () => {
-			const icons = [MapPin, Signpost, BusFront];
+		test('handles Lucide and Font Awesome icons', () => {
+			const icons = [MapPin, Signpost, faBus];
 
 			icons.forEach((icon) => {
 				const { container, unmount } = render(SearchResultItem, {
@@ -363,7 +364,7 @@ describe('SearchResultItem', () => {
 
 			const { container } = render(SearchResultItem, {
 				props: {
-					icon: BusFront,
+					icon: faBus,
 					title: 'Route Item',
 					subtitle: 'Route Description'
 				}
@@ -479,7 +480,7 @@ describe('SearchResultItem', () => {
 		test('cleans up event listeners properly', () => {
 			const { container, unmount } = render(SearchResultItem, {
 				props: {
-					icon: BusFront,
+					icon: faBus,
 					title: 'Test Component',
 					subtitle: 'Test Description'
 				}

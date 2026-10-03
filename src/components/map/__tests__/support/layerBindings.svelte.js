@@ -3,19 +3,12 @@
 // a $bindable prop writes back into. Mirrors support/reactiveStop.svelte.js.
 export function createLayerBindings() {
 	let routeStopIds = $state(new Map());
-	let liveCounts = $state(new Map());
 	return {
 		get routeStopIds() {
 			return routeStopIds;
 		},
 		set routeStopIds(value) {
 			routeStopIds = value;
-		},
-		get liveCounts() {
-			return liveCounts;
-		},
-		set liveCounts(value) {
-			liveCounts = value;
 		}
 	};
 }

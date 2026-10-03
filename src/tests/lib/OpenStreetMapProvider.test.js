@@ -447,9 +447,9 @@ describe('setTheme — avoids redundant layer rebuilds', () => {
 
 		expect(removeLayer).toHaveBeenCalledWith({ existing: true });
 		expect(provider.L.maplibreGL).toHaveBeenCalledWith({
-			style: 'https://tiles.openfreemap.org/styles/dark'
+			style: 'https://tiles.openfreemap.org/styles/fiord'
 		});
-		expect(provider.currentStyleUrl).toBe('https://tiles.openfreemap.org/styles/dark');
+		expect(provider.currentStyleUrl).toBe('https://tiles.openfreemap.org/styles/fiord');
 	});
 
 	test('a repeated switch to the same theme is a no-op after the first change', () => {
