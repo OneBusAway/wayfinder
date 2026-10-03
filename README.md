@@ -19,7 +19,8 @@ Required and optional variables are listed in `.env.example`. Run `npm run valid
 ## Testing and checks
 
 ```bash
-npm run test          # run the test suite once
+npx vitest run        # run the test suite once
+npm run test          # run the test suite in watch mode
 npm run lint          # prettier + eslint
 npm run prepush       # format, lint, and test (handy before opening a PR)
 ```
