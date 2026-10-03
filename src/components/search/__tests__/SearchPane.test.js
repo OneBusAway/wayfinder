@@ -22,9 +22,9 @@ vi.mock('$lib/mathUtils', () => ({
 }));
 
 vi.mock('$config/routeConfig', async () => {
-	const { BusFront } = await import('@lucide/svelte');
+	const { faBus } = await import('@fortawesome/free-solid-svg-icons');
 	return {
-		prioritizedRouteTypeForDisplay: vi.fn().mockReturnValue(BusFront)
+		prioritizedRouteTypeForDisplay: vi.fn().mockReturnValue(faBus)
 	};
 });
 

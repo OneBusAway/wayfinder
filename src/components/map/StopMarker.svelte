@@ -1,14 +1,16 @@
 <script>
 	// @ts-check
-	// No Lucide caret exists; inline SVG matches the old FA faCaretUp filled triangle.
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	// The direction caret is an inline SVG matching FA's faCaretUp filled triangle.
 
 	/**
+	 * @typedef {import('@fortawesome/fontawesome-svg-core').IconDefinition} IconDefinition
 	 * @typedef {import('$lib/types').Stop} Stop
 	 *
 	 * @typedef {Object} Props
 	 * @property {Stop} stop
 	 * @property {(event: MouseEvent) => void} onClick
-	 * @property {import('svelte').Component} icon - Lucide icon component for the route type
+	 * @property {IconDefinition} icon - Font Awesome icon for the route type
 	 * @property {boolean} [isHighlighted]
 	 * @property {boolean} [showRoutesLabel]
 	 * @property {'full'|'routeDot'|'muted'} [emphasis] - Marker prominence, decided by the map
@@ -20,7 +22,7 @@
 	let {
 		stop,
 		onClick,
-		icon: Icon,
+		icon,
 		isHighlighted = false,
 		showRoutesLabel = false,
 		emphasis = 'full',
@@ -101,7 +103,7 @@
 		{#if isFullPin}
 			<span class="custom-marker dark:border-[#5a2c2c] {isHighlighted ? 'highlight' : ''}">
 				<span class="bus-icon dark:text-white">
-					<Icon class="h-6 w-6 text-black" strokeWidth={2.75} />
+					<FontAwesomeIcon {icon} class="text-black" />
 					{#if stop.direction}
 						<span class="direction-arrow {stop.direction.toLowerCase()} dark:text-white">
 							<!-- 12.5x20 matches the old faCaretUp element box (0.625em x 1em at
@@ -225,6 +227,7 @@
 	}
 
 	.bus-icon {
+		font-size: 20px;
 		color: #000;
 	}
 

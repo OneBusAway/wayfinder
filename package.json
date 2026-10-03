@@ -20,6 +20,9 @@
 		"validate-env": "node scripts/validate-env.js"
 	},
 	"devDependencies": {
+		"@fortawesome/fontawesome-svg-core": "^6.7.2",
+		"@fortawesome/free-solid-svg-icons": "^6.7.2",
+		"@fortawesome/svelte-fontawesome": "^0.2.4",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/adapter-node": "^5.2.9",
 		"@sveltejs/kit": "^2.5.27",
@@ -62,7 +65,6 @@
 		"gtfs-realtime-bindings": "^1.1.1",
 		"leaflet": "^1.9.4",
 		"leaflet-polylinedecorator": "^1.6.0",
-		"lucide": "^1.30.0",
 		"onebusaway-sdk": "^1.6.0",
 		"polyline-encoded": "^0.0.9",
 		"prom-client": "^15.1.3",

@@ -2,6 +2,8 @@
 	import Header from '$components/navigation/Header.svelte';
 	import 'temporal-polyfill/global';
 	import '../app.css';
+	import { config } from '@fortawesome/fontawesome-svg-core';
+	import '@fortawesome/fontawesome-svg-core/styles.css';
 	import '$lib/i18n';
 	import { isRTL } from '$lib/i18n';
 	import { locale, t } from 'svelte-i18n';
@@ -21,6 +23,7 @@
 
 	/** @type {Props} */
 	let { children } = $props();
+	config.autoAddCss = false; // Tell Font Awesome to skip adding the CSS automatically since it's being imported above
 
 	onMount(() => {
 		initSystemTheme();

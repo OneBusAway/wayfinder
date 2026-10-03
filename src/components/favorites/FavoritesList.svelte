@@ -11,6 +11,7 @@
 	import { favorites } from '$stores/favoritesStore';
 	import { Signpost, Star, X } from '@lucide/svelte';
 	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
+	import AppIcon from '$components/icons/AppIcon.svelte';
 	import { removeAgencyPrefix, stopSubtitle } from '$lib/utils';
 
 	let { onStopClick = null, onRouteClick = null, class: className = '' } = $props();
@@ -76,7 +77,7 @@
 			{#each items as item (`${item.type}:${item.id}`)}
 				{@const subtitle = itemSubtitle(item)}
 				{@const title = itemTitle(item)}
-				{@const ItemIcon = itemIcon(item)}
+				{@const icon = itemIcon(item)}
 				<div
 					class="group relative flex items-stretch rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
 				>
@@ -87,7 +88,7 @@
 						onclick={() => handleItemClick(item)}
 					>
 						<div class="mr-3 text-gray-400">
-							<ItemIcon class="h-3.5 w-3.5" />
+							<AppIcon {icon} class="h-3.5 w-3.5" />
 						</div>
 						<div class="min-w-0 flex-1 text-left">
 							<div class="truncate text-sm font-medium text-gray-900 dark:text-gray-100">

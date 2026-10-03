@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { describe, test, expect, vi } from 'vitest';
-import { BusFront } from '@lucide/svelte';
+import { faBus } from '@fortawesome/free-solid-svg-icons';
 import StopMarker from '../StopMarker.svelte';
 
 const stop = {
@@ -12,7 +12,7 @@ const stop = {
 
 function renderMarker(props = {}) {
 	return render(StopMarker, {
-		props: { stop, icon: BusFront, onClick: vi.fn(), ...props }
+		props: { stop, icon: faBus, onClick: vi.fn(), ...props }
 	});
 }
 
@@ -79,7 +79,7 @@ describe('StopMarker emphasis', () => {
 	test.each(['routeDot', 'muted'])('hides the routes label in the %s tier', (emphasis) => {
 		const withRoutes = { ...stop, routes: [{ shortName: 'C' }, { shortName: '22' }] };
 		render(StopMarker, {
-			props: { stop: withRoutes, icon: BusFront, onClick: vi.fn(), showRoutesLabel: true, emphasis }
+			props: { stop: withRoutes, icon: faBus, onClick: vi.fn(), showRoutesLabel: true, emphasis }
 		});
 		expect(screen.queryByText('C, 22')).not.toBeInTheDocument();
 	});
@@ -89,7 +89,7 @@ describe('StopMarker emphasis', () => {
 		render(StopMarker, {
 			props: {
 				stop: withRoutes,
-				icon: BusFront,
+				icon: faBus,
 				onClick: vi.fn(),
 				showRoutesLabel: true,
 				emphasis: 'full'
