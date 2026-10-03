@@ -104,7 +104,7 @@
 							{#each times as stopTime, index (index)}
 								{#if stopTime.isShortLine}
 									<span
-										class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-950 shadow-sm dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100"
+										class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-950 shadow-xs dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100"
 										data-short-line="true"
 									>
 										<span>{formatMinute(stopTime.arrivalMinute)}</span>
@@ -160,7 +160,7 @@
 							{#each times as stopTime, index (index)}
 								{#if stopTime.isShortLine}
 									<span
-										class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-950 shadow-sm dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100"
+										class="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-sm font-semibold text-amber-950 shadow-xs dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-100"
 										data-short-line="true"
 									>
 										<span>{formatMinute(stopTime.arrivalMinute)}</span>

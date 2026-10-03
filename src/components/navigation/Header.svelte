@@ -229,7 +229,7 @@
 					bind:this={logoElement}
 					src={logoUrl}
 					alt={PUBLIC_OBA_REGION_NAME}
-					class="rounded-sm"
+					class="rounded-xs"
 					style="height: {logoHeight}px"
 				/>
 			</a>

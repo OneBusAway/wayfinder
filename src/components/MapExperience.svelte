@@ -627,6 +627,10 @@
 	});
 </script>
 
+{#snippet searchPaneChildContent()}
+	<SurveyLauncher />
+{/snippet}
+
 <svelte:head>
 	<title>{PUBLIC_OBA_REGION_NAME}</title>
 	<link

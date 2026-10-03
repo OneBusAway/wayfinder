@@ -89,6 +89,9 @@
 		allRoutesExpanded = !allRoutesExpanded;
 	}
 </script>
+{#snippet accordionHeader(isActive, schedule)}
+	<span>{schedule.tripHeadsign}</span>
+{/snippet}
 
 <svelte:head>
 	<title>{stop.name}{$isLoading ? '' : ` - ${$t('schedule_for_stop.route_schedules')}`}</title>
@@ -174,6 +177,14 @@
 					<p class="text-center text-gray-700 dark:text-gray-400">
 						{$isLoading ? '' : $t('schedule_for_stop.no_schedules_available')}
 					</p>
+				{:else}
+					<Accordion bind:this={accordionComponent}>
+						{#each schedules as schedule}
+							<AccordionItem data={schedule} header={accordionHeader}>
+								<RouteScheduleTable {schedule} />
+							</AccordionItem>
+						{/each}
+					</Accordion>
 				{/if}
 			</div>
 		</div>

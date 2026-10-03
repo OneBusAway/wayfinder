@@ -374,7 +374,7 @@
      place there); md and up always shows it, so `collapsed` restores this root's
      own flex display at that breakpoint. -->
 <div
-	class={`modal-pane dark:bg-surface-dark flex flex-col justify-between bg-white/80 backdrop-blur-sm md:w-96 ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
+	class={`modal-pane dark:bg-surface-dark flex flex-col justify-between bg-white/80 backdrop-blur-xs md:w-96 ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
 >
 	<Tabs
 		tabStyle="none"

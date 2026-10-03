@@ -12,6 +12,13 @@
 	::file-selector-button {
 		border-color: var(--color-gray-200, currentColor);
 	}
+
+	/* v4 preflight drops cursor:pointer on buttons — restore v3 behavior */
+	button,
+	[role='button'],
+	select {
+		cursor: pointer;
+	}
 }
 
 @layer components {
@@ -103,11 +110,11 @@
 	}
 
 	.button {
-		@apply bg-surface text-surface-foreground rounded-md px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-gray-300 ring-inset hover:bg-gray-50;
+		@apply bg-surface text-surface-foreground rounded-md px-3 py-2 text-sm font-semibold shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50;
 	}
 
 	.button--primary {
-		@apply bg-brand-accent hover:bg-brand-accent-dark focus-visible:outline-brand-accent rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
+		@apply bg-brand-accent hover:bg-brand-accent-dark focus-visible:outline-brand-accent rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
 	}
 
 	.rtl {
