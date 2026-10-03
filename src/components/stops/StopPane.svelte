@@ -76,6 +76,7 @@
 		filterActiveAlerts(arrivalsAndDeparturesResponse?.data?.references?.situations ?? [])
 	);
 	// Bound from OnDemandStopCard; a flex-only stop has no arrivals but is not empty.
+	/** @type {import('$lib/onDemand/models').OnDemandService[]} */
 	let onDemandServices = $state([]);
 	// Only a stop with no fixed routes may say it has no scheduled departures; a
 	// stop that also has routes just has none in the current window.
