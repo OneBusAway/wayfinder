@@ -21,7 +21,7 @@
 
 	let services = $state.raw([]);
 	let level = $state('hidden');
-	/** @type {Map<string, { handles: any[], level: string }>} */
+	/** @type {Map<string, { handles: any[], level: string, areasKey: string }>} */
 	const drawn = new Map();
 	let requestSeq = 0;
 
@@ -91,10 +91,13 @@
 		const list = servicesToDraw(currentLevel === 'hidden' ? [] : visible, highlighted);
 		const drawLevel = currentLevel === 'street' ? 'street' : 'region';
 		const colors = assignZoneColors(list);
-		const keep = new Set(list.map((service) => service.id));
+		// Every fetch returns new service objects, so compare by the areas a service
+		// draws rather than identity; otherwise each pan would recreate every polygon.
+		const areas = new Map(list.map((service) => [service.id, drawableAreas(service)]));
 
 		for (const [id, entry] of drawn) {
-			if (!keep.has(id) || entry.level !== drawLevel) {
+			const next = areas.get(id);
+			if (!next || entry.level !== drawLevel || entry.areasKey !== areasKeyFor(next)) {
 				entry.handles.forEach((handle) => provider.removePolygon(handle));
 				drawn.delete(id);
 			}
@@ -108,7 +111,8 @@
 				existing.handles.forEach((handle) => provider.setPolygonStyle(handle, style));
 				continue;
 			}
-			const handles = drawableAreas(service)
+			const serviceAreas = areas.get(service.id);
+			const handles = serviceAreas
 				.map((area) =>
 					provider.createPolygon(area.geometry, {
 						...style,
@@ -116,8 +120,12 @@
 					})
 				)
 				.filter(Boolean);
-			drawn.set(service.id, { handles, level: drawLevel });
+			drawn.set(service.id, { handles, level: drawLevel, areasKey: areasKeyFor(serviceAreas) });
 		}
+	}
+
+	function areasKeyFor(serviceAreas) {
+		return serviceAreas.map((area) => area.id).join('|');
 	}
 
 	// Re-tapping the open service's zone would push a duplicate history entry, so

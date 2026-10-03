@@ -14,7 +14,13 @@ vi.mock('$app/navigation', () => ({ pushState }));
 import OnDemandZonesLayer from '../OnDemandZonesLayer.svelte';
 import { onDemandState, resetOnDemandStateForTesting } from '$lib/onDemand/onDemandState.svelte.js';
 import { parseServiceList } from '$lib/onDemand/models.js';
-import { listBody, serviceJson } from '../../../tests/fixtures/onDemand.js';
+import {
+	listBody,
+	referencesJson,
+	ruleJson,
+	serviceJson,
+	square
+} from '../../../tests/fixtures/onDemand.js';
 
 const REGION = { north: 39.0, south: 38.6, east: -76.8, west: -77.4 }; // ~44 km tall
 const STREET = { north: 38.83, south: 38.81, east: -77.05, west: -77.08 }; // ~2 km
@@ -93,6 +99,25 @@ describe('OnDemandZonesLayer', () => {
 		await rerender({ viewportTick: 2 });
 		await flush();
 		expect(provider.createPolygon).toHaveBeenCalledTimes(1);
+	});
+
+	it('redraws a service whose zones changed between fetches', async () => {
+		const { provider, rerender } = setup(REGION);
+		await flush();
+		const zoneB = { id: 'zone_b', name: 'Old Town', geometry: square(-77.06, 38.8, -77.03, 38.82) };
+		fetchServicesForViewport.mockResolvedValue(
+			parseServiceList(
+				listBody(
+					[serviceJson({ rules: [ruleJson({ fromIds: ['zone_b'], toIds: ['zone_b'] })] })],
+					referencesJson({ serviceAreas: [zoneB] })
+				)
+			)
+		);
+		await rerender({ viewportTick: 2 });
+		await flush();
+		expect(provider.removePolygon).toHaveBeenCalledTimes(1);
+		expect(provider.createPolygon).toHaveBeenCalledTimes(2);
+		expect(provider.createPolygon.mock.calls[1][0]).toEqual(zoneB.geometry);
 	});
 
 	it('removes zones no longer returned', async () => {
