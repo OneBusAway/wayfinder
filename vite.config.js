@@ -27,7 +27,7 @@ function flowbiteSvelteNoCircular() {
 				`flowbiteSvelteNoCircular plugin expects flowbite-svelte@0.47.x, found ${pkg.version}. Please verify if the patch is still needed or update the regex.`
 			);
 		}
-	} catch (_err) {
+	} catch {
 		// If package.json cannot be read (e.g. flowbite-svelte not installed),
 		// skip the version check and let Vite's normal resolution surface the
 		// problem with a clearer error than a JSON parse failure here.
