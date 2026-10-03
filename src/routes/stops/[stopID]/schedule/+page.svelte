@@ -89,7 +89,8 @@
 		allRoutesExpanded = !allRoutesExpanded;
 	}
 </script>
-{#snippet accordionHeader(isActive, schedule)}
+
+{#snippet accordionHeader(_isActive, schedule)}
 	<span>{schedule.tripHeadsign}</span>
 {/snippet}
 
