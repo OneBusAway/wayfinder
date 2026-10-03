@@ -91,7 +91,7 @@
 		aria-controls={hasResults ? listboxId : undefined}
 		aria-activedescendant={hasResults && activeIndex >= 0 ? optionId(activeIndex) : undefined}
 		placeholder="{$t('trip-planner.search_for_a_place')}..."
-		class="block w-full rounded-md border-gray-300 pr-10 text-sm text-black shadow-sm focus:border-blue-500 focus:ring-blue-500"
+		class="block w-full rounded-md border-gray-300 pr-10 text-sm text-black shadow-xs focus:border-blue-500 focus:ring-blue-500"
 	/>
 	{#if place}
 		<button

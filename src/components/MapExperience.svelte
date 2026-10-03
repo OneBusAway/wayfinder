@@ -588,6 +588,10 @@
 	});
 </script>
 
+{#snippet searchPaneChildContent()}
+	<SurveyLauncher />
+{/snippet}
+
 <svelte:head>
 	<title>{PUBLIC_OBA_REGION_NAME}</title>
 	<link
@@ -630,11 +634,8 @@
 					{handleMapStopMarkerSelect}
 					{clearTripItineraries}
 					onCollapse={stopSheetOpen ? collapseSearch : null}
-				>
-					{#snippet childContent()}
-						<SurveyLauncher />
-					{/snippet}
-				</SearchPane>
+					childContent={searchPaneChildContent}
+				/>
 			</div>
 
 			<!-- Mobile: sit in flow below the search pane. Desktop: pin to the map's

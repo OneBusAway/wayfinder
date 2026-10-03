@@ -97,7 +97,7 @@
 				iconColor: routeTextColorHex,
 				iconColorClass: '',
 				badgeClass:
-					'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold shadow-sm',
+					'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold shadow-xs',
 				badgeStyle: `background-color: ${routeColorHex}; color: ${routeTextColorHex}`
 			};
 		}
@@ -111,7 +111,7 @@
 			iconColor: '',
 			iconColorClass: modeConfig.iconColor,
 			badgeClass:
-				'inline-flex items-center rounded-full bg-brand-accent px-2.5 py-0.5 text-xs font-bold text-white shadow-sm',
+				'inline-flex items-center rounded-full bg-brand-accent px-2.5 py-0.5 text-xs font-bold text-white shadow-xs',
 			badgeStyle: ''
 		};
 	});

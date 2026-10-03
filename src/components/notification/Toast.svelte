@@ -41,7 +41,7 @@
 		aria-live={notification.variant === 'error' ? 'assertive' : 'polite'}
 	>
 		<div
-			class="pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-sm {VARIANT_CLASSES[
+			class="pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-xs {VARIANT_CLASSES[
 				notification.variant
 			] ?? VARIANT_CLASSES.warning}"
 		>

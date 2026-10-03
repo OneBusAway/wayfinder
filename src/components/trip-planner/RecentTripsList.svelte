@@ -34,7 +34,7 @@
 		<div class="space-y-2">
 			{#each $recentTrips as trip (trip.id)}
 				<div
-					class="dark:hover:bg-gray-750 group relative rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+					class="dark:hover:bg-gray-750 group relative rounded-lg border border-gray-200 bg-white shadow-xs transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
 				>
 					<button
 						type="button"

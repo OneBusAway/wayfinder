@@ -79,7 +79,7 @@
 				{@const title = itemTitle(item)}
 				{@const icon = itemIcon(item)}
 				<div
-					class="group relative flex items-stretch rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+					class="group relative flex items-stretch rounded-lg border border-gray-200 bg-white shadow-xs transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
 				>
 					<button
 						type="button"

@@ -36,7 +36,7 @@
 			onclick={toggle}
 			aria-expanded={$isActive}
 		>
-			{@render header?.($isActive)}
+			{@render header?.($isActive, data)}
 			{#if !hideChevron}
 				<svg
 					class="h-6 w-6 shrink-0 transition-transform"

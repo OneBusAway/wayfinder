@@ -127,6 +127,9 @@
 		}
 	});
 </script>
+{#snippet accordionHeader(isActive, schedule)}
+	<span>{schedule.tripHeadsign}</span>
+{/snippet}
 
 <svelte:head>
 	<title>{stopName}{$isLoading ? '' : ` - ${$t('schedule_for_stop.route_schedules')}`}</title>
@@ -182,10 +185,7 @@
 				{:else}
 					<Accordion bind:this={accordionComponent}>
 						{#each schedules as schedule}
-							<AccordionItem>
-								{#snippet header()}
-									<span>{schedule.tripHeadsign}</span>
-								{/snippet}
+							<AccordionItem data={schedule} header={accordionHeader}>
 								<RouteScheduleTable {schedule} />
 							</AccordionItem>
 						{/each}

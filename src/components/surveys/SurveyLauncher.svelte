@@ -21,7 +21,7 @@
 
 {#if shouldShowSurvey(currentSurvey)}
 	<div
-		class="rounded-x w-full border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-black"
+		class="rounded-xs w-full border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-700 dark:bg-black"
 	>
 		<div class="flex items-center justify-between">
 			<h2 class="text-lg font-semibold text-gray-900 dark:text-white">

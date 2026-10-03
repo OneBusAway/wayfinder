@@ -22,7 +22,7 @@
 	<div class="mb-4 flex justify-start">
 		<a
 			href="/"
-			class="bg-brand-accent hover:bg-brand-accent-dark focus:ring-brand-accent inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
+			class="bg-brand-accent hover:bg-brand-accent-dark focus:ring-brand-accent inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-hidden"
 		>
 			<ArrowLeft class="rotate-rtl h-4 w-4" />
 			<Map class="h-4 w-4" />
