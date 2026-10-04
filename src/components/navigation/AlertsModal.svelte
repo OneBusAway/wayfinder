@@ -34,7 +34,12 @@
 	}
 </script>
 
-<Modal title={getHeaderTextTranslation()} bind:open={showModal} autoclose>
+<Modal
+	title={getHeaderTextTranslation()}
+	bind:open={showModal}
+	autoclose
+	classBackdrop="bg-gray-900/50 dark:bg-gray-900/80"
+>
 	<p class="text-base leading-relaxed text-gray-500 dark:text-gray-200">
 		{getBodyTextTranslation()}
 	</p>

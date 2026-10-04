@@ -5,7 +5,7 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} [data]
-	 * @property {import('svelte').Snippet<[boolean]>} [header]
+	 * @property {import('svelte').Snippet<[boolean, any]>} [header]
 	 * @property {import('svelte').Snippet} [children]
 	 * @property {boolean} [fullBleed] - Extend the header row to the container's
 	 *   edges (negative horizontal margin) while keeping its content padded, so

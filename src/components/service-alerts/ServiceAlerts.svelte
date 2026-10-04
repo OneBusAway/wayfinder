@@ -155,6 +155,7 @@
 		title={modalAlert?.summary?.value || $t('service_alerts.service_alert')}
 		bind:open={$modalOpen}
 		size="3xl"
+		classBackdrop="bg-gray-900/50 dark:bg-gray-900/80"
 		class="relative w-full max-w-3xl rounded-xl bg-white p-8 text-gray-900 shadow-2xl dark:bg-gray-800 dark:text-gray-100"
 	>
 		{#if modalSeverity}

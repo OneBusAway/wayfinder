@@ -121,6 +121,7 @@
 		title={currentSurvey.name}
 		open={$showSurveyModal}
 		size="3xl"
+		classBackdrop="bg-gray-900/50 dark:bg-gray-900/80"
 		class="max-w-5xl rounded-2xl"
 	>
 		<div class="flex flex-col space-y-2">
