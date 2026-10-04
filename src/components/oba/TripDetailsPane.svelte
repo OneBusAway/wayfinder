@@ -109,7 +109,7 @@
 	{:else if tripDetails}
 		{#if tripDetails.status?.vehicleId}
 			<h2 class="flex items-center gap-2 text-sm font-semibold">
-				<RadioTower class="text-brand h-4 w-4" />
+				<RadioTower class="h-4 w-4 text-brand" />
 				{$_('trip_details.live_vehicle', { values: { vehicleId: tripDetails.status.vehicleId } })}
 			</h2>
 		{:else if routeInfo}
@@ -178,12 +178,12 @@
 										/>
 										{#if tripStop.stopId === stop.id}
 											<Check
-												class="bg-brand absolute -top-1 -right-1 rounded-full border border-white p-0.5 text-white"
+												class="absolute -top-1 -right-1 rounded-full border border-white bg-brand p-0.5 text-white"
 												size={14}
 											/>
 										{/if}
 									{:else if tripStop.stopId === stop.id}
-										<MapPin class="text-brand-accent h-5 w-5" />
+										<MapPin class="h-5 w-5 text-brand-accent" />
 									{:else}
 										<div
 											class="size-4 rounded-full border-2 border-neutral-400 bg-white dark:bg-neutral-800"

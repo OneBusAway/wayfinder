@@ -23,19 +23,19 @@
 
 @layer components {
 	.h1 {
-		@apply text-surface-foreground dark:text-surface-foreground-dark mb-4 text-2xl font-semibold;
+		@apply mb-4 text-2xl font-semibold text-surface-foreground dark:text-surface-foreground-dark;
 	}
 
 	.h2 {
-		@apply text-surface-foreground dark:text-surface-foreground-dark mb-4 text-xl font-semibold;
+		@apply mb-4 text-xl font-semibold text-surface-foreground dark:text-surface-foreground-dark;
 	}
 
 	.h3 {
-		@apply dark:text-surface-foreground-dark mb-2 text-lg font-semibold;
+		@apply mb-2 text-lg font-semibold dark:text-surface-foreground-dark;
 	}
 
 	.modal-pane {
-		@apply bg-surface/90 dark:bg-surface-dark dark:text-surface-foreground-dark rounded-lg border-gray-500 px-3 shadow-lg dark:shadow-lg dark:shadow-gray-200/10;
+		@apply rounded-lg border-gray-500 bg-surface/90 px-3 shadow-lg dark:bg-surface-dark dark:text-surface-foreground-dark dark:shadow-lg dark:shadow-gray-200/10;
 		@apply md:px-4;
 	}
 
@@ -48,7 +48,7 @@
 	}
 
 	.tab-container__item--active {
-		@apply border-brand-accent text-brand-accent dark:border-brand dark:text-brand border-b-2;
+		@apply border-b-2 border-brand-accent text-brand-accent dark:border-brand dark:text-brand;
 	}
 
 	/* An indeterminate progress bar in the underline's place while the tab's page loads. */
@@ -101,7 +101,7 @@
 	.itinerary-tab--active {
 		@apply bg-brand-accent text-white shadow-md;
 		@apply hover:bg-brand-accent-dark;
-		@apply dark:bg-brand-accent dark:hover:bg-brand-accent-dark dark:text-white;
+		@apply dark:bg-brand-accent dark:text-white dark:hover:bg-brand-accent-dark;
 	}
 
 	.close-button {
@@ -110,11 +110,11 @@
 	}
 
 	.button {
-		@apply bg-surface text-surface-foreground rounded-md px-3 py-2 text-sm font-semibold shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50;
+		@apply rounded-md bg-surface px-3 py-2 text-sm font-semibold text-surface-foreground shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50;
 	}
 
 	.button--primary {
-		@apply bg-brand-accent hover:bg-brand-accent-dark focus-visible:outline-brand-accent rounded-md px-3 py-2 text-sm font-semibold text-white shadow-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
+		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-brand-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
 	}
 
 	.rtl {

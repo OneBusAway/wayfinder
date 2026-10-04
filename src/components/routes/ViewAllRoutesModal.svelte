@@ -88,7 +88,7 @@
 
 	{#if routes.length > 0}
 		<div>
-			<div class="bg-surface dark:bg-surface-dark sticky top-0 z-10 pb-2">
+			<div class="sticky top-0 z-10 bg-surface pb-2 dark:bg-surface-dark">
 				<input
 					type="text"
 					placeholder={$t('search.search_for_routes')}

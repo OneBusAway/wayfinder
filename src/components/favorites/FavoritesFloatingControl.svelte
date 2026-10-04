@@ -109,7 +109,7 @@
 		<Star class="h-4 w-4" fill="currentColor" />
 		{#if count > 0}
 			<span
-				class="bg-brand-accent absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+				class="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-accent px-1 text-[10px] font-bold text-white"
 			>
 				{count > 99 ? '99+' : count}
 			</span>

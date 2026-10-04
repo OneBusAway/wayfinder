@@ -219,7 +219,7 @@
 </script>
 
 <header
-	class="bg-brand-accent/80 text-brand-foreground dark:bg-surface-dark dark:text-surface-foreground-dark relative z-9999 flex items-center justify-between border-b border-gray-500 backdrop-blur-md md:flex-row md:px-8"
+	class="relative z-9999 flex items-center justify-between border-b border-gray-500 bg-brand-accent/80 text-brand-foreground backdrop-blur-md md:flex-row md:px-8 dark:bg-surface-dark dark:text-surface-foreground-dark"
 	bind:this={navContainer}
 >
 	<div class="logo-container flex items-center gap-2 px-1 py-1 md:gap-4 md:px-2 md:py-2">
@@ -234,7 +234,7 @@
 				/>
 			</a>
 			{#if showRegionName}
-				<a href="/" class="region-name text-brand-foreground block text-xl font-extrabold">
+				<a href="/" class="region-name block text-xl font-extrabold text-brand-foreground">
 					{PUBLIC_OBA_REGION_NAME}
 				</a>
 			{/if}
@@ -248,10 +248,10 @@
 		class="flex items-center gap-x-2 px-1 py-1 md:gap-x-4 md:px-2 md:py-2"
 	>
 		{#each visibleLinks as { key, value }}
-			<div class="bg-surface/80 dark:bg-surface-dark flex-shrink-0 rounded-md border">
+			<div class="flex-shrink-0 rounded-md border bg-surface/80 dark:bg-surface-dark">
 				<a
 					href={value}
-					class="text-surface-foreground dark:text-surface-foreground-dark block px-2 py-1 font-semibold"
+					class="block px-2 py-1 font-semibold text-surface-foreground dark:text-surface-foreground-dark"
 					>{key}</a
 				>
 			</div>
@@ -262,10 +262,10 @@
 				<button
 					onclick={toggleOverflowMenu}
 					aria-label="More navigation options"
-					class="bg-surface/80 dark:bg-surface-dark flex h-8 w-8 items-center justify-center rounded-md border"
+					class="flex h-8 w-8 items-center justify-center rounded-md border bg-surface/80 dark:bg-surface-dark"
 				>
 					<svg
-						class="text-surface-foreground dark:text-surface-foreground-dark h-5 w-5"
+						class="h-5 w-5 text-surface-foreground dark:text-surface-foreground-dark"
 						fill="currentColor"
 						viewBox="0 0 20 20"
 						xmlns="http://www.w3.org/2000/svg"

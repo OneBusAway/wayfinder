@@ -44,7 +44,7 @@
 
 <button
 	type="button"
-	class="focus-visible:ring-brand-accent flex w-full cursor-pointer items-start gap-3 rounded-lg p-1 text-left transition-colors hover:bg-gray-50 focus:outline-hidden focus-visible:ring-2 dark:hover:bg-gray-700"
+	class="flex w-full cursor-pointer items-start gap-3 rounded-lg p-1 text-left transition-colors hover:bg-gray-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-accent dark:hover:bg-gray-700"
 	aria-label={$t('service_alerts.open_alert', {
 		values: {
 			severity: severityLabel,

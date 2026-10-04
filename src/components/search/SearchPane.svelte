@@ -374,7 +374,7 @@
      place there); md and up always shows it, so `collapsed` restores this root's
      own flex display at that breakpoint. -->
 <div
-	class={`modal-pane dark:bg-surface-dark flex flex-col justify-between bg-white/80 backdrop-blur-xs md:w-96 ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
+	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-xs md:w-96 dark:bg-surface-dark ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
 >
 	<Tabs
 		tabStyle="none"
@@ -443,7 +443,7 @@
 			<div class="mt-0 sm:mt-0">
 				<button
 					type="button"
-					class="text-brand-accent hover:text-brand dark:text-brand mt-3 text-sm font-medium underline focus:outline-hidden dark:hover:text-white"
+					class="mt-3 text-sm font-medium text-brand-accent underline hover:text-brand focus:outline-hidden dark:text-brand dark:hover:text-white"
 					onclick={handleViewAllRoutes}
 				>
 					{$t('search.click_here')}

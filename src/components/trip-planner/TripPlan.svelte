@@ -600,7 +600,7 @@
 		<div class="flex-1"></div>
 		<button
 			onclick={planTrip}
-			class="bg-brand-accent hover:bg-brand-accent-dark flex items-center justify-center rounded-md px-4 py-2 text-white shadow-md transition-colors disabled:cursor-not-allowed disabled:bg-gray-300 dark:bg-green-800 dark:hover:bg-green-900 disabled:dark:bg-gray-700/50 disabled:dark:text-gray-400"
+			class="flex items-center justify-center rounded-md bg-brand-accent px-4 py-2 text-white shadow-md transition-colors hover:bg-brand-accent-dark disabled:cursor-not-allowed disabled:bg-gray-300 dark:bg-green-800 dark:hover:bg-green-900 disabled:dark:bg-gray-700/50 disabled:dark:text-gray-400"
 			disabled={!selectedFrom || !selectedTo}
 		>
 			{#if loading}

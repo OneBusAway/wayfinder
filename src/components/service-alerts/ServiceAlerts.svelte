@@ -92,7 +92,7 @@
 			</h3>
 			<button
 				type="button"
-				class="text-brand-accent hover:text-brand dark:text-brand text-sm font-medium focus:outline-hidden dark:hover:text-white"
+				class="text-sm font-medium text-brand-accent hover:text-brand focus:outline-hidden dark:text-brand dark:hover:text-white"
 				onclick={toggleAlerts}
 			>
 				{isAlertsHidden ? $t('service_alerts.show') : $t('service_alerts.hide')}

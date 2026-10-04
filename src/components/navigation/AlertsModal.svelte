@@ -52,7 +52,7 @@
 				{$t('alert.close')}
 			</Button>
 			<Button
-				class="bg-brand-accent hover:bg-brand-accent-dark dark:bg-brand-accent dark:hover:bg-brand-accent-dark text-white dark:text-white"
+				class="bg-brand-accent text-white hover:bg-brand-accent-dark dark:bg-brand-accent dark:text-white dark:hover:bg-brand-accent-dark"
 				on:click={() => window.open(getUrlTranslation(), '_blank')}
 			>
 				{$t('alert.more_info')}

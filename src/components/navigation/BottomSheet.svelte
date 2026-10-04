@@ -90,7 +90,7 @@
 <div class="pointer-events-none absolute inset-0" bind:clientHeight={containerHeight}>
 	<div
 		bind:this={element}
-		class="bg-surface/95 dark:bg-surface-dark/95 dark:text-surface-foreground-dark pointer-events-auto absolute inset-x-0 bottom-0 flex flex-col overflow-hidden rounded-t-[14px] border border-b-0 border-gray-400 shadow-[0_-8px_24px_rgba(0,0,0,.18)] backdrop-blur dark:border-gray-600"
+		class="pointer-events-auto absolute inset-x-0 bottom-0 flex flex-col overflow-hidden rounded-t-[14px] border border-b-0 border-gray-400 bg-surface/95 shadow-[0_-8px_24px_rgba(0,0,0,.18)] backdrop-blur dark:border-gray-600 dark:bg-surface-dark/95 dark:text-surface-foreground-dark"
 		style:height="{sheetHeight}px"
 		style:transition={dragging ? 'none' : 'height .28s cubic-bezier(0,0,.2,1)'}
 		data-testid="bottom-sheet"

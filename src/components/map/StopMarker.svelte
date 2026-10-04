@@ -213,7 +213,7 @@
 	}
 
 	.highlight {
-		@apply border-brand-accent scale-125 drop-shadow-md;
+		@apply scale-125 border-brand-accent drop-shadow-md;
 	}
 
 	/* The caret is otherwise hard-coded black; tint it to match the selected
