@@ -130,13 +130,13 @@ describe('LanguageSwitcher', () => {
 	describe('Dropdown Menu', () => {
 		test('opens dropdown when button is clicked', async () => {
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
 			// Find the dropdown menu
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			expect(dropdown).toBeInTheDocument();
 
 			// Default menu format is "native-english"
@@ -182,13 +182,13 @@ describe('LanguageSwitcher', () => {
 				PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT: 'english'
 			};
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
 			// Find the dropdown menu
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			expect(dropdown).toBeInTheDocument();
 
 			// Check that dropdown shows English names (not native-english format)
@@ -304,12 +304,12 @@ describe('LanguageSwitcher', () => {
 				PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT: 'native'
 			};
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			expect(dropdown.textContent).toContain('English');
 			expect(dropdown.textContent).toContain('Español');
 			expect(dropdown.textContent).not.toContain('(English)');
@@ -321,12 +321,12 @@ describe('LanguageSwitcher', () => {
 				PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT: 'english'
 			};
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			expect(dropdown.textContent).toContain('English');
 			expect(dropdown.textContent).toContain('Spanish');
 			expect(dropdown.textContent).not.toContain('Español');
@@ -338,12 +338,12 @@ describe('LanguageSwitcher', () => {
 				PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT: 'native-english'
 			};
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			// English has same native/english name, so shows just "English"
 			expect(dropdown.textContent).toContain('English');
 			// Español has different names, so shows "Español (Spanish)"
@@ -356,12 +356,12 @@ describe('LanguageSwitcher', () => {
 				PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT: 'english-native'
 			};
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			// English has same native/english name, so shows just "English"
 			expect(dropdown.textContent).toContain('English');
 			expect(dropdown.textContent).not.toContain('English (English)');
@@ -389,12 +389,12 @@ describe('LanguageSwitcher', () => {
 				PUBLIC_LANGUAGE_SWITCHER_ENABLED: 'true'
 			};
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			// English has same native/english name, so shows just "English"
 			expect(dropdown.textContent).toContain('English');
 			// Español has different names, so shows "Español (Spanish)"
@@ -407,12 +407,12 @@ describe('LanguageSwitcher', () => {
 				PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT: 'invalid-format'
 			};
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			// Should fallback to native-english format, but English has same names so shows just "English"
 			expect(dropdown.textContent).toContain('English');
 			// Español has different names, so shows "Español (Spanish)"
@@ -428,7 +428,7 @@ describe('LanguageSwitcher', () => {
 				PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT: 'native'
 			};
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			// Button should show code
 			const button = screen.getByRole('button', { name: /select language/i });
@@ -436,7 +436,7 @@ describe('LanguageSwitcher', () => {
 
 			// Menu should show native names
 			await user.click(button);
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			expect(dropdown.textContent).toContain('English');
 			expect(dropdown.textContent).toContain('Español');
 			expect(dropdown.textContent).not.toContain('EN');
@@ -448,12 +448,12 @@ describe('LanguageSwitcher', () => {
 				PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT: 'native-english'
 			};
 			const user = userEvent.setup();
-			const { container } = render(LanguageSwitcher);
+			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = container.querySelector('[class*="absolute"]');
+			const dropdown = screen.getByRole('listbox');
 			// Spanish has different names, so should show "Español (Spanish)"
 			expect(dropdown.textContent).toContain('Español (Spanish)');
 			// Arabic has different names, so should show "العربية (Arabic)"
@@ -537,7 +537,7 @@ describe('LanguageSwitcher', () => {
 			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
-			expect(button).toHaveAttribute('aria-expanded', 'false');
+			expect(button).not.toHaveAttribute('aria-expanded');
 
 			await user.click(button);
 			expect(button).toHaveAttribute('aria-expanded', 'true');

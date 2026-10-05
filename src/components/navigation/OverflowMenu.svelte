@@ -1,37 +1,55 @@
-<script>
-	let { links = [], onClose } = $props();
-	let menuRef = $state(null);
+<script lang="ts">
+	import { Popover } from 'flowbite-svelte';
+	import { fade } from "svelte/transition";
 
-	$effect(() => {
-		const handleClickOutside = (e) => {
-			if (menuRef && !menuRef.contains(e.target)) {
-				onClose();
-			}
-		};
-		// Delay adding listener to avoid immediate close from the click that opened it
-		const timeoutId = setTimeout(() => {
-			document.addEventListener('click', handleClickOutside);
-		}, 0);
-		return () => {
-			clearTimeout(timeoutId);
-			document.removeEventListener('click', handleClickOutside);
-		};
-	});
+	interface Props {
+		links: { key: string; value: string }[];
+	}
+
+	const { links = [] }: Props = $props();
+
+	let isOpen = $state(false);
+
+	function closePopover() {
+		isOpen = false;
+	}
 </script>
 
-<div
-	bind:this={menuRef}
-	class="absolute end-0 top-full z-[9999] mt-1 min-w-[150px] rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+<button
+	aria-expanded={isOpen ? true : undefined}
+	aria-haspopup="menu"
+	aria-label="More navigation options"
+	class="flex h-8 w-8 items-center justify-center rounded-md border bg-surface/80 dark:bg-surface-dark"
+	id="more-navigation-options-trigger"
 >
-	<div class="flex flex-col py-1">
-		{#each links as { key, value }}
-			<a
-				href={value}
-				onclick={onClose}
-				class="block px-4 py-2 text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700"
-			>
-				{key}
-			</a>
-		{/each}
-	</div>
-</div>
+	<svg
+		class="h-5 w-5 text-surface-foreground dark:text-surface-foreground-dark"
+		fill="currentColor"
+		viewBox="0 0 20 20"
+		xmlns="http://www.w3.org/2000/svg"
+	><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+</button>
+<Popover
+	arrow={false}
+	class="left-0 min-w-[150px] rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+	defaultClass="flex flex-col py-1"
+	offset={8}
+	open={isOpen}
+	on:show={(e: CustomEvent<boolean>) => (isOpen = e.detail)}
+	params={{ duration: 100 }}
+	placement="bottom-end"
+	role="menu"
+	transition={fade}
+	trigger="click"
+	triggeredBy="#more-navigation-options-trigger"
+>
+	{#each links as { key, value }}
+		<a
+			href={value}
+			onclick={closePopover}
+			class="block px-4 py-2 text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700"
+		>
+			{key}
+		</a>
+	{/each}
+</Popover>

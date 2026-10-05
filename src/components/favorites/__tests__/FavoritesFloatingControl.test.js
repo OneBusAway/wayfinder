@@ -132,10 +132,11 @@ describe('FavoritesFloatingControl', () => {
 		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-		// A row's ✕ removes its own DOM node mid-click. The event path is fixed at
-		// dispatch time, so the click still reaches <svelte:window> — but with a
-		// detached target whose contains() reads false. Without the isConnected
-		// guard the panel would wrongly close; this asserts it does not.
+		// A row's ✕ removes its own DOM node mid-click. The click still reaches
+		// Popover's document listener, but with a detached target whose contains()
+		// would read false. Popover checks the event's composed path instead, which
+		// is fixed at dispatch time and still includes the panel; this asserts the
+		// panel does not wrongly close.
 		const row = document.createElement('button');
 		screen.getByRole('dialog').appendChild(row);
 		row.addEventListener('click', () => row.remove());
@@ -145,6 +146,20 @@ describe('FavoritesFloatingControl', () => {
 		await tick();
 
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
+	});
+
+	it('closes when the toggle is clicked again, keeping focus on the toggle', async () => {
+		render(FavoritesFloatingControl);
+
+		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		const toggle = screen.getByRole('button', { name: 'Close favorites' });
+		await user.click(toggle);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(toggle).not.toHaveAttribute('aria-expanded');
+		expect(toggle).toHaveFocus();
 	});
 
 	it('closes when a click lands on a node outside the control', async () => {
