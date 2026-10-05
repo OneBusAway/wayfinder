@@ -22,6 +22,7 @@ vi.mock('$components/oba/TripDetailsPane.svelte', stubComponent);
 vi.mock('$components/surveys/SurveyModal.svelte', stubComponent);
 vi.mock('$components/surveys/SurveyBanner.svelte', stubComponent);
 vi.mock('$components/service-alerts/ServiceAlerts.svelte', stubComponent);
+vi.mock('$components/stops/OnDemandStopCard.svelte', stubComponent);
 
 vi.mock('$stores/surveyStore', async () => {
 	const { createMockStore } = await import('../../../tests/helpers/test-utils.js');

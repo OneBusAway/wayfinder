@@ -7,3 +7,6 @@ yarn.lock
 .cursor/
 # Superpowers scratch (git-ignored)
 .superpowers/
+
+# Byte-for-byte mirror of maglev vectors
+src/tests/fixtures/flex-booking-vectors.json

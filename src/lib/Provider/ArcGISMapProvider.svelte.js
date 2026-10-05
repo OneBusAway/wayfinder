@@ -18,6 +18,7 @@ import { animateMarkerTo, cancelMarkerAnimation } from '$lib/MapHelpers/animateM
 import { buildVehiclePopupData } from '$lib/vehicleUtils';
 import { ROUTE_PANE } from '$lib/mapPanes.js';
 import PolylineUtil from 'polyline-encoded';
+import { polygonsOf, orientRing } from '$lib/MapHelpers/zoneGeometry.js';
 import { mount, unmount } from 'svelte';
 
 const DEFAULT_BASEMAP = 'streets-navigation-vector';
@@ -66,6 +67,7 @@ export default class ArcGISMapProvider {
 		this.vehicleMarkers = [];
 		this.pinMarkers = [];
 		this.polylines = [];
+		this.polygons = [];
 		this.userLocationMarker = null;
 		this.popupContentComponent = null;
 		this.contextMenuComponent = null;
@@ -98,6 +100,9 @@ export default class ArcGISMapProvider {
 			import('@arcgis/core/Graphic.js'),
 			import('@arcgis/core/geometry/Point.js'),
 			import('@arcgis/core/geometry/Polyline.js'),
+			import('@arcgis/core/geometry/Polygon.js'),
+			import('@arcgis/core/geometry/Extent.js'),
+			import('@arcgis/core/symbols/SimpleFillSymbol.js'),
 			import('@arcgis/core/symbols/SimpleLineSymbol.js'),
 			import('@arcgis/core/symbols/SimpleMarkerSymbol.js'),
 			import('@arcgis/core/symbols/PictureMarkerSymbol.js'),
@@ -117,6 +122,9 @@ export default class ArcGISMapProvider {
 			{ default: this.Graphic },
 			{ default: this.Point },
 			{ default: this.Polyline },
+			{ default: this.Polygon },
+			{ default: this.Extent },
+			{ default: this.SimpleFillSymbol },
 			{ default: this.SimpleLineSymbol },
 			{ default: this.SimpleMarkerSymbol },
 			{ default: this.PictureMarkerSymbol },
@@ -138,6 +146,7 @@ export default class ArcGISMapProvider {
 						baseLayers: [new this.VectorTileLayer({ url: this.customBasemapUrl })]
 					})
 				: DEFAULT_BASEMAP;
+			this.zoneLayer = new this.GraphicsLayer({ title: 'Wayfinder on-demand zones' });
 			this.routeStopLayer = new this.GraphicsLayer({ title: 'Wayfinder route stops' });
 			this.vehicleLayer = new this.GraphicsLayer({ title: 'Wayfinder vehicles' });
 			this.userLocationLayer = new this.GraphicsLayer({ title: 'Wayfinder user location' });
@@ -147,6 +156,7 @@ export default class ArcGISMapProvider {
 			this.map = new this.Map({
 				basemap,
 				layers: [
+					this.zoneLayer,
 					this.routeCasingLayer,
 					this.routeLineLayer,
 					this.routePromotedLayer,
@@ -398,7 +408,10 @@ export default class ArcGISMapProvider {
 			[this.routeStopLayer, this.vehicleLayer].includes(graphic?.layer)
 		);
 		const attributes = hit?.graphic?.attributes;
-		if (!attributes) return;
+		if (!attributes) {
+			this._handleZoneHit(results);
+			return;
+		}
 		if (attributes.kind === 'route-stop') {
 			const stop = this.stopsMap.get(attributes.stopId);
 			if (stop) this.openStopMarker(stop, attributes.stopTime ?? null);
@@ -406,6 +419,11 @@ export default class ArcGISMapProvider {
 			const marker = this.vehicleMarkers.find((item) => item.graphic === hit.graphic);
 			if (marker) this._openVehiclePopup(marker);
 		}
+	}
+
+	_handleZoneHit(results) {
+		const zone = results.find(({ graphic }) => graphic?._onZoneClick);
+		zone?.graphic._onZoneClick();
 	}
 
 	_cleanupPopupComponent() {
@@ -805,6 +823,87 @@ export default class ArcGISMapProvider {
 		for (const polyline of [...this.polylines]) this.removePolyline(polyline);
 	}
 
+	/**
+	 * Draws an on-demand zone in its own layer beneath the routes. ArcGIS wants
+	 * clockwise exterior rings and counter-clockwise holes.
+	 * @param {any} geometry - GeoJSON Polygon or MultiPolygon
+	 * @param {{ color?: string, fillOpacity?: number, weight?: number, opacity?: number, halo?: { weight: number, opacity: number } | null, interactive?: boolean, onClick?: () => void }} style
+	 */
+	createPolygon(geometry, style = {}) {
+		if (!this.zoneLayer) return null;
+		const rings = polygonsOf(geometry).flatMap((polygonRings) =>
+			polygonRings.map((ring, index) => orientRing(ring, index === 0))
+		);
+		if (!rings.length) return null;
+
+		const zoneGeometry = new this.Polygon({ rings, spatialReference: { wkid: 4326 } });
+		const graphic = new this.Graphic({ geometry: zoneGeometry, symbol: this._zoneSymbol(style) });
+		if (style.halo) {
+			graphic._halo = new this.Graphic({
+				geometry: zoneGeometry,
+				symbol: this._zoneHaloSymbol(style)
+			});
+			this.zoneLayer.add(graphic._halo);
+		}
+		graphic._onZoneClick = style.interactive && style.onClick ? style.onClick : null;
+		this.zoneLayer.add(graphic);
+		this.polygons.push(graphic);
+		return graphic;
+	}
+
+	_zoneSymbol(style) {
+		return new this.SimpleFillSymbol({
+			color: this._colorWithOpacity(style.color, style.fillOpacity ?? 0.2),
+			outline: {
+				color: this._colorWithOpacity(style.color, style.opacity ?? 1),
+				width: style.weight ?? 2
+			}
+		});
+	}
+
+	_zoneHaloSymbol(style) {
+		return new this.SimpleFillSymbol({
+			color: [0, 0, 0, 0],
+			outline: {
+				color: this._colorWithOpacity(style.color, style.halo.opacity),
+				width: style.halo.weight
+			}
+		});
+	}
+
+	setPolygonStyle(graphic, style) {
+		if (!graphic) return;
+		graphic.symbol = this._zoneSymbol(style);
+		if (graphic._halo && style.halo) graphic._halo.symbol = this._zoneHaloSymbol(style);
+	}
+
+	removePolygon(graphic) {
+		if (!graphic) return;
+		if (graphic._halo) this.zoneLayer?.remove(graphic._halo);
+		this.zoneLayer?.remove(graphic);
+		this.polygons = this.polygons.filter((item) => item !== graphic);
+	}
+
+	clearAllPolygons() {
+		for (const graphic of [...this.polygons]) this.removePolygon(graphic);
+	}
+
+	/**
+	 * @param {{ north: number, south: number, east: number, west: number }} bounds
+	 * @param {{ padding?: number | { top?: number, right?: number, bottom?: number, left?: number } }} [options]
+	 */
+	async fitToBounds(bounds, options = {}) {
+		if (!this.view || !this.Extent) return false;
+		const target = new this.Extent({
+			xmin: bounds.west,
+			ymin: bounds.south,
+			xmax: bounds.east,
+			ymax: bounds.north,
+			spatialReference: { wkid: 4326 }
+		});
+		return this._goToWithFitPadding(target, options.padding, { animate: true });
+	}
+
 	getPolylinesCount() {
 		return this.polylines.length;
 	}
@@ -827,6 +926,20 @@ export default class ArcGISMapProvider {
 	async fitToPolylines(options = {}) {
 		if (!this.view || !this.polylines.length) return false;
 		const view = this.view;
+		const maxZoom = options.maxZoom ?? 16;
+		return this._goToWithFitPadding(
+			this.polylines,
+			options.padding,
+			{ duration: options.duration ?? 700 },
+			() => {
+				if (view.zoom > maxZoom) view.zoom = maxZoom;
+			}
+		);
+	}
+
+	/** Frames a target with a temporary view padding, restoring the viewport padding afterwards. */
+	async _goToWithFitPadding(target, padding, goToOptions, afterGoTo = () => {}) {
+		const view = this.view;
 		// Overlapping fits share the original padding, never another fit's temporary inset.
 		const fit = {
 			view,
@@ -834,10 +947,10 @@ export default class ArcGISMapProvider {
 		};
 		this._activeFit = fit;
 		try {
-			this.setPadding(options.padding);
-			await view.goTo(this.polylines, { duration: options.duration ?? 700 });
+			this.setPadding(padding);
+			await view.goTo(target, goToOptions);
 			if (this._activeFit !== fit || this.view !== view || this._destroyed) return false;
-			if (view.zoom > (options.maxZoom ?? 16)) view.zoom = options.maxZoom ?? 16;
+			afterGoTo();
 			return true;
 		} catch {
 			return false;
@@ -943,12 +1056,14 @@ export default class ArcGISMapProvider {
 		this.clearVehicleMarkers();
 		for (const marker of [...this.pinMarkers]) this.removePinMarker(marker);
 		this.clearAllPolylines();
+		this.clearAllPolygons();
 		this.removeUserLocationMarker();
 		this.overlayContainer?.remove();
 		this.overlayContainer = null;
 		this.view?.destroy();
 		this.view = null;
 		this.map = null;
+		this.zoneLayer = null;
 		this.routeStopLayer = null;
 		this.vehicleLayer = null;
 		this.userLocationLayer = null;

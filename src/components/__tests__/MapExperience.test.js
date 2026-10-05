@@ -57,6 +57,25 @@ vi.mock('$components/stops/StopBottomSheet.svelte', () => ({
 	}
 }));
 
+let capturedOnDemandSheetProps = null;
+vi.mock('$components/ondemand/OnDemandServiceSheet.svelte', () => ({
+	default: function OnDemandServiceSheet(anchor, props) {
+		capturedOnDemandSheetProps = props;
+		const el = document.createElement('div');
+		el.setAttribute('data-testid', 'ondemand-sheet');
+		anchor.before(el);
+		return {};
+	}
+}));
+
+// The desktop sheet-snap rule is gated on `browser`, which the global setup mocks false.
+vi.mock('$app/environment', () => ({
+	browser: true,
+	dev: false,
+	building: false,
+	version: 'test'
+}));
+
 vi.mock('$lib/vehicleUtils.js', () => ({ clearVehicleMarkersMap: vi.fn() }));
 
 vi.mock('$app/navigation', () => ({
@@ -414,4 +433,104 @@ test('routeColors does not go blank when the stop changes before the new arrival
 	expect(capturedMapContainerProps.activeRoutes).toEqual([]);
 	// ...but the sheet is still showing A's rows, so A's badge color must not vanish.
 	expect(capturedMapContainerProps.routeColors.get('route_a')).toEqual(colorBefore);
+});
+
+function pageWithOnDemandService(id = '5088_77652') {
+	return {
+		url: new URL(`https://example.com/map/ondemand/${id}`),
+		params: {},
+		route: { id: '/(map)' },
+		state: { onDemandServiceId: id },
+		data: {}
+	};
+}
+
+test('renders the on-demand sheet for the service in page state', () => {
+	setPage(pageWithOnDemandService());
+	const { queryByTestId } = render(MapExperience);
+	expect(queryByTestId('ondemand-sheet')).not.toBeNull();
+	expect(queryByTestId('stop-bottom-sheet')).toBeNull();
+	expect(capturedOnDemandSheetProps.serviceId).toBe('5088_77652');
+});
+
+test('closing the on-demand sheet pushes home', () => {
+	setPage(pageWithOnDemandService());
+	render(MapExperience);
+	capturedOnDemandSheetProps.closePane();
+	expect(pushState).toHaveBeenCalledWith('/', {});
+});
+
+test('selecting an on-demand service from the stop sheet pushes its path', () => {
+	setPage(pageWithStop());
+	render(MapExperience);
+	capturedSheetProps.onOnDemandServiceSelect('5088_77652');
+	expect(pushState).toHaveBeenCalledWith('/map/ondemand/5088_77652', {
+		onDemandServiceId: '5088_77652'
+	});
+});
+
+test('opening an on-demand sheet clears an open route modal', async () => {
+	setPage(pageWithoutStop());
+	const { queryByTestId } = render(MapExperience);
+	capturedMapContainerProps.mapProvider = {
+		clearAllPolylines: vi.fn(),
+		removeStopMarkers: vi.fn(),
+		clearVehicleMarkers: vi.fn()
+	};
+	capturedSearchPaneProps.handleRouteSelected({
+		route: { id: 'r1', shortName: 'C' },
+		polylines: [],
+		stops: [],
+		currentIntervalId: null
+	});
+	await tick();
+	expect(capturedMapContainerProps.selectedRoute).not.toBeNull();
+	setPage(pageWithOnDemandService());
+	await vi.waitFor(() => expect(capturedMapContainerProps.selectedRoute).toBeNull());
+	expect(capturedMapContainerProps.isRouteSelected).toBe(false);
+	expect(queryByTestId('ondemand-sheet')).not.toBeNull();
+	const provider = capturedMapContainerProps.mapProvider;
+	expect(provider.clearAllPolylines).toHaveBeenCalled();
+	expect(provider.removeStopMarkers).toHaveBeenCalled();
+	expect(provider.clearVehicleMarkers).toHaveBeenCalled();
+});
+
+test('opening an on-demand sheet gives it the stop sheet layout', async () => {
+	setPage(pageWithoutStop());
+	render(MapExperience);
+	capturedMapContainerProps.mapProvider = {
+		clearAllPolylines: vi.fn(),
+		removeStopMarkers: vi.fn(),
+		clearVehicleMarkers: vi.fn()
+	};
+	await tick();
+	expect(capturedSearchPaneProps.onCollapse).toBeNull();
+	setPage(pageWithOnDemandService());
+	await vi.waitFor(() => expect(capturedSearchPaneProps.collapsed).toBe(true));
+	expect(capturedOnDemandSheetProps.snap).toBe('full');
+	expect(capturedSearchPaneProps.collapsed).toBe(true);
+	expect(capturedSearchPaneProps.onCollapse).toBeTypeOf('function');
+});
+
+test('picking a route while the on-demand sheet is open closes it and keeps the route', async () => {
+	setPage(pageWithOnDemandService());
+	render(MapExperience);
+	capturedMapContainerProps.mapProvider = {
+		clearAllPolylines: vi.fn(),
+		removeStopMarkers: vi.fn(),
+		clearVehicleMarkers: vi.fn(),
+		cleanupInfoWindow: vi.fn()
+	};
+	await tick();
+	const route = { id: 'route_1', shortName: 'C' };
+	capturedSearchPaneProps.handleRouteSelected({
+		route,
+		polylines: [],
+		stops: [],
+		currentIntervalId: null
+	});
+	expect(pushState).toHaveBeenCalledWith('/', {});
+	setPage(pageWithoutStop());
+	await tick();
+	expect(capturedMapContainerProps.selectedRoute).toEqual(route);
 });

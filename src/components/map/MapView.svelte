@@ -11,6 +11,7 @@
 	import LocationButton from '$lib/LocationButton/LocationButton.svelte';
 	import RouteMap from './RouteMap.svelte';
 	import StopRoutesLayer from './StopRoutesLayer.svelte';
+	import OnDemandZonesLayer from './OnDemandZonesLayer.svelte';
 
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { userLocation } from '$src/stores/userLocationStore';
@@ -95,6 +96,8 @@
 		ROUTE: 'route'
 	};
 
+	// Bumped each time the map settles, so the on-demand zones layer refetches.
+	let viewportTick = $state(0);
 	let mapMode = $state(startInTripPlanMode ? Modes.TRIP_PLAN : Modes.NORMAL);
 	let modeChangeTimeout = null;
 	let pendingMarkerBatch = null;
@@ -239,6 +242,7 @@
 			// stops here would race with the itinerary and leave stray markers on the map.
 			if (!startInTripPlanMode) {
 				await loadStopsAndAddMarkers(mapCenterLat, mapCenterLng, true);
+				viewportTick += 1;
 			}
 
 			if (isDestroyed) return;
@@ -251,6 +255,7 @@
 				const center = mapInstance.getCenter();
 				if (!center) return;
 				const zoomLevel = mapInstance.getZoom();
+				viewportTick += 1;
 				await loadStopsAndAddMarkers(center.lat, center.lng, false, zoomLevel);
 			}, 300);
 
@@ -401,6 +406,7 @@
 
 	onDestroy(() => {
 		isDestroyed = true;
+		isMapLoaded.set(false);
 		debouncedLoadMarkers?.cancel?.();
 		debouncedLoadMarkers = null;
 
@@ -430,6 +436,14 @@
 
 <div class="map-container">
 	<div id="map" bind:this={mapElement}></div>
+
+	{#if mapInstance}
+		<OnDemandZonesLayer
+			mapProvider={mapInstance}
+			active={mapMode === Modes.NORMAL}
+			{viewportTick}
+		/>
+	{/if}
 
 	{#if mapInstance && stop && activeRoutes.length > 0}
 		<StopRoutesLayer

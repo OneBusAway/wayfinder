@@ -43,7 +43,7 @@ export function filterRoutes(routes, agencyIds) {
 
 /**
  * Filters stops to only those serving routes from target agencies.
- * @param {Array<{routeIds?: string[]}> | null} stops
+ * @param {Array<{routeIds?: string[], onDemandServiceIds?: string[]}> | null} stops
  * @param {Set<string> | null} agencyIds
  * @returns {Array}
  */
@@ -51,9 +51,10 @@ export function filterStops(stops, agencyIds) {
 	if (!stops) return [];
 	if (!agencyIds) return stops;
 	return stops.filter((stop) => {
-		const routeIds = stop.routeIds;
-		if (!routeIds || routeIds.length === 0) return false;
-		return routeIds.some((routeId) => routeBelongsToAgency(routeId, agencyIds));
+		// On-demand service ids share the route id's agency prefix, so a flex-only
+		// stop (no routeIds) is kept when its service belongs to a target agency.
+		const ids = [...(stop.routeIds ?? []), ...(stop.onDemandServiceIds ?? [])];
+		return ids.some((id) => routeBelongsToAgency(id, agencyIds));
 	});
 }
 
