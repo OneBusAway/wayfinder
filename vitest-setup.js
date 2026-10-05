@@ -52,6 +52,10 @@ vi.mock('$env/dynamic/public', () => ({
 	}
 }));
 
+vi.mock('$env/static/private', () => ({
+	PRIVATE_OBA_API_KEY: 'test-api-key'
+}));
+
 // Mock environment variables
 vi.mock('$env/static/public', () => ({
 	PUBLIC_OBA_REGION_NAME: 'Test Region',
