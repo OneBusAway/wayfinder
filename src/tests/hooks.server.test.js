@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createRequestMetrics } from '$lib/server/metrics';
 
 const mockRecordHttpRequest = vi.fn();
 const mockStartMetricsServer = vi.fn();
@@ -58,6 +59,18 @@ function makeMetricsEvent({
 		request: new Request(`http://localhost${pathname}`, { method })
 	};
 }
+
+describe('createRequestMetrics', () => {
+	it('creates a request histogram with the organization default label', async () => {
+		const metrics = createRequestMetrics({ organization: 'Sound Transit' });
+		metrics.histogram.observe({ method: 'GET', uri: '/health', status: '200' }, 0.2);
+
+		expect(metrics.organization).toBe('Sound Transit');
+		expect(await metrics.registry.metrics()).toMatch(
+			/http_server_requests_seconds_count\{.*service="wayfinder".*organization="Sound Transit".*uri="\/health".*\} 1/
+		);
+	});
+});
 
 describe('hooks.server', () => {
 	beforeEach(() => {
@@ -197,8 +210,7 @@ describe('hooks.server', () => {
 		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
 		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
 
-		const { metricsHandle } = await import('../hooks.server.js');
-		const { registry } = await import('$lib/server/metrics.js');
+		const { metricsHandle, registry } = await import('../hooks.server.js');
 		const resolve = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
 		const before = await registry.metrics();
 		expect(before).not.toMatch(/uri="\/metrics"/);
@@ -220,8 +232,7 @@ describe('hooks.server', () => {
 		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
 		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
 
-		const { metricsHandle } = await import('../hooks.server.js');
-		const { registry } = await import('$lib/server/metrics.js');
+		const { metricsHandle, registry } = await import('../hooks.server.js');
 		const resolve = vi.fn().mockResolvedValue(new Response('not found', { status: 404 }));
 		await metricsHandle({
 			event: makeMetricsEvent({ pathname: '/random/path', routeId: null }),
@@ -239,8 +250,7 @@ describe('hooks.server', () => {
 		vi.stubEnv('PUBLIC_METRICS_ENABLED', mockPublicEnv.PUBLIC_METRICS_ENABLED);
 		vi.stubEnv('PUBLIC_METRICS_ORGANIZATION', mockPublicEnv.PUBLIC_METRICS_ORGANIZATION);
 
-		const { metricsHandle } = await import('../hooks.server.js');
-		const { registry } = await import('$lib/server/metrics.js');
+		const { metricsHandle, registry } = await import('../hooks.server.js');
 		const resolve = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
 		const result = await metricsHandle({
 			event: makeMetricsEvent({ pathname: '/stops/1_100' }),
@@ -258,8 +268,7 @@ describe('hooks.server', () => {
 	});
 
 	it('records a 500 request when resolve rejects and rethrows the original error', async () => {
-		const { metricsHandle } = await import('../hooks.server.js');
-		const { registry } = await import('$lib/server/metrics.js');
+		const { metricsHandle, registry } = await import('../hooks.server.js');
 		const error = new Error('resolve failed');
 		const resolve = vi.fn().mockRejectedValue(error);
 
@@ -281,8 +290,7 @@ describe('hooks.server', () => {
 		globalThis.__wayfinderMetrics = upstreamMetrics;
 
 		try {
-			const { metricsHandle } = await import('../hooks.server.js');
-			const { registry } = await import('$lib/server/metrics.js');
+			const { metricsHandle, registry } = await import('../hooks.server.js');
 			const resolve = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
 
 			const response = await metricsHandle({ event: makeEvent(), resolve });
@@ -304,8 +312,7 @@ describe('hooks.server', () => {
 		const internalMetrics = await vi.importActual('$lib/metrics/registry.js');
 		mockRecordHttpRequest.mockImplementation(internalMetrics.recordHttpRequest);
 
-		const { metricsHandle } = await import('../hooks.server.js');
-		const { registry } = await import('$lib/server/metrics.js');
+		const { metricsHandle, registry } = await import('../hooks.server.js');
 		const resolve = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
 
 		const response = await metricsHandle({ event: makeEvent(), resolve });
