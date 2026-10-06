@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Popover } from 'flowbite-svelte';
-	import { fade } from "svelte/transition";
+	import { fade } from 'svelte/transition';
 	import { languages } from '$lib/i18n';
 	import { locale, t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -139,7 +139,7 @@
 			defaultClass="flex flex-col py-1"
 			open={isOpen}
 			on:show={(e: CustomEvent<boolean>) => (isOpen = e.detail)}
-			offset={9}
+			offset={6}
 			params={{ duration: 100 }}
 			placement="bottom-end"
 			role="listbox"

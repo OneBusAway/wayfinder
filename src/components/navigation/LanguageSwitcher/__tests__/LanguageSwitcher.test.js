@@ -577,7 +577,7 @@ describe('LanguageSwitcher', () => {
 
 			// Spanish should not be selected
 			const spanishOption = options.find((opt) => opt.textContent?.includes('Español'));
-			expect(spanishOption).toHaveAttribute('aria-selected', 'false');
+			expect(spanishOption).not.toHaveAttribute('aria-selected');
 		});
 	});
 

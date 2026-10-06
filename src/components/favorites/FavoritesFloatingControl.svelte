@@ -98,17 +98,17 @@
 	</button>
 
 	<Popover
-		id={panelId}
-		role="dialog"
 		aria-label={$t('favorites.title')}
 		arrow={false}
 		class="left-0 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 shadow-lg outline-none backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800/95"
 		defaultClass="p-3"
-		offset={8}
+		id={panelId}
+		offset={6}
 		open={isOpen}
 		on:show={handleShow}
 		params={{ duration: 100 }}
 		placement="bottom-end"
+		role="dialog"
 		transition={fade}
 		trigger="click"
 		triggeredBy="#{toggleId}"

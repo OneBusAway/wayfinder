@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Popover } from 'flowbite-svelte';
-	import { fade } from "svelte/transition";
+	import { fade } from 'svelte/transition';
 
 	interface Props {
 		links: { key: string; value: string }[];
@@ -27,13 +27,16 @@
 		fill="currentColor"
 		viewBox="0 0 20 20"
 		xmlns="http://www.w3.org/2000/svg"
-	><path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+		><path
+			d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+		></path></svg
+	>
 </button>
 <Popover
 	arrow={false}
 	class="left-0 min-w-[150px] rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 	defaultClass="flex flex-col py-1"
-	offset={8}
+	offset={6}
 	open={isOpen}
 	on:show={(e: CustomEvent<boolean>) => (isOpen = e.detail)}
 	params={{ duration: 100 }}
