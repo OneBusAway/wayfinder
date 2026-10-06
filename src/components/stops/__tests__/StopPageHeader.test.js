@@ -15,6 +15,12 @@ vi.mock('$app/stores', () => ({
 			});
 			return { unsubscribe: vi.fn() };
 		})
+	},
+	navigating: {
+		subscribe: vi.fn((fn) => {
+			fn(null);
+			return () => {};
+		})
 	}
 }));
 
@@ -27,6 +33,7 @@ vi.mock('svelte-i18n', () => ({
 				const translations = {
 					'schedule_for_stop.stop_id': 'Stop ID',
 					'schedule_for_stop.direction': 'Direction',
+					'schedule_for_stop.no_direction': 'None',
 					'arrivals_and_departures_for_stop.title': 'Arrivals & Departures',
 					'schedule_for_stop.route_schedules': 'Route Schedules',
 					'navigation.back_to_map': 'Back to Map',
@@ -71,7 +78,7 @@ describe('StopPageHeader', () => {
 		stopCode: '75403'
 	};
 
-	test('renders a favorite toggle next to the stop name when coords are present', () => {
+	test('renders a favorite toggle next to the stop name', () => {
 		render(StopPageHeader, { props: defaultProps });
 
 		expect(screen.getByRole('button', { name: 'Add to favorites' })).toBeInTheDocument();
@@ -85,18 +92,6 @@ describe('StopPageHeader', () => {
 
 		expect(heading).toHaveAccessibleName('Pine St & 3rd Ave');
 		expect(heading.contains(toggle)).toBe(false);
-	});
-
-	test('hides the favorite toggle when stop coordinates are missing', () => {
-		render(StopPageHeader, {
-			props: {
-				stopName: 'Pine St & 3rd Ave',
-				stopId: '1_75403',
-				stopDirection: 'N'
-			}
-		});
-
-		expect(screen.queryByRole('button', { name: 'Add to favorites' })).not.toBeInTheDocument();
 	});
 
 	test('displays stop name as main heading', () => {
@@ -121,6 +116,15 @@ describe('StopPageHeader', () => {
 		expect(screen.getByText('North')).toBeInTheDocument();
 	});
 
+	test('shows a faded "None" when the stop has no direction', () => {
+		render(StopPageHeader, {
+			props: { ...defaultProps, stopDirection: '' }
+		});
+
+		expect(screen.getByText('Direction:')).toBeInTheDocument();
+		expect(screen.getByText('None')).toHaveClass('text-gray-600');
+	});
+
 	test('has proper header styling classes', () => {
 		render(StopPageHeader, { props: defaultProps });
 
@@ -129,20 +133,6 @@ describe('StopPageHeader', () => {
 
 		const headerContainer = screen.getByRole('heading', { level: 1 }).closest('.text-center');
 		expect(headerContainer).toHaveClass('text-center');
-	});
-
-	test('stop ID section has proper styling', () => {
-		render(StopPageHeader, { props: defaultProps });
-
-		const stopIdSection = screen.getByText('Stop ID:').parentElement;
-		expect(stopIdSection).toHaveClass('rounded-md', 'bg-gray-50', 'px-2', 'py-1');
-	});
-
-	test('direction section has proper styling', () => {
-		render(StopPageHeader, { props: defaultProps });
-
-		const directionSection = screen.getByText('Direction:').parentElement;
-		expect(directionSection).toHaveClass('rounded-md', 'bg-gray-50', 'px-2', 'py-1');
 	});
 
 	test('includes map marker icon', () => {
@@ -276,14 +266,6 @@ describe('StopPageHeader', () => {
 				link.textContent.includes('Route Schedules')
 		);
 		expect(tabLinks).toHaveLength(2);
-	});
-
-	test('information sections have proper layout', () => {
-		render(StopPageHeader, { props: defaultProps });
-
-		// Check the container holding stop ID and direction info
-		const infoContainer = screen.getByText('Stop ID:').closest('.flex');
-		expect(infoContainer).toHaveClass('items-center', 'justify-center', 'gap-x-8');
 	});
 
 	test('uses semantic HTML structure', () => {
