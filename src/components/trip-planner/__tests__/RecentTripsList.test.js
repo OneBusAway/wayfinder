@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import RecentTripsList from '../RecentTripsList.svelte';
+import ClearRecentSearchesDialog from '../ClearRecentSearchesDialog.svelte';
+import { closeClearRecentSearchesDialog } from '$stores/clearRecentSearchesDialogStore';
 
 // Mock svelte-i18n (same pattern as TripPlanSearchField.test.js)
 vi.mock('svelte-i18n', () => {
@@ -78,7 +80,14 @@ describe('RecentTripsList', () => {
 		mockStoreValue.current = [];
 		mockSubscribers.clear();
 		vi.clearAllMocks();
+		closeClearRecentSearchesDialog();
 	});
+
+	function renderRecentTripsWithDialog(props) {
+		const list = render(RecentTripsList, { props });
+		render(ClearRecentSearchesDialog);
+		return list;
+	}
 
 	describe('Rendering', () => {
 		it('renders nothing when the store is empty', () => {
@@ -193,7 +202,7 @@ describe('RecentTripsList', () => {
 		it('opens a confirmation without clearing when "Clear All" is clicked', async () => {
 			mockStoreValue.current = sampleTrips;
 
-			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			renderRecentTripsWithDialog({ onSelect: vi.fn() });
 
 			await user.click(screen.getByRole('button', { name: 'Clear All' }));
 
@@ -214,9 +223,18 @@ describe('RecentTripsList', () => {
 			expect(screen.getByText('Downtown')).toBeInTheDocument();
 		});
 
+		it('renders the confirmation outside the RecentTripsList DOM subtree', async () => {
+			mockStoreValue.current = sampleTrips;
+			const { container } = renderRecentTripsWithDialog({ onSelect: vi.fn() });
+
+			await user.click(screen.getByRole('button', { name: 'Clear All' }));
+
+			expect(container.contains(screen.getByRole('dialog'))).toBe(false);
+		});
+
 		it('closes on Cancel and keeps the recent searches', async () => {
 			mockStoreValue.current = sampleTrips;
-			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			renderRecentTripsWithDialog({ onSelect: vi.fn() });
 			const clearAllButton = screen.getByRole('button', { name: 'Clear All' });
 
 			await user.click(clearAllButton);
@@ -231,7 +249,7 @@ describe('RecentTripsList', () => {
 
 		it('closes and clears the recent searches when Clear is confirmed', async () => {
 			mockStoreValue.current = sampleTrips;
-			const { container } = render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			const { container } = renderRecentTripsWithDialog({ onSelect: vi.fn() });
 			const nextFocusTarget = document.createElement('input');
 			nextFocusTarget.id = 'from-location-input';
 			container.append(nextFocusTarget);
@@ -250,7 +268,7 @@ describe('RecentTripsList', () => {
 
 		it('closes on Escape and keeps the recent searches', async () => {
 			mockStoreValue.current = sampleTrips;
-			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			renderRecentTripsWithDialog({ onSelect: vi.fn() });
 			const clearAllButton = screen.getByRole('button', { name: 'Clear All' });
 
 			await user.click(clearAllButton);
@@ -265,7 +283,7 @@ describe('RecentTripsList', () => {
 
 		it('closes on a backdrop click and keeps the recent searches', async () => {
 			mockStoreValue.current = sampleTrips;
-			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			renderRecentTripsWithDialog({ onSelect: vi.fn() });
 			const clearAllButton = screen.getByRole('button', { name: 'Clear All' });
 
 			await user.click(clearAllButton);
