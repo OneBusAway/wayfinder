@@ -153,7 +153,7 @@
 					role="option"
 					aria-selected={lang.code === currentLocale ? true : undefined}
 					onclick={() => handleLanguageSelect(lang.code)}
-					class="block w-full whitespace-nowrap px-4 py-2 text-left text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
+					class="block w-full whitespace-nowrap px-4 py-2 text-justify text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
 					currentLocale
 						? 'bg-gray-100 dark:bg-gray-700'
 						: ''}"

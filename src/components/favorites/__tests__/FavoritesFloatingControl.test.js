@@ -132,11 +132,10 @@ describe('FavoritesFloatingControl', () => {
 		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-		// A row's ✕ removes its own DOM node mid-click. The click still reaches
-		// Popover's document listener, but with a detached target whose contains()
-		// would read false. Popover checks the event's composed path instead, which
-		// is fixed at dispatch time and still includes the panel; this asserts the
-		// panel does not wrongly close.
+		// A row's ✕ removes its own DOM node mid-click. The event path is fixed at
+		// dispatch time, so the click still reaches <svelte:window> — but with a
+		// detached target whose contains() reads false. Without the isConnected
+		// guard the panel would wrongly close; this asserts it does not.
 		const row = document.createElement('button');
 		screen.getByRole('dialog').appendChild(row);
 		row.addEventListener('click', () => row.remove());
