@@ -249,7 +249,7 @@
 		{/each}
 
 		{#if overflowLinks.length > 0}
-			<OverflowMenu links={overflowLinks} triggeredBy="#more-navigation-options-trigger" />
+			<OverflowMenu links={overflowLinks} />
 		{/if}
 
 		<div class="language-switcher-container flex-shrink-0" bind:this={languageSwitcherElement}>
