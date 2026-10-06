@@ -157,7 +157,7 @@ describe('FavoritesFloatingControl', () => {
 		await user.click(toggle);
 
 		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-		expect(toggle).not.toHaveAttribute('aria-expanded');
+		expect(toggle).toHaveAttribute('aria-expanded', 'false');
 		expect(toggle).toHaveFocus();
 	});
 

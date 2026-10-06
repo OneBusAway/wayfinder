@@ -110,7 +110,7 @@
 			aria-label={safeTranslate('language_switcher.select_language', {
 				values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) }
 			})}
-			aria-expanded={isOpen ? true : undefined}
+			aria-expanded={isOpen}
 			aria-haspopup="listbox"
 			class="flex h-8 items-center justify-center gap-1 rounded-md border bg-surface/80 px-2 font-semibold text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
 			id="language-switcher-trigger"

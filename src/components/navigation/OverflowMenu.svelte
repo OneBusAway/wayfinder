@@ -16,7 +16,7 @@
 </script>
 
 <button
-	aria-expanded={isOpen ? true : undefined}
+	aria-expanded={isOpen}
 	aria-haspopup="menu"
 	aria-label="More navigation options"
 	class="flex h-8 w-8 items-center justify-center rounded-md border bg-surface/80 dark:bg-surface-dark"

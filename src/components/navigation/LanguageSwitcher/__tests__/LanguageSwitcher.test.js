@@ -537,7 +537,7 @@ describe('LanguageSwitcher', () => {
 			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
-			expect(button).not.toHaveAttribute('aria-expanded');
+			expect(button).toHaveAttribute('aria-expanded', 'false');
 
 			await user.click(button);
 			expect(button).toHaveAttribute('aria-expanded', 'true');

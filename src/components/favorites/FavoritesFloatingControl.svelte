@@ -81,7 +81,7 @@
 		id={toggleId}
 		type="button"
 		aria-controls={isOpen ? panelId : undefined}
-		aria-expanded={isOpen ? true : undefined}
+		aria-expanded={isOpen}
 		aria-haspopup="dialog"
 		aria-label={toggleLabel}
 		title={toggleLabel}
