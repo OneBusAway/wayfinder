@@ -41,7 +41,6 @@
 	on:show={(e: CustomEvent<boolean>) => (isOpen = e.detail)}
 	params={{ duration: 100 }}
 	placement="bottom-end"
-	role="menu"
 	transition={fade}
 	trigger="click"
 	triggeredBy="#more-navigation-options-trigger"
@@ -51,7 +50,6 @@
 			class="block px-4 py-2 text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700"
 			href={value}
 			onclick={closePopover}
-			role="menuitem"
 		>
 			{key}
 		</a>
