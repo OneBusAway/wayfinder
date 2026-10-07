@@ -12,10 +12,14 @@
 	 * @property {import('$lib/types').Stop} stop
 	 * @property {string} tripId
 	 * @property {number | null} [serviceDate]
+	 * @property {number | null} [scheduledArrivalTime] - The scheduled arrival time (ms since
+	 *   epoch) for the arrival row the rider tapped. Forwarded to the trip-details API as the
+	 *   `time` parameter so the server resolves the correct trip instance rather than the one
+	 *   currently running at the time of the request.
 	 */
 
 	/** @type {Props} */
-	let { stop, tripId, serviceDate = null } = $props();
+	let { stop, tripId, serviceDate = null, scheduledArrivalTime = null } = $props();
 
 	let tripDetails = $state(null);
 	let routeInfo = $state(null);
@@ -53,6 +57,13 @@
 			let url = `/api/oba/trip-details/${tripId}?includeTrip=true&includeSchedule=true&includeStatus=true`;
 			if (serviceDate) {
 				url += `&serviceDate=${serviceDate}`;
+			}
+			// Anchor the lookup to the scheduled departure the rider tapped.
+			// Without this, the OBA server resolves the trip against the current
+			// wall-clock time and may return the next trip when the selected one
+			// has already departed its upstream stops (issue #330).
+			if (scheduledArrivalTime) {
+				url += `&time=${scheduledArrivalTime}`;
 			}
 			const response = await fetch(url, {
 				signal: abortController.signal
