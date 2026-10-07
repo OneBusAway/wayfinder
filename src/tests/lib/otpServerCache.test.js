@@ -262,6 +262,38 @@ describe('otpServerCache', () => {
 		expect(getOtpApiType()).toBe('rest');
 	});
 
+	it('times out while reading a stalled JSON response body', async () => {
+		vi.useFakeTimers();
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		let signal;
+		mockFetch.mockImplementationOnce((_url, options = {}) => {
+			signal = options.signal;
+			return Promise.resolve({
+				ok: true,
+				headers: new Headers({ 'content-type': 'application/json' }),
+				json: () =>
+					new Promise((_, reject) => {
+						signal.addEventListener('abort', () =>
+							reject(new DOMException('signal aborted', 'AbortError'))
+						);
+					})
+			});
+		});
+
+		const { preloadOtpVersion, getOtpApiType } = await import('$lib/otpServerCache.js');
+		const p = preloadOtpVersion();
+
+		await vi.advanceTimersByTimeAsync(10_000);
+		await p;
+
+		expect(signal.aborted).toBe(true);
+		expect(getOtpApiType()).toBeNull();
+		expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('timed out'));
+
+		warnSpy.mockRestore();
+		vi.useRealTimers();
+	});
+
 	it('times out and enters cooldown when OTP server hangs', async () => {
 		vi.useFakeTimers();
 

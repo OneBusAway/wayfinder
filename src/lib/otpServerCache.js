@@ -1,5 +1,4 @@
 import { env } from '$env/dynamic/public';
-import { fetchWithTimeout } from './fetchWithTimeout.js';
 
 /** @type {'graphql' | 'rest' | null} */
 let otpApiType = null;
@@ -23,21 +22,27 @@ const ERROR_RETRY_DELAY = 30_000;
 let lastErrorTime = null;
 
 async function detectOtpVersion() {
-	const response = await fetchWithTimeout(env.PUBLIC_OTP_SERVER_URL, {}, DETECT_TIMEOUT);
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(), DETECT_TIMEOUT);
+	try {
+		const response = await fetch(env.PUBLIC_OTP_SERVER_URL, { signal: controller.signal });
 
-	if (!response.ok) {
-		throw new Error(`OTP server returned HTTP ${response.status}`);
+		if (!response.ok) {
+			throw new Error(`OTP server returned HTTP ${response.status}`);
+		}
+
+		const contentType = response.headers.get('content-type') || '';
+
+		if (contentType.includes('application/json')) {
+			const data = await response.json();
+			return data.version?.major >= 2 ? 'graphql' : 'rest';
+		}
+
+		// OTP 1.x returns XML — treat as REST
+		return 'rest';
+	} finally {
+		clearTimeout(timer);
 	}
-
-	const contentType = response.headers.get('content-type') || '';
-
-	if (contentType.includes('application/json')) {
-		const data = await response.json();
-		return data.version?.major >= 2 ? 'graphql' : 'rest';
-	}
-
-	// OTP 1.x returns XML — treat as REST
-	return 'rest';
 }
 
 /**

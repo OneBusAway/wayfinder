@@ -1,4 +1,3 @@
-import { fetchWithTimeout } from '../../fetchWithTimeout.js';
 import { insightsError, upstreamError } from '../upstreamError.js';
 
 export class BaseAdapter {
@@ -45,20 +44,23 @@ export class BaseAdapter {
 		}
 
 		const request = this.buildRequest(envelope, requestContext);
-		const response = await fetchWithTimeout(
-			request.url,
-			{
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
+		try {
+			const response = await fetch(request.url, {
 				method: 'POST',
 				headers: request.headers,
-				body: JSON.stringify(request.body)
-			},
-			this.timeoutMs
-		);
+				body: JSON.stringify(request.body),
+				signal: controller.signal
+			});
 
-		if (!response.ok) {
-			throw await upstreamError(response);
+			if (!response.ok) {
+				throw await upstreamError(response);
+			}
+
+			return this.parseResponse(await response.text());
+		} finally {
+			clearTimeout(timeoutId);
 		}
-
-		return this.parseResponse(await response.text());
 	}
 }

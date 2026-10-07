@@ -47,6 +47,35 @@ describe('BaseAdapter', () => {
 		);
 	});
 
+	it('times out while reading a stalled response body', async () => {
+		vi.useFakeTimers();
+		let signal;
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockImplementation((_url, options) => {
+				signal = options.signal;
+				return Promise.resolve({
+					ok: true,
+					text: () =>
+						new Promise((_, reject) => {
+							signal.addEventListener('abort', () =>
+								reject(new DOMException('signal aborted', 'AbortError'))
+							);
+						})
+				});
+			})
+		);
+		const adapter = new StubAdapter({ PUBLIC_ANALYTICS_API_HOST: 'https://stub.example.com' });
+
+		const result = adapter.forwardEvent({ name: 'signup', url: '/welcome' }, { visitorId: 'v1' });
+		const rejection = expect(result).rejects.toMatchObject({ name: 'AbortError' });
+		await vi.advanceTimersByTimeAsync(5000);
+
+		await rejection;
+		expect(signal.aborted).toBe(true);
+		vi.useRealTimers();
+	});
+
 	it('throws when buildRequest is not implemented', () => {
 		const adapter = new BaseAdapter(
 			{ PUBLIC_ANALYTICS_API_HOST: 'https://stub.example.com' },
