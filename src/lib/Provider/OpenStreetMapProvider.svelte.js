@@ -36,11 +36,10 @@ function styleUrl(name) {
 }
 
 // activeTrip is always truthy here: the sole caller (vehicleUtils.js) guards on
-// it, and buildVehiclePopupData reads activeTrip.tripHeadsign without optional
-// chaining. Keep this contract consistent rather than implying null is expected.
+// it. The optional chaining here and in buildVehiclePopupData is belt-and-braces.
 function getVehicleLabel(activeTrip) {
 	const translate = get(t);
-	return activeTrip.tripHeadsign
+	return activeTrip?.tripHeadsign
 		? translate('vehicle.to_headsign', { values: { headsign: activeTrip.tripHeadsign } })
 		: translate('vehicle.label');
 }
