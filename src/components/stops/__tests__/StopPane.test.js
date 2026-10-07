@@ -17,29 +17,31 @@ vi.mock('$components/ArrivalDeparture.svelte', () => ({
 	}))
 }));
 
-vi.mock('$components/oba/TripDetailsPane.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({
-		$set: vi.fn(),
-		$destroy: vi.fn(),
-		$on: vi.fn()
-	}))
+const tripDetailsPaneMock = vi.hoisted(() => ({
+	props: null
 }));
 
-vi.mock('$components/containers/SingleSelectAccordion.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({
-		$set: vi.fn(),
-		$destroy: vi.fn(),
-		$on: vi.fn(),
-		handleAccordionSelectionChanged: vi.fn()
-	}))
+vi.mock('$components/oba/TripDetailsPane.svelte', () => ({
+	default: vi.fn((anchor, props) => {
+		tripDetailsPaneMock.props = props;
+		return {
+			$set: vi.fn(),
+			$destroy: vi.fn(),
+			$on: vi.fn()
+		};
+	})
 }));
 
 vi.mock('$components/containers/AccordionItem.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({
-		$set: vi.fn(),
-		$destroy: vi.fn(),
-		$on: vi.fn()
-	}))
+	default: vi.fn((anchor, props) => {
+		props.children?.();
+
+		return {
+			$set: vi.fn(),
+			$destroy: vi.fn(),
+			$on: vi.fn()
+		};
+	})
 }));
 
 // Stub card: sets its bound `services` only when a test opts in via onDemandStub.
@@ -156,6 +158,7 @@ describe('StopPane', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		onDemandStub.services = [];
+		tripDetailsPaneMock.props = null;
 
 		// Reset fetch mock
 		global.fetch.mockReset();
@@ -378,6 +381,46 @@ describe('StopPane', () => {
 		});
 
 		expect(screen.queryByText('View Schedule')).not.toBeInTheDocument();
+	});
+
+	test('passes scheduledArrivalTime to TripDetailsPane', async () => {
+		const scheduledArrivalTime = 1738800000000;
+
+		const arrivalsResponse = {
+			...mockArrivalsAndDeparturesResponse,
+			data: {
+				...mockArrivalsAndDeparturesResponse.data,
+				entry: {
+					...mockArrivalsAndDeparturesResponse.data.entry,
+					arrivalsAndDepartures: [
+						{
+							...mockArrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures[0],
+							scheduledArrivalTime
+						}
+					]
+				}
+			}
+		};
+
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => arrivalsResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
+		});
+
+		// The AccordionItem mock renders its children, allowing the TripDetailsPane
+		// props to be captured and verified directly.
+		await waitFor(() => {
+			expect(tripDetailsPaneMock.props).not.toBeNull();
+		});
+
+		expect(tripDetailsPaneMock.props.scheduledArrivalTime).toBe(scheduledArrivalTime);
 	});
 
 	test('handles API error response (500)', async () => {
