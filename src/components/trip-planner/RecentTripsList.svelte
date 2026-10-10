@@ -25,7 +25,6 @@
 		pinnedTrips.togglePin(trip);
 	}
 
-	// Helper to check if a recent trip is already pinned
 	function isPinned(trip) {
 		return $pinnedTrips.some(
 			(pt) =>
@@ -46,7 +45,8 @@
 					class="mb-2 flex items-center gap-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300"
 				>
 					<Pin class="h-3.5 w-3.5 fill-current" />
-					Pinned Trips
+					<!-- FIX: Use localized key instead of hardcoded string -->
+					{$t('trip-planner.pinned_trips')}
 				</h2>
 				<div class="space-y-2">
 					{#each $pinnedTrips as trip (trip.id)}
@@ -73,10 +73,11 @@
 									</div>
 								</div>
 							</button>
+							<!-- FIX: Added focus-visible:opacity-100 and correct dedicated aria-label -->
 							<button
 								type="button"
-								aria-label={$t('trip-planner.remove_recent_trip')}
-								class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-red-500 group-hover:opacity-100 dark:hover:bg-gray-600"
+								aria-label={$t('trip-planner.remove_pinned_trip')}
+								class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 group-hover:opacity-100 dark:hover:bg-gray-600"
 								onclick={(e) => handleDeletePinned(e, trip.id)}
 							>
 								<X class="h-3.5 w-3.5" />
@@ -131,13 +132,16 @@
 								</div>
 							</button>
 
-							<!-- Hover Actions (Pin & Delete) -->
+							<!-- FIX: Added group-focus-within:opacity-100 to make keyboard tabbing visible -->
 							<div
-								class="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100"
+								class="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
 							>
+								<!-- FIX: Added dynamic pin/unpin label based on state -->
 								<button
 									type="button"
-									aria-label="Pin trip"
+									aria-label={isPinned(trip)
+										? $t('trip-planner.unpin_trip')
+										: $t('trip-planner.pin_trip')}
 									onclick={(e) => handleTogglePin(e, trip)}
 									class="rounded-full p-1.5 text-gray-400 hover:bg-gray-200 hover:text-brand-accent dark:hover:bg-gray-600"
 								>

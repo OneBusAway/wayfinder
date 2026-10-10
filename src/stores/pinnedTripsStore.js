@@ -20,7 +20,7 @@ function createPinnedTripsStore() {
 		}
 	}
 
-	const { subscribe, update, set } = writable(initialTrips);
+	const { subscribe, update } = writable(initialTrips);
 
 	const isMatch = (t1, t2) => {
 		if (!t1.fromCoords || !t1.toCoords || !t2.fromCoords || !t2.toCoords) return false;
@@ -38,27 +38,47 @@ function createPinnedTripsStore() {
 			update((trips) => {
 				const exists = trips.some((t) => isMatch(t, trip));
 				let updated;
+
 				if (exists) {
 					updated = trips.filter((t) => !isMatch(t, trip));
 				} else {
+					const fromCoords = trip.fromCoords || trip.selectedFrom;
+					const toCoords = trip.toCoords || trip.selectedTo;
+
+					if (!fromCoords || !toCoords) {
+						return trips;
+					}
+
 					const newTrip = {
 						id: crypto.randomUUID(),
 						timestamp: Date.now(),
 						fromPlace: trip.fromPlace,
 						toPlace: trip.toPlace,
-						fromCoords: trip.fromCoords || trip.selectedFrom,
-						toCoords: trip.toCoords || trip.selectedTo
+						fromCoords,
+						toCoords
 					};
 					updated = [newTrip, ...trips].slice(0, MAX_PINNED);
 				}
-				if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+				try {
+					if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+				} catch (e) {
+					console.warn('Failed to save pinned trips:', e);
+				}
+
 				return updated;
 			});
 		},
 		removeTrip: (id) => {
 			update((trips) => {
 				const updated = trips.filter((t) => t.id !== id);
-				if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+				try {
+					if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+				} catch (e) {
+					console.warn('Failed to remove pinned trip:', e);
+				}
+
 				return updated;
 			});
 		}
