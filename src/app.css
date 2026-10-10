@@ -1,6 +1,27 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../tailwind.config.js';
+/* Use :is() (not :where()) so dark: keeps specificity and can beat light utilities
+   on the same node — e.g. modal-pane's dark:bg-surface-dark vs bg-white/80. */
+@custom-variant dark (&:is(.dark, .dark *));
+
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentColor);
+	}
+
+	/* v4 preflight drops cursor:pointer on buttons — restore v3 behavior.
+	   Exclude :disabled so disabled buttons don't show a pointer without an
+	   explicit disabled:cursor-not-allowed. */
+	button:not(:disabled),
+	[role='button'],
+	select {
+		cursor: pointer;
+	}
+}
 
 @layer components {
 	.h1 {
@@ -68,7 +89,7 @@
 	}
 
 	.itinerary-tab {
-		@apply flex flex-shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full px-4 py-2;
+		@apply flex flex-shrink-0 cursor-pointer items-center gap-2 rounded-full px-4 py-2 whitespace-nowrap;
 		@apply bg-gray-100 text-sm font-medium text-gray-700;
 		@apply transition-all duration-200 ease-out;
 		@apply hover:bg-gray-200;
@@ -91,11 +112,11 @@
 	}
 
 	.button {
-		@apply rounded-md bg-surface px-3 py-2 text-sm font-semibold text-surface-foreground shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
+		@apply rounded-md bg-surface px-3 py-2 text-sm font-semibold text-surface-foreground shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50;
 	}
 
 	.button--primary {
-		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
+		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-brand-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
 	}
 
 	.rtl {

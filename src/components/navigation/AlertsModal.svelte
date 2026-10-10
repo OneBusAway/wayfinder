@@ -1,5 +1,6 @@
 <script>
-	import { Modal, Button } from 'flowbite-svelte';
+	import Modal from 'flowbite-svelte/Modal.svelte';
+	import Button from 'flowbite-svelte/Button.svelte';
 	import { getLocaleFromNavigator } from 'svelte-i18n';
 	import { t } from 'svelte-i18n';
 
@@ -33,7 +34,12 @@
 	}
 </script>
 
-<Modal title={getHeaderTextTranslation()} bind:open={showModal} autoclose>
+<Modal
+	title={getHeaderTextTranslation()}
+	bind:open={showModal}
+	autoclose
+	classBackdrop="bg-gray-900/50 dark:bg-gray-900/80"
+>
 	<p class="text-base leading-relaxed text-gray-500 dark:text-gray-200">
 		{getBodyTextTranslation()}
 	</p>

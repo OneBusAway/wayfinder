@@ -152,7 +152,7 @@
 
 		{#if isOpen}
 			<div
-				class="absolute end-0 top-full z-[9999] mt-1 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+				class="absolute inset-e-0 top-full z-9999 mt-1 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 			>
 				<div
 					role="listbox"
@@ -165,7 +165,7 @@
 							role="option"
 							aria-selected={lang.code === currentLocale}
 							onclick={() => handleLanguageSelect(lang.code)}
-							class="block w-full whitespace-nowrap px-4 py-2 text-left text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
+							class="block w-full px-4 py-2 text-left text-sm font-semibold whitespace-nowrap text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
 							currentLocale
 								? 'bg-gray-100 dark:bg-gray-700'
 								: ''}"

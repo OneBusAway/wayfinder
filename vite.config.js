@@ -1,12 +1,84 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+/**
+ * flowbite-svelte 0.47 ships a few components that import from the package barrel
+ * (`from ".."`). Vite SSR then loads index.js → Badge.svelte → index.js and
+ * throws "dependency module is not yet fully initialized". Rewrite those
+ * imports to the real files so the cycle never starts.
+ */
+function flowbiteSvelteNoCircular() {
+	// Assert flowbite-svelte version
+	try {
+		const pkgPath = fileURLToPath(
+			new URL('./node_modules/flowbite-svelte/package.json', import.meta.url)
+		);
+		const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+		if (!pkg.version.startsWith('0.47.')) {
+			console.warn(
+				`flowbiteSvelteNoCircular plugin expects flowbite-svelte@0.47.x, found ${pkg.version}. Please verify if the patch is still needed or update the regex.`
+			);
+		}
+	} catch {
+		// If package.json cannot be read (e.g. flowbite-svelte not installed),
+		// skip the version check and let Vite's normal resolution surface the
+		// problem with a clearer error than a JSON parse failure here.
+		console.warn(
+			`flowbiteSvelteNoCircular: could not read flowbite-svelte/package.json — skipping version check.`
+		);
+	}
+
+	const closeButtonFromBarrel = /import\s*\{\s*CloseButton\s*\}\s*from\s*["']\.\.["']\s*;/;
+	const buttonFromBarrel = /import\s*\{\s*Button\s*\}\s*from\s*["']\.\.["']\s*;/;
+
+	return {
+		name: 'flowbite-svelte-no-circular',
+		enforce: 'pre',
+		transform(code, id) {
+			const normalizedId = id.split('?')[0];
+			if (!normalizedId.includes('flowbite-svelte/dist/')) {
+				return;
+			}
+
+			if (
+				normalizedId.endsWith('/badge/Badge.svelte') ||
+				normalizedId.endsWith('/forms/Fileupload.svelte') ||
+				normalizedId.endsWith('/toast/Toast.svelte')
+			) {
+				if (closeButtonFromBarrel.test(code)) {
+					return {
+						code: code.replace(
+							closeButtonFromBarrel,
+							'import CloseButton from "../utils/CloseButton.svelte";'
+						),
+						map: null
+					};
+				}
+			}
+
+			if (normalizedId.endsWith('/datepicker/Datepicker.svelte') && buttonFromBarrel.test(code)) {
+				return {
+					code: code.replace(buttonFromBarrel, 'import Button from "../buttons/Button.svelte";'),
+					map: null
+				};
+			}
+		}
+	};
+}
+
 export default defineConfig({
-	plugins: [sveltekit(), svelteTesting()],
+	plugins: [flowbiteSvelteNoCircular(), tailwindcss(), sveltekit(), svelteTesting()],
+	optimizeDeps: {
+		include: ['tailwind-merge', 'apexcharts', '@floating-ui/dom', 'deepmerge', 'intl-messageformat']
+	},
 	define: {
 		__SHOW_REGION_NAME_IN_NAV_BAR__: JSON.stringify(
 			process.env.SHOW_REGION_NAME_IN_NAV_BAR !== 'false'

@@ -36,12 +36,12 @@
 	<!-- The wrapper is inert so it can't swallow taps aimed at the bottom sheet
 	     underneath; only the card itself is interactive. -->
 	<div
-		class="toast pointer-events-none fixed bottom-6 left-1/2 z-[9999] w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2"
+		class="toast pointer-events-none fixed bottom-6 left-1/2 z-9999 w-[min(24rem,calc(100vw-2rem))] -translate-x-1/2"
 		role={notification.variant === 'error' ? 'alert' : 'status'}
 		aria-live={notification.variant === 'error' ? 'assertive' : 'polite'}
 	>
 		<div
-			class="pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-sm {VARIANT_CLASSES[
+			class="pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-xs {VARIANT_CLASSES[
 				notification.variant
 			] ?? VARIANT_CLASSES.warning}"
 		>

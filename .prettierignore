@@ -10,3 +10,5 @@ yarn.lock
 
 # Byte-for-byte mirror of maglev vectors
 src/tests/fixtures/flex-booking-vectors.json
+# Historical design docs — class order is intentional, do not rewrite
+docs/superpowers/

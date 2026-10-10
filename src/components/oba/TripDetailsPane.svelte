@@ -159,7 +159,7 @@
 								{#if !(isFirst && isLast)}
 									<div
 										class="absolute w-px bg-neutral-400 {isFirst
-											? 'bottom-0 top-1/2'
+											? 'top-1/2 bottom-0'
 											: isLast
 												? 'top-0 h-1/2'
 												: 'inset-y-0'}"
@@ -178,7 +178,7 @@
 										/>
 										{#if tripStop.stopId === stop.id}
 											<Check
-												class="absolute -right-1 -top-1 rounded-full border border-white bg-brand p-0.5 text-white"
+												class="absolute -top-1 -right-1 rounded-full border border-white bg-brand p-0.5 text-white"
 												size={14}
 											/>
 										{/if}
@@ -199,7 +199,7 @@
 								>
 									{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 								</div>
-								<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+								<div class="text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 									{formatSecondsFromMidnight(tripStop.arrivalTime)}
 								</div>
 							</div>

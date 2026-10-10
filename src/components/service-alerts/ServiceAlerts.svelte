@@ -1,7 +1,7 @@
 <script>
 	import { modalOpen } from '$src/stores/modalOpen';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
-	import { Modal } from 'flowbite-svelte';
+	import Modal from 'flowbite-svelte/Modal.svelte';
 	import ServiceAlertItem from './ServiceAlertItem.svelte';
 	import { t, locale } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';
@@ -92,7 +92,7 @@
 			</h3>
 			<button
 				type="button"
-				class="text-sm font-medium text-brand-accent hover:text-brand focus:outline-none dark:text-brand dark:hover:text-white"
+				class="text-sm font-medium text-brand-accent hover:text-brand focus:outline-hidden dark:text-brand dark:hover:text-white"
 				onclick={toggleAlerts}
 			>
 				{isAlertsHidden ? $t('service_alerts.show') : $t('service_alerts.hide')}
@@ -105,14 +105,14 @@
 					{@const absoluteIndex = pageStart + i}
 					{#if showGroups && absoluteIndex === 0}
 						<p
-							class="px-1 pt-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+							class="px-1 pt-1 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400"
 						>
 							{$t('service_alerts.affects_this_stop')}
 						</p>
 					{/if}
 					{#if showGroups && absoluteIndex === relevantCount}
 						<p
-							class="px-1 pt-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400"
+							class="px-1 pt-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400"
 						>
 							{$t('service_alerts.other_alerts')}
 						</p>
@@ -155,11 +155,12 @@
 		title={modalAlert?.summary?.value || $t('service_alerts.service_alert')}
 		bind:open={$modalOpen}
 		size="3xl"
+		classBackdrop="bg-gray-900/50 dark:bg-gray-900/80"
 		class="relative w-full max-w-3xl rounded-xl bg-white p-8 text-gray-900 shadow-2xl dark:bg-gray-800 dark:text-gray-100"
 	>
 		{#if modalSeverity}
 			<span
-				class="mb-3 inline-flex rounded px-2 py-0.5 text-xs font-semibold uppercase tracking-wide
+				class="mb-3 inline-flex rounded px-2 py-0.5 text-xs font-semibold tracking-wide uppercase
 					{modalSeverity === 'severe'
 					? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
 					: modalSeverity === 'warning'
@@ -170,7 +171,7 @@
 			</span>
 		{/if}
 		{#if !modalAlert?.summary?.value}
-			<p class="mb-3 italic text-gray-500 dark:text-gray-400">
+			<p class="mb-3 text-gray-500 italic dark:text-gray-400">
 				{$t('service_alerts.no_summary')}
 			</p>
 		{/if}
@@ -179,7 +180,7 @@
 				{modalAlert.description.value}
 			</p>
 		{:else}
-			<p class="mt-3 italic text-gray-500 dark:text-gray-400">
+			<p class="mt-3 text-gray-500 italic dark:text-gray-400">
 				{$t('service_alerts.no_description')}
 			</p>
 		{/if}
