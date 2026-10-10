@@ -421,7 +421,7 @@
 				<button
 					type="button"
 					onclick={handleReset}
-					class="rounded text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:text-gray-400 dark:hover:text-gray-200"
+					class="rounded text-sm font-medium text-gray-500 underline-offset-2 hover:text-gray-700 hover:underline focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-hidden dark:text-gray-400 dark:hover:text-gray-200"
 				>
 					{$t('trip-planner.reset_to_defaults')}
 				</button>

@@ -82,7 +82,7 @@
 					<a
 						href={onDemandServicePath(service.id)}
 						onclick={(event) => select(event, service.id)}
-						class="min-w-0 flex-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+						class="min-w-0 flex-1 rounded focus:outline-hidden focus-visible:ring-2 focus-visible:ring-brand"
 					>
 						<span class="block truncate font-medium text-gray-900 dark:text-white"
 							>{service.name}</span

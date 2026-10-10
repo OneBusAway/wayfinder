@@ -13,8 +13,10 @@
 		border-color: var(--color-gray-200, currentColor);
 	}
 
-	/* v4 preflight drops cursor:pointer on buttons — restore v3 behavior */
-	button,
+	/* v4 preflight drops cursor:pointer on buttons — restore v3 behavior.
+	   Exclude :disabled so disabled buttons don't show a pointer without an
+	   explicit disabled:cursor-not-allowed. */
+	button:not(:disabled),
 	[role='button'],
 	select {
 		cursor: pointer;

@@ -13,7 +13,6 @@
 	import Accordion from '$components/containers/Accordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import Datepicker from 'flowbite-svelte/Datepicker.svelte';
-	import { onMount } from 'svelte';
 	import { t, isLoading } from 'svelte-i18n';
 	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
 	import Skeleton from '$components/Skeleton.svelte';
@@ -89,10 +88,6 @@
 		allRoutesExpanded = !allRoutesExpanded;
 	}
 </script>
-
-{#snippet accordionHeader(_isActive, schedule)}
-	<span>{schedule.tripHeadsign}</span>
-{/snippet}
 
 <svelte:head>
 	<title>{stop.name}{$isLoading ? '' : ` - ${$t('schedule_for_stop.route_schedules')}`}</title>
@@ -178,14 +173,6 @@
 					<p class="text-center text-gray-700 dark:text-gray-400">
 						{$isLoading ? '' : $t('schedule_for_stop.no_schedules_available')}
 					</p>
-				{:else}
-					<Accordion bind:this={accordionComponent}>
-						{#each schedules as schedule}
-							<AccordionItem data={schedule} header={accordionHeader}>
-								<RouteScheduleTable {schedule} />
-							</AccordionItem>
-						{/each}
-					</Accordion>
 				{/if}
 			</div>
 		</div>

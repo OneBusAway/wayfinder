@@ -377,43 +377,6 @@
 	</div>
 {/snippet}
 
-{#snippet loadMoreButton(emptyResults = false)}
-	<div class="flex flex-col items-center gap-2">
-		{#if emptyResults}
-			<p class="text-sm text-gray-600 dark:text-gray-400">
-				{$t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
-			</p>
-		{:else if noMoreArrivals}
-			<p class="text-sm text-gray-600 dark:text-gray-400">
-				{$t('no_more_arrivals_in_next_minutes', { values: { minutes: minutesAfter } })}
-			</p>
-		{/if}
-		<button
-			type="button"
-			onclick={loadMoreArrivals}
-			disabled={loadingMore}
-			class="inline-flex items-center gap-2 rounded-lg border border-brand-accent bg-brand-accent px-4 py-2 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand disabled:cursor-not-allowed disabled:opacity-60"
-		>
-			{loadingMore ? $t('loading') : $t('load_more_arrivals')}
-		</button>
-	</div>
-{/snippet}
-
-{#snippet accordionHeader(isActive, arrival)}
-	<!-- min-w-0 lets this flex child shrink below its content width so the
-		 card's headsign wraps/clamps instead of pushing the ETA off-screen.
-		 ArrivalDeparture renders the chevron itself (stacked under the ETA),
-		 so the built-in AccordionItem chevron is hidden. -->
-	<span class="block min-w-0 flex-1">
-		<ArrivalDeparture
-			arrivalDeparture={arrival}
-			route={routeById.get(arrival.routeId)}
-			routeColors={routeColors?.get(arrival.routeId) ?? null}
-			expanded={isActive}
-		/>
-	</span>
-{/snippet}
-
 {#if $isLoading}
 	{@render skeletonList()}
 {:else}
@@ -505,7 +468,7 @@
 							type="button"
 							onclick={loadMoreArrivals}
 							disabled={loadingMore}
-							class="border-brand-accent bg-brand-accent hover:bg-brand inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out disabled:cursor-not-allowed disabled:opacity-60"
+							class="inline-flex items-center gap-2 rounded-lg border border-brand-accent bg-brand-accent px-4 py-2 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand disabled:cursor-not-allowed disabled:opacity-60"
 						>
 							{loadingMore ? $t('loading') : $t('load_more_arrivals')}
 						</button>
@@ -521,7 +484,21 @@
 						<Accordion {handleAccordionSelectionChanged}>
 							{#each arrivalsAndDepartures.arrivalsAndDepartures as arrival (makeKey(arrival))}
 								<div in:fade={{ duration: isFirstLoad ? 0 : 300 }} out:fade={{ duration: 200 }}>
-									<AccordionItem data={arrival} fullBleed hideChevron header={accordionHeader}>
+									<AccordionItem data={arrival} fullBleed hideChevron>
+										{#snippet header(isActive)}
+											<!-- min-w-0 lets this flex child shrink below its content width so the
+											     card's headsign wraps/clamps instead of pushing the ETA off-screen.
+											     ArrivalDeparture renders the chevron itself (stacked under the ETA),
+											     so the built-in AccordionItem chevron is hidden. -->
+											<span class="block min-w-0 flex-1">
+												<ArrivalDeparture
+													arrivalDeparture={arrival}
+													route={routeById.get(arrival.routeId)}
+													routeColors={routeColors?.get(arrival.routeId) ?? null}
+													expanded={isActive}
+												/>
+											</span>
+										{/snippet}
 										<TripDetailsPane
 											{stop}
 											tripId={arrival.tripId}
