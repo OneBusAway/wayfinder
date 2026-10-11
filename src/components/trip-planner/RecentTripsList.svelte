@@ -1,12 +1,21 @@
 <script>
 	import { t } from 'svelte-i18n';
 	import { recentTrips } from '$stores/recentTripsStore';
+	import { openClearRecentSearchesDialog } from '$stores/clearRecentSearchesDialogStore';
 	import { History, X } from '@lucide/svelte';
 
 	let { onSelect } = $props();
+	let clearAllButton = $state();
 
 	function handleTripClick(trip) {
 		onSelect?.(trip);
+	}
+
+	function openClearConfirmation() {
+		openClearRecentSearchesDialog({
+			onConfirm: () => recentTrips.clearAll(),
+			returnFocusTo: clearAllButton
+		});
 	}
 
 	function handleDelete(e, tripId) {
@@ -23,9 +32,10 @@
 				{$t('trip-planner.recent_searches')}
 			</h2>
 			<button
+				bind:this={clearAllButton}
 				type="button"
 				class="text-xs text-gray-600 transition-colors hover:text-red-500 dark:text-gray-400"
-				onclick={() => recentTrips.clearAll()}
+				onclick={openClearConfirmation}
 			>
 				{$t('trip-planner.clear_all')}
 			</button>

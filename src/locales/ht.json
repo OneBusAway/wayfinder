@@ -58,6 +58,8 @@
 		"remove_recent_trip": "Retire vwayaj resan an",
 		"recent_trip": "Sèvi ak vwayaj resan an soti nan {from} pou ale nan {to}",
 		"recent_searches": "Rechèch Resan",
+		"clear_recent_searches": "Efase Rechèch Resan",
+		"clear_recent_searches_confirmation": "Èske ou sèten ou vle efase tout rechèch resan yo?",
 		"recents": "Resan yo",
 		"clear_all": "Efase Tout",
 		"request_failed": "Nou pa t rive kontakte sèvis planifikasyon vwayaj la. Tanpri eseye ankò.",

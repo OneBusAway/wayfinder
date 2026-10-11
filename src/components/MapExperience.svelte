@@ -35,6 +35,7 @@
 	import { env } from '$env/dynamic/public';
 	import TripOptionsModal from '$components/trip-planner/TripOptionsModal.svelte';
 	import { showTripOptionsModal } from '$stores/tripOptionsStore';
+	import ClearRecentSearchesDialog from '$components/trip-planner/ClearRecentSearchesDialog.svelte';
 	import { mapStopPath } from '$lib/mapStopUrl.js';
 	import { removeAgencyPrefix } from '$lib/utils';
 	import { clearVehicleMarkersMap } from '$lib/vehicleUtils';
@@ -749,6 +750,7 @@
 			onDone={() => showTripOptionsModal.set(false)}
 		/>
 	{/if}
+	<ClearRecentSearchesDialog />
 
 	<MapContainer
 		{selectedTrip}

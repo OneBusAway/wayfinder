@@ -41,6 +41,9 @@ vi.mock('$components/routes/RouteModal.svelte', () => ({ default: () => ({}) }))
 vi.mock('$components/routes/ViewAllRoutesModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/trip-planner/TripPlanModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/trip-planner/TripOptionsModal.svelte', () => ({ default: () => ({}) }));
+vi.mock('$components/trip-planner/ClearRecentSearchesDialog.svelte', () => ({
+	default: () => ({})
+}));
 vi.mock('$components/surveys/SurveyModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/surveys/SurveyLauncher.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/navigation/AlertsModal.svelte', () => ({ default: () => ({}) }));

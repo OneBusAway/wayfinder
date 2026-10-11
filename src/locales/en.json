@@ -58,6 +58,8 @@
 		"remove_recent_trip": "Remove recent trip",
 		"recent_trip": "Use recent trip from {from} to {to}",
 		"recent_searches": "Recent Searches",
+		"clear_recent_searches": "Clear recent searches",
+		"clear_recent_searches_confirmation": "Are you sure you want to clear all recent searches?",
 		"recents": "Recents",
 		"clear_all": "Clear All",
 		"request_failed": "We couldn't reach the trip planning service. Please try again.",
