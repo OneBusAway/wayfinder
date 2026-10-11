@@ -147,6 +147,20 @@ describe('FavoritesFloatingControl', () => {
 		expect(screen.getByRole('dialog')).toBeInTheDocument();
 	});
 
+	it('closes when the toggle is clicked again, keeping focus on the toggle', async () => {
+		render(FavoritesFloatingControl);
+
+		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		const toggle = screen.getByRole('button', { name: 'Close favorites' });
+		await user.click(toggle);
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		expect(toggle).toHaveFocus();
+	});
+
 	it('closes when a click lands on a node outside the control', async () => {
 		render(FavoritesFloatingControl);
 

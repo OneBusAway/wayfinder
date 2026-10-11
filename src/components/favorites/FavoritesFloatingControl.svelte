@@ -8,6 +8,8 @@
 -->
 <script>
 	import { tick } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { Popover } from 'flowbite-svelte';
 	import { Star } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 	import { favorites } from '$stores/favoritesStore';
@@ -15,30 +17,41 @@
 
 	let { onStopClick = null, onRouteClick = null } = $props();
 
-	let open = $state(false);
-	let rootEl = $state(null);
+	let isOpen = $state(false);
 	let toggleBtn = $state(null);
-	let panelEl = $state(null);
 
-	const panelId = `favorites-floating-panel-${crypto.randomUUID()}`;
+	const uid = $props.id();
+	const panelId = `favorites-floating-panel-${uid}`;
+	const toggleId = `favorites-floating-toggle-${uid}`;
 
 	let count = $derived($favorites.length);
-	let toggleLabel = $derived(open ? $t('favorites.close_panel') : $t('favorites.open_panel'));
+	let toggleLabel = $derived(isOpen ? $t('favorites.close_panel') : $t('favorites.open_panel'));
 
-	async function toggle(event) {
-		event.stopPropagation();
-		open = !open;
-		if (open) {
+	async function close({ restoreFocus = true } = {}) {
+		if (!isOpen) return;
+		isOpen = false;
+		if (restoreFocus) {
 			await tick();
-			panelEl?.focus();
+			toggleBtn?.focus();
 		}
 	}
 
-	function close({ restoreFocus = true } = {}) {
-		if (!open) return;
-		open = false;
-		if (restoreFocus) {
-			tick().then(() => toggleBtn?.focus());
+	// Popover reports every open/close here, including the echo of a close() above;
+	// only react to the ones it initiated itself (a toggle or outside click).
+	async function handleShow(event) {
+		if (event.detail === isOpen) return;
+		isOpen = event.detail;
+
+		if (isOpen) {
+			await tick();
+			document.getElementById(panelId)?.focus();
+			return;
+		}
+
+		const active = document.activeElement;
+		if (!active || active === document.body || document.getElementById(panelId)?.contains(active)) {
+			await tick();
+			toggleBtn?.focus();
 		}
 	}
 
@@ -52,56 +65,24 @@
 		onRouteClick?.(item);
 	}
 
-	function handleWindowClick(event) {
-		if (!open || !rootEl) return;
-
-		// contains() throws on a non-Node target (a click dispatched on window).
-		const target = event.target;
-		if (!(target instanceof Node)) return;
-
-		// Removing a row (or Clear All) detaches the very node that was clicked:
-		// the event path is fixed at dispatch time so the click still reaches this
-		// window listener, but with a target contains() reports as outside. A
-		// disconnected target came from inside the panel — don't treat it as an
-		// outside click.
-		if (!target.isConnected) return;
-
-		if (!rootEl.contains(target)) {
-			// The browser focuses a clicked element on mousedown, before this click
-			// reaches the window listener, so restoring focus here would yank the
-			// caret back out of whatever the user just clicked onto. Restore only
-			// when the click did not take focus itself.
-			//
-			// The <body> branch is for genuinely non-focusable chrome. It does not
-			// cover the map: Leaflet's keyboard handler sets tabIndex on the map
-			// container and focuses it on mousedown, and initMap does not pass
-			// keyboard: false, so an OSM map click lands focus on the container.
-			// That skips the restore, which is what we want there anyway.
-			//
-			// The rootEl branch is separate: focus still inside the closing panel
-			// would be stranded when it unmounts.
-			const active = document.activeElement;
-			close({ restoreFocus: !active || active === document.body || rootEl.contains(active) });
-		}
-	}
-
 	function handleKeydown(event) {
-		if (event.key === 'Escape' && open) {
+		if (event.key === 'Escape' && isOpen) {
 			event.preventDefault();
 			close();
 		}
 	}
 </script>
 
-<svelte:window onclick={handleWindowClick} onkeydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
-<div bind:this={rootEl} class="pointer-events-auto relative">
+<div class="pointer-events-auto relative">
 	<button
 		bind:this={toggleBtn}
+		id={toggleId}
 		type="button"
-		onclick={toggle}
-		aria-expanded={open}
-		aria-controls={panelId}
+		aria-controls={isOpen ? panelId : undefined}
+		aria-expanded={isOpen}
+		aria-haspopup="dialog"
 		aria-label={toggleLabel}
 		title={toggleLabel}
 		class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-300 bg-white/95 text-black shadow-md backdrop-blur-sm hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800/95 dark:text-white dark:hover:bg-gray-700"
@@ -116,16 +97,22 @@
 		{/if}
 	</button>
 
-	{#if open}
-		<div
-			bind:this={panelEl}
-			id={panelId}
-			role="dialog"
-			aria-label={$t('favorites.title')}
-			tabindex="-1"
-			class="absolute right-0 top-full z-40 mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 p-3 shadow-lg outline-none backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800/95"
-		>
-			<FavoritesList onStopClick={handleStopClick} onRouteClick={handleRouteClick} />
-		</div>
-	{/if}
+	<Popover
+		aria-label={$t('favorites.title')}
+		arrow={false}
+		class="left-0 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 shadow-lg outline-none backdrop-blur-sm dark:border-gray-600 dark:bg-gray-800/95"
+		defaultClass="p-3"
+		id={panelId}
+		offset={6}
+		open={isOpen}
+		on:show={handleShow}
+		params={{ duration: 100 }}
+		placement="bottom-end"
+		role="dialog"
+		transition={fade}
+		trigger="click"
+		triggeredBy="#{toggleId}"
+	>
+		<FavoritesList onStopClick={handleStopClick} onRouteClick={handleRouteClick} />
+	</Popover>
 </div>

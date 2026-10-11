@@ -28,7 +28,6 @@
 		isDarkMode && __OBA_LOGO_URL_DARK__ ? __OBA_LOGO_URL_DARK__ : PUBLIC_OBA_LOGO_URL
 	);
 
-	let isOverflowMenuOpen = $state(false);
 	let navContainer;
 	let logoElement;
 
@@ -49,14 +48,6 @@
 
 	if (PUBLIC_NAV_BAR_LINKS) {
 		headerLinks = JSON.parse(PUBLIC_NAV_BAR_LINKS);
-	}
-
-	function toggleOverflowMenu() {
-		isOverflowMenuOpen = !isOverflowMenuOpen;
-	}
-
-	function closeOverflowMenu() {
-		isOverflowMenuOpen = false;
 	}
 
 	function measureLinkWidths() {
@@ -258,28 +249,7 @@
 		{/each}
 
 		{#if overflowLinks.length > 0}
-			<div class="relative">
-				<button
-					onclick={toggleOverflowMenu}
-					aria-label="More navigation options"
-					class="flex h-8 w-8 items-center justify-center rounded-md border bg-surface/80 dark:bg-surface-dark"
-				>
-					<svg
-						class="h-5 w-5 text-surface-foreground dark:text-surface-foreground-dark"
-						fill="currentColor"
-						viewBox="0 0 20 20"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-						></path>
-					</svg>
-				</button>
-
-				{#if isOverflowMenuOpen}
-					<OverflowMenu links={overflowLinks} onClose={closeOverflowMenu} />
-				{/if}
-			</div>
+			<OverflowMenu links={overflowLinks} />
 		{/if}
 
 		<div class="language-switcher-container flex-shrink-0" bind:this={languageSwitcherElement}>

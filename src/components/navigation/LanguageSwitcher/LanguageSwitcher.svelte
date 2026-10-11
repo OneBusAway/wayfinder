@@ -1,20 +1,23 @@
-<script>
+<script lang="ts">
+	import { Popover } from 'flowbite-svelte';
+	import { fade } from 'svelte/transition';
 	import { languages } from '$lib/i18n';
 	import { locale, t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
 	import { env } from '$env/dynamic/public';
 
+	type Language = (typeof languages)[number];
+
 	let isOpen = $state(false);
-	let menuRef = $state(null);
 
 	// Safe wrapper for $t() to handle cases where i18n locale is not yet initialized
 	// example: during error page hydration. Falls back to the translation key.
-	function safeTranslate(key, options) {
+	function safeTranslate(key: string, options?: Parameters<typeof $t>[1]) {
 		try {
 			const tFn = $t;
 			return typeof tFn === 'function' ? tFn(key, options) : key;
 		} catch (e) {
-			console.warn(`[i18n fallback] Error translating ${key}:`, e.message);
+			console.warn(`[i18n fallback] Error translating ${key}:`, (e as Error).message);
 			return key;
 		}
 	}
@@ -22,7 +25,7 @@
 	// Format language based on format string
 	// Supported formats: "native", "english", "native-english", "english-native", "code"
 	// If native and english names are the same, avoid redundant display (e.g., "English (English)")
-	function formatLanguage(lang, format) {
+	function formatLanguage(lang: Language, format: string) {
 		// Check if native and english names are the same
 		const isSame = lang.nativeName === lang.englishName;
 
@@ -54,7 +57,7 @@
 	const menuFormat = env.PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT || 'native-english';
 
 	// Get language name for a locale code, handling locale variants (e.g., 'en-US' -> 'en')
-	function getLanguageNameForLocale(localeCode, format = buttonFormat) {
+	function getLanguageNameForLocale(localeCode: string, format = buttonFormat) {
 		if (!localeCode) return 'EN';
 
 		// Extract base language code (e.g., 'en-US' -> 'en', 'zh-CN' -> 'zh-CN')
@@ -88,50 +91,30 @@
 		return unsubscribe;
 	});
 
-	function handleLanguageSelect(langCode) {
+	function handleLanguageSelect(langCode: string) {
 		if (browser) {
 			locale.set(langCode);
 			try {
 				localStorage.setItem('locale', langCode);
 			} catch (e) {
-				console.warn('Unable to save language preference to localStorage:', e.message);
+				console.warn('Unable to save language preference to localStorage:', (e as Error).message);
 			}
 		}
 		isOpen = false;
 	}
-
-	$effect(() => {
-		if (!isOpen) return;
-
-		const handleClickOutside = (e) => {
-			if (menuRef && !menuRef.contains(e.target)) {
-				isOpen = false;
-			}
-		};
-
-		// Delay adding listener to avoid immediate close from the click that opened it
-		const timeoutId = setTimeout(() => {
-			document.addEventListener('click', handleClickOutside);
-		}, 0);
-
-		return () => {
-			clearTimeout(timeoutId);
-			document.removeEventListener('click', handleClickOutside);
-		};
-	});
 </script>
 
 {#if isEnabled}
-	<div class="relative" bind:this={menuRef}>
+	<div class="relative">
 		<button
-			type="button"
-			onclick={() => (isOpen = !isOpen)}
 			aria-label={safeTranslate('language_switcher.select_language', {
 				values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) }
 			})}
 			aria-expanded={isOpen}
 			aria-haspopup="listbox"
 			class="flex h-8 items-center justify-center gap-1 rounded-md border bg-surface/80 px-2 font-semibold text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
+			id="language-switcher-trigger"
+			type="button"
 		>
 			<svg
 				class="h-4 w-4"
@@ -149,32 +132,35 @@
 			</svg>
 			<span class="hidden sm:inline">{getLanguageNameForLocale(currentLocale, buttonFormat)}</span>
 		</button>
-
-		{#if isOpen}
-			<div
-				class="absolute end-0 top-full z-[9999] mt-1 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
-			>
-				<div
-					role="listbox"
-					aria-label={safeTranslate('language_switcher.available_languages')}
-					class="flex flex-col py-1"
+		<Popover
+			aria-label={safeTranslate('language_switcher.available_languages')}
+			arrow={false}
+			class="left-0 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+			defaultClass="flex flex-col py-1"
+			open={isOpen}
+			on:show={(e: CustomEvent<boolean>) => (isOpen = e.detail)}
+			offset={6}
+			params={{ duration: 100 }}
+			placement="bottom-end"
+			role="listbox"
+			transition={fade}
+			trigger="click"
+			triggeredBy="#language-switcher-trigger"
+		>
+			{#each languages as lang}
+				<button
+					type="button"
+					role="option"
+					aria-selected={lang.code === currentLocale ? true : undefined}
+					onclick={() => handleLanguageSelect(lang.code)}
+					class="block w-full whitespace-nowrap px-4 py-2 text-justify text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
+					currentLocale
+						? 'bg-gray-100 dark:bg-gray-700'
+						: ''}"
 				>
-					{#each languages as lang}
-						<button
-							type="button"
-							role="option"
-							aria-selected={lang.code === currentLocale}
-							onclick={() => handleLanguageSelect(lang.code)}
-							class="block w-full whitespace-nowrap px-4 py-2 text-left text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
-							currentLocale
-								? 'bg-gray-100 dark:bg-gray-700'
-								: ''}"
-						>
-							{formatLanguage(lang, menuFormat)}
-						</button>
-					{/each}
-				</div>
-			</div>
-		{/if}
+					{formatLanguage(lang, menuFormat)}
+				</button>
+			{/each}
+		</Popover>
 	</div>
 {/if}
