@@ -1,10 +1,11 @@
 <script>
+	// @ts-check
 	import { getContext } from 'svelte';
 	import { slide } from 'svelte/transition';
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} [data]
+	 * @property {unknown} [data]
 	 * @property {import('svelte').Snippet<[boolean]>} [header]
 	 * @property {import('svelte').Snippet} [children]
 	 * @property {boolean} [fullBleed] - Extend the header row to the container's
@@ -19,6 +20,7 @@
 	let { data = null, header, children, fullBleed = false, hideChevron = false } = $props();
 
 	const id = crypto.randomUUID();
+	/** @type {import('$lib/types').AccordionContext} */
 	const { registerItem } = getContext('accordion');
 	const { isActive, skipAnimation, activate } = registerItem(id);
 	function toggle() {

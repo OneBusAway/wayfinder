@@ -18,6 +18,7 @@ import TripPlanPinMarker from '$components/trip-planner/tripPlanPinMarker.svelte
 import { mount, unmount } from 'svelte';
 import { buildVehiclePopupData } from '$lib/vehicleUtils';
 import { ROUTE_PANE } from '$lib/mapPanes.js';
+import { polygonsOf, orientRing } from '$lib/MapHelpers/zoneGeometry.js';
 
 // Google orders polylines by zIndex rather than by pane. Same contract as the
 // OSM panes: every casing below every colored stroke, promoted above its peers.
@@ -26,6 +27,9 @@ const ROUTE_LAYER_Z_INDEX = {
 	[ROUTE_PANE.LINE]: 20,
 	[ROUTE_PANE.PROMOTED]: 30
 };
+
+// Zones draw under every route casing (10) so routes stay legible over them.
+const ZONE_Z_INDEX = 5;
 
 export default class GoogleMapProvider {
 	constructor(apiKey, handleStopMarkerSelect) {
@@ -44,6 +48,7 @@ export default class GoogleMapProvider {
 		this.markersMap = new Map();
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
 		this.polylines = []; // Track all polylines for easy cleanup
+		this.polygons = []; // On-demand zones, kept apart from polylines
 		this.showStopsRoutesAtZoom = SHOW_ROUTE_LABELS_AT_ZOOM;
 		this.routeLabelsVisible = false;
 		this.contextMenuInfoWindow = null;
@@ -832,6 +837,90 @@ export default class GoogleMapProvider {
 	}
 
 	/**
+	 * Draws an on-demand zone. Google fills by winding, so exteriors are made
+	 * counter-clockwise and holes clockwise.
+	 * @param {any} geometry - GeoJSON Polygon or MultiPolygon
+	 * @param {{ color?: string, fillOpacity?: number, weight?: number, opacity?: number, halo?: { weight: number, opacity: number } | null, interactive?: boolean, onClick?: () => void }} style
+	 */
+	createPolygon(geometry, style = {}) {
+		if (!this.map || !window.google?.maps) return null;
+		const paths = polygonsOf(geometry).flatMap((rings) =>
+			rings.map((ring, index) => orientRing(ring, index !== 0).map(([lng, lat]) => ({ lat, lng })))
+		);
+		if (!paths.length) return null;
+
+		const halo = style.halo
+			? new google.maps.Polygon({
+					paths,
+					...this._zoneHaloOptions(style),
+					clickable: false,
+					zIndex: ZONE_Z_INDEX - 1,
+					map: this.map
+				})
+			: null;
+		const polygon = new google.maps.Polygon({
+			paths,
+			...this._zoneOptions(style),
+			clickable: Boolean(style.interactive),
+			zIndex: ZONE_Z_INDEX,
+			map: this.map
+		});
+		polygon._halo = halo;
+		if (style.interactive && style.onClick) polygon.addListener('click', () => style.onClick());
+		this.polygons.push(polygon);
+		return polygon;
+	}
+
+	_zoneOptions(style) {
+		return {
+			strokeColor: style.color,
+			strokeOpacity: style.opacity ?? 1,
+			strokeWeight: style.weight ?? 2,
+			fillColor: style.color,
+			fillOpacity: style.fillOpacity ?? 0.2
+		};
+	}
+
+	_zoneHaloOptions(style) {
+		return {
+			strokeColor: style.color,
+			strokeOpacity: style.halo.opacity,
+			strokeWeight: style.halo.weight,
+			fillOpacity: 0
+		};
+	}
+
+	setPolygonStyle(polygon, style) {
+		if (!polygon) return;
+		polygon.setOptions(this._zoneOptions(style));
+		if (polygon._halo && style.halo) polygon._halo.setOptions(this._zoneHaloOptions(style));
+	}
+
+	removePolygon(polygon) {
+		if (!polygon) return;
+		polygon._halo?.setMap(null);
+		polygon.setMap(null);
+		this.polygons = this.polygons.filter((item) => item !== polygon);
+	}
+
+	clearAllPolygons() {
+		for (const polygon of [...this.polygons]) this.removePolygon(polygon);
+	}
+
+	/**
+	 * @param {{ north: number, south: number, east: number, west: number }} bounds
+	 * @param {{ padding?: number | { top?: number, right?: number, bottom?: number, left?: number } }} [options]
+	 */
+	fitToBounds(bounds, options = {}) {
+		if (!this.map || !window.google?.maps) return;
+		const latLngBounds = new google.maps.LatLngBounds(
+			{ lat: bounds.south, lng: bounds.west },
+			{ lat: bounds.north, lng: bounds.east }
+		);
+		this.map.fitBounds(latLngBounds, options.padding ?? 48);
+	}
+
+	/**
 	 * Returns the number of currently active polylines on the map.
 	 * Useful for debugging and state management.
 	 */
@@ -976,7 +1065,9 @@ export default class GoogleMapProvider {
 	}
 
 	getBoundingBox() {
-		const bounds = this.map.getBounds();
+		// Undefined until the map has rendered once; callers treat null as "no extent yet".
+		const bounds = this.map?.getBounds();
+		if (!bounds) return null;
 		const ne = bounds.getNorthEast();
 		const sw = bounds.getSouthWest();
 		return {
@@ -993,6 +1084,7 @@ export default class GoogleMapProvider {
 		this.removeStopMarkers();
 		this.clearVehicleMarkers();
 		this.clearAllPolylines();
+		this.clearAllPolygons();
 		this.removeUserLocationMarker();
 		this.cleanupInfoWindow();
 		this.closeContextMenu();

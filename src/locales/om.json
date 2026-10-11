@@ -58,6 +58,8 @@
 		"remove_recent_trip": "Imala dhiyeenyaa haqi",
 		"recent_trip": "Imala dhiyeenyaa {from} irraa gara {to} fayyadami",
 		"recent_searches": "Barbaacha Dhiyeenyaa",
+		"clear_recent_searches": "Barbaacha Dhiheenyaa Haquu",
+		"clear_recent_searches_confirmation": "Barbaacha dhiheenyaa hunda haquu akka barbaaddu mirkaneeffatteettaa?",
 		"recents": "Kan Dhiyeenyaa",
 		"clear_all": "Hunda Haqi",
 		"request_failed": "Tajaajila karoorsa imalaa argachuun hin danda'amne. Maaloo irra deebi'ii yaali.",

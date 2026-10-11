@@ -21,6 +21,9 @@ vi.mock('$components/map/StopRoutesLayer.svelte', () => ({
 	}
 }));
 
+// Renderless; the real layer would fetch on-demand zones from the network.
+vi.mock('$components/map/OnDemandZonesLayer.svelte', () => ({ default: () => null }));
+
 // The global vitest-setup mock omits the region-center coords MapView reads at
 // module init (see MapExperience.test.js for the same override).
 vi.mock('$env/static/public', () => ({

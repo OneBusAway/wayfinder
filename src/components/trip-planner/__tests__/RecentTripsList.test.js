@@ -24,15 +24,16 @@ vi.mock('svelte-i18n', () => {
     };
 });
 
-// Use vi.hoisted so mock variables are available inside vi.mock factories
-const { mockRemoveTrip, mockClearAll, mockStoreValue, mockTogglePin, mockRemovePinnedTrip, mockPinnedStoreValue } = vi.hoisted(() => {
+// Added mockOpenDialog to handle the incoming feature from the other branch
+const { mockRemoveTrip, mockClearAll, mockStoreValue, mockTogglePin, mockRemovePinnedTrip, mockPinnedStoreValue, mockOpenDialog } = vi.hoisted(() => {
     return {
         mockRemoveTrip: vi.fn(),
         mockClearAll: vi.fn(),
         mockStoreValue: { current: [] },
         mockTogglePin: vi.fn(),
         mockRemovePinnedTrip: vi.fn(),
-        mockPinnedStoreValue: { current: [] }
+        mockPinnedStoreValue: { current: [] },
+        mockOpenDialog: vi.fn((opts) => opts.onConfirm()) // Auto-executes the clearAll callback for testing
     };
 });
 
@@ -57,6 +58,10 @@ vi.mock('$stores/pinnedTripsStore', () => ({
         removeTrip: mockRemovePinnedTrip
     },
     isMatch: (t1, t2) => t1.id === t2.id
+}));
+
+vi.mock('$stores/clearRecentSearchesDialogStore', () => ({
+    openClearRecentSearchesDialog: mockOpenDialog
 }));
 
 describe('RecentTripsList', () => {
@@ -193,13 +198,14 @@ describe('RecentTripsList', () => {
             expect(mockOnSelect).not.toHaveBeenCalled();
         });
 
-        it('calls clearAll when "Clear All" button is clicked', async () => {
+        it('opens the confirmation dialog and clears all when "Clear All" button is clicked', async () => {
             mockStoreValue.current = sampleTrips;
 
             render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
             await user.click(screen.getByText('Clear All'));
 
+            expect(mockOpenDialog).toHaveBeenCalledTimes(1);
             expect(mockClearAll).toHaveBeenCalledTimes(1);
         });
     });

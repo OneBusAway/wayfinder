@@ -15,6 +15,54 @@ describe('SingleSelectAccordion', () => {
 		});
 	});
 
+	test('forwards payloads and clears them when the same item is toggled off', async () => {
+		const handleAccordionSelectionChanged = vi.fn();
+		render(SingleSelectAccordionFixture, {
+			props: { showItem: true, handleAccordionSelectionChanged }
+		});
+
+		const button = screen.getByRole('button', { name: 'Active trip' });
+		expect(button).toHaveAttribute('aria-expanded', 'false');
+		expect(screen.getByTestId('active-header')).not.toHaveClass('active');
+		await fireEvent.click(button);
+		expect(button).toHaveAttribute('aria-expanded', 'true');
+		expect(screen.getByTestId('active-header')).toHaveClass('active');
+		expect(screen.getByText('Trip details')).toBeInTheDocument();
+		expect(handleAccordionSelectionChanged).toHaveBeenLastCalledWith({
+			activeItem: expect.any(String),
+			activeData: { tripId: 'active-trip' }
+		});
+
+		await fireEvent.click(button);
+		expect(button).toHaveAttribute('aria-expanded', 'false');
+		expect(screen.getByTestId('active-header')).not.toHaveClass('active');
+		expect(handleAccordionSelectionChanged).toHaveBeenLastCalledWith({
+			activeItem: null,
+			activeData: null
+		});
+	});
+
+	test('switches to an item with the default null payload', async () => {
+		const handleAccordionSelectionChanged = vi.fn();
+		render(SingleSelectAccordionFixture, {
+			props: { showItem: true, showSecondItem: true, handleAccordionSelectionChanged }
+		});
+
+		const first = screen.getByRole('button', { name: 'Active trip' });
+		const second = screen.getByRole('button', { name: 'Other item' });
+		await fireEvent.click(first);
+		const firstId = handleAccordionSelectionChanged.mock.lastCall[0].activeItem;
+		await fireEvent.click(second);
+		expect(first).toHaveAttribute('aria-expanded', 'false');
+		expect(second).toHaveAttribute('aria-expanded', 'true');
+		expect(screen.getByTestId('second-header')).toHaveClass('active');
+		expect(handleAccordionSelectionChanged).toHaveBeenLastCalledWith({
+			activeItem: expect.any(String),
+			activeData: null
+		});
+		expect(handleAccordionSelectionChanged.mock.lastCall[0].activeItem).not.toBe(firstId);
+	});
+
 	afterEach(() => {
 		Element.prototype.animate = animate;
 	});

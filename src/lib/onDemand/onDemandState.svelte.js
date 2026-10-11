@@ -1,0 +1,160 @@
+import { parseServiceEntry, parseServiceList } from '$lib/onDemand/models.js';
+
+let highlightedService = $state.raw(null);
+
+/**
+ * Browser-side on-demand state shared by the zones layer, the stop card and the
+ * detail sheet. `support` flips to 'unsupported' on the first 501 from a proxy;
+ * from then on no surface renders and no request is made for the session.
+ */
+export const onDemandState = $state({
+	/** @type {'unknown' | 'supported' | 'unsupported'} */
+	support: 'unknown',
+	/**
+	 * Held raw: a service carries its zone geometry, which a deep proxy would wrap
+	 * vertex by vertex for no benefit (it is only ever replaced, never mutated).
+	 * @type {import('./models.js').OnDemandService | null}
+	 */
+	get highlighted() {
+		return highlightedService;
+	},
+	set highlighted(service) {
+		highlightedService = service;
+	}
+});
+
+export const CACHE_TTL_MS = 10 * 60 * 1000;
+export const MAX_CACHE_ENTRIES = 50;
+
+// Which cached geometry levels can answer a request for each level.
+const SATISFIES = { none: ['none', 'simplified'], simplified: ['simplified'], full: ['full'] };
+
+const viewportCache = new Map();
+const serviceCache = new Map();
+const inFlight = new Map();
+
+function isExpired(entry) {
+	return Date.now() - entry.at > CACHE_TTL_MS;
+}
+
+function readCache(cache, key) {
+	const hit = cache.get(key);
+	if (!hit) return undefined;
+	if (isExpired(hit)) {
+		cache.delete(key);
+		return undefined;
+	}
+	return hit.value;
+}
+
+// Reads only evict the key they ask for, so panning would otherwise grow the
+// cache without bound: sweep expired entries and cap the size on every write.
+function writeCache(cache, key, value) {
+	for (const [cachedKey, entry] of cache) {
+		if (isExpired(entry)) cache.delete(cachedKey);
+	}
+	cache.delete(key); // re-insert so a rewritten key counts as the newest
+	cache.set(key, { at: Date.now(), value });
+	while (cache.size > MAX_CACHE_ENTRIES) cache.delete(cache.keys().next().value);
+}
+
+function shared(key, request) {
+	if (!inFlight.has(key)) {
+		inFlight.set(
+			key,
+			request().finally(() => inFlight.delete(key))
+		);
+	}
+	return inFlight.get(key);
+}
+
+/** @returns {Promise<{ kind: 'ok', body: any } | { kind: 'notFound' } | { kind: 'unsupported' } | { kind: 'error' }>} */
+async function request(url) {
+	let response;
+	try {
+		response = await fetch(url);
+	} catch {
+		return { kind: 'error' };
+	}
+	if (response.status === 501) {
+		onDemandState.support = 'unsupported';
+		return { kind: 'unsupported' };
+	}
+	if (response.status === 404) return { kind: 'notFound' };
+	if (!response.ok) return { kind: 'error' };
+	try {
+		const body = await response.json();
+		onDemandState.support = 'supported';
+		return { kind: 'ok', body };
+	} catch {
+		return { kind: 'error' };
+	}
+}
+
+/**
+ * @param {{ lat: number, lon: number, latSpan: number, lonSpan: number }} viewport
+ */
+export async function fetchServicesForViewport({ lat, lon, latSpan, lonSpan }) {
+	if (onDemandState.support === 'unsupported') return null;
+	const key = [lat, lon, latSpan, lonSpan].map((value) => value.toFixed(2)).join(',');
+	const cached = readCache(viewportCache, key);
+	if (cached) return cached;
+
+	const query = new URLSearchParams({
+		lat: String(lat),
+		lon: String(lon),
+		latSpan: String(latSpan),
+		lonSpan: String(lonSpan),
+		geometryDetail: 'simplified'
+	});
+	const result = await shared(`viewport:${key}`, () =>
+		request(`/api/oba/ondemand/services-for-location?${query}`)
+	);
+	if (result.kind !== 'ok') return null;
+	const parsed = parseServiceList(result.body);
+	writeCache(viewportCache, key, parsed);
+	return parsed;
+}
+
+/**
+ * @param {string} id
+ * @param {'none' | 'simplified' | 'full'} geometryDetail
+ */
+export async function fetchService(id, geometryDetail) {
+	if (onDemandState.support === 'unsupported') return null;
+	for (const level of SATISFIES[geometryDetail]) {
+		const cached = readCache(serviceCache, `${id}|${level}`);
+		if (cached) return cached;
+	}
+
+	const url = `/api/oba/ondemand/service/${encodeURIComponent(id)}?geometryDetail=${geometryDetail}`;
+	const result = await shared(`service:${id}|${geometryDetail}`, () => request(url));
+	if (result.kind === 'notFound') return { notFound: true };
+	if (result.kind !== 'ok') return null;
+	const parsed = parseServiceEntry(result.body);
+	writeCache(serviceCache, `${id}|${geometryDetail}`, parsed);
+	return parsed;
+}
+
+/**
+ * Primes the cache from a server-rendered load so the sheet doesn't refetch.
+ * @param {string} id
+ * @param {'none' | 'simplified' | 'full'} geometryDetail
+ * @param {any} body - service/{id} envelope
+ */
+export function seedService(id, geometryDetail, body) {
+	writeCache(serviceCache, `${id}|${geometryDetail}`, parseServiceEntry(body));
+}
+
+/** @param {import('./models.js').OnDemandService | null} service */
+export function setHighlightedService(service) {
+	onDemandState.highlighted = service;
+}
+
+export function resetOnDemandStateForTesting() {
+	onDemandState.support = 'unknown';
+	onDemandState.highlighted = null;
+	viewportCache.clear();
+	serviceCache.clear();
+	inFlight.clear();
+}

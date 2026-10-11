@@ -19,7 +19,7 @@ vi.mock('$lib/agencyFilter.js', () => ({
 	getAgencyFilter: mockGetAgencyFilter
 }));
 
-import { groupStopTimesByHour } from '$lib/scheduleForStop.js';
+import { groupStopTimesByHour } from '$lib/scheduleForStop';
 
 const region = vi.hoisted(() => ({ timeZone: 'America/Los_Angeles' }));
 vi.mock('$env/dynamic/public', () => ({
@@ -123,8 +123,8 @@ describe('GET /api/oba/schedule-for-stop/[stopId]', () => {
 		const response = await request();
 		const direction = response.data.entry.stopRouteSchedules[0].stopRouteDirectionSchedules[0];
 		expect(groupStopTimesByHour(direction.scheduleStopTimes, direction.tripHeadsign)[8]).toEqual([
-			{ arrivalTime: '8:05 AM', destination: 'Kearny Mesa', isShortLine: false },
-			{ arrivalTime: '8:25 AM', destination: 'Fashion Valley', isShortLine: true }
+			{ arrivalMinute: 5, destination: 'Kearny Mesa', isShortLine: false },
+			{ arrivalMinute: 25, destination: 'Fashion Valley', isShortLine: true }
 		]);
 		expect(mockRetrieve).toHaveBeenCalledWith('MTS_12434', { date: '2026-08-24' });
 		expect(mockFilterByRouteId).toHaveBeenCalledWith(expect.any(Array), null);
@@ -318,6 +318,15 @@ describe('GET /api/oba/schedule-for-stop/[stopId]', () => {
 			).toBe('Fashion Valley');
 		}
 	);
+
+	it("passes along OBA's empty response for a stop that doesn't exist", async () => {
+		mockRetrieve.mockResolvedValue(null);
+
+		await request('2026-08-24', 'MTS_doesnotexist');
+
+		expect(mockScheduleForRouteRetrieve).not.toHaveBeenCalled();
+		expect(mockHandleOBAResponse).toHaveBeenCalledWith(null, 'stop-for-schedule');
+	});
 
 	it('skips malformed nested entries while enriching healthy directions', async () => {
 		const response = stopResponse();

@@ -32,6 +32,30 @@
 		@apply border-b-2 border-brand-accent text-brand-accent dark:border-brand dark:text-brand;
 	}
 
+	/* An indeterminate progress bar in the underline's place while the tab's page loads. */
+	.tab-container__item--pending {
+		@apply relative overflow-hidden;
+	}
+
+	.tab-container__item--pending::before,
+	.tab-container__item--pending::after {
+		@apply absolute bottom-0 h-0.5;
+		content: '';
+	}
+
+	/* Both wait 100ms before showing, so a page that loads quickly never flashes the bar. */
+	.tab-container__item--pending::before {
+		@apply inset-x-0 bg-brand-accent/20 dark:bg-brand/20;
+		animation: tab-pending-delay 0s 100ms backwards;
+	}
+
+	.tab-container__item--pending::after {
+		@apply w-2/5 bg-brand-accent/60 dark:bg-brand/60;
+		/* The delay holds back only the first sweep. `backwards` keeps the bar at
+		   its starting point, just off the tab, until then. */
+		animation: tab-pending 1.2s ease-in-out 100ms infinite backwards;
+	}
+
 	/* Pill-style itinerary tabs */
 	.itinerary-tabs {
 		@apply flex gap-2 overflow-x-auto px-1 py-3;
@@ -107,5 +131,23 @@
 	.rtl .left-5 {
 		left: auto;
 		right: 1.25rem;
+	}
+}
+
+/* Slides the pending tab's bar across, toward the end side in RTL too. */
+@keyframes tab-pending {
+	from {
+		inset-inline-start: -40%;
+	}
+
+	to {
+		inset-inline-start: 100%;
+	}
+}
+
+/* Keeps the pending tab's track hidden until the bar's first sweep starts. */
+@keyframes tab-pending-delay {
+	from {
+		visibility: hidden;
 	}
 }

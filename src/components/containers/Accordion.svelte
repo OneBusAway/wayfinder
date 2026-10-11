@@ -1,4 +1,5 @@
 <script>
+	// @ts-check
 	import { setContext } from 'svelte';
 	import { writable, derived } from 'svelte/store';
 
@@ -6,11 +7,12 @@
 	const skipAnimation = writable(false);
 
 	// Create a store to track multiple active items using a Set
+	/** @type {import('svelte/store').Writable<Set<string>>} */
 	const activeItems = writable(new Set());
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {any} [items] - Props to track all possible item IDs
+	 * @property {string[]} [items] - Props to track all possible item IDs
 	 * @property {import('svelte').Snippet} [children]
 	 */
 
@@ -33,8 +35,9 @@
 	};
 
 	// Provide context for child AccordionItems and expose methods
-	setContext('accordion', {
-		registerItem: (id) => {
+	/** @type {import('$lib/types').AccordionContext} */
+	const context = {
+		registerItem: (/** @type {string} */ id) => {
 			// Add the item ID to our items array if not already present
 			if (!items.includes(id)) {
 				items = [...items, id];
@@ -59,7 +62,8 @@
 		},
 		openAll,
 		closeAll
-	});
+	};
+	setContext('accordion', context);
 </script>
 
 <div

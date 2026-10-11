@@ -34,4 +34,19 @@ describe('GET /api/oba/stops-for-location', () => {
 		expect(params.lonSpan).toBe(0.05);
 		expect(params.lngSpan).toBeUndefined();
 	});
+
+	it('passes onDemandServiceIds through untouched', async () => {
+		listMock.mockResolvedValue({
+			code: 200,
+			data: { list: [{ id: '1_flex', routeIds: [], onDemandServiceIds: ['1_77652'] }] }
+		});
+		const url = new URL(
+			'http://localhost/api/oba/stops-for-location?lat=47.6&lng=-122.3&latSpan=0.02&lngSpan=0.05'
+		);
+
+		const response = await GET({ url });
+		const body = await response.json();
+
+		expect(body.data.list[0].onDemandServiceIds).toEqual(['1_77652']);
+	});
 });

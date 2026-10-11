@@ -58,6 +58,8 @@
 		"remove_recent_trip": "移除最近的行程",
 		"recent_trip": "使用最近的行程：從 {from} 到 {to}",
 		"recent_searches": "最近搜尋",
+		"clear_recent_searches": "清除最近搜尋",
+		"clear_recent_searches_confirmation": "確定要清除所有最近搜尋嗎？",
 		"recents": "最近紀錄",
 		"clear_all": "全部清除",
 		"request_failed": "無法連線至行程規劃服務。請再試一次。",

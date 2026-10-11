@@ -3,14 +3,14 @@ import 'temporal-polyfill/global';
 import { vi } from 'vitest';
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+global.ResizeObserver = vi.fn(() => ({
 	observe: vi.fn(),
 	unobserve: vi.fn(),
 	disconnect: vi.fn()
 }));
 
 // Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+global.IntersectionObserver = vi.fn(() => ({
 	observe: vi.fn(),
 	unobserve: vi.fn(),
 	disconnect: vi.fn()
@@ -50,6 +50,10 @@ vi.mock('$env/dynamic/public', () => ({
 		PUBLIC_ARCGIS_API_KEY: '',
 		PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL: ''
 	}
+}));
+
+vi.mock('$env/static/private', () => ({
+	PRIVATE_OBA_API_KEY: 'test-api-key'
 }));
 
 // Mock environment variables

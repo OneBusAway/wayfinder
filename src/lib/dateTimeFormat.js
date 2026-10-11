@@ -64,6 +64,26 @@ export const apiTimeFormat = new Intl.DateTimeFormat('en-US', {
 });
 
 /**
+ * The wall-clock time of milliseconds since Unix epoch in a given time zone
+ *
+ * @param {number} ms - Milliseconds since Unix epoch
+ * @param {string} [timeZone=getLocalTimeZone()] - IANA timezone; an invalid one falls back to local
+ * @returns {Temporal.PlainTime}
+ */
+export function msToPlainTime(ms, timeZone = getLocalTimeZone()) {
+	const instant = Temporal.Instant.fromEpochMilliseconds(ms);
+	try {
+		return instant.toZonedDateTimeISO(timeZone).toPlainTime();
+	} catch (err) {
+		if (err instanceof RangeError) {
+			console.error(`msToPlainTime: invalid timezone "${timeZone}", falling back to local`);
+			return instant.toZonedDateTimeISO(getLocalTimeZone()).toPlainTime();
+		}
+		throw err;
+	}
+}
+
+/**
  * Format milliseconds since Unix epoch to a given time zone and format
  *
  * @example
@@ -83,18 +103,7 @@ export function msToTimeString(
 	dateTimeFormat = localTimeFormat
 ) {
 	if (!Number.isFinite(ms)) return 'N/A';
-	const instant = Temporal.Instant.fromEpochMilliseconds(ms);
-	try {
-		const plainTime = instant.toZonedDateTimeISO(timeZone).toPlainTime();
-		return dateTimeFormat.format(plainTimeToDate(plainTime));
-	} catch (err) {
-		if (err instanceof RangeError) {
-			console.error(`msToTimeString: invalid timezone "${timeZone}", falling back to local`);
-			const plainTime = instant.toZonedDateTimeISO(getLocalTimeZone()).toPlainTime();
-			return dateTimeFormat.format(plainTimeToDate(plainTime));
-		}
-		throw err;
-	}
+	return dateTimeFormat.format(plainTimeToDate(msToPlainTime(ms, timeZone)));
 }
 
 /**

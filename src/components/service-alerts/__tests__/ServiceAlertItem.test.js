@@ -65,6 +65,30 @@ describe('ServiceAlertItem', () => {
 		openModal = vi.fn();
 	});
 
+	it('renders a minimal notice and opens it without summary, description, or windows', async () => {
+		const user = userEvent.setup();
+		const alert = {};
+		render(ServiceAlertItem, { props: { alert, openModal } });
+
+		const button = screen.getByRole('button', {
+			name: 'Open info service alert details: Service Alert'
+		});
+		expect(button).toHaveTextContent('info');
+		await user.click(button);
+		expect(openModal).toHaveBeenCalledWith(alert);
+	});
+
+	it('uses the description when a summary is absent', () => {
+		render(ServiceAlertItem, {
+			props: { alert: { description: { value: 'Temporary stop closure' } }, openModal }
+		});
+		expect(
+			screen.getByRole('button', {
+				name: 'Open info service alert details: Temporary stop closure'
+			})
+		).toBeInTheDocument();
+	});
+
 	afterEach(() => {
 		vi.clearAllMocks();
 	});

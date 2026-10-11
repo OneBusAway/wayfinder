@@ -23,7 +23,8 @@ import { env } from '$env/dynamic/public';
 import { buildVehiclePopupData } from '$lib/vehicleUtils';
 import { get } from 'svelte/store';
 import { t } from 'svelte-i18n';
-import { ROUTE_PANE_Z_INDEX } from '$lib/mapPanes.js';
+import { ROUTE_PANE_Z_INDEX, ZONE_PANE, ZONE_PANE_Z_INDEX } from '$lib/mapPanes.js';
+import { polygonsOf } from '$lib/MapHelpers/zoneGeometry.js';
 
 // OpenFreeMap styles for each app theme. fiord, not OpenFreeMap's own "dark"
 // style, because dark's streets barely contrast with the background (#639).
@@ -82,6 +83,7 @@ export default class OpenStreetMapProvider {
 		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || LIGHT_STYLE;
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
+		this.polygons = []; // On-demand zones, kept apart from polylines
 		this.showStopsRoutesAtZoom = SHOW_ROUTE_LABELS_AT_ZOOM;
 		this.routeLabelsVisible = false;
 		this.contextMenuPopup = null;
@@ -132,6 +134,8 @@ export default class OpenStreetMapProvider {
 			this.map.createPane(name);
 			this.map.getPane(name).style.zIndex = String(zIndex);
 		}
+		this.map.createPane(ZONE_PANE);
+		this.map.getPane(ZONE_PANE).style.zIndex = String(ZONE_PANE_Z_INDEX);
 	}
 
 	eventListeners(mapInstance, debouncedLoadMarkers) {
@@ -975,6 +979,96 @@ export default class OpenStreetMapProvider {
 		this.polylines = [];
 	}
 
+	/**
+	 * Draws an on-demand zone. Kept off this.polylines so route fitting and
+	 * clearAllPolylines never touch zones.
+	 * @param {any} geometry - GeoJSON Polygon or MultiPolygon
+	 * @param {{ color?: string, fillOpacity?: number, weight?: number, opacity?: number, halo?: { weight: number, opacity: number } | null, interactive?: boolean, onClick?: () => void }} style
+	 * @returns {any | null}
+	 */
+	createPolygon(geometry, style = {}) {
+		if (!browser || !this.map) return null;
+		const latLngs = polygonsOf(geometry).map((rings) =>
+			rings.map((ring) => ring.map(([lon, lat]) => [lat, lon]))
+		);
+		if (!latLngs.length) return null;
+
+		const halo = style.halo
+			? new this.L.Polygon(latLngs, this._zoneHaloOptions(style)).addTo(this.map)
+			: null;
+		const polygon = new this.L.Polygon(latLngs, this._zoneOptions(style)).addTo(this.map);
+		polygon._halo = halo;
+		if (style.interactive && style.onClick) {
+			polygon.on('click', (event) => {
+				// Keep the click from reaching the map (context menu, deselect).
+				this.L.DomEvent.stopPropagation(event);
+				style.onClick();
+			});
+		}
+		this.polygons.push(polygon);
+		return polygon;
+	}
+
+	_zoneOptions(style) {
+		return {
+			pane: ZONE_PANE,
+			color: style.color,
+			weight: style.weight ?? 2,
+			opacity: style.opacity ?? 1,
+			fillColor: style.color,
+			fillOpacity: style.fillOpacity ?? 0.2,
+			interactive: Boolean(style.interactive)
+		};
+	}
+
+	_zoneHaloOptions(style) {
+		return {
+			pane: ZONE_PANE,
+			color: style.color,
+			weight: style.halo.weight,
+			opacity: style.halo.opacity,
+			fill: false,
+			interactive: false
+		};
+	}
+
+	setPolygonStyle(polygon, style) {
+		if (!polygon) return;
+		const { color, weight, opacity, fillColor, fillOpacity } = this._zoneOptions(style);
+		polygon.setStyle({ color, weight, opacity, fillColor, fillOpacity });
+		if (polygon._halo && style.halo) {
+			polygon._halo.setStyle({
+				color: style.color,
+				weight: style.halo.weight,
+				opacity: style.halo.opacity
+			});
+		}
+	}
+
+	removePolygon(polygon) {
+		if (!polygon) return;
+		polygon._halo?.remove();
+		polygon.remove();
+		this.polygons = this.polygons.filter((item) => item !== polygon);
+	}
+
+	clearAllPolygons() {
+		for (const polygon of [...this.polygons]) this.removePolygon(polygon);
+	}
+
+	/**
+	 * @param {{ north: number, south: number, east: number, west: number }} bounds
+	 * @param {{ padding?: number | { top?: number, right?: number, bottom?: number, left?: number } }} [options]
+	 */
+	fitToBounds(bounds, options = {}) {
+		if (!browser || !this.map) return;
+		const latLngBounds = this.L.latLngBounds(
+			[bounds.south, bounds.west],
+			[bounds.north, bounds.east]
+		);
+		this.map.fitBounds(latLngBounds, { ...toLeafletPadding(options.padding), animate: true });
+	}
+
 	getPolylinesCount() {
 		return this.polylines.length;
 	}
@@ -1232,6 +1326,7 @@ export default class OpenStreetMapProvider {
 		this.removeStopMarkers();
 		this.clearVehicleMarkers();
 		this.clearAllPolylines();
+		this.clearAllPolygons();
 		this.removeUserLocationMarker();
 		this.cleanupInfoWindow();
 		this.closeContextMenu();

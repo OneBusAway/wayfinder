@@ -3,6 +3,8 @@ import GoogleMapProvider from '$lib/Provider/GoogleMapProvider.svelte.js';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';
 import { nightModeStyles } from '$lib/googleMaps';
 import { polylineArrowColor } from '$lib/colorUtils';
+import { isClockwise } from '$lib/MapHelpers/zoneGeometry.js';
+import { square } from '../fixtures/onDemand.js';
 
 vi.mock('$components/map/StopMarker.svelte', () => ({ default: {} }));
 vi.mock('$components/map/PopupContent.svelte', () => ({ default: {} }));
@@ -724,5 +726,89 @@ describe('fitToPolylines padding', () => {
 		await provider.fitToPolylines({ padding });
 
 		expect(fitBounds).toHaveBeenCalledWith(expect.any(Object), padding);
+	});
+});
+
+describe('polygons', () => {
+	let provider;
+	beforeEach(() => {
+		global.google = {
+			maps: {
+				Polygon: vi.fn(function GooglePolygon(options) {
+					this.options = options;
+					this.setOptions = vi.fn();
+					this.setMap = vi.fn();
+					this.addListener = vi.fn();
+				}),
+				LatLngBounds: vi.fn(function GoogleLatLngBounds(sw, ne) {
+					this.sw = sw;
+					this.ne = ne;
+				})
+			}
+		};
+		provider = new GoogleMapProvider('key', vi.fn());
+		provider.map = { fitBounds: vi.fn() };
+	});
+	const outer = square(-77.1, 38.8, -77.0, 38.9);
+	// Wound opposite to square()'s counter-clockwise ring, as a GeoJSON hole is.
+	const hole = square(-77.06, 38.84, -77.04, 38.86).coordinates[0].reverse();
+	const geometry = { ...outer, coordinates: [...outer.coordinates, hole] };
+
+	test('draws exterior and hole paths with opposite winding below the routes', () => {
+		const polygon = provider.createPolygon(geometry, {
+			color: '#78aa36',
+			fillOpacity: 0.2,
+			weight: 2,
+			opacity: 1
+		});
+		const { paths, zIndex, clickable } = polygon.options;
+		expect(paths).toHaveLength(2);
+		const clockwise = (path) => isClockwise(path.map(({ lat, lng }) => [lng, lat]));
+		expect(clockwise(paths[0])).not.toBe(clockwise(paths[1]));
+		expect(zIndex).toBeLessThan(10);
+		expect(clickable).toBe(false);
+	});
+
+	test('clearAllPolylines leaves polygons; clearAllPolygons removes them and halos', () => {
+		const polygon = provider.createPolygon(geometry, {
+			color: '#000000',
+			halo: { weight: 10, opacity: 0.25 }
+		});
+		provider.clearAllPolylines();
+		expect(polygon.setMap).not.toHaveBeenCalledWith(null);
+		provider.clearAllPolygons();
+		expect(polygon.setMap).toHaveBeenCalledWith(null);
+		expect(polygon._halo.setMap).toHaveBeenCalledWith(null);
+	});
+
+	test('an interactive polygon registers its click handler', () => {
+		const onClick = vi.fn();
+		const polygon = provider.createPolygon(geometry, { color: '#000', interactive: true, onClick });
+		expect(polygon.options.clickable).toBe(true);
+		polygon.addListener.mock.calls[0][1]();
+		expect(polygon.addListener).toHaveBeenCalledWith('click', expect.any(Function));
+		expect(onClick).toHaveBeenCalled();
+	});
+
+	test('a non-interactive polygon registers no click listener', () => {
+		const polygon = provider.createPolygon(geometry, { color: '#000', onClick: vi.fn() });
+		expect(polygon.addListener).not.toHaveBeenCalled();
+	});
+
+	test('fitToBounds passes padding through', () => {
+		provider.fitToBounds({ north: 38.9, south: 38.8, east: -77.0, west: -77.1 }, { padding: 40 });
+		expect(provider.map.fitBounds).toHaveBeenCalledWith(expect.anything(), 40);
+	});
+});
+
+describe('getBoundingBox', () => {
+	test('returns null before the map has rendered its bounds', () => {
+		const provider = new GoogleMapProvider('key', vi.fn());
+		provider.map = { getBounds: () => undefined };
+		expect(provider.getBoundingBox()).toBeNull();
+	});
+
+	test('returns null without a map', () => {
+		expect(new GoogleMapProvider('key', vi.fn()).getBoundingBox()).toBeNull();
 	});
 });

@@ -1,9 +1,17 @@
 <script>
+	// @ts-check
 	import LegDetails from './LegDetails.svelte';
 	import { msToTimeString } from '$lib/dateTimeFormat';
 	import { env } from '$env/dynamic/public';
 	import { t } from 'svelte-i18n';
 	import { isStaySeatedTransition, getRouteName } from '$lib/tripPlanUtils';
+	/**
+	 * @typedef {Object} Props
+	 * @property {import('$lib/types').Itinerary} itinerary
+	 * @property {Record<number, boolean>} expandedSteps
+	 * @property {(index: number) => void} toggleSteps
+	 */
+	/** @type {Props} */
 	let { itinerary, expandedSteps, toggleSteps } = $props();
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;

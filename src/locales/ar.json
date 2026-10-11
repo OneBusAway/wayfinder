@@ -58,6 +58,8 @@
 		"remove_recent_trip": "إزالة الرحلة الأخيرة",
 		"recent_trip": "استخدام الرحلة الأخيرة من {from} إلى {to}",
 		"recent_searches": "عمليات البحث الأخيرة",
+		"clear_recent_searches": "مسح عمليات البحث الأخيرة",
+		"clear_recent_searches_confirmation": "هل أنت متأكد من أنك تريد مسح جميع عمليات البحث الأخيرة؟",
 		"recents": "الأخيرة",
 		"clear_all": "مسح الكل",
 		"request_failed": "تعذّر الوصول إلى خدمة تخطيط الرحلات. يرجى المحاولة مرة أخرى.",

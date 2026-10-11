@@ -33,6 +33,7 @@
 	 * @property {'peek' | 'half' | 'full'} [snap] - Bindable current snap point; defaults to half
 	 * @property {ArrivalsResponse | null} [arrivalsAndDeparturesResponse] - Bindable latest arrivals response, shared with the map
 	 * @property {Map<string, RouteColors> | null} [routeColors] - Resolved route colors, forwarded to arrival badges
+	 * @property {((id: string) => void) | null} [onOnDemandServiceSelect] - Forwarded to StopPane; opens an on-demand service in place
 	 */
 
 	/** @type {Props} */
@@ -45,7 +46,8 @@
 		// Bound up to MapExperience so the map layer can draw the routes behind
 		// these arrivals without issuing a second fetch.
 		arrivalsAndDeparturesResponse = $bindable(null),
-		routeColors = null
+		routeColors = null,
+		onOnDemandServiceSelect = null
 	} = $props();
 
 	// Bound from StopPane so the toolbar refresh button can spin while any fetch
@@ -136,5 +138,6 @@
 		bind:arrivalsAndDeparturesResponse
 		bind:loading={stopPaneLoading}
 		{routeColors}
+		{onOnDemandServiceSelect}
 	/>
 </BottomSheet>

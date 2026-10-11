@@ -9,8 +9,20 @@ This is the next-generation OneBusAway web application, built on top of [SvelteK
 ```bash
 npm install
 cp .env.example .env
-# edit .env with your editor of choice
+# edit .env with your values, then check them:
+npm run validate-env
 npm run dev
+```
+
+Required and optional variables are listed in `.env.example`. Run `npm run validate-env` to check your `.env` against `env-schema.json` before starting the app.
+
+## Testing and checks
+
+```bash
+npx vitest run        # run the test suite once
+npm run test          # run the test suite in watch mode
+npm run lint          # prettier + eslint
+npm run prepush       # format, lint, and test (handy before opening a PR)
 ```
 
 ## `.env` File Keys
@@ -29,6 +41,13 @@ See `.env.example` for an example of the required keys and values.
 - `PUBLIC_LANGUAGE_SWITCHER_ENABLED` - string: (optional) Set to `"false"` to hide the language switcher in the navigation bar. Defaults to `"true"`.
 - `PUBLIC_LANGUAGE_SWITCHER_BUTTON_FORMAT` - string: (optional) Format for displaying language in the top menu button. Options: `"native"` (default), `"english"`, `"native-english"`, `"english-native"`, `"code"`.
 - `PUBLIC_LANGUAGE_SWITCHER_MENU_FORMAT` - string: (optional) Format for displaying languages in the dropdown menu. Options: `"native-english"` (default), `"native"`, `"english"`, `"english-native"`, `"code"`.
+
+### Prometheus Metrics
+
+- `PUBLIC_METRICS_ENABLED` - boolean: (optional) Set to `"true"` to expose the Prometheus `/metrics` endpoint and record request latency histograms. Defaults to `false`.
+- `PUBLIC_METRICS_ORGANIZATION` - string: (required when `PUBLIC_METRICS_ENABLED` is `"true"`) Set to the exact OBACloud Organization.name value, for example `"Sound Transit"`.
+
+When `PUBLIC_METRICS_ENABLED=true`, `/metrics` is served without authentication on the public app port. Restrict access at the proxy or network level.
 
 ### Text and Images
 
