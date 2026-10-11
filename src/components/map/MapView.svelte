@@ -1,4 +1,5 @@
 <script>
+	// @ts-check
 	import { browser } from '$app/environment';
 	import { onMount, onDestroy } from 'svelte';
 	import {
@@ -16,19 +17,28 @@
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { userLocation } from '$src/stores/userLocationStore';
 	/**
+	 * @typedef {import('onebusaway-sdk/resources/arrival-and-departure').ArrivalAndDepartureListResponse.Data.Entry.ArrivalsAndDeparture} ArrivalAndDeparture
+	 * @typedef {import('$lib/activeRoutes.js').ActiveRoute} ActiveRoute
+	 * @typedef {import('$lib/activeRoutes.js').RouteColors} RouteColors
+	 * @typedef {{ id: string, shortName?: string }} SelectedRoute
+	 *
 	 * @typedef {Object} Props
-	 * @property {any} [selectedTrip]
-	 * @property {any} [selectedRoute]
-	 * @property {boolean} [showRoute]
+	 * @property {(stop: import('$lib/types').Stop) => void} handleStopMarkerSelect
+	 * @property {ArrivalAndDeparture | null} [selectedTrip]
+	 * @property {SelectedRoute | null} [selectedRoute]
+	 * @property {boolean} [isRouteSelected]
 	 * @property {boolean} [showRouteMap]
 	 * @property {import('$lib/types').MapProvider | null} [mapProvider]
 	 * @property {import('$lib/types').Stop | null} [stop] - Currently selected stop to preserve visual context
 	 * @property {{ lat: number, lng: number } | null} [initialCoords] - Optional initial coordinates from URL params
+	 * @property {ActiveRoute[]} [activeRoutes]
+	 * @property {Map<string, RouteColors>} [routeColors]
 	 * @property {boolean} [startInTripPlanMode] - Seeds the map's starting mode as trip-plan (not just the initial
 	 *   stop load skip below) so a shared trip link never briefly renders in NORMAL mode before switching.
 	 */
-
-	/** @type {Props} */
+	/**
+	 * @type {Props}
+	 */
 	let {
 		handleStopMarkerSelect,
 		selectedTrip = null,
@@ -71,10 +81,11 @@
 
 	$effect(() => {
 		if (!mapInstance) return;
-		if (routeLayerActive) {
+		const selectedStop = stop;
+		if (routeLayerActive && selectedStop) {
 			// Non-selected stops collapse to quiet dots so the selected stop and the
 			// drawn routes are the only loud things on the map.
-			mapInstance.setStopEmphasis(emphasisByStopId, 'muted', stop.id);
+			mapInstance.setStopEmphasis(emphasisByStopId, 'muted', selectedStop.id);
 			mapInstance.setBasemapDimmed(true);
 		} else {
 			mapInstance.resetStopEmphasis();
@@ -83,10 +94,13 @@
 	});
 
 	let isTripPlanModeActive = $state(startInTripPlanMode);
+	/** @type {import('$lib/types').MapProvider | null} */
 	let mapInstance = $state(null);
 	let mapElement = $state();
+	/** @type {import('$lib/types').Stop[]} */
 	let allStops = $state([]);
 	// O(1) lookup for existing stops
+	/** @type {Map<string, import('$lib/types').Stop>} */
 	let allStopsMap = new Map();
 	let stopsCache = new Map();
 
@@ -99,8 +113,11 @@
 	// Bumped each time the map settles, so the on-demand zones layer refetches.
 	let viewportTick = $state(0);
 	let mapMode = $state(startInTripPlanMode ? Modes.TRIP_PLAN : Modes.NORMAL);
+	/** @type {ReturnType<typeof setTimeout> | null} */
 	let modeChangeTimeout = null;
+	/** @type {number | null} */
 	let pendingMarkerBatch = null;
+	/** @type {ReturnType<typeof debounce> | null} */
 	let debouncedLoadMarkers = null;
 	let isDestroyed = false;
 
@@ -164,6 +181,10 @@
 		previousMapMode = mode;
 	});
 
+	/**
+	 * @param {number} zoomLevel
+	 * @param {{ north: number, south: number, east: number, west: number }} boundingBox
+	 */
 	function cacheKey(zoomLevel, boundingBox) {
 		const multiplier = 100; // 2 decimal places
 		const north = Math.round(boundingBox.north * multiplier);
@@ -174,6 +195,9 @@
 		return `${north}_${south}_${east}_${west}_${zoomLevel}`;
 	}
 
+	/**
+	 * @returns {{ north: number, south: number, east: number, west: number } | null}
+	 */
 	function getBoundingBox() {
 		if (!mapProvider) {
 			throw new Error('Map provider is not initialized');
@@ -181,6 +205,13 @@
 		return mapProvider.getBoundingBox();
 	}
 
+	/**
+	 * @param {number} lat
+	 * @param {number} lng
+	 * @param {number} zoomLevel
+	 * @param {boolean} [firstCall]
+	 * @returns {Promise<import('onebusaway-sdk/resources/stops-for-location').StopsForLocationListResponse | null>}
+	 */
 	async function loadStopsForLocation(lat, lng, zoomLevel, firstCall = false) {
 		if (firstCall) {
 			const response = await fetch(`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&radius=2500`);
@@ -220,6 +251,7 @@
 	}
 
 	async function initMap() {
+		if (!mapProvider) return;
 		try {
 			// Use URL-provided coordinates if available, otherwise use region center
 			const mapCenterLat = initialCoords?.lat ?? Number(initialLat);
@@ -273,6 +305,13 @@
 		}
 	}
 
+	/**
+	 * @param {number} lat
+	 * @param {number} lng
+	 * @param {boolean} [firstCall]
+	 * @param {number} [zoomLevel]
+	 * @returns {Promise<void>}
+	 */
 	async function loadStopsAndAddMarkers(lat, lng, firstCall = false, zoomLevel = 15) {
 		const stopsData = await loadStopsForLocation(lat, lng, zoomLevel, firstCall);
 		if (isDestroyed || !stopsData) return;
@@ -283,10 +322,14 @@
 
 		// merge the stops routeIds with the route data and deduplicate efficiently
 		newStops.forEach((stop) => {
-			if (!allStopsMap.has(stop.id)) {
-				stop.routes =
-					stop.routeIds?.map((routeId) => routeLookup.get(routeId)).filter(Boolean) || [];
-				allStopsMap.set(stop.id, stop);
+			/** @type {import('$lib/types').Stop} */
+			const stopWithRoutes = stop;
+			if (!allStopsMap.has(stopWithRoutes.id)) {
+				stopWithRoutes.routes =
+					stopWithRoutes.routeIds
+						?.map((routeId) => routeLookup.get(routeId))
+						.filter((route) => route !== undefined) || [];
+				allStopsMap.set(stopWithRoutes.id, stopWithRoutes);
 			}
 		});
 
@@ -304,12 +347,16 @@
 	}
 
 	// Batch operation to add multiple markers efficiently
+	/** @param {import('$lib/types').Stop[]} stops */
 	function batchAddMarkers(stops) {
 		if (isDestroyed || !mapInstance || mapMode !== Modes.NORMAL) {
 			return;
 		}
 
-		const stopsToAdd = stops.filter((s) => !mapInstance.hasMarker(s.id));
+		const activeMap = mapInstance;
+		if (!activeMap) return;
+
+		const stopsToAdd = stops.filter((s) => !activeMap.hasMarker(s.id));
 
 		if (stopsToAdd.length === 0) {
 			return;
@@ -330,6 +377,7 @@
 		});
 	}
 
+	/** @param {import('$lib/types').Stop} s */
 	function addMarker(s) {
 		if (isDestroyed || !mapInstance || mapMode !== Modes.NORMAL) {
 			return;
@@ -366,19 +414,29 @@
 		return markerObj;
 	}
 
+	/** @param {Event} event */
 	function handleThemeChange(event) {
-		const { darkMode } = event.detail;
+		if (!(event instanceof CustomEvent) || !mapInstance) return;
+		const { darkMode } = /** @type {CustomEvent<{ darkMode: boolean }>} */ (event).detail;
 		mapInstance.setTheme(darkMode ? 'dark' : 'light');
 	}
 
+	/**
+	 * @param {number} latitude
+	 * @param {number} longitude
+	 */
 	function handleLocationObtained(latitude, longitude) {
+		if (!mapInstance) return;
 		mapInstance.setCenter({ lat: latitude, lng: longitude });
 		mapInstance.addUserLocationMarker({ lat: latitude, lng: longitude });
 		userLocation.set({ lat: latitude, lng: longitude });
 	}
 
 	// Store event handlers for proper cleanup
-	let planTripHandler, tabSwitchHandler;
+	/** @type {(() => void) | null} */
+	let planTripHandler = null;
+	/** @type {(() => void) | null} */
+	let tabSwitchHandler = null;
 
 	onMount(async () => {
 		isDestroyed = false;

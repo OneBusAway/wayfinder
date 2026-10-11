@@ -364,6 +364,11 @@ export default class ArcGISMapProvider {
 		if (marker) marker.props.isHighlighted = false;
 	}
 
+	/**
+	 * @param {Map<string, { emphasis: string, dotColor: string | null }>} byStopId
+	 * @param {'full' | 'muted'} [defaultEmphasis]
+	 * @param {string | null} [selectedStopId]
+	 */
 	setStopEmphasis(byStopId, defaultEmphasis = 'full', selectedStopId = null) {
 		for (const [stopId, marker] of this.markersMap) {
 			const tier = byStopId.get(stopId);

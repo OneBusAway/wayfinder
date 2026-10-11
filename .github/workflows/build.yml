@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create environment file
+        run: cp .env.example .env
+
       - name: Run Svelte Check
         run: npm run check
         env:

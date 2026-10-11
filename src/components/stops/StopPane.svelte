@@ -72,6 +72,7 @@
 	let error = $state();
 	// Seed alerts from the same server-rendered response so they show on first
 	// render instead of waiting for the initial client fetch to complete.
+	/** @type {import('$lib/types').ServiceAlert[]} */
 	let serviceAlerts = $state(
 		filterActiveAlerts(arrivalsAndDeparturesResponse?.data?.references?.situations ?? [])
 	);
@@ -276,7 +277,7 @@
 	 * @param {{ activeData: ArrivalsAndDeparture | null }} event
 	 */
 	function handleAccordionSelectionChanged(event) {
-		const data = event.activeData; // this is the ArrivalDeparture object plumbed into the AccordionItem
+		const data = event.activeData;
 		const show = !!data;
 		if (tripSelected) {
 			tripSelected({ detail: data });

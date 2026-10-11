@@ -1,7 +1,7 @@
 <script generics="Data, Item">
 	// @ts-check
 	import { setContext } from 'svelte';
-	import { get, writable, derived } from 'svelte/store';
+	import { get, writable, derived, readable } from 'svelte/store';
 
 	/**
 	 * @template T
@@ -13,6 +13,7 @@
 	const activeItem = writable(null);
 	/** @type {Writable<Data | null>} */
 	const activeData = writable(null);
+	const skipAnimation = readable(false);
 
 	/**
 	 * @typedef {Object} Props
@@ -47,6 +48,7 @@
 			const isActive = derived(activeItem, ($activeItem) => $activeItem === item);
 			return {
 				isActive,
+				skipAnimation,
 				activate: (/** @type {Data} */ data) => {
 					const newItem = $activeItem === item ? null : item;
 					activeItem.set(newItem);
