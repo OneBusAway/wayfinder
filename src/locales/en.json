@@ -61,7 +61,12 @@
 		"recents": "Recents",
 		"clear_all": "Clear All",
 		"request_failed": "We couldn't reach the trip planning service. Please try again.",
-		"invalid_shared_link": "This shared trip link looks broken. Try planning the trip again."
+		"invalid_shared_link": "This shared trip link looks broken. Try planning the trip again.",
+        "pinned_trips": "Pinned Trips",
+        "pin_trip": "Pin trip",
+        "unpin_trip": "Unpin trip",
+        "remove_pinned_trip": "Remove pinned trip",
+        "pinned_trip": "Use pinned trip from {from} to {to}"
 	},
 	"tabs": {
 		"stops-and-stations": "Stops and Stations",
