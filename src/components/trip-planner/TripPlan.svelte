@@ -1,4 +1,5 @@
 <script>
+	import { pinnedTrips } from '$stores/pinnedTripsStore';
 	import { debounce } from '$lib/utils';
 	import { onMount, onDestroy } from 'svelte';
 	import TripPlanSearchField from './TripPlanSearchField.svelte';
@@ -581,7 +582,7 @@
 		>
 			{$t('trip-planner.options')}
 		</button>
-		{#if $recentTrips.length > 0}
+		{#if $recentTrips.length > 0 || $pinnedTrips.length > 0}
 			<button
 				type="button"
 				onclick={() => (showRecentTrips = !showRecentTrips)}
@@ -623,7 +624,7 @@
 		</button>
 	</div>
 
-	{#if showRecentTrips && $recentTrips.length > 0}
+	{#if showRecentTrips && ($recentTrips.length > 0 || $pinnedTrips.length > 0)}
 		<div id="trip-plan-recent-trips">
 			<RecentTripsList onSelect={handleRecentTripSelect} />
 		</div>

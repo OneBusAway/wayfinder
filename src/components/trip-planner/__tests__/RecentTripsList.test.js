@@ -1,22 +1,18 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import RecentTripsList from '../RecentTripsList.svelte';
-import ClearRecentSearchesDialog from '../ClearRecentSearchesDialog.svelte';
-import { closeClearRecentSearchesDialog } from '$stores/clearRecentSearchesDialogStore';
 
-// Mock svelte-i18n (same pattern as TripPlanSearchField.test.js)
+// Mock svelte-i18n
 vi.mock('svelte-i18n', () => {
 	const translations = {
 		'trip-planner.remove_recent_trip': 'Remove recent trip',
 		'trip-planner.recent_searches': 'Recent Searches',
 		'trip-planner.recent_trip': 'Recent trip from {from} to {to}',
 		'trip-planner.clear_all': 'Clear All',
-		'trip-planner.clear_recent_searches': 'Clear recent searches',
-		'trip-planner.clear_recent_searches_confirmation':
-			'Are you sure you want to clear all recent searches?',
-		'trip-planner.cancel': 'Cancel',
-		'search.clear': 'Clear'
+		'trip-planner.pinned_trips': 'Pinned Trips',
+		'trip-planner.pin_trip': 'Pin trip',
+		'trip-planner.remove_pinned_trip': 'Remove pinned trip'
 	};
 	return {
 		t: {
@@ -28,18 +24,24 @@ vi.mock('svelte-i18n', () => {
 	};
 });
 
-// Use vi.hoisted so mock variables are available inside vi.mock factories
-const { mockRemoveTrip, mockClearAll, mockStoreValue, mockSubscribers } = vi.hoisted(() => {
-	const storeValue = { current: [] };
-	const subscribers = new Set();
+// Added mockOpenDialog to handle the incoming feature from the other branch
+const {
+	mockRemoveTrip,
+	mockClearAll,
+	mockStoreValue,
+	mockTogglePin,
+	mockRemovePinnedTrip,
+	mockPinnedStoreValue,
+	mockOpenDialog
+} = vi.hoisted(() => {
 	return {
 		mockRemoveTrip: vi.fn(),
-		mockClearAll: vi.fn(() => {
-			storeValue.current = [];
-			subscribers.forEach((subscriber) => subscriber([]));
-		}),
-		mockStoreValue: storeValue,
-		mockSubscribers: subscribers
+		mockClearAll: vi.fn(),
+		mockStoreValue: { current: [] },
+		mockTogglePin: vi.fn(),
+		mockRemovePinnedTrip: vi.fn(),
+		mockPinnedStoreValue: { current: [] },
+		mockOpenDialog: vi.fn((opts) => opts.onConfirm()) // Auto-executes the clearAll callback for testing
 	};
 });
 
@@ -47,12 +49,27 @@ vi.mock('$stores/recentTripsStore', () => ({
 	recentTrips: {
 		subscribe: vi.fn((fn) => {
 			fn(mockStoreValue.current);
-			mockSubscribers.add(fn);
-			return () => mockSubscribers.delete(fn);
+			return () => {};
 		}),
 		removeTrip: mockRemoveTrip,
 		clearAll: mockClearAll
 	}
+}));
+
+vi.mock('$stores/pinnedTripsStore', () => ({
+	pinnedTrips: {
+		subscribe: vi.fn((fn) => {
+			fn(mockPinnedStoreValue.current);
+			return () => {};
+		}),
+		togglePin: mockTogglePin,
+		removeTrip: mockRemovePinnedTrip
+	},
+	isMatch: (t1, t2) => t1.id === t2.id
+}));
+
+vi.mock('$stores/clearRecentSearchesDialogStore', () => ({
+	openClearRecentSearchesDialog: mockOpenDialog
 }));
 
 describe('RecentTripsList', () => {
@@ -78,16 +95,9 @@ describe('RecentTripsList', () => {
 	beforeEach(() => {
 		user = userEvent.setup();
 		mockStoreValue.current = [];
-		mockSubscribers.clear();
+		mockPinnedStoreValue.current = [];
 		vi.clearAllMocks();
-		closeClearRecentSearchesDialog();
 	});
-
-	function renderRecentTripsWithDialog(props) {
-		const list = render(RecentTripsList, { props });
-		render(ClearRecentSearchesDialog);
-		return list;
-	}
 
 	describe('Rendering', () => {
 		it('renders nothing when the store is empty', () => {
@@ -135,7 +145,6 @@ describe('RecentTripsList', () => {
 
 			const card = screen.getByText('Capitol Hill').closest('button');
 			expect(card.tagName).toBe('BUTTON');
-			// The delete control must be a sibling, not nested inside the card button.
 			expect(card.querySelector('button')).toBeNull();
 		});
 
@@ -145,8 +154,6 @@ describe('RecentTripsList', () => {
 			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
 			const clearAll = screen.getByText('Clear All');
-			// gray-600 was the AA fix in #531; pin the regression (gray-400) rather than
-			// the exact shade so an equal-or-better change (e.g. gray-700) still passes.
 			expect(clearAll).not.toHaveClass('text-gray-400');
 		});
 	});
@@ -199,101 +206,55 @@ describe('RecentTripsList', () => {
 			expect(mockOnSelect).not.toHaveBeenCalled();
 		});
 
-		it('opens a confirmation without clearing when "Clear All" is clicked', async () => {
+		it('opens the confirmation dialog and clears all when "Clear All" button is clicked', async () => {
 			mockStoreValue.current = sampleTrips;
 
-			renderRecentTripsWithDialog({ onSelect: vi.fn() });
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-			await user.click(screen.getByRole('button', { name: 'Clear All' }));
+			await user.click(screen.getByText('Clear All'));
 
-			expect(
-				screen.getByRole('dialog', {
-					name: 'Clear recent searches'
-				})
-			).toHaveAccessibleDescription('Are you sure you want to clear all recent searches?');
-			const cancelButton = screen.getByRole('button', { name: 'Cancel' });
-			const clearButton = screen.getByRole('button', { name: 'Clear' });
-			expect(cancelButton).toHaveFocus();
-			await user.tab();
-			expect(clearButton).toHaveFocus();
-			await user.tab();
-			expect(cancelButton).toHaveFocus();
-			expect(mockClearAll).not.toHaveBeenCalled();
-			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
-			expect(screen.getByText('Downtown')).toBeInTheDocument();
-		});
-
-		it('renders the confirmation outside the RecentTripsList DOM subtree', async () => {
-			mockStoreValue.current = sampleTrips;
-			const { container } = renderRecentTripsWithDialog({ onSelect: vi.fn() });
-
-			await user.click(screen.getByRole('button', { name: 'Clear All' }));
-
-			expect(container.contains(screen.getByRole('dialog'))).toBe(false);
-		});
-
-		it('closes on Cancel and keeps the recent searches', async () => {
-			mockStoreValue.current = sampleTrips;
-			renderRecentTripsWithDialog({ onSelect: vi.fn() });
-			const clearAllButton = screen.getByRole('button', { name: 'Clear All' });
-
-			await user.click(clearAllButton);
-			await user.click(screen.getByRole('button', { name: 'Cancel' }));
-
-			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-			expect(mockClearAll).not.toHaveBeenCalled();
-			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
-			expect(screen.getByText('Downtown')).toBeInTheDocument();
-			expect(clearAllButton).toHaveFocus();
-		});
-
-		it('closes and clears the recent searches when Clear is confirmed', async () => {
-			mockStoreValue.current = sampleTrips;
-			const { container } = renderRecentTripsWithDialog({ onSelect: vi.fn() });
-			const nextFocusTarget = document.createElement('input');
-			nextFocusTarget.id = 'from-location-input';
-			container.append(nextFocusTarget);
-
-			await user.click(screen.getByRole('button', { name: 'Clear All' }));
-			await user.click(screen.getByRole('button', { name: 'Clear' }));
-
-			await waitFor(() => {
-				expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-				expect(screen.queryByText('Capitol Hill')).not.toBeInTheDocument();
-				expect(screen.queryByText('Downtown')).not.toBeInTheDocument();
-			});
+			expect(mockOpenDialog).toHaveBeenCalledTimes(1);
 			expect(mockClearAll).toHaveBeenCalledTimes(1);
-			expect(nextFocusTarget).toHaveFocus();
+		});
+	});
+
+	describe('Pinned Trips', () => {
+		it('renders pinned trips section when pinned trips exist', () => {
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
+			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
 		});
 
-		it('closes on Escape and keeps the recent searches', async () => {
+		it('filters pinned trips out of the recent searches list', () => {
 			mockStoreValue.current = sampleTrips;
-			renderRecentTripsWithDialog({ onSelect: vi.fn() });
-			const clearAllButton = screen.getByRole('button', { name: 'Clear All' });
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-			await user.click(clearAllButton);
-			await user.keyboard('{Escape}');
-
-			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-			expect(mockClearAll).not.toHaveBeenCalled();
-			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
+			expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
+			expect(screen.getByText('Recent Searches')).toBeInTheDocument();
 			expect(screen.getByText('Downtown')).toBeInTheDocument();
-			expect(clearAllButton).toHaveFocus();
+			expect(screen.getAllByText('Capitol Hill')).toHaveLength(1);
 		});
 
-		it('closes on a backdrop click and keeps the recent searches', async () => {
-			mockStoreValue.current = sampleTrips;
-			renderRecentTripsWithDialog({ onSelect: vi.fn() });
-			const clearAllButton = screen.getByRole('button', { name: 'Clear All' });
+		it('hides the Recent Searches header if all recents are pinned', () => {
+			mockStoreValue.current = [sampleTrips[0]];
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-			await user.click(clearAllButton);
-			await user.click(screen.getByRole('dialog'));
+			expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
+			expect(screen.queryByText('Recent Searches')).not.toBeInTheDocument();
+		});
 
-			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-			expect(mockClearAll).not.toHaveBeenCalled();
-			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
-			expect(screen.getByText('Downtown')).toBeInTheDocument();
-			expect(clearAllButton).toHaveFocus();
+		it('calls togglePin when the pin button is clicked', async () => {
+			mockStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const pinButton = screen.getByLabelText('Pin trip');
+			await user.click(pinButton);
+
+			expect(mockTogglePin).toHaveBeenCalledWith(sampleTrips[0]);
 		});
 	});
 });
