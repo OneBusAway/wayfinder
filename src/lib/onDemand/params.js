@@ -59,8 +59,8 @@ function addSpans(params, rawLatSpan, rawLonSpan) {
 	return null;
 }
 
-function finiteNumber(raw) {
-	if (raw == null || raw === '') return null;
+export function finiteNumber(raw) {
+	if (raw == null || raw.trim() === '') return null;
 	const value = Number(raw);
 	return Number.isFinite(value) ? value : null;
 }
