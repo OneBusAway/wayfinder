@@ -5,248 +5,256 @@ import RecentTripsList from '../RecentTripsList.svelte';
 
 // Mock svelte-i18n
 vi.mock('svelte-i18n', () => {
-    const translations = {
-        'trip-planner.remove_recent_trip': 'Remove recent trip',
-        'trip-planner.recent_searches': 'Recent Searches',
-        'trip-planner.recent_trip': 'Recent trip from {from} to {to}',
-        'trip-planner.clear_all': 'Clear All',
-        'trip-planner.pinned_trips': 'Pinned Trips',
-        'trip-planner.pin_trip': 'Pin trip',
-        'trip-planner.remove_pinned_trip': 'Remove pinned trip'
-    };
-    return {
-        t: {
-            subscribe: vi.fn((fn) => {
-                fn((key) => translations[key] || key);
-                return { unsubscribe: () => {} };
-            })
-        }
-    };
+	const translations = {
+		'trip-planner.remove_recent_trip': 'Remove recent trip',
+		'trip-planner.recent_searches': 'Recent Searches',
+		'trip-planner.recent_trip': 'Recent trip from {from} to {to}',
+		'trip-planner.clear_all': 'Clear All',
+		'trip-planner.pinned_trips': 'Pinned Trips',
+		'trip-planner.pin_trip': 'Pin trip',
+		'trip-planner.remove_pinned_trip': 'Remove pinned trip'
+	};
+	return {
+		t: {
+			subscribe: vi.fn((fn) => {
+				fn((key) => translations[key] || key);
+				return { unsubscribe: () => {} };
+			})
+		}
+	};
 });
 
 // Added mockOpenDialog to handle the incoming feature from the other branch
-const { mockRemoveTrip, mockClearAll, mockStoreValue, mockTogglePin, mockRemovePinnedTrip, mockPinnedStoreValue, mockOpenDialog } = vi.hoisted(() => {
-    return {
-        mockRemoveTrip: vi.fn(),
-        mockClearAll: vi.fn(),
-        mockStoreValue: { current: [] },
-        mockTogglePin: vi.fn(),
-        mockRemovePinnedTrip: vi.fn(),
-        mockPinnedStoreValue: { current: [] },
-        mockOpenDialog: vi.fn((opts) => opts.onConfirm()) // Auto-executes the clearAll callback for testing
-    };
+const {
+	mockRemoveTrip,
+	mockClearAll,
+	mockStoreValue,
+	mockTogglePin,
+	mockRemovePinnedTrip,
+	mockPinnedStoreValue,
+	mockOpenDialog
+} = vi.hoisted(() => {
+	return {
+		mockRemoveTrip: vi.fn(),
+		mockClearAll: vi.fn(),
+		mockStoreValue: { current: [] },
+		mockTogglePin: vi.fn(),
+		mockRemovePinnedTrip: vi.fn(),
+		mockPinnedStoreValue: { current: [] },
+		mockOpenDialog: vi.fn((opts) => opts.onConfirm()) // Auto-executes the clearAll callback for testing
+	};
 });
 
 vi.mock('$stores/recentTripsStore', () => ({
-    recentTrips: {
-        subscribe: vi.fn((fn) => {
-            fn(mockStoreValue.current);
-            return () => {};
-        }),
-        removeTrip: mockRemoveTrip,
-        clearAll: mockClearAll
-    }
+	recentTrips: {
+		subscribe: vi.fn((fn) => {
+			fn(mockStoreValue.current);
+			return () => {};
+		}),
+		removeTrip: mockRemoveTrip,
+		clearAll: mockClearAll
+	}
 }));
 
 vi.mock('$stores/pinnedTripsStore', () => ({
-    pinnedTrips: {
-        subscribe: vi.fn((fn) => {
-            fn(mockPinnedStoreValue.current);
-            return () => {};
-        }),
-        togglePin: mockTogglePin,
-        removeTrip: mockRemovePinnedTrip
-    },
-    isMatch: (t1, t2) => t1.id === t2.id
+	pinnedTrips: {
+		subscribe: vi.fn((fn) => {
+			fn(mockPinnedStoreValue.current);
+			return () => {};
+		}),
+		togglePin: mockTogglePin,
+		removeTrip: mockRemovePinnedTrip
+	},
+	isMatch: (t1, t2) => t1.id === t2.id
 }));
 
 vi.mock('$stores/clearRecentSearchesDialogStore', () => ({
-    openClearRecentSearchesDialog: mockOpenDialog
+	openClearRecentSearchesDialog: mockOpenDialog
 }));
 
 describe('RecentTripsList', () => {
-    let user;
+	let user;
 
-    const sampleTrips = [
-        {
-            id: 'trip-1',
-            fromPlace: 'Capitol Hill',
-            toPlace: 'University District',
-            fromCoords: { lat: 47.62, lng: -122.32 },
-            toCoords: { lat: 47.66, lng: -122.31 }
-        },
-        {
-            id: 'trip-2',
-            fromPlace: 'Downtown',
-            toPlace: 'Ballard',
-            fromCoords: { lat: 47.61, lng: -122.34 },
-            toCoords: { lat: 47.67, lng: -122.38 }
-        }
-    ];
+	const sampleTrips = [
+		{
+			id: 'trip-1',
+			fromPlace: 'Capitol Hill',
+			toPlace: 'University District',
+			fromCoords: { lat: 47.62, lng: -122.32 },
+			toCoords: { lat: 47.66, lng: -122.31 }
+		},
+		{
+			id: 'trip-2',
+			fromPlace: 'Downtown',
+			toPlace: 'Ballard',
+			fromCoords: { lat: 47.61, lng: -122.34 },
+			toCoords: { lat: 47.67, lng: -122.38 }
+		}
+	];
 
-    beforeEach(() => {
-        user = userEvent.setup();
-        mockStoreValue.current = [];
-        mockPinnedStoreValue.current = [];
-        vi.clearAllMocks();
-    });
+	beforeEach(() => {
+		user = userEvent.setup();
+		mockStoreValue.current = [];
+		mockPinnedStoreValue.current = [];
+		vi.clearAllMocks();
+	});
 
-    describe('Rendering', () => {
-        it('renders nothing when the store is empty', () => {
-            mockStoreValue.current = [];
-            const { container } = render(RecentTripsList, { props: { onSelect: vi.fn() } });
+	describe('Rendering', () => {
+		it('renders nothing when the store is empty', () => {
+			mockStoreValue.current = [];
+			const { container } = render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-            expect(container.querySelector('.mt-4')).toBeNull();
-        });
+			expect(container.querySelector('.mt-4')).toBeNull();
+		});
 
-        it('renders trip cards with from on one line and to on another', () => {
-            mockStoreValue.current = sampleTrips;
+		it('renders trip cards with from on one line and to on another', () => {
+			mockStoreValue.current = sampleTrips;
 
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-            expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
-            expect(screen.getByText('University District')).toBeInTheDocument();
-            expect(screen.getByText('Downtown')).toBeInTheDocument();
-            expect(screen.getByText('Ballard')).toBeInTheDocument();
-        });
+			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
+			expect(screen.getByText('University District')).toBeInTheDocument();
+			expect(screen.getByText('Downtown')).toBeInTheDocument();
+			expect(screen.getByText('Ballard')).toBeInTheDocument();
+		});
 
-        it('renders a header with "Recent Searches" and a "Clear All" button', () => {
-            mockStoreValue.current = sampleTrips;
+		it('renders a header with "Recent Searches" and a "Clear All" button', () => {
+			mockStoreValue.current = sampleTrips;
 
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-            expect(screen.getByText('Recent Searches')).toBeInTheDocument();
-            expect(screen.getByText('Clear All')).toBeInTheDocument();
-        });
-    });
+			expect(screen.getByText('Recent Searches')).toBeInTheDocument();
+			expect(screen.getByText('Clear All')).toBeInTheDocument();
+		});
+	});
 
-    describe('Accessibility', () => {
-        it('renders the section heading as an h2 (no skipped heading level)', () => {
-            mockStoreValue.current = sampleTrips;
+	describe('Accessibility', () => {
+		it('renders the section heading as an h2 (no skipped heading level)', () => {
+			mockStoreValue.current = sampleTrips;
 
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-            const heading = screen.getByRole('heading', { level: 2, name: 'Recent Searches' });
-            expect(heading).toBeInTheDocument();
-        });
+			const heading = screen.getByRole('heading', { level: 2, name: 'Recent Searches' });
+			expect(heading).toBeInTheDocument();
+		});
 
-        it('uses a native button for each card with no nested interactive controls', () => {
-            mockStoreValue.current = sampleTrips;
+		it('uses a native button for each card with no nested interactive controls', () => {
+			mockStoreValue.current = sampleTrips;
 
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-            const card = screen.getByText('Capitol Hill').closest('button');
-            expect(card.tagName).toBe('BUTTON');
-            expect(card.querySelector('button')).toBeNull();
-        });
+			const card = screen.getByText('Capitol Hill').closest('button');
+			expect(card.tagName).toBe('BUTTON');
+			expect(card.querySelector('button')).toBeNull();
+		});
 
-        it('gives the "Clear All" button AA-compliant text color (not gray-400)', () => {
-            mockStoreValue.current = sampleTrips;
+		it('gives the "Clear All" button AA-compliant text color (not gray-400)', () => {
+			mockStoreValue.current = sampleTrips;
 
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-            const clearAll = screen.getByText('Clear All');
-            expect(clearAll).not.toHaveClass('text-gray-400');
-        });
-    });
+			const clearAll = screen.getByText('Clear All');
+			expect(clearAll).not.toHaveClass('text-gray-400');
+		});
+	});
 
-    describe('Interactions', () => {
-        it('calls onSelect with the trip when a card is clicked', async () => {
-            mockStoreValue.current = sampleTrips;
-            const mockOnSelect = vi.fn();
+	describe('Interactions', () => {
+		it('calls onSelect with the trip when a card is clicked', async () => {
+			mockStoreValue.current = sampleTrips;
+			const mockOnSelect = vi.fn();
 
-            render(RecentTripsList, { props: { onSelect: mockOnSelect } });
+			render(RecentTripsList, { props: { onSelect: mockOnSelect } });
 
-            const firstCard = screen.getByText('Capitol Hill').closest('button');
-            await user.click(firstCard);
+			const firstCard = screen.getByText('Capitol Hill').closest('button');
+			await user.click(firstCard);
 
-            expect(mockOnSelect).toHaveBeenCalledTimes(1);
-            expect(mockOnSelect).toHaveBeenCalledWith(sampleTrips[0]);
-        });
+			expect(mockOnSelect).toHaveBeenCalledTimes(1);
+			expect(mockOnSelect).toHaveBeenCalledWith(sampleTrips[0]);
+		});
 
-        it('calls onSelect when a card is activated via Enter or Space', async () => {
-            mockStoreValue.current = sampleTrips;
-            const mockOnSelect = vi.fn();
+		it('calls onSelect when a card is activated via Enter or Space', async () => {
+			mockStoreValue.current = sampleTrips;
+			const mockOnSelect = vi.fn();
 
-            render(RecentTripsList, { props: { onSelect: mockOnSelect } });
+			render(RecentTripsList, { props: { onSelect: mockOnSelect } });
 
-            const firstCard = screen.getByText('Capitol Hill').closest('button');
-            firstCard.focus();
-            await user.keyboard('{Enter}');
+			const firstCard = screen.getByText('Capitol Hill').closest('button');
+			firstCard.focus();
+			await user.keyboard('{Enter}');
 
-            expect(mockOnSelect).toHaveBeenCalledTimes(1);
-            expect(mockOnSelect).toHaveBeenCalledWith(sampleTrips[0]);
+			expect(mockOnSelect).toHaveBeenCalledTimes(1);
+			expect(mockOnSelect).toHaveBeenCalledWith(sampleTrips[0]);
 
-            mockOnSelect.mockClear();
-            await user.keyboard(' ');
+			mockOnSelect.mockClear();
+			await user.keyboard(' ');
 
-            expect(mockOnSelect).toHaveBeenCalledTimes(1);
-            expect(mockOnSelect).toHaveBeenCalledWith(sampleTrips[0]);
-        });
+			expect(mockOnSelect).toHaveBeenCalledTimes(1);
+			expect(mockOnSelect).toHaveBeenCalledWith(sampleTrips[0]);
+		});
 
-        it('calls removeTrip when the delete button is clicked', async () => {
-            mockStoreValue.current = sampleTrips;
-            const mockOnSelect = vi.fn();
+		it('calls removeTrip when the delete button is clicked', async () => {
+			mockStoreValue.current = sampleTrips;
+			const mockOnSelect = vi.fn();
 
-            render(RecentTripsList, { props: { onSelect: mockOnSelect } });
+			render(RecentTripsList, { props: { onSelect: mockOnSelect } });
 
-            const removeButtons = screen.getAllByLabelText('Remove recent trip');
-            await user.click(removeButtons[0]);
+			const removeButtons = screen.getAllByLabelText('Remove recent trip');
+			await user.click(removeButtons[0]);
 
-            expect(mockRemoveTrip).toHaveBeenCalledTimes(1);
-            expect(mockRemoveTrip).toHaveBeenCalledWith('trip-1');
-            expect(mockOnSelect).not.toHaveBeenCalled();
-        });
+			expect(mockRemoveTrip).toHaveBeenCalledTimes(1);
+			expect(mockRemoveTrip).toHaveBeenCalledWith('trip-1');
+			expect(mockOnSelect).not.toHaveBeenCalled();
+		});
 
-        it('opens the confirmation dialog and clears all when "Clear All" button is clicked', async () => {
-            mockStoreValue.current = sampleTrips;
+		it('opens the confirmation dialog and clears all when "Clear All" button is clicked', async () => {
+			mockStoreValue.current = sampleTrips;
 
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-            await user.click(screen.getByText('Clear All'));
+			await user.click(screen.getByText('Clear All'));
 
-            expect(mockOpenDialog).toHaveBeenCalledTimes(1);
-            expect(mockClearAll).toHaveBeenCalledTimes(1);
-        });
-    });
+			expect(mockOpenDialog).toHaveBeenCalledTimes(1);
+			expect(mockClearAll).toHaveBeenCalledTimes(1);
+		});
+	});
 
-    describe('Pinned Trips', () => {
-        it('renders pinned trips section when pinned trips exist', () => {
-            mockPinnedStoreValue.current = [sampleTrips[0]];
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
-            
-            expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
-            expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
-        });
+	describe('Pinned Trips', () => {
+		it('renders pinned trips section when pinned trips exist', () => {
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-        it('filters pinned trips out of the recent searches list', () => {
-            mockStoreValue.current = sampleTrips;
-            mockPinnedStoreValue.current = [sampleTrips[0]];
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
-            
-            expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
-            expect(screen.getByText('Recent Searches')).toBeInTheDocument();
-            expect(screen.getByText('Downtown')).toBeInTheDocument();
-            expect(screen.getAllByText('Capitol Hill')).toHaveLength(1);
-        });
+			expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
+			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
+		});
 
-        it('hides the Recent Searches header if all recents are pinned', () => {
-            mockStoreValue.current = [sampleTrips[0]];
-            mockPinnedStoreValue.current = [sampleTrips[0]];
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
-            
-            expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
-            expect(screen.queryByText('Recent Searches')).not.toBeInTheDocument();
-        });
+		it('filters pinned trips out of the recent searches list', () => {
+			mockStoreValue.current = sampleTrips;
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-        it('calls togglePin when the pin button is clicked', async () => {
-            mockStoreValue.current = [sampleTrips[0]];
-            render(RecentTripsList, { props: { onSelect: vi.fn() } });
-            
-            const pinButton = screen.getByLabelText('Pin trip');
-            await user.click(pinButton);
-            
-            expect(mockTogglePin).toHaveBeenCalledWith(sampleTrips[0]);
-        });
-    });
+			expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
+			expect(screen.getByText('Recent Searches')).toBeInTheDocument();
+			expect(screen.getByText('Downtown')).toBeInTheDocument();
+			expect(screen.getAllByText('Capitol Hill')).toHaveLength(1);
+		});
+
+		it('hides the Recent Searches header if all recents are pinned', () => {
+			mockStoreValue.current = [sampleTrips[0]];
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
+			expect(screen.queryByText('Recent Searches')).not.toBeInTheDocument();
+		});
+
+		it('calls togglePin when the pin button is clicked', async () => {
+			mockStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const pinButton = screen.getByLabelText('Pin trip');
+			await user.click(pinButton);
+
+			expect(mockTogglePin).toHaveBeenCalledWith(sampleTrips[0]);
+		});
+	});
 });
