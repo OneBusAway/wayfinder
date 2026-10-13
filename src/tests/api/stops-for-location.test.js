@@ -24,6 +24,7 @@ describe('GET /api/oba/stops-for-location', () => {
 		['missing lat', '', 'lng=-122.3', 'lat'],
 		['missing lng', 'lat=47.6', '', 'lng'],
 		['empty lat', 'lat=', 'lng=-122.3', 'lat'],
+		['empty lng', 'lat=47.6', 'lng=', 'lng'],
 		['non-numeric lat', 'lat=abc', 'lng=-122.3', 'lat'],
 		['whitespace-only lat', 'lat=%20%20', 'lng=-122.3', 'lat'],
 		['lat below range', 'lat=-90.1', 'lng=-122.3', 'lat'],
@@ -47,6 +48,7 @@ describe('GET /api/oba/stops-for-location', () => {
 		['radius', '-1'],
 		['radius', 'NaN'],
 		['radius', 'Infinity'],
+		['radius', '20001'],
 		['radius', '%20%20'],
 		['latSpan', '0'],
 		['latSpan', '-1'],
@@ -67,6 +69,40 @@ describe('GET /api/oba/stops-for-location', () => {
 		expect(response.status).toBe(400);
 		expect(body.error).toContain(field);
 		expect(listMock).not.toHaveBeenCalled();
+	});
+
+	it('returns 400 for a half-specified span without calling OBA', async () => {
+		const response = await GET({
+			url: new URL('http://localhost/api/oba/stops-for-location?lat=47.6&lng=-122.3&latSpan=0.02')
+		});
+		const body = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(body.error).toContain('latSpan');
+		expect(body.error).toContain('lngSpan');
+		expect(listMock).not.toHaveBeenCalled();
+	});
+
+	it('treats empty optional params as absent', async () => {
+		const response = await GET({
+			url: new URL(
+				'http://localhost/api/oba/stops-for-location?lat=47.6&lng=-122.3&radius=&latSpan=&lngSpan='
+			)
+		});
+
+		expect(response.status).toBe(200);
+		expect(listMock).toHaveBeenCalledWith({ lat: 47.6, lon: -122.3 });
+	});
+
+	it('ignores spans when a valid radius is present', async () => {
+		const response = await GET({
+			url: new URL(
+				'http://localhost/api/oba/stops-for-location?lat=47.6&lng=-122.3&radius=1500&latSpan=0'
+			)
+		});
+
+		expect(response.status).toBe(200);
+		expect(listMock).toHaveBeenCalledWith({ lat: 47.6, lon: -122.3, radius: 1500 });
 	});
 
 	it.each([

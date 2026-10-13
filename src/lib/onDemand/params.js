@@ -13,7 +13,7 @@ export function parseGeometryDetail(value) {
 
 /**
  * Validates a services-for-location query: lat/lon required; either a radius or
- * both spans; optional geometryDetail.
+ * both spans; optional geometryDetail. Span errors are ignored when a radius is set.
  * @param {URLSearchParams} searchParams
  * @returns {{ params: Record<string, number | string> } | { error: string }}
  */
@@ -27,7 +27,7 @@ export function parseLocationQuery(searchParams) {
 	const radiusError = addRadius(params, searchParams.get('radius'));
 	if (radiusError) return { error: radiusError };
 	const spanError = addSpans(params, searchParams.get('latSpan'), searchParams.get('lonSpan'));
-	if (spanError) return { error: spanError };
+	if (spanError && !('radius' in params)) return { error: spanError };
 
 	const detail = parseGeometryDetail(searchParams.get('geometryDetail'));
 	if ('error' in detail) return { error: detail.error };
@@ -60,7 +60,9 @@ function addSpans(params, rawLatSpan, rawLonSpan) {
 }
 
 export function finiteNumber(raw) {
-	if (raw == null || raw.trim() === '') return null;
-	const value = Number(raw);
+	if (raw == null) return null;
+	const valueString = String(raw).trim();
+	if (valueString === '') return null;
+	const value = Number(valueString);
 	return Number.isFinite(value) ? value : null;
 }
