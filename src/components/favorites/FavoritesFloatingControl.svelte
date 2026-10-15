@@ -58,7 +58,7 @@
 		<Popover.Content
 			align="end"
 			aria-label={$t('favorites.title')}
-			class="left-0 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-white/95 shadow-lg outline-hidden backdrop-blur-xs dark:border-gray-600 dark:bg-gray-800/95"
+			class="left-0 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto border border-gray-300 shadow-lg outline-hidden backdrop-blur-xs dark:border-gray-600"
 		>
 			<FavoritesList onStopClick={handleStopClick} onRouteClick={handleRouteClick} />
 		</Popover.Content>

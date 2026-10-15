@@ -131,7 +131,7 @@
 			<Popover.Content
 				align="end"
 				aria-label={safeTranslate('language_switcher.available_languages')}
-				class="max-h-[400px] overflow-y-auto py-1 z-[20000]"
+				class="max-h-[400px] overflow-y-auto z-[20000] border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 				sideOffset={6}
 			>
 				{#each languages as lang}
