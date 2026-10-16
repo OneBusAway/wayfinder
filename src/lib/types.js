@@ -147,4 +147,31 @@
  * @property {(animate?: boolean) => void} [closeAll]
  */
 
+/**
+ * Favorites as stored by favoritesStore: a denormalized snapshot so the list
+ * renders without an API call. Ids are full agency-prefixed OBA ids.
+ *
+ * @typedef {Object} StopFavorite
+ * @property {string | null} code
+ * @property {string | null} direction
+ * @property {string} id
+ * @property {number} lat
+ * @property {number} lon
+ * @property {string} name
+ * @property {number} savedAt - Epoch milliseconds
+ * @property {number} schemaVersion
+ * @property {'stop'} type
+ *
+ * @typedef {Object} RouteFavorite
+ * @property {string | null} description
+ * @property {string} id
+ * @property {number | null} routeType - GTFS route_type
+ * @property {number} savedAt - Epoch milliseconds
+ * @property {number} schemaVersion
+ * @property {string | null} shortName
+ * @property {'route'} type
+ *
+ * @typedef {StopFavorite | RouteFavorite} Favorite
+ */
+
 export {};
