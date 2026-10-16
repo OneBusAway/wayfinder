@@ -31,7 +31,7 @@
 	</Popover.Trigger>
 	<Popover.Content
 		align="end"
-		class="left-0 min-w-[150px] z-[20000] border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+		class="left-0 z-[20000] min-w-[150px] border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 		sideOffset={6}
 	>
 		{#each links as { key, value }}
