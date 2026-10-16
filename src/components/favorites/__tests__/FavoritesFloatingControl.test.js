@@ -184,13 +184,15 @@ describe('FavoritesFloatingControl', () => {
 		outside.remove();
 	});
 
-	it('returns focus to the toggle when an outside click focuses another element', async () => {
+	it('leaves focus on an outside element that took it', async () => {
 		render(FavoritesFloatingControl);
 
 		const toggle = screen.getByRole('button', { name: 'Open favorites' });
 		await user.click(toggle);
+
 		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
 		expect(panel).toBeInTheDocument();
+		await waitFor(() => expect(panel).toHaveFocus());
 
 		const input = document.createElement('input');
 		document.body.appendChild(input);
@@ -198,7 +200,7 @@ describe('FavoritesFloatingControl', () => {
 		await clickOutside(input);
 
 		await waitFor(() => expect(panel).not.toBeInTheDocument());
-		expect(toggle).toHaveFocus();
+		expect(input).toHaveFocus();
 		input.remove();
 	});
 

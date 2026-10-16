@@ -24,8 +24,9 @@
 
 	let { onStopClick, onRouteClick }: Props = $props();
 
-	let isOpen = $state(false);
+	let contentRef = $state<HTMLElement | null>(null);
 	let count = $derived($favorites.length);
+	let isOpen = $state(false);
 	let toggleLabel = $derived(isOpen ? $t('favorites.close_panel') : $t('favorites.open_panel'));
 
 	function handleStopClick(item: StopFavorite) {
@@ -43,7 +44,7 @@
 	<Popover.Root bind:open={isOpen}>
 		<Popover.Trigger
 			aria-label={toggleLabel}
-			class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-300 bg-white/95 text-black shadow-md backdrop-blur-xs hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800/95 dark:text-white dark:hover:bg-gray-700"
+			class="relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-300 bg-white/95 text-black shadow-md hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800/95 dark:text-white dark:hover:bg-gray-700"
 			title={toggleLabel}
 		>
 			<Star class="h-4 w-4" fill="currentColor" />
@@ -56,9 +57,17 @@
 			{/if}
 		</Popover.Trigger>
 		<Popover.Content
+			bind:ref={contentRef}
 			align="end"
 			aria-label={$t('favorites.title')}
-			class="left-0 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto border border-gray-300 shadow-lg outline-hidden backdrop-blur-xs dark:border-gray-600"
+			class="left-0 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto border border-gray-300 shadow-lg outline-hidden dark:border-gray-600"
+			trapFocus={false}
+			onCloseAutoFocus={(event) => {
+				const active = document.activeElement;
+				if (active && active !== document.body && !contentRef?.contains(active)) {
+					event.preventDefault();
+				}
+    		}}
 		>
 			<FavoritesList onStopClick={handleStopClick} onRouteClick={handleRouteClick} />
 		</Popover.Content>
