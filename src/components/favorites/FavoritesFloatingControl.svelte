@@ -4,7 +4,7 @@
 	the parent (in-flow below search on small screens; map top-right on desktop).
 -->
 <script lang="ts">
-	import * as Popover from '$components/ui/popover/index';
+	import * as Popover from '$components/ui/popover';
 	import type { RouteFavorite, StopFavorite } from '$lib/types';
 	import FavoritesList from '$components/favorites/FavoritesList.svelte';
 	import { Star } from '@lucide/svelte';

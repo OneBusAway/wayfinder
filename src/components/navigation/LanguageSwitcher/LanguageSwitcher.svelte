@@ -1,5 +1,5 @@
 <script lang="ts">
-	import * as Popover from '$components/ui/popover/index';
+	import * as Popover from '$components/ui/popover';
 	import { languages } from '$lib/i18n';
 	import { locale, t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
