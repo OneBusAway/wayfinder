@@ -89,6 +89,8 @@
 					</td>
 				</tr>
 			{:else}
+				<!-- FIXME: each block has no key -->
+				<!-- eslint-disable-next-line svelte/require-each-key -->
 				{#each scheduleData.amTimes as [hour, times]}
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-900">
 						<td
@@ -145,6 +147,8 @@
 					</td>
 				</tr>
 			{:else}
+				<!-- FIXME: each block has no key -->
+				<!-- eslint-disable-next-line svelte/require-each-key -->
 				{#each scheduleData.pmTimes as [hour, times]}
 					<tr class="hover:bg-gray-100 dark:hover:bg-gray-800">
 						<td

@@ -12,7 +12,7 @@
 
 	// Safe wrapper for $t() to handle cases where i18n locale is not yet initialized
 	// example: during error page hydration. Falls back to the translation key.
-	function safeTranslate(key: string, options?: Parameters<typeof $t>[1]) {
+	function safeTranslate(key: string, options: Parameters<typeof $t>[1] | undefined = undefined) {
 		try {
 			const tFn = $t;
 			return typeof tFn === 'function' ? tFn(key, options) : key;
@@ -147,6 +147,8 @@
 			trigger="click"
 			triggeredBy="#language-switcher-trigger"
 		>
+			<!-- static list, never reorders -->
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each languages as lang}
 				<button
 					type="button"

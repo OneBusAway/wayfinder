@@ -22,6 +22,8 @@
 	let rawRouteColor = null;
 	let polyline = null;
 	let refreshVehicles = null;
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const routeColors = new Map();
 
 	onMount(() => {

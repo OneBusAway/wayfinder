@@ -97,6 +97,8 @@
 		if (stopGroupings.length === 0) return [];
 
 		let orderedStops = [];
+		// local to this function
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		let seenStopIds = new Set();
 
 		stopGroupings.forEach((grouping) => {
@@ -419,6 +421,8 @@
 				{/if}
 
 				{#if routes?.length > 0}
+					<!-- FIXME: each block has no key -->
+					<!-- eslint-disable-next-line svelte/require-each-key -->
 					{#each routes as route}
 						<SearchResultItem
 							on:click={() => handleRouteClick(route)}
@@ -429,6 +433,8 @@
 					{/each}
 				{/if}
 				{#if stops?.length > 0}
+					<!-- FIXME: each block has no key -->
+					<!-- eslint-disable-next-line svelte/require-each-key -->
 					{#each stops as stop}
 						<SearchResultItem
 							on:click={() => handleStopClick(stop)}

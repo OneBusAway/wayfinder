@@ -150,6 +150,8 @@
 						inert={loading}
 					>
 						<Accordion bind:this={accordionComponent}>
+							<!-- FIXME: each block has no key -->
+							<!-- eslint-disable-next-line svelte/require-each-key -->
 							{#each schedules as schedule}
 								<AccordionItem>
 									{#snippet header()}

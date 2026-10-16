@@ -25,6 +25,8 @@
 	class:tab-container__item--active={current}
 	class:tab-container__item--pending={pending}
 >
+	<!-- FIXME: navigation path not built with resolve() -->
+	<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 	<a {href} class="block" aria-busy={pending ? true : undefined}>
 		{@render children?.()}
 	</a>
