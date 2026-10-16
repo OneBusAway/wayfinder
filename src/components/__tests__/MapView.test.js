@@ -71,6 +71,23 @@ describe('MapView map mode', () => {
 		});
 	});
 
+	test('does not fetch stops for a zero-span viewport', async () => {
+		const mapProvider = makeProvider();
+		render(MapView, {
+			props: { handleStopMarkerSelect: vi.fn(), mapProvider }
+		});
+
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+		await vi.waitFor(() => expect(mapProvider.eventListeners).toHaveBeenCalledOnce());
+		mapProvider.getBoundingBox.mockReturnValue({ north: 1, south: 1, east: 1, west: 0 });
+
+		const onViewportChange = mapProvider.eventListeners.mock.calls[0][1];
+		onViewportChange();
+		await new Promise((resolve) => setTimeout(resolve, 350));
+
+		expect(fetch).toHaveBeenCalledOnce();
+	});
+
 	test('does not clear stop markers when a trip is expanded inside a stop selection', async () => {
 		const mapProvider = makeProvider();
 		render(MapView, {
