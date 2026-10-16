@@ -13,7 +13,7 @@
 	::before,
 	::backdrop,
 	::file-selector-button {
-		border-color: var(--color-gray-200, currentColor);
+		@apply border-border;
 	}
 
 	/* v4 preflight drops cursor:pointer on buttons — restore v3 behavior.
