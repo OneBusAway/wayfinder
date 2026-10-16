@@ -7,6 +7,7 @@
 
 	type Language = (typeof languages)[number];
 
+	let contentRef = $state<HTMLElement | null>(null);
 	let isOpen = $state(false);
 
 	// Safe wrapper for $t() to handle cases where i18n locale is not yet initialized
@@ -107,7 +108,6 @@
 	<div class="relative">
 		<Popover.Root bind:open={isOpen}>
 			<Popover.Trigger
-				aria-haspopup="listbox"
 				aria-label={safeTranslate('language_switcher.select_language', {
 					values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) }
 				})}
@@ -131,16 +131,22 @@
 				>
 			</Popover.Trigger>
 			<Popover.Content
+				bind:ref={contentRef}
 				align="end"
 				aria-label={safeTranslate('language_switcher.available_languages')}
 				class="z-[20000] max-h-[400px] overflow-y-auto border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
-				role="listbox"
 				sideOffset={6}
+				trapFocus={false}
+				onCloseAutoFocus={(event) => {
+					const active = document.activeElement;
+					if (active && active !== document.body && !contentRef?.contains(active)) {
+						event.preventDefault();
+					}
+				}}
 			>
 				{#each languages as lang}
 					<button
-						aria-selected={lang.code === currentLocale ? true : undefined}
-						role="option"
+						aria-current={lang.code === currentLocale ? true : undefined}
 						type="button"
 						onclick={() => handleLanguageSelect(lang.code)}
 						class="block w-full px-4 py-2 text-justify text-sm font-semibold whitespace-nowrap text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===

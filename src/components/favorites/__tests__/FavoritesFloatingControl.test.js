@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { tick } from 'svelte';
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import FavoritesFloatingControl from '../FavoritesFloatingControl.svelte';
 
@@ -58,6 +58,12 @@ vi.mock('$stores/favoritesStore', () => ({
 describe('FavoritesFloatingControl', () => {
 	let user;
 
+	// jsdom lays every element out as a 0x0 box at the origin, and Bits UI only
+	// dismisses when the pointer lands outside the content's rect, so click off-origin
+	function clickOutside(target) {
+		return user.pointer({ coords: { clientX: 1, clientY: 1 }, keys: '[MouseLeft]', target });
+	}
+
 	beforeEach(() => {
 		user = userEvent.setup();
 		mockStoreValue.current = [];
@@ -67,29 +73,25 @@ describe('FavoritesFloatingControl', () => {
 	it('renders a floating open-favorites button', () => {
 		render(FavoritesFloatingControl);
 
-		expect(screen.getByRole('button', { name: 'Open favorites' })).toBeInTheDocument();
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		expect(screen.queryByText('No favorites yet')).not.toBeInTheDocument();
 	});
 
 	it('opens the favorites panel on click', async () => {
 		render(FavoritesFloatingControl);
 
-		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		await user.click(toggle);
 
-		const dialog = screen.getByRole('dialog', { name: 'Favorites' });
-		expect(dialog).toBeInTheDocument();
-		expect(dialog).not.toHaveAttribute('aria-modal');
-		expect(dialog).toHaveAttribute('id');
-		expect(dialog).toHaveFocus();
+		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+		expect(panel).toBeInTheDocument();
+		expect(panel).toHaveAttribute('aria-label', 'Favorites');
+		expect(panel).not.toHaveAttribute('aria-modal');
+		await waitFor(() => expect(panel).toHaveFocus());
 		expect(screen.getByText('No favorites yet')).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: 'Close favorites' })).toHaveAttribute(
-			'aria-expanded',
-			'true'
-		);
-		expect(screen.getByRole('button', { name: 'Close favorites' })).toHaveAttribute(
-			'aria-controls',
-			dialog.getAttribute('id')
-		);
+		expect(toggle).toHaveAttribute('aria-expanded', 'true');
+		expect(toggle).toHaveAccessibleName('Close favorites');
 	});
 
 	it('shows a count badge when favorites exist', () => {
@@ -119,44 +121,48 @@ describe('FavoritesFloatingControl', () => {
 
 		render(FavoritesFloatingControl, { props: { onStopClick } });
 
-		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		await user.click(toggle);
 		await user.click(screen.getByLabelText('Open Pine St & 3rd Ave'));
 
 		expect(onStopClick).toHaveBeenCalledTimes(1);
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		expect(screen.queryByLabelText('Open Pine St & 3rd Ave')).not.toBeInTheDocument();
 	});
 
 	it('stays open when a node inside the panel detaches itself in its own handler', async () => {
 		render(FavoritesFloatingControl);
 
-		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
-		expect(screen.getByRole('dialog')).toBeInTheDocument();
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		await user.click(toggle);
+		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+		expect(panel).toBeInTheDocument();
 
-		// A row's ✕ removes its own DOM node mid-click. The event path is fixed at
-		// dispatch time, so the click still reaches <svelte:window> — but with a
-		// detached target whose contains() reads false. Without the isConnected
-		// guard the panel would wrongly close; this asserts it does not.
+		// A row's ✕ removes its own DOM node mid-click, leaving a detached target
+		// whose contains() reads false. That must not count as an outside click.
 		const row = document.createElement('button');
-		screen.getByRole('dialog').appendChild(row);
+		panel.appendChild(row);
 		row.addEventListener('click', () => row.remove());
 
 		row.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-		// Let any (wrongful) close() flush to the DOM before asserting.
+		// Let any (wrongful) close flush to the DOM before asserting.
 		await tick();
 
-		expect(screen.getByRole('dialog')).toBeInTheDocument();
+		expect(panel).toBeInTheDocument();
+		expect(toggle).toHaveAttribute('aria-expanded', 'true');
 	});
 
 	it('closes when the toggle is clicked again, keeping focus on the toggle', async () => {
 		render(FavoritesFloatingControl);
 
-		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
-		expect(screen.getByRole('dialog')).toBeInTheDocument();
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		await user.click(toggle);
+		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+		expect(panel).toBeInTheDocument();
 
-		const toggle = screen.getByRole('button', { name: 'Close favorites' });
 		await user.click(toggle);
 
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(panel).not.toBeInTheDocument();
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
 		expect(toggle).toHaveFocus();
 	});
@@ -164,15 +170,17 @@ describe('FavoritesFloatingControl', () => {
 	it('closes when a click lands on a node outside the control', async () => {
 		render(FavoritesFloatingControl);
 
-		await user.click(screen.getByRole('button', { name: 'Open favorites' }));
-		expect(screen.getByRole('dialog')).toBeInTheDocument();
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		await user.click(toggle);
+		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+		expect(panel).toBeInTheDocument();
 
 		const outside = document.createElement('div');
 		document.body.appendChild(outside);
 
-		await user.click(outside);
+		await clickOutside(outside);
 
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		await waitFor(() => expect(panel).not.toBeInTheDocument());
 		outside.remove();
 	});
 
@@ -181,14 +189,17 @@ describe('FavoritesFloatingControl', () => {
 
 		const toggle = screen.getByRole('button', { name: 'Open favorites' });
 		await user.click(toggle);
-		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+		expect(panel).toBeInTheDocument();
+		await waitFor(() => expect(panel).toHaveFocus());
 
 		const input = document.createElement('input');
 		document.body.appendChild(input);
 
-		await user.click(input);
+		await clickOutside(input);
 
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		await waitFor(() => expect(panel).not.toBeInTheDocument());
 		expect(input).toHaveFocus();
 		input.remove();
 	});
@@ -198,14 +209,15 @@ describe('FavoritesFloatingControl', () => {
 
 		const toggle = screen.getByRole('button', { name: 'Open favorites' });
 		await user.click(toggle);
-		expect(screen.getByRole('dialog')).toBeInTheDocument();
+		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+		expect(panel).toBeInTheDocument();
 
 		const outside = document.createElement('div');
 		document.body.appendChild(outside);
 
-		await user.click(outside);
+		await clickOutside(outside);
 
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		await waitFor(() => expect(panel).not.toBeInTheDocument());
 		expect(toggle).toHaveFocus();
 		outside.remove();
 	});
@@ -215,10 +227,11 @@ describe('FavoritesFloatingControl', () => {
 
 		const toggle = screen.getByRole('button', { name: 'Open favorites' });
 		await user.click(toggle);
-		expect(screen.getByRole('dialog')).toBeInTheDocument();
+		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+		expect(panel).toBeInTheDocument();
 
 		await user.keyboard('{Escape}');
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(panel).not.toBeInTheDocument();
 		expect(toggle).toHaveFocus();
 	});
 });

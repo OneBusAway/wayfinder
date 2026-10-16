@@ -136,7 +136,7 @@ describe('LanguageSwitcher', () => {
 			await user.click(button);
 
 			// Find the dropdown menu
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			expect(dropdown).toBeInTheDocument();
 
 			// Default menu format is "native-english"
@@ -155,8 +155,13 @@ describe('LanguageSwitcher', () => {
 
 			expect(screen.getByText('Español (Spanish)')).toBeInTheDocument();
 
-			// Click outside
-			await user.click(document.body);
+			// jsdom lays every element out as a 0x0 box at the origin, and Bits UI only
+			// dismisses when the pointer lands outside the content's rect, so click off-origin
+			await user.pointer({
+				coords: { clientX: 1, clientY: 1 },
+				keys: '[MouseLeft]',
+				target: document.body
+			});
 
 			await waitFor(() => {
 				expect(screen.queryByText('Español (Spanish)')).not.toBeInTheDocument();
@@ -188,7 +193,7 @@ describe('LanguageSwitcher', () => {
 			await user.click(button);
 
 			// Find the dropdown menu
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			expect(dropdown).toBeInTheDocument();
 
 			// Check that dropdown shows English names (not native-english format)
@@ -309,7 +314,7 @@ describe('LanguageSwitcher', () => {
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			expect(dropdown.textContent).toContain('English');
 			expect(dropdown.textContent).toContain('Español');
 			expect(dropdown.textContent).not.toContain('(English)');
@@ -326,7 +331,7 @@ describe('LanguageSwitcher', () => {
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			expect(dropdown.textContent).toContain('English');
 			expect(dropdown.textContent).toContain('Spanish');
 			expect(dropdown.textContent).not.toContain('Español');
@@ -343,7 +348,7 @@ describe('LanguageSwitcher', () => {
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			// English has same native/english name, so shows just "English"
 			expect(dropdown.textContent).toContain('English');
 			// Español has different names, so shows "Español (Spanish)"
@@ -361,7 +366,7 @@ describe('LanguageSwitcher', () => {
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			// English has same native/english name, so shows just "English"
 			expect(dropdown.textContent).toContain('English');
 			expect(dropdown.textContent).not.toContain('English (English)');
@@ -394,7 +399,7 @@ describe('LanguageSwitcher', () => {
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			// English has same native/english name, so shows just "English"
 			expect(dropdown.textContent).toContain('English');
 			// Español has different names, so shows "Español (Spanish)"
@@ -412,7 +417,7 @@ describe('LanguageSwitcher', () => {
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			// Should fallback to native-english format, but English has same names so shows just "English"
 			expect(dropdown.textContent).toContain('English');
 			// Español has different names, so shows "Español (Spanish)"
@@ -436,7 +441,7 @@ describe('LanguageSwitcher', () => {
 
 			// Menu should show native names
 			await user.click(button);
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			expect(dropdown.textContent).toContain('English');
 			expect(dropdown.textContent).toContain('Español');
 			expect(dropdown.textContent).not.toContain('EN');
@@ -453,7 +458,7 @@ describe('LanguageSwitcher', () => {
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const dropdown = screen.getByRole('listbox');
+			const dropdown = document.getElementById(button.getAttribute('aria-controls'));
 			// Spanish has different names, so should show "Español (Spanish)"
 			expect(dropdown.textContent).toContain('Español (Spanish)');
 			// Arabic has different names, so should show "العربية (Arabic)"
@@ -550,34 +555,38 @@ describe('LanguageSwitcher', () => {
 			expect(button).toBeInTheDocument();
 		});
 
-		test('dropdown has role="listbox"', async () => {
+		test('dropdown has an accessible label', async () => {
 			const user = userEvent.setup();
 			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const listbox = screen.getByRole('listbox', { name: /available languages/i });
-			expect(listbox).toBeInTheDocument();
+			expect(document.getElementById(button.getAttribute('aria-controls'))).toHaveAttribute(
+				'aria-label',
+				'Available languages'
+			);
 		});
 
-		test('language options have role="option" and aria-selected', async () => {
+		test('current language option has aria-current', async () => {
 			const user = userEvent.setup();
 			render(LanguageSwitcher);
 
 			const button = screen.getByRole('button', { name: /select language/i });
 			await user.click(button);
 
-			const options = screen.getAllByRole('option');
+			const options = [
+				...document.getElementById(button.getAttribute('aria-controls')).querySelectorAll('button')
+			];
 			expect(options.length).toBeGreaterThan(0);
 
-			// Current language (English) should be selected
-			const englishOption = options.find((opt) => opt.textContent === 'English');
-			expect(englishOption).toHaveAttribute('aria-selected', 'true');
+			// Current language (English) should be marked current
+			const englishOption = options.find((opt) => opt.textContent?.trim() === 'English');
+			expect(englishOption).toHaveAttribute('aria-current', 'true');
 
-			// Spanish should not be selected
+			// Spanish should not be marked current
 			const spanishOption = options.find((opt) => opt.textContent?.includes('Español'));
-			expect(spanishOption).not.toHaveAttribute('aria-selected');
+			expect(spanishOption).not.toHaveAttribute('aria-current');
 		});
 	});
 
@@ -618,7 +627,7 @@ describe('LanguageSwitcher', () => {
 			expect(button).toHaveAttribute('aria-label', 'language_switcher.select_language');
 
 			await user.click(button);
-			expect(screen.getByRole('listbox')).toHaveAttribute(
+			expect(document.getElementById(button.getAttribute('aria-controls'))).toHaveAttribute(
 				'aria-label',
 				'language_switcher.available_languages'
 			);

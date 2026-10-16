@@ -7,6 +7,7 @@
 
 	const { links = [] }: Props = $props();
 
+	let contentRef = $state<HTMLElement | null>(null);
 	let isOpen = $state(false);
 
 	function closePopover() {
@@ -30,9 +31,17 @@
 		>
 	</Popover.Trigger>
 	<Popover.Content
+		bind:ref={contentRef}
 		align="end"
 		class="left-0 z-[20000] min-w-[150px] border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 		sideOffset={6}
+		trapFocus={false}
+		onCloseAutoFocus={(event) => {
+			const active = document.activeElement;
+			if (active && active !== document.body && !contentRef?.contains(active)) {
+				event.preventDefault();
+			}
+		}}
 	>
 		{#each links as { key, value }}
 			<a
