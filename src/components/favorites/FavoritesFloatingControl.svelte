@@ -9,7 +9,7 @@
 <script>
 	import { tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { Popover } from 'flowbite-svelte';
+	import Popover from 'flowbite-svelte/Popover.svelte';
 	import { Star } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
 	import { favorites } from '$stores/favoritesStore';

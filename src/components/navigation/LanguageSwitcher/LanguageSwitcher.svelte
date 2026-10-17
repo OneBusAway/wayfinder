@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Popover } from 'flowbite-svelte';
+	import Popover from 'flowbite-svelte/Popover.svelte';
 	import { fade } from 'svelte/transition';
 	import { languages } from '$lib/i18n';
 	import { locale, t } from 'svelte-i18n';
