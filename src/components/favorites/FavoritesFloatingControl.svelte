@@ -61,13 +61,14 @@
 			align="end"
 			aria-label={$t('favorites.title')}
 			class="left-0 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto border border-gray-300 shadow-lg outline-hidden dark:border-gray-600"
+			role="dialog"
 			trapFocus={false}
 			onCloseAutoFocus={(event) => {
 				const active = document.activeElement;
 				if (active && active !== document.body && !contentRef?.contains(active)) {
 					event.preventDefault();
 				}
-    		}}
+			}}
 		>
 			<FavoritesList onStopClick={handleStopClick} onRouteClick={handleRouteClick} />
 		</Popover.Content>

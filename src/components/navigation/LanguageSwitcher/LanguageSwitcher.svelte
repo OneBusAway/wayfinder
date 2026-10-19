@@ -135,6 +135,7 @@
 				align="end"
 				aria-label={safeTranslate('language_switcher.available_languages')}
 				class="z-[20000] max-h-[400px] overflow-y-auto border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+				role="dialog"
 				sideOffset={6}
 				trapFocus={false}
 				onCloseAutoFocus={(event) => {
@@ -144,7 +145,7 @@
 					}
 				}}
 			>
-				{#each languages as lang}
+				{#each languages as lang (lang.code)}
 					<button
 						aria-current={lang.code === currentLocale ? true : undefined}
 						type="button"
