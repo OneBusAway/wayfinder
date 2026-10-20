@@ -115,6 +115,8 @@
 
 			<div class="space-y-2 rounded-lg">
 				<div>
+					<!-- FIXME: each block has no key -->
+					<!-- eslint-disable-next-line svelte/require-each-key -->
 					{#each stops as stop}
 						<StopItem {stop} {handleStopItemClick} />
 					{/each}

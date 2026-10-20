@@ -121,6 +121,8 @@
 			role="listbox"
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg"
 		>
+			<!-- FIXME: each block has no key -->
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each results as result, index}
 				<li role="presentation">
 					<button

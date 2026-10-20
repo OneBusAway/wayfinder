@@ -287,6 +287,8 @@
 		try {
 			const url = new URL($page.url);
 			applyTripParams(url, { selectedFrom, selectedTo, fromPlace, toPlace });
+			// using `resolve` would drop trip params
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
 			replaceState(url, {});
 		} catch (e) {
 			console.warn('Failed to update shareable trip URL:', e);
@@ -298,6 +300,8 @@
 		try {
 			const url = new URL($page.url);
 			removeTripParams(url);
+			// using `resolve` would drop trip params
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
 			replaceState(url, {});
 		} catch (e) {
 			console.warn('Failed to clear shareable trip URL:', e);

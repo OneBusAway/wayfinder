@@ -56,6 +56,8 @@
 	/>
 {:else if question.content.type === 'radio'}
 	<div class={`mt-2 space-y-${variant === 'compact' ? '0' : '2'}`}>
+		<!-- FIXME: each block has no key -->
+		<!-- eslint-disable-next-line svelte/require-each-key -->
 		{#each question.content.options as option}
 			<Radio
 				name="radio-{index}"
@@ -70,6 +72,8 @@
 	</div>
 {:else if question.content.type === 'checkbox'}
 	<div class={`mt-2 space-y-${variant === 'compact' ? '0' : '2'}`}>
+		<!-- FIXME: each block has no key -->
+		<!-- eslint-disable-next-line svelte/require-each-key -->
 		{#each question.content.options as option}
 			<Checkbox
 				name="checkbox-{index}"
@@ -88,6 +92,8 @@
 	</p>
 {:else if question.content.type === 'external_survey'}
 	<div class="mt-4">
+		<!-- external URL -->
+		<!-- eslint-disable svelte/no-navigation-without-resolve -->
 		<a
 			href={question.content.url}
 			target="_blank"
@@ -96,6 +102,7 @@
 		>
 			{question.content.label_text}
 		</a>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		{#if question.content.survey_provider}
 			<p class="mt-1 text-gray-500">
 				Powered by {question.content.survey_provider}

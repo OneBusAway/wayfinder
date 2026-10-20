@@ -75,11 +75,17 @@ export default class OpenStreetMapProvider {
 		this.L = null;
 		this.globalInfoWindow = null;
 		this.popupContentComponent = null;
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.pinMarkers = new Set();
 		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || LIGHT_STYLE;
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.polygons = []; // On-demand zones, kept apart from polylines

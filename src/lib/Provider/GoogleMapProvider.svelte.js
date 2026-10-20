@@ -37,14 +37,20 @@ export default class GoogleMapProvider {
 		this.map = null;
 		this.globalInfoWindow = null;
 		this.popupContentComponent = null;
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		// Route-drawn stop markers (addStopRouteMarker), keyed by stop id. Kept
 		// separate from markersMap so drawing a route never clobbers the reactive
 		// props handle addMarker put there for the same stop — see openStopMarker
 		// for the anchor-resolution fallback this implies.
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.routeStopMarkers = new Map();
 		this.vehicleMarkers = [];
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.markersMap = new Map();
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
 		this.polylines = []; // Track all polylines for easy cleanup

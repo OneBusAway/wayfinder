@@ -140,6 +140,8 @@
 						/>
 					{:else}
 						<div class="space-y-8">
+							<!-- FIXME: each block has no key -->
+							<!-- eslint-disable-next-line svelte/require-each-key -->
 							{#each remainingQuestions as question, index}
 								<SurveyQuestion
 									{question}

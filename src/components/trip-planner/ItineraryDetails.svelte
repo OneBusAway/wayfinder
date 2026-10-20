@@ -50,6 +50,8 @@
 
 <!-- Legs Timeline -->
 <div class="space-y-0">
+	<!-- FIXME: each block has no key -->
+	<!-- eslint-disable-next-line svelte/require-each-key -->
 	{#each itinerary.legs as leg, index}
 		{@const isInterline = isStaySeatedTransition(itinerary.legs, index)}
 		{@const nextLeg = itinerary.legs[index + 1]}

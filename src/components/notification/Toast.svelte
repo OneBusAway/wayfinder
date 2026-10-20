@@ -48,6 +48,8 @@
 			<p class="flex-1 text-sm leading-snug">
 				{notification.message}
 				{#if notification.onRetry}
+					<!-- keeps the space before the button -->
+					<!-- eslint-disable-next-line svelte/no-useless-mustaches -->
 					{' '}
 					<button type="button" class="font-semibold underline hover:no-underline" onclick={retry}>
 						{$t('notifications.tap_to_retry')}
