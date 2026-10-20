@@ -34,7 +34,8 @@
 		bind:ref={contentRef}
 		align="end"
 		aria-label="Navigation options"
-		class="z-[20000] border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+		class="border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+		portalProps={{ disabled: true }}
 		role="dialog"
 		sideOffset={6}
 		trapFocus={false}

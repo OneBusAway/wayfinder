@@ -75,7 +75,8 @@
 			bind:ref={contentRef}
 			align="end"
 			aria-label={$t('favorites.title')}
-			class="left-0 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto border border-gray-300 shadow-lg outline-hidden dark:border-gray-600"
+			class="max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto border border-gray-300 shadow-lg opacity-[.95] dark:border-gray-600"
+			portalProps={{ disabled: true }}
 			role="dialog"
 			trapFocus={false}
 			onCloseAutoFocus={handleCloseAutoFocus}
