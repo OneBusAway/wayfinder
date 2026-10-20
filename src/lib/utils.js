@@ -107,3 +107,46 @@ export function stopSubtitle(stop, translate) {
 		.filter(Boolean)
 		.join(' · ');
 }
+
+/**
+ * Map of default navigation bar link names to their i18n message keys.
+ */
+const NAV_LINK_KEY_MAP = {
+	Home: 'header.home',
+	About: 'header.about',
+	Contact: 'header.contact',
+	'Fares & Tolls': 'header.fares_and_tolls'
+};
+
+/**
+ * Localizes a navigation bar link label via the `header.*` messages.
+ * Supports direct translation keys ('header.home'), known default keys ('Home', 'About'),
+ * and normalized snake_case keys, falling back to the raw key for custom links.
+ *
+ * @param {string} key - The nav link key from PUBLIC_NAV_BAR_LINKS
+ * @param {(id: string, options?: Object) => string} translate - svelte-i18n's `$t`
+ * @returns {string} The localized label, or the original key as fallback
+ */
+export function navBarLinkLabel(key, translate) {
+	if (!key || typeof key !== 'string') {
+		return key;
+	}
+	if (!translate || typeof translate !== 'function') {
+		return key;
+	}
+
+	if (key.startsWith('header.')) {
+		return translate(key, { default: key });
+	}
+
+	const mappedKey = NAV_LINK_KEY_MAP[key];
+	if (mappedKey) {
+		return translate(mappedKey, { default: key });
+	}
+
+	const normalizedKey = `header.${key
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '_')
+		.replace(/^_+|_+$/g, '')}`;
+	return translate(normalizedKey, { default: key });
+}

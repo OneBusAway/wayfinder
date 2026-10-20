@@ -4,6 +4,43 @@ import { afterEach, expect, test, describe, vi } from 'vitest';
 import OverflowMenu from '../OverflowMenu.svelte';
 import { stubLayoutBox } from '../../../tests/helpers/test-utils';
 
+let currentLocale = 'en';
+const localeSubscribers = new Set();
+const messages = {
+	en: {
+		'header.home': 'Home',
+		'header.about': 'About',
+		'header.contact': 'Contact',
+		'header.fares_and_tolls': 'Fares & Tolls'
+	},
+	es: {
+		'header.home': 'Inicio',
+		'header.about': 'Acerca de',
+		'header.contact': 'Contacto',
+		'header.fares_and_tolls': 'Tarifas y peajes'
+	}
+};
+
+vi.mock('svelte-i18n', () => ({
+	locale: {
+		subscribe: (fn) => {
+			localeSubscribers.add(fn);
+			fn(currentLocale);
+			return () => localeSubscribers.delete(fn);
+		},
+		set: (newLoc) => {
+			currentLocale = newLoc;
+			localeSubscribers.forEach((fn) => fn(currentLocale));
+		}
+	},
+	t: {
+		subscribe: (fn) => {
+			fn((key, options) => messages[currentLocale]?.[key] ?? options?.default ?? key);
+			return () => {};
+		}
+	}
+}));
+
 describe('OverflowMenu', () => {
 	const mockLinks = [
 		{ key: 'About', value: '/about' },
@@ -12,6 +49,7 @@ describe('OverflowMenu', () => {
 	];
 
 	afterEach(() => {
+		currentLocale = 'en';
 		vi.restoreAllMocks();
 	});
 
@@ -114,6 +152,19 @@ describe('OverflowMenu', () => {
 		await rerender({ links: [{ key: 'Home', value: '/' }] });
 
 		expect(screen.queryByRole('link', { name: 'About' })).not.toBeInTheDocument();
-		expect(await screen.findByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+		const homeLink = await screen.findByRole('link', { name: 'Home' });
+		expect(homeLink).toHaveAttribute('href', '/');
+	});
+
+	test('translates link labels when switching languages', async () => {
+		currentLocale = 'es';
+		const user = userEvent.setup();
+		const { button } = renderOverflowMenu({ links: mockLinks });
+
+		await user.click(button);
+
+		expect(await screen.findByRole('link', { name: 'Acerca de' })).toBeInTheDocument();
+		expect(await screen.findByRole('link', { name: 'Contacto' })).toBeInTheDocument();
+		expect(await screen.findByRole('link', { name: 'GitHub' })).toBeInTheDocument();
 	});
 });

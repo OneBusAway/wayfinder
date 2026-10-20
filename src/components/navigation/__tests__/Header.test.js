@@ -44,6 +44,43 @@ vi.mock('$env/dynamic/public', () => ({
 	env: { PUBLIC_LANGUAGE_SWITCHER_ENABLED: 'true' }
 }));
 
+let currentLocale = 'en';
+const localeSubscribers = new Set();
+const messages = {
+	en: {
+		'header.home': 'Home',
+		'header.about': 'About',
+		'header.contact': 'Contact',
+		'header.fares_and_tolls': 'Fares & Tolls'
+	},
+	es: {
+		'header.home': 'Inicio',
+		'header.about': 'Acerca de',
+		'header.contact': 'Contacto',
+		'header.fares_and_tolls': 'Tarifas y peajes'
+	}
+};
+
+vi.mock('svelte-i18n', () => ({
+	locale: {
+		subscribe: (fn) => {
+			localeSubscribers.add(fn);
+			fn(currentLocale);
+			return () => localeSubscribers.delete(fn);
+		},
+		set: (newLoc) => {
+			currentLocale = newLoc;
+			localeSubscribers.forEach((fn) => fn(currentLocale));
+		}
+	},
+	t: {
+		subscribe: (fn) => {
+			fn((key, options) => messages[currentLocale]?.[key] ?? options?.default ?? key);
+			return () => {};
+		}
+	}
+}));
+
 describe('Header', () => {
 	beforeEach(() => {
 		// Mock ResizeObserver
@@ -55,6 +92,7 @@ describe('Header', () => {
 	});
 
 	afterEach(() => {
+		currentLocale = 'en';
 		vi.restoreAllMocks();
 	});
 
@@ -143,6 +181,24 @@ describe('Header', () => {
 		const regionLinks = screen.getAllByRole('link', { name: /test region/i });
 		const textLink = regionLinks.find((link) => link.textContent === 'Test Region');
 		expect(textLink).toHaveClass('block', 'text-xl', 'font-extrabold');
+	});
+
+	test('renders translated navigation links', () => {
+		render(Header);
+		const homeLink = screen.getByRole('link', { name: 'Home' });
+		expect(homeLink).toBeInTheDocument();
+		expect(homeLink).toHaveAttribute('href', '/');
+	});
+
+	test('updates navigation link labels when locale changes', async () => {
+		const { rerender } = render(Header);
+		expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
+
+		currentLocale = 'es';
+		localeSubscribers.forEach((fn) => fn('es'));
+		await rerender({});
+
+		expect(screen.getByRole('link', { name: 'Inicio' })).toBeInTheDocument();
 	});
 });
 
