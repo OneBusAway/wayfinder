@@ -16,7 +16,7 @@
 	import { removeAgencyPrefix, stopSubtitle } from '$lib/utils';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
-	import { parseTripParams, hasTripParams } from '$lib/urlState';
+	import { parseTripParams, hasTripParams, clearTripUrl } from '$lib/urlState';
 	import { notifyRouteLoadFailed, notifyPartialRouteShape } from '$lib/routeNotifications';
 	import { notifications } from '$stores/notificationStore';
 
@@ -262,6 +262,7 @@
 		if (activeTab === 'plan') {
 			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
 			clearTripItineraries();
+			clearTripUrl();
 		}
 		const event = new CustomEvent('tabSwitched');
 		window.dispatchEvent(event);
@@ -284,19 +285,22 @@
 	async function handleContextMenuTripPlan(e) {
 		isContextMenuTrigger = true;
 		activeTab = 'plan';
-		await tick();
-		// Enter trip-plan mode the same way a Plan tab click does (mobile sheet,
-		// map chrome).
-		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
-		// On mobile, TripPlan remounts inside the plan sheet after this event —
-		// wait one tick so its listeners exist before setTripPlanLocation.
-		await tick();
-		window.dispatchEvent(new CustomEvent('setTripPlanLocation', { detail: e.detail }));
-		isContextMenuTrigger = false;
+		try {
+			await tick();
+			// Enter trip-plan mode the same way a Plan tab click does (mobile sheet,
+			// map chrome).
+			window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+			// On mobile, TripPlan remounts inside the plan sheet after this event —
+			// wait one tick so its listeners exist before setTripPlanLocation.
+			await tick();
+			window.dispatchEvent(new CustomEvent('setTripPlanLocation', { detail: e.detail }));
+		} finally {
+			isContextMenuTrigger = false;
+		}
 	}
 
 	function handleOpenStopsTab() {
-		if (activeTab !== 'plan') return;
+		if (isContextMenuTrigger || activeTab !== 'plan') return;
 		handleTabSwitch();
 		activeTab = 'stops';
 	}

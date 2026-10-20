@@ -1,12 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import * as navigation from '$app/navigation';
+import * as environment from '$app/environment';
 import {
 	formatCoord,
 	parseCoord,
 	parseTripParams,
 	applyTripParams,
 	removeTripParams,
-	hasTripParams
+	hasTripParams,
+	clearTripUrl
 } from '../urlState';
+
+vi.mock('$app/navigation', () => ({
+	replaceState: vi.fn()
+}));
 
 describe('formatCoord', () => {
 	it('rounds to 5 decimal places', () => {
@@ -162,5 +169,38 @@ describe('hasTripParams', () => {
 		expect(hasTripParams(new URLSearchParams())).toBe(false);
 		expect(hasTripParams(new URLSearchParams('lat=32&lng=-117'))).toBe(false);
 		expect(hasTripParams(null)).toBe(false);
+	});
+});
+
+describe('clearTripUrl', () => {
+	it('returns early without calling replaceState when browser is false', () => {
+		clearTripUrl('https://example.com/?from=1,1&to=2,2');
+		expect(navigation.replaceState).not.toHaveBeenCalled();
+	});
+
+	it('removes trip params and calls replaceState when browser is true', () => {
+		vi.spyOn(environment, 'browser', 'get').mockReturnValue(true);
+		clearTripUrl('https://example.com/?from=1,1&to=2,2&fromName=Home&toName=Work&keep=1');
+
+		expect(navigation.replaceState).toHaveBeenCalled();
+		const url = navigation.replaceState.mock.calls.at(-1)[0];
+		expect(url.searchParams.has('from')).toBe(false);
+		expect(url.searchParams.has('to')).toBe(false);
+		expect(url.searchParams.has('fromName')).toBe(false);
+		expect(url.searchParams.has('toName')).toBe(false);
+		expect(url.searchParams.get('keep')).toBe('1');
+	});
+
+	it('defaults to window.location.href when url argument is omitted', () => {
+		vi.spyOn(environment, 'browser', 'get').mockReturnValue(true);
+		window.history.pushState({}, '', '/stops/42?from=1,1&to=2,2&keep=1');
+		clearTripUrl();
+
+		expect(navigation.replaceState).toHaveBeenCalled();
+		const url = navigation.replaceState.mock.calls.at(-1)[0];
+		expect(url.pathname).toBe('/stops/42');
+		expect(url.searchParams.has('from')).toBe(false);
+		expect(url.searchParams.has('to')).toBe(false);
+		expect(url.searchParams.get('keep')).toBe('1');
 	});
 });

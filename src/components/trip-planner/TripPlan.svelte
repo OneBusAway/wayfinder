@@ -21,7 +21,7 @@
 	import RecentTripsList from './RecentTripsList.svelte';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { applyTripParams, removeTripParams } from '$lib/urlState';
+	import { applyTripParams, clearTripUrl } from '$lib/urlState';
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
@@ -283,28 +283,16 @@
 	// initialized, and failing to update the shareable link should never break
 	// the actual trip the user just planned.
 	function syncTripUrl() {
-		if (!browser) return;
+		if (!browser || !selectedFrom || !selectedTo) return;
 		try {
-			const url = new URL($page.url);
+			const base = window?.location?.href || $page.url;
+			const url = new URL(base);
 			applyTripParams(url, { selectedFrom, selectedTo, fromPlace, toPlace });
 			// using `resolve` would drop trip params
 			// eslint-disable-next-line svelte/no-navigation-without-resolve
 			replaceState(url, {});
 		} catch (e) {
 			console.warn('Failed to update shareable trip URL:', e);
-		}
-	}
-
-	function clearTripUrl() {
-		if (!browser) return;
-		try {
-			const url = new URL($page.url);
-			removeTripParams(url);
-			// using `resolve` would drop trip params
-			// eslint-disable-next-line svelte/no-navigation-without-resolve
-			replaceState(url, {});
-		} catch (e) {
-			console.warn('Failed to clear shareable trip URL:', e);
 		}
 	}
 
