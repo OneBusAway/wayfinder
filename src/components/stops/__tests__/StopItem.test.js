@@ -82,7 +82,7 @@ describe('StopItem', () => {
 		expect(button).toHaveClass('stop-item');
 		expect(button).toHaveClass('flex', 'w-full', 'items-center', 'justify-between');
 		expect(button).toHaveClass('border-b', 'border-gray-200');
-		expect(button).toHaveClass('bg-[#f9f9f9]', 'p-4', 'text-left');
+		expect(button).toHaveClass('bg-surface', 'p-4', 'text-left');
 		expect(button).toHaveClass('hover:bg-[#e9e9e9]', 'focus:outline-hidden');
 	});
 
@@ -114,7 +114,10 @@ describe('StopItem', () => {
 
 		const stopNameElement = screen.getByText('Pine St & 3rd Ave');
 		expect(stopNameElement).toHaveClass('text-lg', 'font-semibold');
-		expect(stopNameElement).toHaveClass('text-surface-foreground', 'dark:text-white');
+		expect(stopNameElement).toHaveClass(
+			'text-surface-foreground',
+			'dark:text-surface-foreground-dark'
+		);
 	});
 
 	test('stop code has proper styling classes', () => {

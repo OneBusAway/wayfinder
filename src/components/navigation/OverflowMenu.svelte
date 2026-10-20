@@ -34,6 +34,7 @@
 		bind:ref={contentRef}
 		align="end"
 		class="left-0 z-[20000] min-w-[150px] border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+		role="dialog"
 		sideOffset={6}
 		trapFocus={false}
 		onCloseAutoFocus={(event) => {
@@ -43,7 +44,7 @@
 			}
 		}}
 	>
-		{#each links as { key, value }}
+		{#each links as { key, value } (value)}
 			<a
 				class="block px-4 py-2 text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700"
 				href={value}

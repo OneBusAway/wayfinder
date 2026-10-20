@@ -194,6 +194,7 @@ describe('RouteModal', () => {
 
 		const headerContainer = container.querySelector('.min-h-36.rounded-lg');
 		expect(headerContainer).toBeInTheDocument();
+		expect(headerContainer).toHaveClass('bg-brand-accent/80');
 
 		const stopsContainer = container.querySelector('.space-y-2.rounded-lg');
 		expect(stopsContainer).toBeInTheDocument();
