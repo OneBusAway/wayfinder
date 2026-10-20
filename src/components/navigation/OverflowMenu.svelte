@@ -33,7 +33,8 @@
 	<Popover.Content
 		bind:ref={contentRef}
 		align="end"
-		class="left-0 z-[20000] min-w-[150px] border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+		aria-label="Navigation options"
+		class="z-[20000] border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
 		role="dialog"
 		sideOffset={6}
 		trapFocus={false}
