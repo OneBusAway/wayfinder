@@ -5,15 +5,17 @@ import { parseLocationQuery } from '$lib/onDemand/params.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url }) {
-	const searchParams = new URLSearchParams(url.searchParams);
-	searchParams.set('lon', url.searchParams.get('lng') ?? '');
-	searchParams.set('lonSpan', url.searchParams.get('lngSpan') ?? '');
-	searchParams.delete('geometryDetail');
-	const parsed = parseLocationQuery(searchParams);
+	const parsed = parseLocationQuery(url.searchParams, {
+		lonParam: 'lng',
+		lonSpanParam: 'lngSpan',
+		spansAdvisoryWhenRadius: true
+	});
 	if ('error' in parsed) {
-		const error = parsed.error.replace(/^lon\b/, 'lng').replace(/\blonSpan\b/g, 'lngSpan');
-		return json({ error }, { status: 400 });
+		return json({ error: parsed.error }, { status: 400 });
 	}
+
+	// stops-for-location does not accept geometryDetail; drop it if present.
+	delete parsed.params.geometryDetail;
 
 	const response = await oba.stopsForLocation.list(parsed.params);
 

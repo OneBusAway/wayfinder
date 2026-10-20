@@ -24,6 +24,34 @@ describe('GET /api/oba/ondemand/services-for-location', () => {
 		expect(upstream.loadServicesForLocation).not.toHaveBeenCalled();
 	});
 
+	it('still 400s on malformed spans even when a valid radius is present', async () => {
+		const response = await servicesForLocation({
+			url: new URL(
+				'http://x/api/oba/ondemand/services-for-location?lat=1&lon=2&radius=500&latSpan=bad'
+			)
+		});
+		const body = await response.json();
+		expect(response.status).toBe(400);
+		expect(body.error).toBe('latSpan and lonSpan must both be positive numbers');
+		expect(upstream.loadServicesForLocation).not.toHaveBeenCalled();
+	});
+
+	it('pins exact lat/lon error strings for this route', async () => {
+		const missingLat = await servicesForLocation({
+			url: new URL('http://x/api/oba/ondemand/services-for-location?lon=1')
+		});
+		expect(await missingLat.json()).toEqual({
+			error: 'lat must be between -90 and 90'
+		});
+
+		const badLon = await servicesForLocation({
+			url: new URL('http://x/api/oba/ondemand/services-for-location?lat=1&lon=abc')
+		});
+		expect(await badLon.json()).toEqual({
+			error: 'lon must be between -180 and 180'
+		});
+	});
+
 	it('passes validated params and relays the result', async () => {
 		upstream.loadServicesForLocation.mockResolvedValue({ kind: 'unsupported' });
 		const response = await servicesForLocation({

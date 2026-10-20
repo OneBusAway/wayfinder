@@ -151,4 +151,50 @@ describe('GET /api/oba/stops-for-location', () => {
 
 		expect(body.data.list[0].onDemandServiceIds).toEqual(['1_77652']);
 	});
+
+	it('names lng in the missing-lng error', async () => {
+		const response = await GET({
+			url: new URL('http://localhost/api/oba/stops-for-location?lat=47.6')
+		});
+		const body = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(body.error).toBe('lng must be between -180 and 180');
+		expect(listMock).not.toHaveBeenCalled();
+	});
+
+	it('names lngSpan in a bad-lngSpan error without a radius', async () => {
+		const response = await GET({
+			url: new URL(
+				'http://localhost/api/oba/stops-for-location?lat=47.6&lng=-122.3&latSpan=0.02&lngSpan=bad'
+			)
+		});
+		const body = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(body.error).toBe('latSpan and lngSpan must both be positive numbers');
+		expect(listMock).not.toHaveBeenCalled();
+	});
+
+	it('rejects ?lat=1&lon=2 with an lng-named error (no lon alias)', async () => {
+		const response = await GET({
+			url: new URL('http://localhost/api/oba/stops-for-location?lat=1&lon=2')
+		});
+		const body = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(body.error).toBe('lng must be between -180 and 180');
+		expect(listMock).not.toHaveBeenCalled();
+	});
+
+	it('does not forward geometryDetail to the SDK', async () => {
+		const response = await GET({
+			url: new URL(
+				'http://localhost/api/oba/stops-for-location?lat=47.6&lng=-122.3&radius=1500&geometryDetail=simplified'
+			)
+		});
+
+		expect(response.status).toBe(200);
+		expect(listMock).toHaveBeenCalledWith({ lat: 47.6, lon: -122.3, radius: 1500 });
+	});
 });

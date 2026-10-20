@@ -229,9 +229,6 @@
 		}
 		const latSpan = boundingBox.north - boundingBox.south;
 		const lngSpan = boundingBox.east - boundingBox.west;
-		if (!Number.isFinite(latSpan) || latSpan <= 0 || !Number.isFinite(lngSpan) || lngSpan <= 0) {
-			return null;
-		}
 		const key = cacheKey(zoomLevel, boundingBox);
 
 		if (stopsCache.has(key)) {
