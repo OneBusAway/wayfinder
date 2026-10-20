@@ -49,10 +49,7 @@
 		const shouldRestore = restoreFocus;
 		restoreFocus = true;
 		const active = document.activeElement;
-		if (
-			!shouldRestore ||
-			(active && active !== document.body && !contentRef?.contains(active))
-		) {
+		if (!shouldRestore || (active && active !== document.body && !contentRef?.contains(active))) {
 			event.preventDefault();
 		}
 	}
