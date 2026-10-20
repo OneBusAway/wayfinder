@@ -135,7 +135,7 @@
 				align="end"
 				aria-label={safeTranslate('language_switcher.available_languages')}
 				class="z-[20000] max-h-[400px] overflow-y-auto border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
-				role="dialog"
+				role="listbox"
 				sideOffset={6}
 				trapFocus={false}
 				onCloseAutoFocus={(event) => {
@@ -147,7 +147,8 @@
 			>
 				{#each languages as lang (lang.code)}
 					<button
-						aria-current={lang.code === currentLocale ? true : undefined}
+						aria-selected={lang.code === currentLocale ? true : undefined}
+						role="option"
 						type="button"
 						onclick={() => handleLanguageSelect(lang.code)}
 						class="block w-full px-4 py-2 text-justify text-sm font-semibold whitespace-nowrap text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
