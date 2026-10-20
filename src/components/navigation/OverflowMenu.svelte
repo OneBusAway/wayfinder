@@ -45,7 +45,7 @@
 			}
 		}}
 	>
-		{#each links as { key, value } (value)}
+		{#each links as { key, value } (key)}
 			<!-- external URL -->
 			<!-- eslint-disable svelte/no-navigation-without-resolve -->
 			<a
