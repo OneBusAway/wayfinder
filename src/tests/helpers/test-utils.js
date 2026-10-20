@@ -216,3 +216,16 @@ export function createMockProps(component, overrides = {}) {
 
 	return commonProps;
 }
+
+/**
+ * Gives `element` a layout box as a browser would for a visible element.
+ *
+ * jsdom never lays anything out, so getClientRects() is always empty. Bits UI reads an
+ * empty list on a floating component's anchor (usually its trigger) as "detached" and sets
+ * `visibility: hidden` on the content, which removes it from role queries. Undo with
+ * `vi.restoreAllMocks()`.
+ * @param {Element} element - The floating component's anchor
+ */
+export function stubLayoutBox(element) {
+	vi.spyOn(element, 'getClientRects').mockReturnValue([new DOMRect(0, 0, 32, 32)]);
+}
