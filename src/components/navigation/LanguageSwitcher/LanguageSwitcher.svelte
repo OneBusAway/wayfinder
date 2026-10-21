@@ -134,7 +134,7 @@
 				bind:ref={contentRef}
 				align="end"
 				aria-label={safeTranslate('language_switcher.available_languages')}
-				class="max-h-[400px] overflow-y-auto border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
+				class="max-h-[400px] w-auto gap-0 overflow-y-auto border border-gray-300 bg-surface p-0 py-1 dark:border-gray-600 dark:bg-surface-dark"
 				portalProps={{ disabled: true }}
 				role="listbox"
 				sideOffset={6}
