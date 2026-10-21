@@ -71,6 +71,30 @@ describe('MapView map mode', () => {
 		});
 	});
 
+	test.each([
+		['zero latSpan', { north: 1, south: 1, east: 1, west: 0 }],
+		['zero lngSpan', { north: 1, south: 0, east: 1, west: 1 }],
+		['antimeridian viewport (east < west)', { north: 1, south: 0, west: 170, east: -170 }]
+	])('still fetches stops for a %s', async (_description, boundingBox) => {
+		const mapProvider = makeProvider();
+		const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+		render(MapView, {
+			props: { handleStopMarkerSelect: vi.fn(), mapProvider }
+		});
+
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+		await vi.waitFor(() => expect(mapProvider.eventListeners).toHaveBeenCalledOnce());
+		mapProvider.getBoundingBox.mockReturnValue(boundingBox);
+
+		const onViewportChange = mapProvider.eventListeners.mock.calls[0][1];
+		onViewportChange();
+		await new Promise((resolve) => setTimeout(resolve, 350));
+
+		expect(fetch).toHaveBeenCalledTimes(2);
+		expect(consoleError).not.toHaveBeenCalled();
+		consoleError.mockRestore();
+	});
+
 	test('does not clear stop markers when a trip is expanded inside a stop selection', async () => {
 		const mapProvider = makeProvider();
 		render(MapView, {

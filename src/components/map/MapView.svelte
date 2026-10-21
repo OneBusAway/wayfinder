@@ -231,6 +231,8 @@
 			// tearing down. Never turn that into a Null Island stop request.
 			return null;
 		}
+		const latSpan = boundingBox.north - boundingBox.south;
+		const lngSpan = boundingBox.east - boundingBox.west;
 		const key = cacheKey(zoomLevel, boundingBox);
 
 		if (stopsCache.has(key)) {
@@ -241,7 +243,7 @@
 		}
 
 		const response = await fetch(
-			`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&latSpan=${boundingBox.north - boundingBox.south}&lngSpan=${boundingBox.east - boundingBox.west}&radius=1500`
+			`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&latSpan=${latSpan}&lngSpan=${lngSpan}&radius=1500`
 		);
 
 		if (!response.ok) {
