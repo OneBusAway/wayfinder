@@ -24,6 +24,12 @@ vi.mock('svelte-i18n', () => {
 		'direction.N': 'North'
 	};
 	return {
+		locale: {
+			subscribe: vi.fn((fn) => {
+				fn('en');
+				return () => {};
+			})
+		},
 		t: {
 			subscribe: vi.fn((fn) => {
 				fn((key, opts) => {

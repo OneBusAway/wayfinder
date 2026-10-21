@@ -7,6 +7,7 @@ import { stubLayoutBox } from '../../../../tests/helpers/test-utils';
 
 // Mock languages array - must be defined inline in mock factory
 vi.mock('$lib/i18n', () => ({
+	isRTL: vi.fn(() => false),
 	languages: [
 		{ code: 'en', nativeName: 'English', englishName: 'English' },
 		{ code: 'es', nativeName: 'Español', englishName: 'Spanish' },
