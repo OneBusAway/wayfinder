@@ -24,7 +24,6 @@
 
 	let { onStopClick, onRouteClick }: Props = $props();
 
-	let contentRef = $state<HTMLElement | null>(null);
 	let count = $derived($favorites.length);
 	let isOpen = $state(false);
 	let restoreFocus = true;
@@ -48,8 +47,7 @@
 	function handleCloseAutoFocus(event: Event) {
 		const shouldRestore = restoreFocus;
 		restoreFocus = true;
-		const active = document.activeElement;
-		if (!shouldRestore || (active && active !== document.body && !contentRef?.contains(active))) {
+		if (!shouldRestore) {
 			event.preventDefault();
 		}
 	}
@@ -72,13 +70,11 @@
 			{/if}
 		</Popover.Trigger>
 		<Popover.Content
-			bind:ref={contentRef}
 			align="end"
 			aria-label={$t('favorites.title')}
 			class="max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto border border-gray-300 opacity-[.95] dark:border-gray-600"
 			portalProps={{ disabled: true }}
 			role="dialog"
-			trapFocus={false}
 			onCloseAutoFocus={handleCloseAutoFocus}
 		>
 			<FavoritesList onStopClick={handleStopClick} onRouteClick={handleRouteClick} />

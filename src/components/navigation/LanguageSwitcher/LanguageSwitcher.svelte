@@ -7,7 +7,6 @@
 
 	type Language = (typeof languages)[number];
 
-	let contentRef = $state<HTMLElement | null>(null);
 	let isOpen = $state(false);
 
 	// Safe wrapper for $t() to handle cases where i18n locale is not yet initialized
@@ -131,20 +130,12 @@
 				>
 			</Popover.Trigger>
 			<Popover.Content
-				bind:ref={contentRef}
 				align="end"
 				aria-label={safeTranslate('language_switcher.available_languages')}
 				class="max-h-[400px] w-auto gap-0 overflow-y-auto border border-gray-300 bg-surface p-0 py-1 dark:border-gray-600 dark:bg-surface-dark"
 				portalProps={{ disabled: true }}
 				role="listbox"
 				sideOffset={6}
-				trapFocus={false}
-				onCloseAutoFocus={(event) => {
-					const active = document.activeElement;
-					if (active && active !== document.body && !contentRef?.contains(active)) {
-						event.preventDefault();
-					}
-				}}
 			>
 				{#each languages as lang (lang.code)}
 					<button
