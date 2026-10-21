@@ -62,6 +62,36 @@ function flushRaf() {
 const ROUTE_C = { id: 'r_c', shortName: 'C Line', type: 3, tripId: 't_c', gtfsColor: 'b02a37' };
 const ROUTE_COLORS = new Map([['r_c', { line: '#b02a37', badgeBg: 'b02a37', badgeFg: 'ffffff' }]]);
 
+describe('stop loading', () => {
+	test('wraps an out-of-range center longitude before requesting stops', async () => {
+		const mapProvider = makeProvider();
+
+		global.fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({ data: { list: [], references: { routes: [] } } })
+		});
+
+		render(MapView, {
+			props: {
+				handleStopMarkerSelect: vi.fn(),
+				mapProvider
+			}
+		});
+
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+
+		mapProvider.getCenter.mockReturnValue({ lat: 47.6, lng: 200 });
+
+		const debouncedLoadMarkers = mapProvider.eventListeners.mock.calls[0][1];
+		debouncedLoadMarkers();
+
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+
+		const requestUrl = new URL(fetch.mock.calls[1][0], 'http://localhost');
+		expect(requestUrl.searchParams.get('lng')).toBe('-160');
+	});
+});
+
 describe('MapView map mode', () => {
 	beforeEach(() => {
 		capturedStopRoutesLayerProps = null;
