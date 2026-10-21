@@ -5,6 +5,7 @@
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils/shadcn.js";
 	import * as Dialog from "./index";
 	import DialogPortal from "./dialog-portal.svelte";
+	import { setDialogContentContext } from "./context";
 	import type { Snippet } from "svelte";
 	import type { ComponentProps } from "svelte";
 
@@ -20,6 +21,12 @@
 		children: Snippet;
 		showCloseButton?: boolean;
 	} = $props();
+
+	setDialogContentContext({
+		get showCloseButton() {
+			return showCloseButton;
+		},
+	});
 </script>
 
 <DialogPortal {...portalProps}>
