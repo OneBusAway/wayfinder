@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Popover from 'flowbite-svelte/Popover.svelte';
-	import { fade } from 'svelte/transition';
+	import * as Popover from '$components/ui/popover/index';
 
 	interface Props {
 		links: { key: string; value: string }[];
@@ -15,48 +14,40 @@
 	}
 </script>
 
-<button
-	aria-expanded={isOpen}
-	aria-haspopup="menu"
-	aria-label="More navigation options"
-	class="flex h-8 w-8 items-center justify-center rounded-md border bg-surface/80 dark:bg-surface-dark"
-	id="more-navigation-options-trigger"
->
-	<svg
-		class="h-5 w-5 text-surface-foreground dark:text-surface-foreground-dark"
-		fill="currentColor"
-		viewBox="0 0 20 20"
-		xmlns="http://www.w3.org/2000/svg"
-		><path
-			d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-		></path></svg
+<Popover.Root bind:open={isOpen}>
+	<Popover.Trigger
+		aria-label="More navigation options"
+		class="flex h-8 w-8 items-center justify-center rounded-md border bg-surface/80 dark:bg-surface-dark"
 	>
-</button>
-<Popover
-	arrow={false}
-	class="left-0 min-w-[150px] rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
-	defaultClass="flex flex-col py-1"
-	offset={6}
-	open={isOpen}
-	on:show={(e: CustomEvent<boolean>) => (isOpen = e.detail)}
-	params={{ duration: 100 }}
-	placement="bottom-end"
-	transition={fade}
-	trigger="click"
-	triggeredBy="#more-navigation-options-trigger"
->
-	<!-- FIXME: each block has no key -->
-	<!-- eslint-disable-next-line svelte/require-each-key -->
-	{#each links as { key, value }}
-		<!-- external URL -->
-		<!-- eslint-disable svelte/no-navigation-without-resolve -->
-		<a
-			class="block px-4 py-2 text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700"
-			href={value}
-			onclick={closePopover}
+		<svg
+			class="h-5 w-5 text-surface-foreground dark:text-surface-foreground-dark"
+			fill="currentColor"
+			viewBox="0 0 20 20"
+			xmlns="http://www.w3.org/2000/svg"
+			><path
+				d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+			></path></svg
 		>
-			{key}
-		</a>
-		<!-- eslint-enable svelte/no-navigation-without-resolve -->
-	{/each}
-</Popover>
+	</Popover.Trigger>
+	<Popover.Content
+		align="end"
+		aria-label="Navigation options"
+		class="w-auto min-w-[150px] gap-0 border border-gray-300 bg-surface p-0 py-1 dark:border-gray-600 dark:bg-surface-dark"
+		portalProps={{ disabled: true }}
+		role="dialog"
+		sideOffset={6}
+	>
+		{#each links as { key, value } (key)}
+			<!-- external URL -->
+			<!-- eslint-disable svelte/no-navigation-without-resolve -->
+			<a
+				class="block px-4 py-2 text-sm font-semibold text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700"
+				href={value}
+				onclick={closePopover}
+			>
+				{key}
+			</a>
+			<!-- eslint-enable svelte/no-navigation-without-resolve -->
+		{/each}
+	</Popover.Content>
+</Popover.Root>

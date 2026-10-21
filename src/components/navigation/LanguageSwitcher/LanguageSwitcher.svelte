@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Popover from 'flowbite-svelte/Popover.svelte';
-	import { fade } from 'svelte/transition';
+	import * as Popover from '$components/ui/popover/index';
 	import { languages } from '$lib/i18n';
 	import { locale, t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -106,63 +105,53 @@
 
 {#if isEnabled}
 	<div class="relative">
-		<button
-			aria-label={safeTranslate('language_switcher.select_language', {
-				values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) }
-			})}
-			aria-expanded={isOpen}
-			aria-haspopup="listbox"
-			class="flex h-8 items-center justify-center gap-1 rounded-md border bg-surface/80 px-2 font-semibold text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
-			id="language-switcher-trigger"
-			type="button"
-		>
-			<svg
-				class="h-4 w-4"
-				fill="none"
-				stroke="currentColor"
-				viewBox="0 0 24 24"
-				xmlns="http://www.w3.org/2000/svg"
+		<Popover.Root bind:open={isOpen}>
+			<Popover.Trigger
+				aria-label={safeTranslate('language_switcher.select_language', {
+					values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) }
+				})}
+				class="flex h-8 items-center justify-center gap-1 rounded-md border bg-surface/80 px-2 font-semibold text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
 			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-				></path>
-			</svg>
-			<span class="hidden sm:inline">{getLanguageNameForLocale(currentLocale, buttonFormat)}</span>
-		</button>
-		<Popover
-			aria-label={safeTranslate('language_switcher.available_languages')}
-			arrow={false}
-			class="left-0 max-h-[400px] overflow-y-auto rounded-md border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
-			defaultClass="flex flex-col py-1"
-			open={isOpen}
-			on:show={(e: CustomEvent<boolean>) => (isOpen = e.detail)}
-			offset={6}
-			params={{ duration: 100 }}
-			placement="bottom-end"
-			role="listbox"
-			transition={fade}
-			trigger="click"
-			triggeredBy="#language-switcher-trigger"
-		>
-			<!-- static list, never reorders -->
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each languages as lang}
-				<button
-					type="button"
-					role="option"
-					aria-selected={lang.code === currentLocale ? true : undefined}
-					onclick={() => handleLanguageSelect(lang.code)}
-					class="block w-full px-4 py-2 text-justify text-sm font-semibold whitespace-nowrap text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
-					currentLocale
-						? 'bg-gray-100 dark:bg-gray-700'
-						: ''}"
+				<svg
+					class="h-4 w-4"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					xmlns="http://www.w3.org/2000/svg"
 				>
-					{formatLanguage(lang, menuFormat)}
-				</button>
-			{/each}
-		</Popover>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+					></path>
+				</svg>
+				<span class="hidden sm:inline">{getLanguageNameForLocale(currentLocale, buttonFormat)}</span
+				>
+			</Popover.Trigger>
+			<Popover.Content
+				align="end"
+				aria-label={safeTranslate('language_switcher.available_languages')}
+				class="max-h-[400px] w-auto gap-0 overflow-y-auto border border-gray-300 bg-surface p-0 py-1 dark:border-gray-600 dark:bg-surface-dark"
+				portalProps={{ disabled: true }}
+				role="listbox"
+				sideOffset={6}
+			>
+				{#each languages as lang (lang.code)}
+					<button
+						aria-selected={lang.code === currentLocale ? true : undefined}
+						role="option"
+						type="button"
+						onclick={() => handleLanguageSelect(lang.code)}
+						class="block w-full px-4 py-2 text-justify text-sm font-semibold whitespace-nowrap text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===
+						currentLocale
+							? 'bg-gray-100 dark:bg-gray-700'
+							: ''}"
+					>
+						{formatLanguage(lang, menuFormat)}
+					</button>
+				{/each}
+			</Popover.Content>
+		</Popover.Root>
 	</div>
 {/if}
