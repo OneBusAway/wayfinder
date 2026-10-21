@@ -72,7 +72,7 @@
 		<Popover.Content
 			align="end"
 			aria-label={$t('favorites.title')}
-			class="max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto border border-gray-300 opacity-[.95] dark:border-gray-600"
+			class="max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-gray-300 bg-popover/95 p-3 backdrop-blur-xs dark:border-gray-600"
 			portalProps={{ disabled: true }}
 			role="dialog"
 			onCloseAutoFocus={handleCloseAutoFocus}
