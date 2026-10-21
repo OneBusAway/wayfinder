@@ -40,13 +40,13 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content>
+	<Dialog.Content class="flex max-h-[min(640px,85vh)] flex-col">
 		<Dialog.Header>
 			<Dialog.Title>
 				{getHeaderTextTranslation()}
 			</Dialog.Title>
 		</Dialog.Header>
-		<Dialog.Description>
+		<Dialog.Description class="-mx-4 overflow-y-auto px-4">
 			{getBodyTextTranslation()}
 		</Dialog.Description>
 		<Dialog.Footer>
