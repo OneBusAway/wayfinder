@@ -51,7 +51,6 @@
 		</p>
 		<Dialog.Footer>
 			<Button
-				size="lg"
 				variant="outline"
 				onclick={() => {
 					open = false;
@@ -59,7 +58,7 @@
 			>
 				{$t('alert.close')}
 			</Button>
-			<Button size="lg" onclick={() => window.open(getUrlTranslation(), '_blank')}>
+			<Button onclick={() => window.open(getUrlTranslation(), '_blank')}>
 				{$t('alert.more_info')}
 			</Button>
 		</Dialog.Footer>
