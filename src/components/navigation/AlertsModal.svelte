@@ -46,9 +46,9 @@
 				{getHeaderTextTranslation()}
 			</Dialog.Title>
 		</Dialog.Header>
-		<p class="text-base">
+		<Dialog.Description>
 			{getBodyTextTranslation()}
-		</p>
+		</Dialog.Description>
 		<Dialog.Footer>
 			<Button
 				variant="outline"
