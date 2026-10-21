@@ -79,6 +79,8 @@
 				{@const phone = contactBookingRule(service)?.phoneNumber}
 				{@const status = statusLine(availability)}
 				<li class="flex items-center gap-3 py-2">
+					<!-- FIXME: navigation path not built with resolve() -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -->
 					<a
 						href={onDemandServicePath(service.id)}
 						onclick={(event) => select(event, service.id)}
@@ -91,6 +93,7 @@
 							<span class="block text-sm text-gray-600 dark:text-gray-400">{status}</span>
 						{/if}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 					{#if phone}
 						<a
 							href={`tel:${phone}`}

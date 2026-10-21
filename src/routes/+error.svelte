@@ -100,6 +100,8 @@
 		{/if}
 
 		<div class="flex gap-3">
+			<!-- FIXME: navigation path not built with resolve() -->
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 			<a href="/" class="button--primary inline-flex items-center gap-2" id="error-go-home">
 				<House class="h-4 w-4" />
 				{goHomeText}

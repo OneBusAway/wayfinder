@@ -20,6 +20,8 @@
 	function getTransportModes(legs) {
 		if (!legs) return [];
 		const modes = [];
+		// local to this function
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const seenModes = new Set();
 
 		for (const leg of legs) {
@@ -64,6 +66,8 @@
 	<span class="font-semibold">{durationMinutes} {$t('time.min')}</span>
 	{#if transportModes.length > 0}
 		<span class="flex items-center gap-1 text-xs opacity-80">
+			<!-- FIXME: each block has no key -->
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each transportModes as mode, i}
 				{@const icon = getModeIcon(mode)}
 				{#if icon}

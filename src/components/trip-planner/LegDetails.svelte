@@ -238,6 +238,8 @@
 					class="mt-3 space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50"
 					transition:slide={{ duration: 200 }}
 				>
+					<!-- FIXME: each block has no key -->
+					<!-- eslint-disable-next-line svelte/require-each-key -->
 					{#each leg.steps as step}
 						<div class="text-sm">
 							<div class="font-medium text-gray-800 dark:text-gray-200">

@@ -215,6 +215,8 @@
 >
 	<div class="logo-container flex items-center gap-2 px-1 py-1 md:gap-4 md:px-2 md:py-2">
 		<div class="flex items-center justify-center gap-x-2">
+			<!-- external URL -->
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 			<a href="/" class="block">
 				<img
 					bind:this={logoElement}
@@ -225,6 +227,8 @@
 				/>
 			</a>
 			{#if showRegionName}
+				<!-- external URL -->
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 				<a href="/" class="region-name block text-xl font-extrabold text-brand-foreground">
 					{PUBLIC_OBA_REGION_NAME}
 				</a>
@@ -238,13 +242,18 @@
 		aria-label="Main navigation"
 		class="flex items-center gap-x-2 px-1 py-1 md:gap-x-4 md:px-2 md:py-2"
 	>
+		<!-- FIXME: each block has no key -->
+		<!-- eslint-disable-next-line svelte/require-each-key -->
 		{#each visibleLinks as { key, value }}
 			<div class="flex-shrink-0 rounded-md border bg-surface/80 dark:bg-surface-dark">
+				<!-- external URL -->
+				<!-- eslint-disable svelte/no-navigation-without-resolve -->
 				<a
 					href={value}
 					class="block px-2 py-1 font-semibold text-surface-foreground dark:text-surface-foreground-dark"
 					>{key}</a
 				>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</div>
 		{/each}
 

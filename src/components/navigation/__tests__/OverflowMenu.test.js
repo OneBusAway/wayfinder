@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { expect, test, describe } from 'vitest';
+import { afterEach, expect, test, describe, vi } from 'vitest';
 import OverflowMenu from '../OverflowMenu.svelte';
+import { stubLayoutBox } from '../../../tests/helpers/test-utils';
 
 describe('OverflowMenu', () => {
 	const mockLinks = [
@@ -9,6 +10,17 @@ describe('OverflowMenu', () => {
 		{ key: 'Contact', value: '/contact' },
 		{ key: 'GitHub', value: 'https://github.com/OneBusAway' }
 	];
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	function renderOverflowMenu(props) {
+		const result = render(OverflowMenu, props);
+		const button = screen.getByRole('button', { name: 'More navigation options' });
+		stubLayoutBox(button);
+		return { ...result, button };
+	}
 
 	test('renders trigger button in collapsed state initially', () => {
 		render(OverflowMenu, { links: mockLinks });
@@ -18,63 +30,63 @@ describe('OverflowMenu', () => {
 		expect(button).toHaveAttribute('aria-expanded', 'false');
 		expect(button).toHaveAttribute('aria-haspopup', 'dialog');
 
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 		expect(screen.queryByRole('link')).not.toBeInTheDocument();
 	});
 
 	test('opens popover and displays all links when trigger button is clicked', async () => {
 		const user = userEvent.setup();
-		render(OverflowMenu, { links: mockLinks });
+		const { button } = renderOverflowMenu({ links: mockLinks });
 
-		const button = screen.getByRole('button', { name: 'More navigation options' });
 		await user.click(button);
 
+		const dialog = await screen.findByRole('dialog', { name: 'Navigation options' });
+		expect(button).toHaveAttribute('aria-controls', dialog.id);
+
 		for (const { key, value } of mockLinks) {
-			const link = screen.getByText(key);
-			expect(link.tagName).toBe('A');
+			const link = await screen.findByRole('link', { name: key });
 			expect(link).toHaveAttribute('href', value);
 		}
+
 		expect(button).toHaveAttribute('aria-expanded', 'true');
 	});
 
 	test('renders empty menu when no links are provided', async () => {
 		const user = userEvent.setup();
-		render(OverflowMenu, { links: [] });
+		const { button } = renderOverflowMenu({ links: [] });
 
-		const button = screen.getByRole('button', { name: 'More navigation options' });
 		await user.click(button);
 
+		await screen.findByRole('dialog', { name: 'Navigation options' });
 		expect(button).toHaveAttribute('aria-expanded', 'true');
-		expect(
-			document.getElementById(button.getAttribute('aria-controls')).querySelector('a')
-		).toBeNull();
+		expect(screen.queryByRole('link')).not.toBeInTheDocument();
 	});
 
 	test('closes popover when a link is clicked', async () => {
 		const user = userEvent.setup();
-		render(OverflowMenu, { links: mockLinks });
+		const { button } = renderOverflowMenu({ links: mockLinks });
 
-		const button = screen.getByRole('button', { name: 'More navigation options' });
 		await user.click(button);
 
-		const firstLink = screen.getByText('About');
+		const firstLink = await screen.findByRole('link', { name: 'About' });
 		firstLink.addEventListener('click', (e) => e.preventDefault(), { once: true });
 		await user.click(firstLink);
 
 		await waitFor(() => {
-			expect(screen.queryByText('About')).not.toBeInTheDocument();
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 		});
+		expect(screen.queryByRole('link', { name: 'About' })).not.toBeInTheDocument();
 		expect(button).toHaveAttribute('aria-expanded', 'false');
 	});
 
 	test('closes popover when clicking outside', async () => {
 		const user = userEvent.setup();
-		render(OverflowMenu, { links: mockLinks });
+		const { button } = renderOverflowMenu({ links: mockLinks });
 
-		const button = screen.getByRole('button', { name: 'More navigation options' });
 		await user.click(button);
 
 		expect(button).toHaveAttribute('aria-expanded', 'true');
-		expect(screen.getByText('About')).toBeInTheDocument();
+		expect(await screen.findByRole('link', { name: 'About' })).toBeInTheDocument();
 
 		// jsdom lays every element out as a 0x0 box at the origin, and Bits UI only
 		// dismisses when the pointer lands outside the content's rect, so click off-origin
@@ -85,23 +97,23 @@ describe('OverflowMenu', () => {
 		});
 
 		await waitFor(() => {
-			expect(screen.queryByText('About')).not.toBeInTheDocument();
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 		});
+		expect(screen.queryByRole('link', { name: 'About' })).not.toBeInTheDocument();
 		expect(button).toHaveAttribute('aria-expanded', 'false');
 	});
 
 	test('updates rendered links when links prop changes', async () => {
 		const user = userEvent.setup();
-		const { rerender } = render(OverflowMenu, { links: mockLinks });
+		const { button, rerender } = renderOverflowMenu({ links: mockLinks });
 
-		const button = screen.getByRole('button', { name: 'More navigation options' });
 		await user.click(button);
 
-		expect(screen.getByText('About')).toBeInTheDocument();
+		expect(await screen.findByRole('link', { name: 'About' })).toBeInTheDocument();
 
 		await rerender({ links: [{ key: 'Home', value: '/' }] });
 
-		expect(screen.queryByText('About')).not.toBeInTheDocument();
-		expect(screen.getByText('Home')).toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'About' })).not.toBeInTheDocument();
+		expect(await screen.findByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
 	});
 });

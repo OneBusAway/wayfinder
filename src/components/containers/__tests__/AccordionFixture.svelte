@@ -13,6 +13,8 @@
 <button onclick={() => accordion?.closeAll(animate)}>Collapse all</button>
 <p data-testid="registered-items">{items.length}</p>
 <Accordion bind:this={accordion} bind:items>
+	<!-- static list, never reorders -->
+	<!-- eslint-disable-next-line svelte/require-each-key -->
 	{#each ['First route', 'Second route'] as name}
 		<AccordionItem>
 			{#snippet header(active)}

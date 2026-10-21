@@ -105,6 +105,8 @@
 
 		{#if !isAlertsHidden}
 			<div class="space-y-2">
+				<!-- FIXME: each block has no key -->
+				<!-- eslint-disable-next-line svelte/require-each-key -->
 				{#each paginatedAlerts as alert, i}
 					{@const absoluteIndex = pageStart + i}
 					{#if showGroups && absoluteIndex === 0}

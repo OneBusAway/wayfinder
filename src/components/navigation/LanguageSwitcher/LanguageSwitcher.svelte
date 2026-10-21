@@ -1,5 +1,5 @@
 <script lang="ts">
-	import * as Popover from '$components/ui/popover';
+	import * as Popover from '$components/ui/popover/index';
 	import { languages } from '$lib/i18n';
 	import { locale, t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -7,12 +7,11 @@
 
 	type Language = (typeof languages)[number];
 
-	let contentRef = $state<HTMLElement | null>(null);
 	let isOpen = $state(false);
 
 	// Safe wrapper for $t() to handle cases where i18n locale is not yet initialized
 	// example: during error page hydration. Falls back to the translation key.
-	function safeTranslate(key: string, options?: Parameters<typeof $t>[1]) {
+	function safeTranslate(key: string, options: Parameters<typeof $t>[1] | undefined = undefined) {
 		try {
 			const tFn = $t;
 			return typeof tFn === 'function' ? tFn(key, options) : key;
@@ -131,23 +130,17 @@
 				>
 			</Popover.Trigger>
 			<Popover.Content
-				bind:ref={contentRef}
 				align="end"
 				aria-label={safeTranslate('language_switcher.available_languages')}
-				class="z-[20000] max-h-[400px] overflow-y-auto border border-gray-300 bg-surface shadow-lg dark:border-gray-600 dark:bg-surface-dark"
-				role="dialog"
+				class="max-h-[400px] w-auto gap-0 overflow-y-auto border border-gray-300 bg-surface p-0 py-1 dark:border-gray-600 dark:bg-surface-dark"
+				portalProps={{ disabled: true }}
+				role="listbox"
 				sideOffset={6}
-				trapFocus={false}
-				onCloseAutoFocus={(event) => {
-					const active = document.activeElement;
-					if (active && active !== document.body && !contentRef?.contains(active)) {
-						event.preventDefault();
-					}
-				}}
 			>
 				{#each languages as lang (lang.code)}
 					<button
-						aria-current={lang.code === currentLocale ? true : undefined}
+						aria-selected={lang.code === currentLocale ? true : undefined}
+						role="option"
 						type="button"
 						onclick={() => handleLanguageSelect(lang.code)}
 						class="block w-full px-4 py-2 text-justify text-sm font-semibold whitespace-nowrap text-surface-foreground hover:bg-gray-100 dark:text-surface-foreground-dark dark:hover:bg-gray-700 {lang.code ===

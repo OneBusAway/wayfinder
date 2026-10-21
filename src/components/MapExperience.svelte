@@ -161,6 +161,8 @@
 		// $state.snapshot: the marker's stopData is a reactive proxy, and pushState
 		// structured-clones its state argument (DataCloneError on a proxy). Snapshot
 		// yields a plain, clone-safe copy.
+		// FIXME: navigation path not built with resolve()
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		pushState(mapStopPath(stopData.id), { stopData: $state.snapshot(stopData) });
 	}
 
@@ -371,6 +373,8 @@
 
 	function closePane() {
 		if (stopSheetOpen || onDemandSheetOpen) {
+			// FIXME: navigation path not built with resolve()
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
 			pushState('/', {}); // selection effect runs the map/stop teardown
 			return;
 		}
@@ -448,6 +452,8 @@
 	 * @param {number} routeData.currentIntervalId - The current interval ID.
 	 */
 	function handleRouteSelected(routeData) {
+		// FIXME: navigation path not built with resolve()
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		if (stopSheetOpen || onDemandSheetOpen) pushState('/', {});
 		selectedRoute = routeData.route;
 		polylines = routeData.polylines;

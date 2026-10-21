@@ -101,7 +101,11 @@
 	let allStops = $state([]);
 	// O(1) lookup for existing stops
 	/** @type {Map<string, import('$lib/types').Stop>} */
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	let allStopsMap = new Map();
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	let stopsCache = new Map();
 
 	const Modes = {

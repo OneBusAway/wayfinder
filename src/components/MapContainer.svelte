@@ -16,7 +16,6 @@
 		stop,
 		initialCoords = null,
 		startInTripPlanMode = false,
-		// eslint-disable-next-line svelte/valid-compile
 		...restProps
 	} = $props();
 

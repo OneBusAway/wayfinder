@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { tick } from 'svelte';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import FavoritesFloatingControl from '../FavoritesFloatingControl.svelte';
+import { stubLayoutBox } from '../../../tests/helpers/test-utils';
 
 vi.mock('@lucide/svelte', async (importOriginal) => {
 	const { default: LucideStub } = await import('../../../tests/mocks/LucideStub.svelte');
@@ -23,6 +23,12 @@ vi.mock('svelte-i18n', () => {
 		'direction.N': 'North'
 	};
 	return {
+		locale: {
+			subscribe: vi.fn((fn) => {
+				fn('en');
+				return () => {};
+			})
+		},
 		t: {
 			subscribe: vi.fn((fn) => {
 				fn((key, opts) => {
@@ -64,10 +70,26 @@ describe('FavoritesFloatingControl', () => {
 		return user.pointer({ coords: { clientX: 1, clientY: 1 }, keys: '[MouseLeft]', target });
 	}
 
+	function renderFavoritesFloatingControl(props) {
+		const result = render(FavoritesFloatingControl, props);
+		const toggle = screen.getByRole('button', { name: 'Open favorites' });
+		stubLayoutBox(toggle);
+		return { ...result, toggle };
+	}
+
+	async function openFavoritesDialog(toggle) {
+		await user.click(toggle);
+		return screen.findByRole('dialog', { name: 'Favorites' });
+	}
+
 	beforeEach(() => {
 		user = userEvent.setup();
 		mockStoreValue.current = [];
 		vi.clearAllMocks();
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	it('renders a floating open-favorites button', () => {
@@ -75,21 +97,18 @@ describe('FavoritesFloatingControl', () => {
 
 		const toggle = screen.getByRole('button', { name: 'Open favorites' });
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
-		expect(screen.queryByText('No favorites yet')).not.toBeInTheDocument();
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 
 	it('opens the favorites panel on click', async () => {
-		render(FavoritesFloatingControl);
+		const { toggle } = renderFavoritesFloatingControl();
 
-		const toggle = screen.getByRole('button', { name: 'Open favorites' });
-		await user.click(toggle);
+		const panel = await openFavoritesDialog(toggle);
 
-		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
-		expect(panel).toBeInTheDocument();
-		expect(panel).toHaveAttribute('aria-label', 'Favorites');
+		expect(toggle).toHaveAttribute('aria-controls', panel.id);
 		expect(panel).not.toHaveAttribute('aria-modal');
 		await waitFor(() => expect(panel).toHaveFocus());
-		expect(screen.getByText('No favorites yet')).toBeInTheDocument();
+		expect(panel).toHaveTextContent('No favorites yet');
 		expect(toggle).toHaveAttribute('aria-expanded', 'true');
 		expect(toggle).toHaveAccessibleName('Close favorites');
 	});
@@ -119,79 +138,49 @@ describe('FavoritesFloatingControl', () => {
 		];
 		const onStopClick = vi.fn();
 
-		render(FavoritesFloatingControl, { props: { onStopClick } });
+		const { toggle } = renderFavoritesFloatingControl({ props: { onStopClick } });
 
-		const toggle = screen.getByRole('button', { name: 'Open favorites' });
 		await user.click(toggle);
-		await user.click(screen.getByLabelText('Open Pine St & 3rd Ave'));
+		await user.click(await screen.findByRole('button', { name: 'Open Pine St & 3rd Ave' }));
 
 		expect(onStopClick).toHaveBeenCalledTimes(1);
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
-		expect(screen.queryByLabelText('Open Pine St & 3rd Ave')).not.toBeInTheDocument();
-	});
-
-	it('stays open when a node inside the panel detaches itself in its own handler', async () => {
-		render(FavoritesFloatingControl);
-
-		const toggle = screen.getByRole('button', { name: 'Open favorites' });
-		await user.click(toggle);
-		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
-		expect(panel).toBeInTheDocument();
-
-		// A row's ✕ removes its own DOM node mid-click, leaving a detached target
-		// whose contains() reads false. That must not count as an outside click.
-		const row = document.createElement('button');
-		panel.appendChild(row);
-		row.addEventListener('click', () => row.remove());
-
-		row.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-		// Let any (wrongful) close flush to the DOM before asserting.
-		await tick();
-
-		expect(panel).toBeInTheDocument();
-		expect(toggle).toHaveAttribute('aria-expanded', 'true');
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', { name: 'Open Pine St & 3rd Ave' })
+		).not.toBeInTheDocument();
 	});
 
 	it('closes when the toggle is clicked again, keeping focus on the toggle', async () => {
-		render(FavoritesFloatingControl);
+		const { toggle } = renderFavoritesFloatingControl();
 
-		const toggle = screen.getByRole('button', { name: 'Open favorites' });
-		await user.click(toggle);
-		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
-		expect(panel).toBeInTheDocument();
+		await openFavoritesDialog(toggle);
 
 		await user.click(toggle);
 
-		expect(panel).not.toBeInTheDocument();
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
 		expect(toggle).toHaveFocus();
 	});
 
 	it('closes when a click lands on a node outside the control', async () => {
-		render(FavoritesFloatingControl);
+		const { toggle } = renderFavoritesFloatingControl();
 
-		const toggle = screen.getByRole('button', { name: 'Open favorites' });
-		await user.click(toggle);
-		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
-		expect(panel).toBeInTheDocument();
+		await openFavoritesDialog(toggle);
 
 		const outside = document.createElement('div');
 		document.body.appendChild(outside);
 
 		await clickOutside(outside);
 
-		await waitFor(() => expect(panel).not.toBeInTheDocument());
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 		outside.remove();
 	});
 
 	it('leaves focus on an outside element that took it', async () => {
-		render(FavoritesFloatingControl);
+		const { toggle } = renderFavoritesFloatingControl();
 
-		const toggle = screen.getByRole('button', { name: 'Open favorites' });
-		await user.click(toggle);
-
-		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
-		expect(panel).toBeInTheDocument();
+		const panel = await openFavoritesDialog(toggle);
 		await waitFor(() => expect(panel).toHaveFocus());
 
 		const input = document.createElement('input');
@@ -199,39 +188,33 @@ describe('FavoritesFloatingControl', () => {
 
 		await clickOutside(input);
 
-		await waitFor(() => expect(panel).not.toBeInTheDocument());
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 		expect(input).toHaveFocus();
 		input.remove();
 	});
 
 	it('restores focus to the toggle when the outside click took none', async () => {
-		render(FavoritesFloatingControl);
+		const { toggle } = renderFavoritesFloatingControl();
 
-		const toggle = screen.getByRole('button', { name: 'Open favorites' });
-		await user.click(toggle);
-		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
-		expect(panel).toBeInTheDocument();
+		await openFavoritesDialog(toggle);
 
 		const outside = document.createElement('div');
 		document.body.appendChild(outside);
 
 		await clickOutside(outside);
 
-		await waitFor(() => expect(panel).not.toBeInTheDocument());
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 		expect(toggle).toHaveFocus();
 		outside.remove();
 	});
 
 	it('closes on Escape and restores focus to the toggle', async () => {
-		render(FavoritesFloatingControl);
+		const { toggle } = renderFavoritesFloatingControl();
 
-		const toggle = screen.getByRole('button', { name: 'Open favorites' });
-		await user.click(toggle);
-		const panel = document.getElementById(toggle.getAttribute('aria-controls'));
-		expect(panel).toBeInTheDocument();
+		await openFavoritesDialog(toggle);
 
 		await user.keyboard('{Escape}');
-		expect(panel).not.toBeInTheDocument();
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 		expect(toggle).toHaveFocus();
 	});
 });

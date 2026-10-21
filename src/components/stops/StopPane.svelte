@@ -92,6 +92,8 @@
 	/** @type {NodeJS.Timeout | null} */
 	let interval = null;
 	/** @type {StopSurvey | null} */
+	// FIXME: $state synced by $effect, use writable $derived
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let currentStopSurvey = $state(null);
 	/** @type {SurveyQuestion[]} */
 	let remainingSurveyQuestions = $state([]);
@@ -404,6 +406,8 @@
 
 							{#if tripSelected}
 								<div class="mt-auto flex justify-end gap-2">
+									<!-- FIXME: navigation path not built with resolve() -->
+									<!-- eslint-disable svelte/no-navigation-without-resolve -->
 									<a
 										href={`/stops/${stop.id}`}
 										class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
@@ -416,6 +420,7 @@
 									>
 										{$isLoading ? '' : $t('schedule_for_stop.view_schedule')}
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								</div>
 							{/if}
 						</div>

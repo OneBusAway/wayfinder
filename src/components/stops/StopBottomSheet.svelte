@@ -118,6 +118,8 @@
 					lat={stop.lat}
 					lon={stop.lon}
 				/>
+				<!-- FIXME: navigation path not built with resolve() -->
+				<!-- eslint-disable svelte/no-navigation-without-resolve -->
 				<a
 					href={`/stops/${stop.id}`}
 					class="flex h-10 items-center gap-2 rounded-xl border border-gray-300 px-4 text-base font-semibold text-black hover:bg-gray-100 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700"
@@ -125,6 +127,7 @@
 					<Info class="h-4 w-4" />
 					{$isLoading ? '' : $t('stop_details.stop_info')}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</div>
 		</div>
 	{/snippet}
