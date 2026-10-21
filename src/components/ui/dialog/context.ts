@@ -1,6 +1,6 @@
-import { getContext, setContext } from "svelte";
+import { getContext, setContext } from 'svelte';
 
-const DIALOG_CONTENT_KEY = Symbol("dialog-content");
+const DIALOG_CONTENT_KEY = Symbol('dialog-content');
 
 interface DialogContentContext {
 	readonly showCloseButton: boolean;
