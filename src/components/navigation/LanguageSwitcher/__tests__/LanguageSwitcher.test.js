@@ -146,6 +146,8 @@ describe('LanguageSwitcher', () => {
 			const user = userEvent.setup();
 			const { button } = renderLanguageSwitcher();
 
+			expect(button).toHaveAttribute('aria-haspopup', 'listbox');
+
 			const listbox = await openLanguageSwitcher(user, button);
 			expect(button).toHaveAttribute('aria-controls', listbox.id);
 
