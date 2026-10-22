@@ -183,10 +183,7 @@
 		"min_compact": "{n} 分"
 	},
 	"vehicle": {
-		"number": "車輛編號",
-		"data_updated": "資料更新時間",
 		"no_real_time_data": "目前沒有此車輛的即時資料。",
-		"next_stop": "下一站：",
 		"label": "車輛",
 		"to_headsign": "開往 {headsign} 的車輛"
 	},

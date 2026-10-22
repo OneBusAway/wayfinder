@@ -183,10 +183,7 @@
 		"min_compact": "{n} 分钟"
 	},
 	"vehicle": {
-		"number": "车辆编号",
-		"data_updated": "数据更新于",
 		"no_real_time_data": "暂无该车辆的实时数据。",
-		"next_stop": "下一站：",
 		"label": "车辆",
 		"to_headsign": "开往 {headsign} 的车辆"
 	},

@@ -183,10 +183,7 @@
 		"min_compact": "{n} daq"
 	},
 	"vehicle": {
-		"number": "Gaari #",
-		"data_updated": "Xogta waa la cusbooneysiiyay",
 		"no_real_time_data": "Ma hayno xog ku saabsan wakhtiga dhabta ah ee gaarigan hadda.",
-		"next_stop": "Joogsiga xiga:",
 		"label": "Gaari",
 		"to_headsign": "Gaariga u socda {headsign}"
 	},

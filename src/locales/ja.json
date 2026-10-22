@@ -183,10 +183,7 @@
 		"min_compact": "{n}分"
 	},
 	"vehicle": {
-		"number": "車両番号",
-		"data_updated": "データ更新日時",
 		"no_real_time_data": "この車両のリアルタイムデータは現在ありません。",
-		"next_stop": "次の停留所:",
 		"label": "車両",
 		"to_headsign": "{headsign}行きの車両"
 	},

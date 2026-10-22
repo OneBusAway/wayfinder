@@ -183,10 +183,7 @@
 		"min_compact": "{n} daq"
 	},
 	"vehicle": {
-		"number": "Konkolaataa #",
-		"data_updated": "Odeeffannoon haaromfame",
 		"no_real_time_data": "Amma odeeffannoo yeroo qabatamaa konkolaataa kanaaf hin qabnu.",
-		"next_stop": "Dhaabbii itti aanu:",
 		"label": "Konkolaataa",
 		"to_headsign": "Konkolaataa gara {headsign} deemu"
 	},

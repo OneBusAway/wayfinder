@@ -183,10 +183,7 @@
 		"min_compact": "{n} phút"
 	},
 	"vehicle": {
-		"number": "Xe #",
-		"data_updated": "Dữ liệu đã cập nhật",
 		"no_real_time_data": "Hiện tại không có dữ liệu thời gian thực cho xe này.",
-		"next_stop": "Trạm dừng tiếp theo:",
 		"label": "Xe",
 		"to_headsign": "Xe đi {headsign}"
 	},

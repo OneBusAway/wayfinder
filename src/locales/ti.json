@@ -183,10 +183,7 @@
 		"min_compact": "{n} ደቂቕ"
 	},
 	"vehicle": {
-		"number": "ተሽከርካሪ #",
-		"data_updated": "ሓበሬታ ተሓዲሱ",
 		"no_real_time_data": "ብቐጥታ ዝኾነ ሓበሬታ ናይዚ ተሽከርካሪ ሕጂ የብልናን።",
-		"next_stop": "ዝስዕብ መዕረፊ:",
 		"label": "ተሽከርካሪ",
 		"to_headsign": "ናብ {headsign} ዝኸይድ ተሽከርካሪ"
 	},

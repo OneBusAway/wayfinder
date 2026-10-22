@@ -183,10 +183,7 @@
 		"min_compact": "{n} ደቂቃ"
 	},
 	"vehicle": {
-		"number": "ተሽከርካሪ #",
-		"data_updated": "የተሻሻለ ውሂብ",
 		"no_real_time_data": "ለዚህ ተሽከርካሪ በእሁድኛ ጊዜ ውሂብ አናስተውላም።",
-		"next_stop": "ቀጣይ ማቆሚያ:",
 		"label": "ተሽከርካሪ",
 		"to_headsign": "ወደ {headsign} የሚሄድ ተሽከርካሪ"
 	},

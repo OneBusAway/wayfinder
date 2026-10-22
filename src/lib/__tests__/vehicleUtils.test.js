@@ -118,6 +118,92 @@ describe('buildVehiclePopupData', () => {
 			predicted: false
 		});
 	});
+
+	it('passes through schedule deviation and next stop offset from the vehicle status', () => {
+		const vehicle = { vehicleId: 'v-1', scheduleDeviation: 240, nextStopTimeOffset: 90 };
+
+		const result = buildVehiclePopupData(vehicle, undefined, new Map());
+
+		expect(result.scheduleDeviation).toBe(240);
+		expect(result.nextStopTimeOffset).toBe(90);
+	});
+
+	describe('with route references from a polled route', () => {
+		const provider = {
+			addVehicleMarker: vi.fn(() => ({})),
+			updateVehicleMarker: vi.fn(),
+			removeVehicleMarker: vi.fn()
+		};
+
+		async function pollWithRoutes(routes) {
+			const data = tripsResponse('route-1', [{ tripId: 'trip-1', vehicleId: 'v-1' }]);
+			data.data.references.routes = routes;
+			vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => data }));
+			const poll = await fetchAndUpdateVehiclesForRoutes([{ id: 'route-1' }], provider);
+			clearInterval(poll.intervalId);
+		}
+
+		afterEach(() => {
+			clearVehicleMarkersMap();
+			vi.unstubAllGlobals();
+		});
+
+		it('adds route name, colors and type from the cached route', async () => {
+			await pollWithRoutes([
+				{ id: 'route-1', shortName: '1 Line', color: '28813F', textColor: 'FFFFFF', type: 0 }
+			]);
+
+			const result = buildVehiclePopupData({ vehicleId: 'v-1' }, { routeId: 'route-1' }, new Map());
+
+			expect(result).toMatchObject({
+				routeShortName: '1 Line',
+				routeColor: '28813F',
+				routeTextColor: 'FFFFFF',
+				routeType: 0
+			});
+		});
+
+		it('prefers the trip route short name, then falls back to the route long name', async () => {
+			await pollWithRoutes([{ id: 'route-1', longName: 'Link Light Rail' }]);
+
+			const fromTrip = buildVehiclePopupData(
+				{},
+				{ routeId: 'route-1', routeShortName: 'Express' },
+				new Map()
+			);
+			const fromRoute = buildVehiclePopupData({}, { routeId: 'route-1' }, new Map());
+
+			expect(fromTrip.routeShortName).toBe('Express');
+			expect(fromRoute.routeShortName).toBe('Link Light Rail');
+		});
+
+		it('falls back to referenced stops when stopsMap lacks the next stop', async () => {
+			const data = tripsResponse('route-1', [{ tripId: 'trip-1', vehicleId: 'v-1' }]);
+			data.data.references.stops = [{ id: 'stop-9', name: 'Beacon Hill' }];
+			vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => data }));
+			const poll = await fetchAndUpdateVehiclesForRoutes([{ id: 'route-1' }], provider);
+			clearInterval(poll.intervalId);
+
+			const fromRefs = buildVehiclePopupData({ nextStop: 'stop-9' }, undefined, new Map());
+			const fromMap = buildVehiclePopupData(
+				{ nextStop: 'stop-9' },
+				undefined,
+				new Map([['stop-9', { name: 'Beacon Hill Station' }]])
+			);
+
+			expect(fromRefs.nextStopName).toBe('Beacon Hill');
+			expect(fromMap.nextStopName).toBe('Beacon Hill Station');
+		});
+
+		it('forgets cached routes after clearVehicleMarkersMap', async () => {
+			await pollWithRoutes([{ id: 'route-1', shortName: '1 Line' }]);
+			clearVehicleMarkersMap();
+
+			const result = buildVehiclePopupData({}, { routeId: 'route-1' }, new Map());
+
+			expect(result.routeShortName).toBeUndefined();
+		});
+	});
 });
 
 test('refreshes cached vehicles with new colors without fetching, and retains them on later polls', async () => {

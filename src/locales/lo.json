@@ -183,10 +183,7 @@
 		"min_compact": "{n} ນາທີ"
 	},
 	"vehicle": {
-		"number": "ລົດເລກ #",
-		"data_updated": "ຂໍ້ມູນອັບເດດແລ້ວ",
 		"no_real_time_data": "ພວກເຮົາບໍ່ມີຂໍ້ມູນເວລາຈິງສຳລັບລົດຄັນນີ້ໃນຕອນນີ້.",
-		"next_stop": "ປ້າຍຕໍ່ໄປ:",
 		"label": "ລົດ",
 		"to_headsign": "ລົດໄປ {headsign}"
 	},

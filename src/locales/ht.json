@@ -183,10 +183,7 @@
 		"min_compact": "{n} min"
 	},
 	"vehicle": {
-		"number": "Machin #",
-		"data_updated": "Done mete ajou",
 		"no_real_time_data": "Nou pa gen done an tan reyèl pou machin sa a kounye a.",
-		"next_stop": "Pwochen arè:",
 		"label": "Machin",
 		"to_headsign": "Machin pou {headsign}"
 	},

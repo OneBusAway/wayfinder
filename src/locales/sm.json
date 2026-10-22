@@ -183,10 +183,7 @@
 		"min_compact": "{n} min"
 	},
 	"vehicle": {
-		"number": "Taʻavale #",
-		"data_updated": "Faʻamatalaga faʻafouina",
 		"no_real_time_data": "E leai ni faʻamatalaga taimi moni mo lenei taʻavale i le taimi nei.",
-		"next_stop": "Nofoaga taofi e sosoo ai:",
 		"label": "Taʻavale",
 		"to_headsign": "Taʻavale i {headsign}"
 	},

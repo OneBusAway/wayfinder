@@ -6,6 +6,16 @@
 const activeTripMap = new Map();
 
 /**
+ * @type {Map<routeId, route>}
+ */
+const routeMap = new Map();
+
+/**
+ * @type {Map<stopId, stop>}
+ */
+const stopRefMap = new Map();
+
+/**
  * @type {Map<vehicleId, {marker, routeId}>}
  * Keyed by the physical vehicle id. The trips-for-route response can report the
  * same activeTripId for two different vehicles (e.g. the vehicle actually serving
@@ -54,6 +64,14 @@ function applyRouteVehicles(data, routeId, mapProvider, routeType, highlightedTr
 		if (!activeTripMap.has(trip.id)) {
 			activeTripMap.set(trip.id, trip);
 		}
+	}
+
+	for (const route of data.references.routes ?? []) {
+		routeMap.set(route.id, route);
+	}
+
+	for (const stop of data.references.stops ?? []) {
+		stopRefMap.set(stop.id, stop);
 	}
 
 	for (const tripStatus of data.list) {
@@ -262,6 +280,8 @@ export async function fetchAndUpdateVehicles(
 export function clearVehicleMarkersMap() {
 	vehicleMarkersMap.clear();
 	activeTripMap.clear();
+	routeMap.clear();
+	stopRefMap.clear();
 }
 
 /**
@@ -287,11 +307,18 @@ export function removeVehicleMarkersForRoutes(routeIds, mapProvider) {
 }
 
 export function buildVehiclePopupData(vehicle, activeTrip, stopsMap) {
+	const route = routeMap.get(activeTrip?.routeId);
 	return {
 		nextDestination: activeTrip?.tripHeadsign,
 		vehicleId: vehicle.vehicleId,
 		lastUpdateTime: vehicle.lastUpdateTime,
-		nextStopName: stopsMap.get(vehicle.nextStop)?.name,
-		predicted: vehicle.predicted
+		nextStopName: (stopsMap.get(vehicle.nextStop) ?? stopRefMap.get(vehicle.nextStop))?.name,
+		predicted: vehicle.predicted,
+		routeShortName: activeTrip?.routeShortName || route?.shortName || route?.longName,
+		routeColor: route?.color,
+		routeTextColor: route?.textColor,
+		routeType: route?.type,
+		scheduleDeviation: vehicle.scheduleDeviation,
+		nextStopTimeOffset: vehicle.nextStopTimeOffset
 	};
 }

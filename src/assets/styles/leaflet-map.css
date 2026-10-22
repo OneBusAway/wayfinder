@@ -64,3 +64,19 @@
 		transition: none;
 	}
 }
+
+.leaflet-popup-content-wrapper:has(.vehicle-popup-card) {
+	padding: 0;
+	overflow: hidden;
+	border-radius: 0.75rem;
+}
+
+.leaflet-popup-content:has(.vehicle-popup-card) {
+	margin: 0;
+	width: auto !important;
+}
+
+.dark .leaflet-popup:has(.vehicle-popup-card) .leaflet-popup-content-wrapper,
+.dark .leaflet-popup:has(.vehicle-popup-card) .leaflet-popup-tip {
+	background: #111827;
+}

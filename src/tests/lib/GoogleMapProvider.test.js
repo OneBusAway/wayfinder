@@ -5,6 +5,7 @@ import { nightModeStyles } from '$lib/googleMaps';
 import { polylineArrowColor } from '$lib/colorUtils';
 import { isClockwise } from '$lib/MapHelpers/zoneGeometry.js';
 import { square } from '../fixtures/onDemand.js';
+import { mount, unmount } from 'svelte';
 
 vi.mock('$components/map/StopMarker.svelte', () => ({ default: {} }));
 vi.mock('$components/map/PopupContent.svelte', () => ({ default: {} }));
@@ -22,6 +23,11 @@ vi.mock('$lib/MapHelpers/animateMarker', () => ({
 }));
 vi.mock('$lib/vehicleUtils', () => ({
 	buildVehiclePopupData: vi.fn(() => ({}))
+}));
+vi.mock('svelte', async (importOriginal) => ({
+	...(await importOriginal()),
+	mount: vi.fn(() => ({ popup: true })),
+	unmount: vi.fn()
 }));
 
 test('recolors a Google route and its arrows without replacing its geometry', () => {
@@ -80,13 +86,25 @@ function makeGoogleMarkerMock() {
 	});
 }
 
+function makeGoogleInfoWindowMock() {
+	return vi.fn(function GoogleInfoWindow(options) {
+		this.options = options;
+		this.listeners = {};
+		this.addListener = vi.fn((event, handler) => {
+			this.listeners[event] = handler;
+		});
+		this.setContent = vi.fn();
+		this.getContent = vi.fn();
+		this.open = vi.fn();
+		this.close = vi.fn();
+	});
+}
+
 function setupGoogleMaps(MarkerMock) {
 	global.google = {
 		maps: {
 			Marker: MarkerMock,
-			InfoWindow: vi.fn(function InfoWindow() {
-				this.open = vi.fn();
-			}),
+			InfoWindow: makeGoogleInfoWindowMock(),
 			SymbolPath: { CIRCLE: 0 },
 			Size: vi.fn(),
 			Point: vi.fn()
@@ -128,10 +146,13 @@ describe('removeVehicleMarker — marker tracking', () => {
 
 		provider = new GoogleMapProvider('test-key', vi.fn());
 		provider.map = {};
+
+		mount.mockReset().mockReturnValue({ popup: true });
+		unmount.mockReset();
 	});
 
-	test('removes the marker from vehicleMarkers after removal', () => {
-		const marker = provider.addVehicleMarker(
+	function addVehicle() {
+		return provider.addVehicleMarker(
 			{
 				position: { lat: 47.6, lon: -122.3 },
 				predicted: true,
@@ -140,6 +161,10 @@ describe('removeVehicleMarker — marker tracking', () => {
 			{ tripHeadsign: 'Northgate' },
 			3
 		);
+	}
+
+	test('removes the marker from vehicleMarkers after removal', () => {
+		const marker = addVehicle();
 
 		expect(provider.vehicleMarkers).toHaveLength(1);
 
@@ -147,6 +172,49 @@ describe('removeVehicleMarker — marker tracking', () => {
 
 		expect(marker.setMap).toHaveBeenCalledWith(null);
 		expect(provider.vehicleMarkers).toHaveLength(0);
+	});
+
+	// The popup runs a timer while mounted, so a marker that never opens its
+	// popup must not mount one, and removing a marker must tear down an open one.
+	test('mounts the popup only while its info window is open', () => {
+		const marker = addVehicle();
+		expect(mount).not.toHaveBeenCalled();
+
+		marker.listeners.click();
+		expect(mount).toHaveBeenCalledOnce();
+		expect(marker.infoWindow.setContent).toHaveBeenCalled();
+		expect(marker.infoWindow.open).toHaveBeenCalled();
+
+		const mounted = marker.popupComponent;
+		marker.infoWindow.listeners.closeclick();
+		expect(unmount).toHaveBeenCalledWith(mounted);
+		expect(marker.popupComponent).toBeNull();
+	});
+
+	test.each([
+		['removeVehicleMarker', (provider, marker) => provider.removeVehicleMarker(marker)],
+		['clearVehicleMarkers', (provider) => provider.clearVehicleMarkers()]
+	])('%s unmounts an open vehicle popup', (_name, remove) => {
+		const marker = addVehicle();
+		marker.listeners.click();
+		const mounted = marker.popupComponent;
+		expect(mounted).not.toBeNull();
+
+		remove(provider, marker);
+
+		expect(unmount).toHaveBeenCalledWith(mounted);
+		expect(marker.popupComponent).toBeNull();
+		expect(marker.infoWindow.close).toHaveBeenCalled();
+	});
+
+	test('does not unmount twice when a removed marker is cleared again', () => {
+		const marker = addVehicle();
+		marker.listeners.click();
+
+		provider.removeVehicleMarker(marker);
+		provider.clearVehicleMarkers();
+
+		expect(unmount).toHaveBeenCalledOnce();
 	});
 });
 
@@ -352,10 +420,7 @@ describe('addStopRouteMarker — does not clobber an existing stop-emphasis hand
 		global.google = {
 			maps: {
 				Marker: makeGoogleMarkerMock(),
-				InfoWindow: vi.fn(function InfoWindow() {
-					this.open = vi.fn();
-					this.close = vi.fn();
-				}),
+				InfoWindow: makeGoogleInfoWindowMock(),
 				OverlayView: vi.fn(function OverlayView() {
 					this.setMap = vi.fn();
 					this.getPanes = vi.fn(() => ({

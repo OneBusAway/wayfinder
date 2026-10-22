@@ -183,10 +183,7 @@
 		"min_compact": "{n}분"
 	},
 	"vehicle": {
-		"number": "차량 번호",
-		"data_updated": "데이터 업데이트",
 		"no_real_time_data": "현재 이 차량의 실시간 정보가 없습니다.",
-		"next_stop": "다음 정류장:",
 		"label": "차량",
 		"to_headsign": "{headsign} 방면 차량"
 	},

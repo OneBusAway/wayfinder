@@ -183,10 +183,7 @@
 		"min_compact": "{n} min"
 	},
 	"vehicle": {
-		"number": "Sasakyan #",
-		"data_updated": "Na-update ang data",
 		"no_real_time_data": "Wala kaming real-time na data para sa sasakyang ito ngayon.",
-		"next_stop": "Susunod na hintuan:",
 		"label": "Sasakyan",
 		"to_headsign": "Sasakyang papuntang {headsign}"
 	},

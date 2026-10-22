@@ -1,0 +1,20 @@
+.gm-style-iw-c:has(.vehicle-popup-card) {
+	padding: 0 !important;
+	border-radius: 0.75rem;
+}
+
+.gm-style-iw-d:has(.vehicle-popup-card) {
+	overflow: hidden !important;
+}
+
+.gm-style-iw-c:has(.vehicle-popup-card) .gm-style-iw-chr {
+	position: absolute;
+	top: 0;
+	inset-inline-end: 0;
+	z-index: 1;
+}
+
+.dark .gm-style-iw-c:has(.vehicle-popup-card),
+.dark .gm-style-iw-a:has(.vehicle-popup-card) .gm-style-iw-tc::after {
+	background: #111827;
+}

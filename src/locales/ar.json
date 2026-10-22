@@ -183,10 +183,7 @@
 		"min_compact": "{n} د"
 	},
 	"vehicle": {
-		"number": "رقم المركبة",
-		"data_updated": "تم تحديث البيانات",
 		"no_real_time_data": "لا توجد بيانات في الوقت الحقيقي لهذه المركبة الآن.",
-		"next_stop": "المحطة التالية:",
 		"label": "المركبة",
 		"to_headsign": "مركبة متجهة إلى {headsign}"
 	},

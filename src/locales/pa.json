@@ -183,10 +183,7 @@
 		"min_compact": "{n} ਮਿੰਟ"
 	},
 	"vehicle": {
-		"number": "ਵਾਹਨ #",
-		"data_updated": "ਡਾਟਾ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ",
 		"no_real_time_data": "ਸਾਡੇ ਕੋਲ ਇਸ ਸਮੇਂ ਇਸ ਵਾਹਨ ਲਈ ਅਸਲ-ਸਮੇਂ ਦਾ ਡਾਟਾ ਨਹੀਂ ਹੈ।",
-		"next_stop": "ਅਗਲਾ ਸਟਾਪ:",
 		"label": "ਵਾਹਨ",
 		"to_headsign": "{headsign} ਵੱਲ ਜਾਣ ਵਾਲਾ ਵਾਹਨ"
 	},
