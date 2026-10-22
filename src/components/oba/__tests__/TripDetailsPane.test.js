@@ -138,4 +138,28 @@ describe('TripDetailsPane', () => {
 		});
 		expect(screen.queryByText(/trip_details\.collapsed_stops/)).not.toBeInTheDocument();
 	});
+
+	test('includes scheduledArrivalTime as the time parameter in the API request (issue #330)', async () => {
+		// When the user taps the 10:14 AM row, the component must pass that
+		// row's scheduledArrivalTime as &time= so the OBA server returns the
+		// correct trip instance and not the next one running at request time.
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => mockTripResponse({ vehicleId: null })
+		});
+		vi.stubGlobal('fetch', fetchMock);
+
+		const scheduledArrivalTime = 1738800000000; // arbitrary ms-epoch timestamp
+
+		render(TripDetailsPane, {
+			props: { stop, tripId: '1_trip', serviceDate: 1738800000000, scheduledArrivalTime }
+		});
+
+		await waitFor(() => {
+			expect(fetchMock).toHaveBeenCalled();
+		});
+
+		const calledUrl = fetchMock.mock.calls[0][0];
+		expect(calledUrl).toContain(`time=${scheduledArrivalTime}`);
+	});
 });
