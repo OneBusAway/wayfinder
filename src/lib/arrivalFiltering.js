@@ -22,17 +22,16 @@ export function makeKey(arrival) {
 
 /**
  * Filters out arrivals whose best estimated time of arrival (ETA) is negative,
- * meaning the vehicle has already arrived at the stop (as the row displays it).
+ * meaning the vehicle has already arrived or departed (as the row displays it).
  *
  * ETA is computed as:
  *   bestTimeMins - nowMins
- * where bestTime is the predicted arrival time when prediction is available
- * and > 0, otherwise the scheduled arrival time.
+ * where bestTime is the predicted time when prediction is available and > 0,
+ * otherwise the scheduled time.
  *
- * Must stay aligned with ArrivalDeparture.svelte, which defaults
- * `stopSequence || 1` and therefore always renders an arrival-time ETA.
- * Do not special-case stopSequence === 0 here or first-stop layover rows
- * will show "arrived N min ago" while remaining in the list.
+ * Must stay aligned with ArrivalDeparture.svelte, which distinguishes first-stop
+ * origin rows (stopSequence === 0) as departures (using departure times) from
+ * intermediate/final stop rows (using arrival times).
  *
  * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
  * @param {number} now - Current time in milliseconds since epoch
@@ -44,11 +43,26 @@ export function filterDeparted(arrivals, now) {
 	const nowMins = Math.floor(now / MS_IN_MINS);
 
 	return arrivals.filter((arrival) => {
-		const predictedArrival = arrival.predictedArrivalTime;
-		const scheduledArrival = arrival.scheduledArrivalTime;
+		const isFirstStop = (arrival.stopSequence ?? 1) === 0;
+		let predicted, scheduled;
 
-		const bestTime =
-			arrival.predicted && predictedArrival > 0 ? predictedArrival : scheduledArrival;
+		if (isFirstStop) {
+			const hasDepartureTime =
+				(arrival.predicted && arrival.predictedDepartureTime > 0) ||
+				arrival.scheduledDepartureTime > 0;
+			if (hasDepartureTime) {
+				predicted = arrival.predictedDepartureTime;
+				scheduled = arrival.scheduledDepartureTime;
+			} else {
+				predicted = arrival.predictedArrivalTime;
+				scheduled = arrival.scheduledArrivalTime;
+			}
+		} else {
+			predicted = arrival.predictedArrivalTime;
+			scheduled = arrival.scheduledArrivalTime;
+		}
+
+		const bestTime = arrival.predicted && predicted > 0 ? predicted : scheduled;
 
 		const eta = Math.floor(bestTime / MS_IN_MINS) - nowMins;
 		return eta >= 0;
