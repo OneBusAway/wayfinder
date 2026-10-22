@@ -94,15 +94,30 @@ describe('GET /api/oba/stops-for-location', () => {
 		expect(listMock).toHaveBeenCalledWith({ lat: 47.6, lon: -122.3 });
 	});
 
-	it('ignores spans when a valid radius is present', async () => {
+	it('rejects a half-specified span when a valid radius is present', async () => {
 		const response = await GET({
 			url: new URL(
 				'http://localhost/api/oba/stops-for-location?lat=47.6&lng=-122.3&radius=1500&latSpan=0'
 			)
 		});
+		const body = await response.json();
 
-		expect(response.status).toBe(200);
-		expect(listMock).toHaveBeenCalledWith({ lat: 47.6, lon: -122.3, radius: 1500 });
+		expect(response.status).toBe(400);
+		expect(body.error).toBe('latSpan and lngSpan must both be positive numbers');
+		expect(listMock).not.toHaveBeenCalled();
+	});
+
+	it('rejects malformed complete spans when a valid radius is present', async () => {
+		const response = await GET({
+			url: new URL(
+				'http://localhost/api/oba/stops-for-location?lat=47.6&lng=-122.3&radius=1500&latSpan=bad&lngSpan=0.05'
+			)
+		});
+		const body = await response.json();
+
+		expect(response.status).toBe(400);
+		expect(body.error).toBe('latSpan and lngSpan must both be positive numbers');
+		expect(listMock).not.toHaveBeenCalled();
 	});
 
 	it.each([
@@ -196,5 +211,19 @@ describe('GET /api/oba/stops-for-location', () => {
 
 		expect(response.status).toBe(200);
 		expect(listMock).toHaveBeenCalledWith({ lat: 47.6, lon: -122.3, radius: 1500 });
+	});
+	it('ignores unsupported geometryDetail values', async () => {
+		const response = await GET({
+			url: new URL(
+				'http://localhost/api/oba/stops-for-location?lat=47.6&lng=-122.3&radius=1500&geometryDetail=bogus'
+			)
+		});
+
+		expect(response.status).toBe(200);
+		expect(listMock).toHaveBeenCalledWith({
+			lat: 47.6,
+			lon: -122.3,
+			radius: 1500
+		});
 	});
 });
