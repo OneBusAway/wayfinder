@@ -3,6 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import AlertsModal from '../AlertsModal.svelte';
 
+// The dialog has two buttons named "Close": the footer button and the corner X that
+// <Dialog.Content> renders after its children.
+function getFooterCloseButton() {
+	return screen.getAllByRole('button', { name: 'Close' })[0];
+}
+
 // Mock svelte-i18n to return English by default
 vi.mock('svelte-i18n', () => ({
 	getLocaleFromNavigator: vi.fn(() => 'en-US'),
@@ -83,7 +89,8 @@ describe('AlertsModal', () => {
 	test('renders alert modal with correct title', () => {
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -94,7 +101,8 @@ describe('AlertsModal', () => {
 	test('renders alert description', () => {
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -107,18 +115,19 @@ describe('AlertsModal', () => {
 	test('renders Close button', () => {
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
-		const closeButton = screen.getByRole('button', { name: 'Close' });
-		expect(closeButton).toBeInTheDocument();
+		expect(screen.getAllByRole('button', { name: 'Close' })).toHaveLength(2);
 	});
 
 	test('renders More Info button', () => {
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -126,21 +135,22 @@ describe('AlertsModal', () => {
 		expect(moreInfoButton).toBeInTheDocument();
 	});
 
-	test('closes modal when Close button is clicked', async () => {
+	test.each([
+		['footer Close', 0],
+		['corner X', 1]
+	])('closes modal when %s button is clicked', async (_label, index) => {
 		const user = userEvent.setup();
 
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
-		const closeButton = screen.getByRole('button', { name: 'Close' });
-		await user.click(closeButton);
+		await user.click(screen.getAllByRole('button', { name: 'Close' })[index]);
 
-		// After clicking close, the modal should be closed
-		// The close button should no longer be in the document
-		expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 
 	test('opens external link when More Info button is clicked', async () => {
@@ -148,7 +158,8 @@ describe('AlertsModal', () => {
 
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -161,7 +172,8 @@ describe('AlertsModal', () => {
 	test('uses English translation by default', () => {
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -180,7 +192,8 @@ describe('AlertsModal', () => {
 
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -216,7 +229,8 @@ describe('AlertsModal', () => {
 
 		render(AlertsModal, {
 			props: {
-				alert: alertWithoutEnglish
+				alert: alertWithoutEnglish,
+				open: true
 			}
 		});
 
@@ -229,7 +243,8 @@ describe('AlertsModal', () => {
 		// Test that the component renders without errors when language changes
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -251,94 +266,22 @@ describe('AlertsModal', () => {
 		expect(() => {
 			render(AlertsModal, {
 				props: {
-					alert: alertWithEmptyTranslations
+					alert: alertWithEmptyTranslations,
+					open: true
 				}
 			});
 		}).not.toThrow();
 	});
 
-	test('modal has correct accessibility attributes', () => {
-		const { container } = render(AlertsModal, {
-			props: {
-				alert: mockAlert
-			}
-		});
-
-		// The modal should have proper ARIA attributes
-		// This depends on how Flowbite's Modal component implements accessibility
-		// We can check that the modal content is accessible
-		const modalContent = container.querySelector('p');
-		expect(modalContent).toHaveClass(
-			'text-base',
-			'leading-relaxed',
-			'text-gray-500',
-			'dark:text-gray-200'
-		);
-	});
-
-	test('Close button has correct styling', () => {
+	test('modal is a dialog labelled by the alert header', () => {
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
-		const closeButton = screen.getByRole('button', { name: 'Close' });
-		expect(closeButton).toHaveClass('bg-gray-300', 'text-black', 'hover:bg-gray-400');
-		expect(closeButton).toHaveClass(
-			'dark:bg-gray-700',
-			'dark:text-white',
-			'dark:hover:bg-gray-600'
-		);
-	});
-
-	test('More Info button has correct styling', () => {
-		render(AlertsModal, {
-			props: {
-				alert: mockAlert
-			}
-		});
-
-		const moreInfoButton = screen.getByRole('button', { name: 'More Info' });
-		expect(moreInfoButton).toHaveClass(
-			'bg-brand-accent',
-			'text-white',
-			'hover:bg-brand-accent-dark'
-		);
-		expect(moreInfoButton).toHaveClass(
-			'dark:bg-brand-accent',
-			'dark:text-white',
-			'dark:hover:bg-brand-accent-dark'
-		);
-	});
-
-	test('modal description has correct styling', () => {
-		const { container } = render(AlertsModal, {
-			props: {
-				alert: mockAlert
-			}
-		});
-
-		const description = container.querySelector('p');
-		expect(description).toHaveClass(
-			'text-base',
-			'leading-relaxed',
-			'text-gray-500',
-			'dark:text-gray-200'
-		);
-	});
-
-	test('footer buttons are properly aligned', () => {
-		const { container } = render(AlertsModal, {
-			props: {
-				alert: mockAlert
-			}
-		});
-
-		// Check that the footer has proper alignment
-		const footerContainer = container.querySelector('.flex-1.text-right');
-		expect(footerContainer).toBeInTheDocument();
-		expect(footerContainer).toHaveClass('flex-1', 'text-right');
+		expect(screen.getByRole('dialog', { name: 'Service Alert' })).toBeInTheDocument();
 	});
 
 	test('handles missing URL translation gracefully', () => {
@@ -349,7 +292,8 @@ describe('AlertsModal', () => {
 
 		render(AlertsModal, {
 			props: {
-				alert: alertWithoutUrl
+				alert: alertWithoutUrl,
+				open: true
 			}
 		});
 
@@ -367,7 +311,8 @@ describe('AlertsModal', () => {
 
 		render(AlertsModal, {
 			props: {
-				alert: alertWithEmptyUrl
+				alert: alertWithEmptyUrl,
+				open: true
 			}
 		});
 
@@ -391,16 +336,28 @@ describe('AlertsModal', () => {
 		expect(() => {
 			render(AlertsModal, {
 				props: {
-					alert: incompleteAlert
+					alert: incompleteAlert,
+					open: true
 				}
 			});
 		}).not.toThrow();
 	});
 
-	test('modal is initially open', () => {
+	test('modal is closed by default', () => {
 		render(AlertsModal, {
 			props: {
 				alert: mockAlert
+			}
+		});
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+	});
+
+	test('modal is open when open is true', () => {
+		render(AlertsModal, {
+			props: {
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -415,7 +372,8 @@ describe('AlertsModal', () => {
 		// Component should always show some text even with different languages
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -435,7 +393,8 @@ describe('AlertsModal', () => {
 
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
@@ -449,11 +408,12 @@ describe('AlertsModal', () => {
 	test('buttons are keyboard accessible', async () => {
 		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
-		const closeButton = screen.getByRole('button', { name: 'Close' });
+		const closeButton = getFooterCloseButton();
 		const moreInfoButton = screen.getByRole('button', { name: 'More Info' });
 
 		// Should be able to focus buttons
@@ -464,16 +424,18 @@ describe('AlertsModal', () => {
 		expect(moreInfoButton).toHaveFocus();
 	});
 
-	test('modal autoclose property is set correctly', () => {
-		const { container } = render(AlertsModal, {
+	test('closes modal when Escape is pressed', async () => {
+		const user = userEvent.setup();
+
+		render(AlertsModal, {
 			props: {
-				alert: mockAlert
+				alert: mockAlert,
+				open: true
 			}
 		});
 
-		// The Modal component should have autoclose enabled
-		// This is a prop passed to the Flowbite Modal component
-		// We can verify the component renders without throwing errors
-		expect(container.firstElementChild).toBeInTheDocument();
+		await user.keyboard('{Escape}');
+
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 });

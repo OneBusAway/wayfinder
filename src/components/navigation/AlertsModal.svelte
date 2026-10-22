@@ -1,16 +1,20 @@
-<script>
-	import Modal from 'flowbite-svelte/Modal.svelte';
-	import Button from 'flowbite-svelte/Button.svelte';
+<script lang="ts">
+	import * as Dialog from '$components/ui/dialog';
+	import { Button } from '$components/ui/button';
+	import type { transit_realtime } from 'gtfs-realtime-bindings';
 	import { getLocaleFromNavigator } from 'svelte-i18n';
 	import { t } from 'svelte-i18n';
 
-	let showModal = $state(true);
+	interface Props {
+		alert: transit_realtime.IAlert;
+		open?: boolean;
+	}
 
-	let { alert } = $props();
+	let { alert, open = $bindable(false) }: Props = $props();
 
 	const currentLanguage = String(getLocaleFromNavigator()).split('-')[0];
 
-	function getTranslation(translations) {
+	function getTranslation(translations: transit_realtime.TranslatedString.ITranslation[]): string {
 		if (!translations || translations.length === 0) {
 			return '';
 		}
@@ -21,6 +25,7 @@
 			''
 		);
 	}
+
 	function getHeaderTextTranslation() {
 		return getTranslation(alert.headerText?.translation || []);
 	}
@@ -34,29 +39,28 @@
 	}
 </script>
 
-<Modal
-	title={getHeaderTextTranslation()}
-	bind:open={showModal}
-	autoclose
-	classBackdrop="bg-gray-900/50 dark:bg-gray-900/80"
->
-	<p class="text-base leading-relaxed text-gray-500 dark:text-gray-200">
-		{getBodyTextTranslation()}
-	</p>
-	{#snippet footer()}
-		<div class="flex-1 text-right">
+<Dialog.Root bind:open>
+	<Dialog.Content class="flex max-h-[min(640px,85vh)] flex-col">
+		<Dialog.Header>
+			<Dialog.Title>
+				{getHeaderTextTranslation()}
+			</Dialog.Title>
+		</Dialog.Header>
+		<Dialog.Description class="-mx-4 overflow-y-auto px-4">
+			{getBodyTextTranslation()}
+		</Dialog.Description>
+		<Dialog.Footer>
 			<Button
-				class="bg-gray-300 text-black hover:bg-gray-400 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
-				on:click={() => (showModal = false)}
+				variant="outline"
+				onclick={() => {
+					open = false;
+				}}
 			>
 				{$t('alert.close')}
 			</Button>
-			<Button
-				class="bg-brand-accent text-white hover:bg-brand-accent-dark dark:bg-brand-accent dark:text-white dark:hover:bg-brand-accent-dark"
-				on:click={() => window.open(getUrlTranslation(), '_blank')}
-			>
+			<Button onclick={() => window.open(getUrlTranslation(), '_blank')}>
 				{$t('alert.more_info')}
 			</Button>
-		</div>
-	{/snippet}
-</Modal>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
