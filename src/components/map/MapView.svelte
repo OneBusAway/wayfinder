@@ -217,8 +217,11 @@
 	 * @returns {Promise<import('onebusaway-sdk/resources/stops-for-location').StopsForLocationListResponse | null>}
 	 */
 	async function loadStopsForLocation(lat, lng, zoomLevel, firstCall = false) {
+		const normalizedLng = (((lng % 360) + 540) % 360) - 180;
 		if (firstCall) {
-			const response = await fetch(`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&radius=2500`);
+			const response = await fetch(
+				`/api/oba/stops-for-location?lat=${lat}&lng=${normalizedLng}&radius=2500`
+			);
 			if (!response.ok) {
 				throw new Error('Failed to fetch locations');
 			}
@@ -243,7 +246,7 @@
 		}
 
 		const response = await fetch(
-			`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&latSpan=${latSpan}&lngSpan=${lngSpan}&radius=1500`
+			`/api/oba/stops-for-location?lat=${lat}&lng=${normalizedLng}&latSpan=${latSpan}&lngSpan=${lngSpan}&radius=1500`
 		);
 
 		if (!response.ok) {
