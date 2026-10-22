@@ -478,9 +478,14 @@
 		selectedRoute = null;
 	}
 
+	function hasTripPlanResults() {
+		return (
+			tripItineraries.length > 0 || tripPlanError != null || currentModal === Modal.TRIP_PLANNER
+		);
+	}
+
 	function clearTripItineraries() {
-		const hadTripUi =
-			tripItineraries.length > 0 || tripPlanError != null || currentModal === Modal.TRIP_PLANNER;
+		const hadTripUi = hasTripPlanResults();
 		tripItineraries = [];
 		tripPlanError = null;
 		tripPlanAttempted = false;
@@ -500,8 +505,18 @@
 		clearTripItineraries();
 	}
 
-	/** Exit mobile plan sheet and return to Stops. */
+	/**
+	 * Close the mobile plan sheet.
+	 * After a plan, match desktop: drop pins and itineraries, keep the Plan tab
+	 * and the From/To fields (the form lives in this sheet on a narrow viewport).
+	 * With nothing planned, leave trip planning and return to Stops.
+	 */
 	function closeMobilePlanSheet() {
+		if (hasTripPlanResults()) {
+			closeTripPlanModal();
+			return;
+		}
+
 		if (browser) {
 			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
 			window.dispatchEvent(new CustomEvent('openStopsTab'));

@@ -39,7 +39,13 @@ vi.mock('$components/search/SearchPane.svelte', () => ({
 vi.mock('$components/search/CollapsedSearchField.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/routes/RouteModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/routes/ViewAllRoutesModal.svelte', () => ({ default: () => ({}) }));
-vi.mock('$components/trip-planner/TripPlanModal.svelte', () => ({ default: () => ({}) }));
+let capturedTripPlanModalProps = null;
+vi.mock('$components/trip-planner/TripPlanModal.svelte', () => ({
+	default: function TripPlanModal(anchor, props) {
+		capturedTripPlanModalProps = props;
+		return {};
+	}
+}));
 vi.mock('$components/trip-planner/TripOptionsModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/trip-planner/ClearRecentSearchesDialog.svelte', () => ({
 	default: () => ({})
@@ -180,6 +186,7 @@ function arrivalsPayload(stopId, routes) {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	capturedTripPlanModalProps = null;
 });
 
 test('renders the stop sheet when the URL is a /map/stops path', () => {
@@ -536,4 +543,95 @@ test('picking a route while the on-demand sheet is open closes it and keeps the 
 	setPage(pageWithoutStop());
 	await tick();
 	expect(capturedMapContainerProps.selectedRoute).toEqual(route);
+});
+
+const NARROW_VIEWPORT_MQ = '(max-width: 767px)';
+
+function useNarrowViewport() {
+	const original = window.matchMedia;
+	window.matchMedia = vi.fn().mockImplementation((query) => ({
+		matches: query === NARROW_VIEWPORT_MQ,
+		media: query,
+		onchange: null,
+		addListener: vi.fn(),
+		removeListener: vi.fn(),
+		addEventListener: vi.fn(),
+		removeEventListener: vi.fn(),
+		dispatchEvent: vi.fn()
+	}));
+	return () => {
+		window.matchMedia = original;
+	};
+}
+
+test('closing the mobile itinerary sheet keeps the plan form instead of returning to Stops', async () => {
+	const restoreViewport = useNarrowViewport();
+	let dispatch;
+	try {
+		setPage(pageWithoutStop());
+		render(MapExperience);
+		await tick();
+
+		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+		await tick();
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(false);
+
+		capturedSearchPaneProps.handleTripPlan({
+			data: {
+				plan: { itineraries: [{ duration: 600 }] },
+				error: null
+			}
+		});
+		await tick();
+		expect(capturedTripPlanModalProps.hasPlanned).toBe(true);
+		expect(capturedTripPlanModalProps.itineraries).toHaveLength(1);
+
+		dispatch = vi.spyOn(window, 'dispatchEvent');
+		capturedMapContainerProps.mapProvider.clearAllPolylines.mockClear();
+		capturedTripPlanModalProps.closePane();
+		await tick();
+
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'tripPlanModalClosed' }));
+		expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+		// Sheet stays open on the Plan tab, so the form is not remounted empty in SearchPane.
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(false);
+		expect(capturedTripPlanModalProps.itineraries).toEqual([]);
+		expect(capturedTripPlanModalProps.hasPlanned).toBe(false);
+		expect(capturedTripPlanModalProps.error).toBeNull();
+		expect(capturedMapContainerProps.mapProvider.clearAllPolylines).toHaveBeenCalled();
+
+		dispatch.mockClear();
+		capturedTripPlanModalProps.closePane();
+		await tick();
+
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(true);
+	} finally {
+		dispatch?.mockRestore();
+		restoreViewport();
+	}
+});
+
+test('closing the mobile plan sheet with nothing planned still returns to Stops', async () => {
+	const restoreViewport = useNarrowViewport();
+	let dispatch;
+	try {
+		setPage(pageWithoutStop());
+		render(MapExperience);
+		await tick();
+
+		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+		await tick();
+
+		dispatch = vi.spyOn(window, 'dispatchEvent');
+		capturedTripPlanModalProps.closePane();
+		await tick();
+
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'tripPlanModalClosed' }));
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(true);
+	} finally {
+		dispatch?.mockRestore();
+		restoreViewport();
+	}
 });
