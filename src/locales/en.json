@@ -200,6 +200,10 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "Arrivals and Departures"
 	},
+	"date_picker": {
+		"choose_date": "Choose date",
+		"date": "Date"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "View Schedule",
 		"no_am_schedules_available": "No AM schedules available",

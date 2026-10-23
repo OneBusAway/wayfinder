@@ -1,15 +1,22 @@
 import { env } from '$env/dynamic/public';
 
+// `Date.prototype.getDay()` numbering, which the calendar uses (0=Sunday).
+const DATE_GET_DAY_MONDAY = 1;
+
 /**
- * Get the first day of the week for calendar components
- * @returns {number} 0 for Monday, 1 for Tuesday, 2 for Wednesday, 3 for Thursday, 4 for Friday, 5 for Saturday, 6 for Sunday
+ * Get the first day of the week for calendar components.
+ *
+ * PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK counts from Monday (0=Monday, 6=Sunday), as
+ * documented for deployments, but the calendar counts from Sunday like
+ * `Date.prototype.getDay()`, so the configured value is shifted by one.
+ * @returns {NonNullable<import('bits-ui').Calendar.RootProps['weekStartsOn']>} 0 for Sunday, 1 for Monday, 2 for Tuesday, 3 for Wednesday, 4 for Thursday, 5 for Friday, 6 for Saturday
  */
 export function getFirstDayOfWeek() {
 	const configValue = env.PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK;
 
-	// Default to Monday (0) if not configured
+	// Default to Monday if not configured
 	if (!configValue) {
-		return 0;
+		return DATE_GET_DAY_MONDAY;
 	}
 
 	const dayValue = parseInt(configValue, 10);
@@ -23,8 +30,11 @@ export function getFirstDayOfWeek() {
 		console.warn(
 			'Invalid PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK value. Must be 0-6 (0=Monday, 6=Sunday). Using Monday (0) as default.'
 		);
-		return 0;
+		return DATE_GET_DAY_MONDAY;
 	}
 
-	return dayValue;
+	// Narrowed by the range check above.
+	return /** @type {NonNullable<import('bits-ui').Calendar.RootProps['weekStartsOn']>} */ (
+		(dayValue + 1) % 7
+	);
 }
