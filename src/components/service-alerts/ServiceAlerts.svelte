@@ -1,8 +1,7 @@
-<script>
-	// @ts-check
+<script lang="ts">
+	import * as Dialog from '$components/ui/dialog';
 	import { modalOpen } from '$src/stores/modalOpen';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
-	import Modal from 'flowbite-svelte/Modal.svelte';
 	import ServiceAlertItem from './ServiceAlertItem.svelte';
 	import { t, locale } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';
@@ -14,50 +13,44 @@
 		formatCauseLabel,
 		formatEffectLabel
 	} from '$components/service-alerts/serviceAlertsHelper';
+	import type { ServiceAlert } from '$lib/types';
 
-	/**
-	 * @typedef {Object} Props
-	 * @property {import('$lib/types').ServiceAlert[]} [serviceAlerts]
-	 * @property {string | null} [stopId]
-	 * @property {string[]} [routeIds]
-	 */
+	interface Props {
+		routeIds?: string[];
+		serviceAlerts?: ServiceAlert[];
+		stopId?: string | null;
+	}
 
-	/** @type {Props} */
-	let { serviceAlerts = $bindable([]), stopId = null, routeIds = [] } = $props();
+	const { serviceAlerts = $bindable([]), stopId = null, routeIds = [] }: Props = $props();
 
-	let modalAlert = $state(/** @type {import('$lib/types').ServiceAlert | null} */ (null));
+	let modalAlert = $state<ServiceAlert | null>(null);
 	let isAlertsHidden = $state(false);
 	let currentPage = $state(1);
 	const alertsPerPage = 3;
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
-	let relevance = $derived(orderAlertsByRelevance(serviceAlerts, { stopId, routeIds }));
-	let orderedAlerts = $derived(relevance.ordered);
-	let relevantCount = $derived(relevance.relevantCount);
-	let showGroups = $derived(relevantCount > 0 && relevantCount < orderedAlerts.length);
+	const relevance = $derived(orderAlertsByRelevance(serviceAlerts, { stopId, routeIds }));
+	const orderedAlerts = $derived(relevance.ordered);
+	const relevantCount = $derived(relevance.relevantCount);
+	const showGroups = $derived(relevantCount > 0 && relevantCount < orderedAlerts.length);
 
-	let totalPages = $derived(Math.ceil(orderedAlerts.length / alertsPerPage) || 1);
-	let pageStart = $derived((currentPage - 1) * alertsPerPage);
+	const totalPages = $derived(Math.ceil(orderedAlerts.length / alertsPerPage) || 1);
+	const pageStart = $derived((currentPage - 1) * alertsPerPage);
 
-	let paginatedAlerts = $derived(orderedAlerts.slice(pageStart, pageStart + alertsPerPage));
+	const paginatedAlerts = $derived(orderedAlerts.slice(pageStart, pageStart + alertsPerPage));
 
-	let modalSeverity = $derived(modalAlert ? normalizeSeverity(modalAlert) : null);
-	let modalWindow = $derived(modalAlert ? activeWindowRange(modalAlert) : null);
-	let modalActiveLabel = $derived(formatActiveWindowLabel(modalWindow, $t, regionTz, $locale));
-	let modalCause = $derived(modalAlert ? formatCauseLabel(modalAlert.reason, $t) : null);
-	let modalEffect = $derived(
+	const modalSeverity = $derived(modalAlert ? normalizeSeverity(modalAlert) : null);
+	const modalWindow = $derived(modalAlert ? activeWindowRange(modalAlert) : null);
+	const modalActiveLabel = $derived(formatActiveWindowLabel(modalWindow, $t, regionTz, $locale));
+	const modalCause = $derived(modalAlert ? formatCauseLabel(modalAlert.reason, $t) : null);
+	const modalEffect = $derived(
 		modalAlert ? formatEffectLabel(modalAlert?.consequences?.[0]?.condition, $t) : null
 	);
 
-	/** @param {import('$lib/types').ServiceAlert} alert */
-	function openModal(alert) {
+	function openModal(alert: ServiceAlert) {
 		modalAlert = alert;
 		modalOpen.set(true);
-	}
-
-	function closeModal() {
-		modalOpen.set(false);
 	}
 
 	function toggleAlerts() {
@@ -69,24 +62,11 @@
 		}
 	}
 
-	/** @param {number} page */
-	function goToPage(page) {
+	function goToPage(page: number) {
 		currentPage = Math.max(1, Math.min(page, totalPages));
 		isAlertsHidden = false;
 	}
-
-	/** @param {KeyboardEvent} event */
-	function handleKeydown(event) {
-		if (!$modalOpen) return;
-		if (event.key === 'Escape') {
-			event.stopPropagation();
-			event.preventDefault();
-			closeModal();
-		}
-	}
 </script>
-
-<svelte:window onkeydown={handleKeydown} />
 
 {#if orderedAlerts.length > 0}
 	<div class="relative flex flex-col gap-y-1 rounded-lg bg-white p-4 dark:bg-gray-800">
@@ -155,75 +135,81 @@
 	</div>
 {/if}
 
-{#if $modalOpen && modalAlert}
-	<Modal
-		outsideclose={true}
-		classBackdrop="bg-gray-900/50 dark:bg-gray-900/80"
-		title={modalAlert?.summary?.value || $t('service_alerts.service_alert')}
-		bind:open={$modalOpen}
-		size="lg"
-		class="relative w-full max-w-3xl rounded-xl bg-white p-8 text-gray-900 shadow-2xl dark:bg-gray-800 dark:text-gray-100"
-	>
-		{#if modalSeverity}
-			<span
-				class="mb-3 inline-flex rounded px-2 py-0.5 text-xs font-semibold tracking-wide uppercase
+<Dialog.Root bind:open={$modalOpen}>
+	{#if modalAlert}
+		<Dialog.Content class="sm:max-w-lg">
+			<Dialog.Header>
+				<Dialog.Title
+					>{modalAlert.summary?.value || $t('service_alerts.service_alert')}</Dialog.Title
+				>
+				{#if modalSeverity}
+					<div>
+						<span
+							class="rounded px-2 py-0.5 text-xs font-semibold tracking-wide uppercase
 					{modalSeverity === 'severe'
-					? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
-					: modalSeverity === 'warning'
-						? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200'
-						: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'}"
-			>
-				{$t(`service_alerts.severity_${modalSeverity}`)}
-			</span>
-		{/if}
-		{#if !modalAlert?.summary?.value}
-			<p class="mb-3 text-gray-500 italic dark:text-gray-400">
-				{$t('service_alerts.no_summary')}
-			</p>
-		{/if}
-		{#if modalAlert?.description?.value}
-			<p class="mt-3 text-base leading-relaxed text-gray-800 dark:text-gray-200">
-				{modalAlert.description.value}
-			</p>
-		{:else}
-			<p class="mt-3 text-gray-500 italic dark:text-gray-400">
-				{$t('service_alerts.no_description')}
-			</p>
-		{/if}
-		{#if modalActiveLabel || modalCause || modalEffect}
-			<dl class="mt-4 space-y-2 text-sm text-gray-700 dark:text-gray-300">
-				{#if modalActiveLabel}
-					<div>
-						<dt class="inline font-medium text-gray-500 dark:text-gray-400">
-							{$t('service_alerts.active')}:
-						</dt>
-						<dd class="ml-1 inline">{modalActiveLabel}</dd>
+								? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
+								: modalSeverity === 'warning'
+									? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200'
+									: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200'}"
+						>
+							{$t(`service_alerts.severity_${modalSeverity}`)}
+						</span>
 					</div>
 				{/if}
-				{#if modalCause}
-					<div>
-						<dt class="inline font-medium text-gray-500 dark:text-gray-400">
-							{$t('service_alerts.cause')}:
-						</dt>
-						<dd class="ml-1 inline">{modalCause}</dd>
+			</Dialog.Header>
+			<div class="space-y-4">
+				{#if !modalAlert.summary?.value}
+					<p class="text-gray-500 italic dark:text-gray-400">
+						{$t('service_alerts.no_summary')}
+					</p>
+				{/if}
+				<Dialog.Description
+					class={modalAlert.description?.value
+						? 'text-base leading-relaxed text-gray-800 dark:text-gray-200'
+						: 'text-gray-500 italic dark:text-gray-400'}
+				>
+					{#if modalAlert.description?.value}
+						{modalAlert.description.value}
+					{:else}
+						{$t('service_alerts.no_description')}
+					{/if}
+				</Dialog.Description>
+				{#if modalActiveLabel || modalCause || modalEffect}
+					<dl class="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+						{#if modalActiveLabel}
+							<div>
+								<dt class="inline font-medium text-gray-500 dark:text-gray-400">
+									{$t('service_alerts.active')}:
+								</dt>
+								<dd class="ml-1 inline">{modalActiveLabel}</dd>
+							</div>
+						{/if}
+						{#if modalCause}
+							<div>
+								<dt class="inline font-medium text-gray-500 dark:text-gray-400">
+									{$t('service_alerts.cause')}:
+								</dt>
+								<dd class="ml-1 inline">{modalCause}</dd>
+							</div>
+						{/if}
+						{#if modalEffect}
+							<div>
+								<dt class="inline font-medium text-gray-500 dark:text-gray-400">
+									{$t('service_alerts.effect')}:
+								</dt>
+								<dd class="ml-1 inline">{modalEffect}</dd>
+							</div>
+						{/if}
+					</dl>
+				{/if}
+				{#if modalAlert.advice?.value}
+					<div class="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+						<p class="text-sm font-medium text-blue-800 dark:text-blue-200">
+							{$t('service_alerts.advice')}: {modalAlert.advice.value}
+						</p>
 					</div>
 				{/if}
-				{#if modalEffect}
-					<div>
-						<dt class="inline font-medium text-gray-500 dark:text-gray-400">
-							{$t('service_alerts.effect')}:
-						</dt>
-						<dd class="ml-1 inline">{modalEffect}</dd>
-					</div>
-				{/if}
-			</dl>
-		{/if}
-		{#if modalAlert?.advice?.value}
-			<div class="mt-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-				<p class="text-sm font-medium text-blue-800 dark:text-blue-200">
-					{$t('service_alerts.advice')}: {modalAlert.advice.value}
-				</p>
 			</div>
-		{/if}
-	</Modal>
-{/if}
+		</Dialog.Content>
+	{/if}
+</Dialog.Root>
