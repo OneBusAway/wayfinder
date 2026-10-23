@@ -137,7 +137,7 @@
 
 <Dialog.Root bind:open={$modalOpen}>
 	{#if modalAlert}
-		<Dialog.Content class="sm:max-w-lg">
+		<Dialog.Content class="flex max-h-[85dvh] flex-col sm:max-w-lg">
 			<Dialog.Header>
 				<Dialog.Title
 					>{modalAlert.summary?.value || $t('service_alerts.service_alert')}</Dialog.Title
@@ -157,7 +157,7 @@
 					</div>
 				{/if}
 			</Dialog.Header>
-			<div class="space-y-4">
+			<div class="min-h-0 space-y-4 overflow-y-auto">
 				{#if !modalAlert.summary?.value}
 					<p class="text-gray-500 italic dark:text-gray-400">
 						{$t('service_alerts.no_summary')}
