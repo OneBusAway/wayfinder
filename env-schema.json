@@ -162,6 +162,13 @@
 		"max": 6,
 		"description": "First day of the week for calendar (0=MON, 1=TUE, ..., 6=SUN)"
 	},
+	"PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES": {
+		"required": false,
+		"type": "number",
+		"min": 35,
+		"allowEmpty": true,
+		"description": "Maximum time window in minutes to search for arrivals when a stop initially returns no departures (defaults to 720 / 12 hours)"
+	},
 	"COLOR_BRAND_PRIMARY": {
 		"required": true,
 		"type": "color",

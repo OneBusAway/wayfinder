@@ -8,6 +8,7 @@
 	import ServiceAlerts from '$components/service-alerts/ServiceAlerts.svelte';
 	import OnDemandStopCard from '$components/stops/OnDemandStopCard.svelte';
 	import { onDestroy, tick, untrack } from 'svelte';
+	import { env } from '$env/dynamic/public';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
@@ -61,6 +62,12 @@
 	// app's incrementMinutesAfter() behavior.
 	const DEFAULT_MINUTES_AFTER = 35;
 	const MINUTES_AFTER_INCREMENT = 30;
+	const DEFAULT_AUTO_EXTEND_MAX_MINUTES = 720;
+
+	function getMaxAutoExtendMinutes() {
+		const parsed = Number(env.PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES);
+		return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_AUTO_EXTEND_MAX_MINUTES;
+	}
 
 	// Seed from any server-rendered response so the standalone page shows arrivals
 	// immediately instead of flashing the first-load skeleton. No clock is passed
@@ -70,6 +77,13 @@
 		withVisibleArrivals(arrivalsAndDeparturesResponse?.data?.entry)
 	);
 	let error = $state();
+	let autoExtending = $state(
+		Boolean(
+			arrivalsAndDeparturesResponse?.data?.entry &&
+				(arrivalsAndDeparturesResponse?.data?.entry?.arrivalsAndDepartures?.length ?? 0) === 0 &&
+				stop?.routeIds?.length > 0
+		)
+	);
 	// Seed alerts from the same server-rendered response so they show on first
 	// render instead of waiting for the initial client fetch to complete.
 	/** @type {import('$lib/types').ServiceAlert[]} */
@@ -134,12 +148,29 @@
 	}
 
 	/**
+	 * Returns the next time-window increment for empty-result auto-extension,
+	 * or null if the window has reached the cap. Mimics the mobile app behavior.
+	 * @param {number} minutes
+	 * @returns {number | null}
+	 */
+	function getAutoExtensionIncrement(minutes) {
+		const maxMinutes = getMaxAutoExtendMinutes();
+		if (minutes >= maxMinutes) return null;
+		const increment = minutes < 240 ? 60 : 120;
+		return Math.min(increment, maxMinutes - minutes);
+	}
+
+	/**
 	 * Fetches arrivals for the stop within the current `minutesAfter` window.
+	 * When `allowAutoExtend` is true and the fetch returns no arrivals, it automatically
+	 * widens `minutesAfter` and re-fetches (up to the configured maximum window) before
+	 * concluding that no arrivals are available.
 	 * @param {string} stopID
+	 * @param {{ allowAutoExtend?: boolean, preserveWindow?: boolean }} [options]
 	 * @returns {Promise<number|null>} the number of arrivals fetched, or `null`
 	 *     when the request was aborted or failed (count is then unknown).
 	 */
-	async function loadData(stopID) {
+	async function loadData(stopID, { allowAutoExtend = false, preserveWindow = false } = {}) {
 		// Cancel the previous request if it exists
 		if (abortController) {
 			abortController.abort();
@@ -149,27 +180,59 @@
 
 		loading = true;
 		try {
-			const response = await fetch(
-				`/api/oba/arrivals-and-departures-for-stop/${stopID}?minutesAfter=${minutesAfter}`,
-				{
-					signal: controller.signal
-				}
-			);
+			const isExhaustedEmpty =
+				!allowAutoExtend &&
+				!preserveWindow &&
+				noMoreArrivals &&
+				(arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0) === 0;
+			let currentMinutes = isExhaustedEmpty ? DEFAULT_MINUTES_AFTER : minutesAfter;
+			let data;
+			let entry;
+			let count = 0;
 
-			if (!response.ok) {
-				throw new Error('Unable to fetch arrival/departure data');
+			while (true) {
+				const response = await fetch(
+					`/api/oba/arrivals-and-departures-for-stop/${stopID}?minutesAfter=${currentMinutes}`,
+					{
+						signal: controller.signal
+					}
+				);
+
+				if (!response.ok) {
+					throw new Error('Unable to fetch arrival/departure data');
+				}
+
+				data = await response.json();
+				entry = withVisibleArrivals(data?.data?.entry, Date.now());
+				count = entry?.arrivalsAndDepartures?.length ?? 0;
+
+				const nextIncrement =
+					allowAutoExtend && stop?.routeIds?.length > 0
+						? getAutoExtensionIncrement(currentMinutes)
+						: null;
+
+				if (count > 0 || nextIncrement === null) {
+					if (!isExhaustedEmpty || count > 0) {
+						minutesAfter = currentMinutes;
+					}
+					arrivalsAndDeparturesResponse = data;
+					arrivalsAndDepartures = entry;
+					serviceAlerts = filterActiveAlerts(data?.data?.references?.situations || []);
+					error = null;
+					if (count === 0 && currentMinutes >= getMaxAutoExtendMinutes()) {
+						noMoreArrivals = true;
+					}
+					break;
+				}
+
+				autoExtending = true;
+				currentMinutes += nextIncrement;
 			}
 
-			const data = await response.json();
-			arrivalsAndDeparturesResponse = data;
-			arrivalsAndDepartures = withVisibleArrivals(data.data.entry, Date.now());
-			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
-			error = null; // Clear previous errors if successful
 			if (isFirstLoad) {
 				await tick();
 				isFirstLoad = false;
 			}
-			const count = arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
 			// Clear a stale "no more arrivals" hint only when a refresh actually
 			// surfaces an arrival further out than the window we'd exhausted — a
 			// poll returning the same (or nearer) arrivals must leave the hint up.
@@ -187,23 +250,28 @@
 			}
 			return null;
 		} finally {
-			// Only the most recent request should control the loading flag.
+			// Only the most recent request should control the loading and autoExtending flags.
 			if (abortController === controller) {
 				loading = false;
+				autoExtending = false;
 			}
 		}
 	}
 
 	/**
 	 * @param {string} stopID
+	 * @param {{ allowAutoExtend?: boolean, preserveWindow?: boolean }} [options]
 	 */
-	function resetDataFetchInterval(stopID) {
+	function resetDataFetchInterval(
+		stopID,
+		{ allowAutoExtend = false, preserveWindow = false } = {}
+	) {
 		if (interval) clearInterval(interval);
 
-		const promise = loadData(stopID);
+		const promise = loadData(stopID, { allowAutoExtend, preserveWindow });
 
 		interval = setInterval(() => {
-			loadData(stopID);
+			loadData(stopID, { allowAutoExtend: false });
 		}, 30000);
 
 		return promise;
@@ -211,12 +279,17 @@
 
 	// Manual refresh for the toolbar button: fetch now and restart the poll timer.
 	export function refresh() {
-		if (stop?.id) resetDataFetchInterval(stop.id);
+		if (stop?.id) resetDataFetchInterval(stop.id, { allowAutoExtend: false });
 	}
 
 	// Widen the arrivals window and refetch. If the count doesn't grow, surface a
 	// "no more arrivals found" hint (the server has nothing further to show).
 	async function loadMoreArrivals() {
+		const maxMinutes = getMaxAutoExtendMinutes();
+		if (minutesAfter >= maxMinutes) {
+			return;
+		}
+
 		const previousFurthest = furthestArrivalTime(arrivalsAndDepartures?.arrivalsAndDepartures);
 
 		loadingMore = true;
@@ -225,14 +298,17 @@
 
 		// Reset the poll timer so a background refresh doesn't abort this request
 		// mid-flight (which would make us wrongly report "no more arrivals").
-		const count = await resetDataFetchInterval(stop.id);
+		const count = await resetDataFetchInterval(stop.id, {
+			allowAutoExtend: false,
+			preserveWindow: true
+		});
 
 		loadingMore = false;
 		// Only conclude "no more arrivals" from a request that actually completed.
 		if (count !== null) {
 			const newFurthest = furthestArrivalTime(arrivalsAndDepartures?.arrivalsAndDepartures);
 			// Widening the window surfaced nothing further out → nothing more to show.
-			noMoreArrivals = newFurthest <= previousFurthest;
+			noMoreArrivals = newFurthest <= previousFurthest || minutesAfter >= maxMinutes;
 			if (noMoreArrivals) noMoreArrivalsBoundary = newFurthest;
 		}
 		analytics.reportArrivalClicked('Loaded more arrivals');
@@ -247,8 +323,13 @@
 			minutesAfter = DEFAULT_MINUTES_AFTER;
 			noMoreArrivals = false;
 			isFirstLoad = true;
+			autoExtending = Boolean(
+				arrivalsAndDeparturesResponse?.data?.entry &&
+					(arrivalsAndDeparturesResponse?.data?.entry?.arrivalsAndDepartures?.length ?? 0) === 0 &&
+					stop?.routeIds?.length > 0
+			);
 			if (interval != null) clearInterval(interval);
-			resetDataFetchInterval(stopID);
+			resetDataFetchInterval(stopID, { allowAutoExtend: true });
 
 			// StopPane is not remounted when the user selects a different stop
 			// (see the {#key stop.id} around SurveyBanner below), so the survey
@@ -460,23 +541,37 @@
 				{#snippet loadMoreButton(emptyResults = false)}
 					<div class="flex flex-col items-center gap-2">
 						{#if emptyResults}
-							<p class="text-sm text-gray-600 dark:text-gray-400">
-								{isFlexOnlyStop
-									? $t('ondemand.flex_only_empty_arrivals')
-									: $t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
-							</p>
+							{#if !autoExtending}
+								<p class="text-sm text-gray-600 dark:text-gray-400">
+									{isFlexOnlyStop
+										? $t('ondemand.flex_only_empty_arrivals')
+										: minutesAfter >= 60 && minutesAfter % 60 === 0
+											? $t('no_arrivals_found_in_next_hours', {
+													values: { hours: minutesAfter / 60 }
+												})
+											: $t('no_arrivals_found_in_next_minutes', {
+													values: { minutes: minutesAfter }
+												})}
+								</p>
+							{/if}
 						{:else if noMoreArrivals}
 							<p class="text-sm text-gray-600 dark:text-gray-400">
-								{$t('no_more_arrivals_in_next_minutes', { values: { minutes: minutesAfter } })}
+								{minutesAfter >= 60 && minutesAfter % 60 === 0
+									? $t('no_more_arrivals_in_next_hours', {
+											values: { hours: minutesAfter / 60 }
+										})
+									: $t('no_more_arrivals_in_next_minutes', {
+											values: { minutes: minutesAfter }
+										})}
 							</p>
 						{/if}
 						<button
 							type="button"
 							onclick={loadMoreArrivals}
-							disabled={loadingMore}
+							disabled={loadingMore || autoExtending || minutesAfter >= getMaxAutoExtendMinutes()}
 							class="inline-flex items-center gap-2 rounded-lg border border-brand-accent bg-brand-accent px-4 py-2 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand disabled:cursor-not-allowed disabled:opacity-60"
 						>
-							{loadingMore ? $t('loading') : $t('load_more_arrivals')}
+							{loadingMore || autoExtending ? $t('loading') : $t('load_more_arrivals')}
 						</button>
 					</div>
 				{/snippet}
