@@ -1,3 +1,4 @@
+import type { Calendar } from 'bits-ui';
 import { env } from '$env/dynamic/public';
 
 // `Date.prototype.getDay()` numbering, which the calendar uses (0=Sunday).
@@ -9,9 +10,8 @@ const DATE_GET_DAY_MONDAY = 1;
  * PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK counts from Monday (0=Monday, 6=Sunday), as
  * documented for deployments, but the calendar counts from Sunday like
  * `Date.prototype.getDay()`, so the configured value is shifted by one.
- * @returns {NonNullable<import('bits-ui').Calendar.RootProps['weekStartsOn']>} 0 for Sunday, 1 for Monday, 2 for Tuesday, 3 for Wednesday, 4 for Thursday, 5 for Friday, 6 for Saturday
  */
-export function getWeekStartsOn() {
+export function getWeekStartsOn(): NonNullable<Calendar.RootProps['weekStartsOn']> {
 	const configValue = env.PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK;
 
 	// Default to Monday if not configured
@@ -34,7 +34,5 @@ export function getWeekStartsOn() {
 	}
 
 	// Narrowed by the range check above.
-	return /** @type {NonNullable<import('bits-ui').Calendar.RootProps['weekStartsOn']>} */ (
-		(dayValue + 1) % 7
-	);
+	return ((dayValue + 1) % 7) as NonNullable<Calendar.RootProps['weekStartsOn']>;
 }
