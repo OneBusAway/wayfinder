@@ -136,10 +136,12 @@ function table(headers, rows) {
 }
 
 /**
- * The latest decisive review from each reviewer. Comment-only reviews say someone
- * looked, but they do not block or unblock anything.
+ * Reviews that mean somebody else looked. Replying in a review thread on your own
+ * PR records a COMMENTED review authored by you, which would otherwise hide the PR
+ * from the first-review queue.
  */
-const humanReviews = (pr) => pr.reviews.nodes.filter((r) => !isBot(r.author));
+const humanReviews = (pr) =>
+	pr.reviews.nodes.filter((r) => !isBot(r.author) && r.author?.login !== pr.author?.login);
 
 function latestDecisions(pr) {
 	const byReviewer = new Map();

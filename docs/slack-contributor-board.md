@@ -75,9 +75,7 @@ features:
 oauth_config:
   scopes:
     bot:
-      - canvases:read
       - canvases:write
-      - chat:write
       - channels:read
       - groups:read
 settings:
@@ -86,13 +84,16 @@ settings:
   token_rotation_enabled: false
 ```
 
-| Scope            | Why                                                  |
-| ---------------- | ---------------------------------------------------- |
-| `canvases:write` | Create and replace the canvas                        |
-| `canvases:read`  | Reserved for section lookups; harmless to keep       |
-| `channels:read`  | Read channel info for a **public** channel           |
-| `groups:read`    | Same, for a **private** channel — needed for testing |
-| `chat:write`     | Reserved for the future event posts                  |
+| Scope            | Why                                                    |
+| ---------------- | ------------------------------------------------------ |
+| `canvases:write` | Create and replace the canvas                          |
+| `channels:read`  | Read channel info for a **public** channel             |
+| `groups:read`    | Same, for a **private** channel — needed while testing |
+
+Nothing else is granted. `chat:write` is only needed once the event posts ship,
+and `canvases:read` only if you go back to editing individual sections instead
+of replacing the whole document. Add them then, not now: the fewer scopes the
+token carries, the less it can do if it leaks.
 
 The app must be invited to the channel: `/invite @Wayfinder Board`.
 
@@ -111,17 +112,25 @@ The app must be invited to the channel: `/invite @Wayfinder Board`.
 - The canvas title is set separately via `operation: rename`, because
   `conversations.canvases.create` does not accept one. Slack renders that title
   above the document, so the markdown deliberately starts with no `#` heading.
-- **Do not rely on auto-detecting the canvas ID.** `conversations.info` does not
-  reliably report `properties.canvas`, and when it does not, the script would
-  create a second canvas. Store the ID explicitly.
+- **Do not rely on auto-detecting the canvas ID.** `conversations.info` did not
+  report `properties.canvas` in our testing. When the ID cannot be found the
+  script falls through to creating a canvas, and that goes one of two ways:
+  Slack's docs say it should fail with `channel_canvas_already_exists`, but what
+  we actually observed was a second canvas appearing in the channel. Either way
+  the run does not update the board, so set `SLACK_CANVAS_ID` and never take
+  that path.
 
 ## Slack API encoding
 
-A trap worth knowing: older methods (`conversations.*`) accept only
-form-encoded arguments and reject a JSON body with `invalid_arguments`. The
-canvas methods take JSON because their arguments are nested. The script's
-`slack()` helper sends GET with query params by default and JSON only where
-required.
+A trap worth knowing: `conversations.info` rejected a JSON body with
+`invalid_arguments` in our testing, and worked as a GET with query parameters.
+Slack's reference does not flag this, so the error is easy to misread as a bad
+argument name. The canvas methods need JSON, because their arguments are nested.
+
+The script's `slack()` helper therefore sends GET with query parameters by
+default and JSON only for the canvas calls. If you add a method and hit
+`invalid_arguments` with arguments you are sure are correct, try the other
+encoding before anything else.
 
 ## Configuration
 
@@ -149,9 +158,16 @@ Each step is reversible and nothing touches the public channel until step 5.
 4. Capture the canvas ID the first run prints and pass `--canvas` from then on.
 5. Invite the bot to the real channel, create the canvas there, run it by hand
    for a day or two.
-6. Add the secret and variables, merge the workflow with `workflow_dispatch`
-   only, and trigger it by hand.
-7. Add the `schedule` trigger once a manual run has succeeded.
+6. Add the secret and variables, then merge the workflow.
+7. Trigger it by hand from the Actions tab. This is the first run with the repo
+   secret rather than a shell variable, so it is where a mistyped variable name
+   or a token with a stray space shows up.
+
+The workflow ships with `schedule` already enabled, because steps 1–5 leave
+little for the first scheduled run to get wrong and the kill switch is one click
+in the Actions tab. If you would rather not have cron fire before you have
+watched a manual run, drop the two `schedule` lines for the first merge and add
+them back afterwards.
 
 ## Operating it
 
@@ -163,13 +179,13 @@ Each step is reversible and nothing touches the public channel until step 5.
 
 **Failure modes:**
 
-| Symptom                 | Cause                                                             | Fix                           |
-| ----------------------- | ----------------------------------------------------------------- | ----------------------------- |
-| `missing_scope`         | Scope added but app not reinstalled                               | Reinstall, re-copy token      |
-| `channel_not_found`     | Bot not in the channel, or private channel without `groups:read`  | Invite the bot; add the scope |
-| `invalid_arguments`     | JSON sent to a form-encoded method                                | Use query params              |
-| A second canvas appears | `SLACK_CANVAS_ID` not set                                         | Set the variable              |
-| Workflow silently stops | Scheduled workflows are disabled after 60 days of repo inactivity | Push anything, re-enable      |
+| Symptom                                                     | Cause                                                             | Fix                                        |
+| ----------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------ |
+| `missing_scope`                                             | Scope added but app not reinstalled                               | Reinstall, re-copy token                   |
+| `channel_not_found`                                         | Bot not in the channel, or private channel without `groups:read`  | Invite the bot; add the scope              |
+| `invalid_arguments`                                         | A method that wants form encoding was sent JSON                   | Switch that call to GET with query params  |
+| A second canvas appears, or `channel_canvas_already_exists` | `SLACK_CANVAS_ID` not set, so the script tried to create one      | Set the variable to the existing canvas ID |
+| Workflow silently stops                                     | Scheduled workflows are disabled after 60 days of repo inactivity | Push anything, re-enable                   |
 
 The workflow is independent of the build, so a Slack outage fails this workflow
 alone and cannot turn CI red.
