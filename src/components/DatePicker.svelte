@@ -68,9 +68,15 @@
 
 	let open = $state(false);
 	const calendarValue = $derived(toCalendarDate(value));
+
 	// Overridden as the user pages through months, and reset whenever the value
 	// changes.
 	let month = $derived<DateValue | undefined>(calendarValue);
+	$effect(() => {
+		// Reopening the popover shows the month of the selected date.
+		if (open) month = calendarValue;
+	});
+
 	// Overridden as the user types, and reset whenever the value changes.
 	let fieldValue = $derived<DateValue | undefined>(calendarValue);
 </script>
