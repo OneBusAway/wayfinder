@@ -155,7 +155,7 @@
 								open = false;
 							}}
 						>
-							{$t('trip-planner.today')}
+							{$t('date_picker.today')}
 						</Button>
 					</div>
 				</Popover.Content>

@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "Mga Pagdating at Pag-alis"
 	},
+	"date_picker": {
+		"today": "Ngayon"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "Tingnan ang iskedyul",
 		"no_am_schedules_available": "Walang magagamit na AM na iskedyul",

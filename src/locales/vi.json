@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "Lịch Đến và Đi"
 	},
+	"date_picker": {
+		"today": "Hôm nay"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "Xem lịch trình",
 		"no_am_schedules_available": "Không có lịch trình buổi sáng nào khả dụng",

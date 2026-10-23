@@ -202,7 +202,8 @@
 	},
 	"date_picker": {
 		"choose_date": "Choose date",
-		"date": "Date"
+		"date": "Date",
+		"today": "Today"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "View Schedule",
