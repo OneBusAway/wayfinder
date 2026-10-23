@@ -28,7 +28,7 @@ export function getWeekStartsOn(): NonNullable<Calendar.RootProps['weekStartsOn'
 		dayValue.toString() !== configValue.trim()
 	) {
 		console.warn(
-			'Invalid PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK value. Must be 0-6 (0=Monday, 6=Sunday). Using Monday (0) as default.'
+			'Invalid PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK value. Must be 0-6 (0=Monday, 6=Sunday). Using Monday as default.'
 		);
 		return DATE_GET_DAY_MONDAY;
 	}
