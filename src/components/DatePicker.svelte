@@ -12,17 +12,17 @@
 
 	let {
 		class: className,
-		firstDayOfWeek = 0,
 		id,
 		inputClass,
-		value = $bindable()
+		value = $bindable(),
+		weekStartsOn = 0
 	}: {
 		class?: string;
-		firstDayOfWeek?: ComponentProps<typeof Calendar>['weekStartsOn'];
 		id?: string;
 		inputClass?: string;
 		// Local midnight of the picked day.
 		value: Date;
+		weekStartsOn?: ComponentProps<typeof Calendar>['weekStartsOn'];
 	} = $props();
 
 	function toCalendarDate(date: Date): CalendarDate {
@@ -134,7 +134,7 @@
 						type="single"
 						locale={$locale ?? undefined}
 						preventDeselect
-						weekStartsOn={firstDayOfWeek}
+						{weekStartsOn}
 						bind:value={() => calendarValue, selectDate}
 						bind:placeholder={() => month, (v) => (month = v)}
 						onValueChange={() => {

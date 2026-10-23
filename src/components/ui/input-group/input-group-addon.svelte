@@ -45,7 +45,12 @@
 		if ((e.target as HTMLElement).closest('button')) {
 			return;
 		}
-		e.currentTarget.parentElement?.querySelector('input')?.focus();
+		// Date field segments are focusable spans, and its hidden input is skipped.
+		e.currentTarget.parentElement
+			?.querySelector<HTMLElement>(
+				'input:not([tabindex="-1"]), textarea, [data-slot="input-group-control"][tabindex="0"]'
+			)
+			?.focus();
 	}}
 	{...restProps}
 >

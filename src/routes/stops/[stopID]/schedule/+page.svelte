@@ -14,7 +14,7 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import { Button } from '$components/ui/button';
 	import { t, isLoading } from 'svelte-i18n';
-	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
+	import { getWeekStartsOn } from '$config/calendarConfig.js';
 	import Skeleton from '$components/Skeleton.svelte';
 	import DatePicker from '$components/DatePicker.svelte';
 
@@ -120,7 +120,7 @@
 				<div class="min-w-32 md:w-[30%]">
 					<DatePicker
 						bind:value={() => selectedDate, selectDate}
-						firstDayOfWeek={getFirstDayOfWeek()}
+						weekStartsOn={getWeekStartsOn()}
 					/>
 				</div>
 				<Button variant="secondary" onclick={toggleAllRoutes}>

@@ -11,7 +11,7 @@ const DATE_GET_DAY_MONDAY = 1;
  * `Date.prototype.getDay()`, so the configured value is shifted by one.
  * @returns {NonNullable<import('bits-ui').Calendar.RootProps['weekStartsOn']>} 0 for Sunday, 1 for Monday, 2 for Tuesday, 3 for Wednesday, 4 for Thursday, 5 for Friday, 6 for Saturday
  */
-export function getFirstDayOfWeek() {
+export function getWeekStartsOn() {
 	const configValue = env.PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK;
 
 	// Default to Monday if not configured
