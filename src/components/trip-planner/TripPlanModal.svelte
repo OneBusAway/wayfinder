@@ -204,24 +204,43 @@
 		}
 	});
 
-	$effect(() => {
-		// Reset choice when itinerary results change
-		if (itineraries !== prevItinerariesRef && itineraries?.length > 0) {
-			prevItinerariesRef = itineraries;
-			activeTab = 0;
-			drawRoute();
-		}
-	});
-
-	onDestroy(() => {
+	// Drop a route that is still drawing. The mobile plan sheet stays mounted when
+	// results are dismissed, so destroy-time cleanup alone cannot stop this draw.
+	function cancelRouteDraw() {
 		drawToken++;
 		// Only the ArcGIS provider keeps view padding that needs resetting.
 		mapProvider.resetPadding?.();
 		// Partial-shape warnings auto-dismiss, but clear ours immediately on close
 		// so it doesn't linger over the next view.
 		notifications.dismiss(notificationId);
+		notificationId = null;
 		// currPolylines only ever holds polylines already awaited in drawRoute.
 		currPolylines.forEach((polyline) => mapProvider.removePolyline(polyline));
+		currPolylines = [];
+	}
+
+	$effect(() => {
+		if (itineraries === prevItinerariesRef) return;
+
+		if (itineraries?.length > 0) {
+			prevItinerariesRef = itineraries;
+			activeTab = 0;
+			drawRoute();
+			return;
+		}
+
+		// Results were cleared while this sheet stayed open.
+		if (prevItinerariesRef?.length) {
+			prevItinerariesRef = itineraries;
+			cancelRouteDraw();
+			return;
+		}
+
+		prevItinerariesRef = itineraries;
+	});
+
+	onDestroy(() => {
+		cancelRouteDraw();
 
 		if (browser && itineraryTabsContainer) {
 			itineraryTabsContainer.removeEventListener('wheel', handleWheel);

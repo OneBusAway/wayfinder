@@ -478,6 +478,7 @@
 		selectedRoute = null;
 	}
 
+	/** True while itinerary results, a plan error, or the planner modal are on screen. */
 	function hasTripPlanResults() {
 		return (
 			tripItineraries.length > 0 || tripPlanError != null || currentModal === Modal.TRIP_PLANNER
