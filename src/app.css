@@ -188,8 +188,8 @@
 	--popover-foreground: theme(colors.surface-foreground);
 	--primary: theme(colors.brand-accent);
 	--primary-foreground: theme(colors.white);
-	--secondary: theme(colors.gray.100);
-	--secondary-foreground: theme(colors.gray.700);
+	--secondary: theme(colors.gray.200);
+	--secondary-foreground: theme(colors.gray.900);
 	--muted: theme(colors.gray.100);
 	--muted-foreground: theme(colors.gray.500);
 	--accent: theme(colors.gray.100);

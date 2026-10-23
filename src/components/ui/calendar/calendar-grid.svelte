@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Calendar as CalendarPrimitive } from "bits-ui";
-	import { cn } from "$lib/utils/shadcn.js";
+	import { Calendar as CalendarPrimitive } from 'bits-ui';
+	import { cn } from '$lib/utils/shadcn.js';
 
 	let {
 		ref = $bindable(null),
@@ -11,6 +11,6 @@
 
 <CalendarPrimitive.Grid
 	bind:ref
-	class={cn("flex w-full border-collapse flex-col", className)}
+	class={cn('flex w-full border-collapse flex-col', className)}
 	{...restProps}
 />

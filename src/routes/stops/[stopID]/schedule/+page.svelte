@@ -12,6 +12,7 @@
 	} from '$lib/scheduleForStop';
 	import Accordion from '$components/containers/Accordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
+	import { Button } from '$components/ui/button';
 	import { t, isLoading } from 'svelte-i18n';
 	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
 	import Skeleton from '$components/Skeleton.svelte';
@@ -115,23 +116,20 @@
 				{$isLoading ? '' : $t('schedule_for_stop.route_schedules')}
 			</h2>
 
-			<div class="mb-4 flex gap-4">
+			<div class="mb-4 flex justify-between gap-4">
 				<div class="min-w-32 md:w-[30%]">
 					<DatePicker
 						bind:value={() => selectedDate, selectDate}
 						firstDayOfWeek={getFirstDayOfWeek()}
 					/>
 				</div>
-
-				<div class="flex-1 text-right">
-					<button class="button" onclick={toggleAllRoutes}>
-						{$isLoading
-							? ''
-							: allRoutesExpanded
-								? $t('schedule_for_stop.collapse_all_routes')
-								: $t('schedule_for_stop.show_all_routes')}
-					</button>
-				</div>
+				<Button variant="secondary" onclick={toggleAllRoutes}>
+					{$isLoading
+						? ''
+						: allRoutesExpanded
+							? $t('schedule_for_stop.collapse_all_routes')
+							: $t('schedule_for_stop.show_all_routes')}
+				</Button>
 			</div>
 
 			<div
