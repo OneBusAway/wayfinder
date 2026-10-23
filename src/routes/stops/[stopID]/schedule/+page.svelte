@@ -120,6 +120,7 @@
 				<div class="min-w-32 md:w-[30%]">
 					<DatePicker
 						bind:value={() => selectedDate, selectDate}
+						timeZone={regionTz}
 						weekStartsOn={getWeekStartsOn()}
 					/>
 				</div>

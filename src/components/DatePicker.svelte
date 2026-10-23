@@ -14,12 +14,15 @@
 		class: className,
 		id,
 		inputClass,
+		timeZone = getLocalTimeZone(),
 		value = $bindable(),
 		weekStartsOn = 0
 	}: {
 		class?: string;
 		id?: string;
 		inputClass?: string;
+		// IANA time zone whose current day the Today shortcut selects.
+		timeZone?: string;
 		// Local midnight of the picked day.
 		value: Date;
 		weekStartsOn?: ComponentProps<typeof Calendar>['weekStartsOn'];
@@ -144,12 +147,11 @@
 						}}
 					/>
 					<div class="flex justify-center border-t p-2">
-						<!-- The day the calendar marks as today, which is in the device's time zone. -->
 						<Button
 							size="sm"
 							variant="outline"
 							onclick={() => {
-								selectDate(today(getLocalTimeZone()));
+								selectDate(today(timeZone));
 								open = false;
 							}}
 						>
