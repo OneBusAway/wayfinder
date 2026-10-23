@@ -14,7 +14,7 @@
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
 	import { Button } from '$components/ui/button';
 	import { t, isLoading } from 'svelte-i18n';
-	import { getWeekStartsOn } from '$config/calendarConfig.js';
+	import { getWeekStartsOn } from '$config/calendarConfig';
 	import Skeleton from '$components/Skeleton.svelte';
 	import DatePicker from '$components/DatePicker.svelte';
 

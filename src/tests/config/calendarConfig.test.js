@@ -5,7 +5,7 @@ vi.mock('$env/dynamic/public', () => ({
 	env: {}
 }));
 
-import { getFirstDayOfWeek } from '$config/calendarConfig.js';
+import { getFirstDayOfWeek } from '$config/calendarConfig';
 
 import { env } from '$env/dynamic/public';
 
