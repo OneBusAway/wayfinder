@@ -38,12 +38,27 @@ import { languages, isRTL, getInitialLocale } from '../i18n';
 // Alias for convenience
 const mockGetLocaleFromNavigator = mockGetLocaleFromNavigatorFn;
 
+import fs from 'node:fs';
+
 describe('i18n', () => {
 	describe('languages array', () => {
 		it('has unique language codes', () => {
 			const codes = languages.map((l) => l.code);
 			const uniqueCodes = [...new Set(codes)];
 			expect(codes.length).toBe(uniqueCodes.length);
+		});
+	});
+
+	describe('locale translations', () => {
+		it('contains arrivals auto-extend hours and minutes keys in all locales', () => {
+			for (const lang of languages) {
+				const content = fs.readFileSync(`src/locales/${lang.code}.json`, 'utf-8');
+				const data = JSON.parse(content);
+				expect(data.no_arrivals_found_in_next_minutes, `missing in ${lang.code}`).toBeDefined();
+				expect(data.no_arrivals_found_in_next_hours, `missing in ${lang.code}`).toBeDefined();
+				expect(data.no_more_arrivals_in_next_minutes, `missing in ${lang.code}`).toBeDefined();
+				expect(data.no_more_arrivals_in_next_hours, `missing in ${lang.code}`).toBeDefined();
+			}
 		});
 	});
 

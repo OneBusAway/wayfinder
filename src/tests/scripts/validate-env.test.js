@@ -120,6 +120,37 @@ describe('validate-env requiredWith', () => {
 	});
 });
 
+describe('validate-env number validation', () => {
+	it('rejects non-integer values when integer is true', () => {
+		const { code, output } = validate(`${BASE}PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES=100.5\n`);
+
+		expect(code).toBe(1);
+		expect(output).toContain(
+			'PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES: expected an integer, got "100.5"'
+		);
+	});
+
+	it('rejects numbers above maximum', () => {
+		const { code, output } = validate(`${BASE}PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES=1000\n`);
+
+		expect(code).toBe(1);
+		expect(output).toContain('PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES: 1000 is above maximum 720');
+	});
+
+	it('rejects numbers below minimum', () => {
+		const { code, output } = validate(`${BASE}PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES=20\n`);
+
+		expect(code).toBe(1);
+		expect(output).toContain('PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES: 20 is below minimum 35');
+	});
+
+	it('accepts valid integers within range', () => {
+		const { code } = validate(`${BASE}PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES=120\n`);
+
+		expect(code).toBe(0);
+	});
+});
+
 describe('validate-env shipped example', () => {
 	it('validates .env.example cleanly', () => {
 		const output = execFileSync('node', [script, join(root, '.env.example')], {
