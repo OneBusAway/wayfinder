@@ -16,7 +16,7 @@
 </script>
 
 {#snippet Fallback()}
-	<ChevronRightIcon class={cn('cn-rtl-flip size-4', className)} />
+	<ChevronRightIcon class={cn('size-4', className)} />
 {/snippet}
 
 <CalendarPrimitive.NextButton

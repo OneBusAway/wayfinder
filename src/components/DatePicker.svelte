@@ -119,7 +119,7 @@
 					{/snippet}
 				</Popover.Trigger>
 				<Popover.Content
-					class="w-auto overflow-hidden p-0"
+					class="z-[10000] w-auto overflow-hidden p-0"
 					align="end"
 					alignOffset={-8}
 					sideOffset={10}
