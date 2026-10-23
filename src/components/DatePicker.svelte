@@ -92,7 +92,7 @@
 				if (e.key === 'Enter') commitField();
 			}}
 			class={cn(
-				'flex flex-1 items-center self-stretch px-4 text-base text-foreground md:text-sm',
+				'flex flex-1 items-center self-stretch px-2 text-base text-foreground md:text-sm',
 				inputClass
 			)}
 		>
