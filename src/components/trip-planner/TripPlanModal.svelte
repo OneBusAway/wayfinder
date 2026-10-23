@@ -204,8 +204,11 @@
 		}
 	});
 
-	// Drop a route that is still drawing. The mobile plan sheet stays mounted when
-	// results are dismissed, so destroy-time cleanup alone cannot stop this draw.
+	/**
+	 * Stop a route draw that has not finished and remove the lines it already added.
+	 * The mobile plan sheet stays mounted when results are dismissed, so destroy-time
+	 * cleanup alone cannot stop this draw.
+	 */
 	function cancelRouteDraw() {
 		drawToken++;
 		// Only the ArcGIS provider keeps view padding that needs resetting.

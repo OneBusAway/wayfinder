@@ -612,6 +612,39 @@ test('closing the mobile itinerary sheet keeps the plan form instead of returnin
 	}
 });
 
+test('closing the mobile sheet after an empty plan keeps the form', async () => {
+	const restoreViewport = useNarrowViewport();
+	let dispatch;
+	try {
+		setPage(pageWithoutStop());
+		render(MapExperience);
+		await tick();
+
+		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+		await tick();
+
+		capturedSearchPaneProps.handleTripPlan({
+			data: { plan: { itineraries: [] } }
+		});
+		await tick();
+		expect(capturedTripPlanModalProps.hasPlanned).toBe(true);
+		expect(capturedTripPlanModalProps.itineraries).toEqual([]);
+		expect(capturedTripPlanModalProps.error).toBeNull();
+
+		dispatch = vi.spyOn(window, 'dispatchEvent');
+		capturedTripPlanModalProps.closePane();
+		await tick();
+
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'tripPlanModalClosed' }));
+		expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(false);
+		expect(capturedTripPlanModalProps.hasPlanned).toBe(false);
+	} finally {
+		dispatch?.mockRestore();
+		restoreViewport();
+	}
+});
+
 test('closing the mobile plan sheet with nothing planned still returns to Stops', async () => {
 	const restoreViewport = useNarrowViewport();
 	let dispatch;
