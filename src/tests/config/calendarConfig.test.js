@@ -50,7 +50,7 @@ describe('getWeekStartsOn', () => {
 		mockEnv.PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK = '7';
 		expect(getWeekStartsOn()).toBe(DATE_GET_DAY_MONDAY);
 		expect(consoleSpy).toHaveBeenCalledWith(
-			'Invalid PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK value. Must be 0-6 (0=Monday, 6=Sunday). Using Monday (0) as default.'
+			'Invalid PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK value. Must be 0-6 (0=Monday, 6=Sunday). Using Monday as default.'
 		);
 
 		consoleSpy.mockRestore();
@@ -62,7 +62,7 @@ describe('getWeekStartsOn', () => {
 		mockEnv.PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK = '-1';
 		expect(getWeekStartsOn()).toBe(DATE_GET_DAY_MONDAY);
 		expect(consoleSpy).toHaveBeenCalledWith(
-			'Invalid PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK value. Must be 0-6 (0=Monday, 6=Sunday). Using Monday (0) as default.'
+			'Invalid PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK value. Must be 0-6 (0=Monday, 6=Sunday). Using Monday as default.'
 		);
 
 		consoleSpy.mockRestore();
@@ -80,7 +80,7 @@ describe('getWeekStartsOn', () => {
 		});
 
 		expect(consoleSpy).toHaveBeenCalledWith(
-			'Invalid PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK value. Must be 0-6 (0=Monday, 6=Sunday). Using Monday (0) as default.'
+			'Invalid PUBLIC_CALENDAR_FIRST_DAY_OF_WEEK value. Must be 0-6 (0=Monday, 6=Sunday). Using Monday as default.'
 		);
 
 		consoleSpy.mockRestore();
