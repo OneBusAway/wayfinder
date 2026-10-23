@@ -70,12 +70,8 @@
 	const calendarValue = $derived(toCalendarDate(value));
 
 	// Overridden as the user pages through months, and reset whenever the value
-	// changes.
+	// changes or the popover opens.
 	let month = $derived<DateValue | undefined>(calendarValue);
-	$effect(() => {
-		// Reopening the popover shows the month of the selected date.
-		if (open) month = calendarValue;
-	});
 
 	// Overridden as the user types, and reset whenever the value changes.
 	let fieldValue = $derived<DateValue | undefined>(calendarValue);
@@ -111,7 +107,13 @@
 			{/snippet}
 		</DateField.Input>
 		<InputGroup.Addon align="inline-end">
-			<Popover.Root bind:open>
+			<Popover.Root
+				bind:open
+				onOpenChange={(isOpen) => {
+					// Reopening the popover shows the month of the selected date.
+					if (isOpen) month = calendarValue;
+				}}
+			>
 				<Popover.Trigger>
 					{#snippet child({ props })}
 						<InputGroup.Button
