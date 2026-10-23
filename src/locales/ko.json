@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "도착 및 출발"
 	},
+	"date_picker": {
+		"today": "오늘"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "시간표 보기",
 		"no_am_schedules_available": "오전 운행 정보가 없습니다",
