@@ -133,6 +133,7 @@
 					class="z-[10000] w-auto overflow-hidden p-0"
 					align="end"
 					alignOffset={-8}
+					collisionPadding={4}
 					sideOffset={10}
 				>
 					<Calendar
