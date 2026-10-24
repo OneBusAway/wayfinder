@@ -7,6 +7,7 @@ import {
 	mockArrivalsAndDeparturesResponse,
 	mockEmptyArrivalsAndDeparturesResponse
 } from '../../../tests/fixtures/obaData.js';
+import { env } from '$env/dynamic/public';
 
 // Mock complex child components
 vi.mock('$components/ArrivalDeparture.svelte', () => ({
@@ -127,8 +128,11 @@ vi.mock('svelte-i18n', () => ({
 					arrivals_and_departures: 'Arrivals and departures',
 					'schedule_for_stop.view_schedule': 'View Schedule',
 					load_more_arrivals: 'Load more arrivals',
+					loading: 'Loading...',
 					no_arrivals_found_in_next_minutes: 'No arrivals found in the next {minutes} minutes',
-					no_more_arrivals_in_next_minutes: 'No more arrivals in the next {minutes} minutes'
+					no_arrivals_found_in_next_hours: 'No arrivals found in the next {hours} hours',
+					no_more_arrivals_in_next_minutes: 'No more arrivals in the next {minutes} minutes',
+					no_more_arrivals_in_next_hours: 'No more arrivals in the next {hours} hours'
 				};
 				let str = translations[key] || key;
 				if (options?.values) {
@@ -252,9 +256,9 @@ describe('StopPane', () => {
 		});
 	});
 
-	test('displays empty arrivals message when no arrivals', async () => {
-		// Mock empty arrivals response
-		global.fetch.mockResolvedValueOnce({
+	test('displays empty arrivals message when no arrivals after auto-extending', async () => {
+		// Mock empty arrivals response for all auto-extension attempts
+		global.fetch.mockResolvedValue({
 			ok: true,
 			status: 200,
 			json: async () => mockEmptyArrivalsAndDeparturesResponse
@@ -263,8 +267,12 @@ describe('StopPane', () => {
 		render(StopPane, { props: defaultProps });
 
 		await waitFor(() => {
-			expect(screen.getByText('No arrivals found in the next 35 minutes')).toBeInTheDocument();
+			expect(screen.getByText('No arrivals found in the next 12 hours')).toBeInTheDocument();
 		});
+
+		expect(global.fetch).toHaveBeenCalledTimes(9);
+		const button = screen.getByRole('button', { name: 'Load more arrivals' });
+		expect(button).toBeDisabled();
 	});
 
 	test('tells riders at a flex-only stop that on-demand service is available', async () => {
@@ -281,11 +289,12 @@ describe('StopPane', () => {
 			expect(screen.getByText('ondemand.flex_only_empty_arrivals')).toBeInTheDocument();
 		});
 		expect(screen.queryByText(/No arrivals found in the next/)).not.toBeInTheDocument();
+		expect(global.fetch).toHaveBeenCalledTimes(1);
 	});
 
 	test('keeps the time-window empty message at a stop with routes and on-demand service', async () => {
 		onDemandStub.services = [{ id: 'x' }];
-		global.fetch.mockResolvedValueOnce({
+		global.fetch.mockResolvedValue({
 			ok: true,
 			status: 200,
 			json: async () => mockEmptyArrivalsAndDeparturesResponse
@@ -294,9 +303,10 @@ describe('StopPane', () => {
 		render(StopPane, { props: defaultProps });
 
 		await waitFor(() => {
-			expect(screen.getByText('No arrivals found in the next 35 minutes')).toBeInTheDocument();
+			expect(screen.getByText('No arrivals found in the next 12 hours')).toBeInTheDocument();
 		});
 		expect(screen.queryByText('ondemand.flex_only_empty_arrivals')).not.toBeInTheDocument();
+		expect(global.fetch).toHaveBeenCalledTimes(9);
 	});
 
 	test('displays stop information correctly', async () => {
@@ -680,8 +690,8 @@ describe('StopPane', () => {
 		});
 	});
 
-	test('shows "No arrivals found" for truly empty stop', async () => {
-		global.fetch.mockResolvedValueOnce({
+	test('shows "No arrivals found" for truly empty stop after auto-extending', async () => {
+		global.fetch.mockResolvedValue({
 			ok: true,
 			status: 200,
 			json: async () => mockEmptyArrivalsAndDeparturesResponse
@@ -690,8 +700,44 @@ describe('StopPane', () => {
 		render(StopPane, { props: defaultProps });
 
 		await waitFor(() => {
-			expect(screen.getByText('No arrivals found in the next 35 minutes')).toBeInTheDocument();
+			expect(screen.getByText('No arrivals found in the next 12 hours')).toBeInTheDocument();
 		});
+
+		expect(global.fetch).toHaveBeenCalledTimes(9);
+		expect(screen.getByRole('button', { name: 'Load more arrivals' })).toBeDisabled();
+	});
+
+	test('auto-extends arrivals window on initial load until departures are found', async () => {
+		// First call (35 min) returns empty arrivals
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+		// Second call (95 min) returns arrivals
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
+		});
+
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			1,
+			'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=35',
+			expect.any(Object)
+		);
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			2,
+			'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=95',
+			expect.any(Object)
+		);
+		expect(screen.queryByText(/No arrivals found in the next/)).not.toBeInTheDocument();
 	});
 
 	test('handles empty route list gracefully', async () => {
@@ -723,5 +769,299 @@ describe('StopPane', () => {
 		// Should not display the original routes (10, 11) since we're using a stop without routes
 		expect(screen.queryByText('Routes: 10, 11')).not.toBeInTheDocument();
 		// Component might still show "Routes:" but without route numbers
+	});
+
+	test('progressively widens minutesAfter across multiple empty increments until arrivals found', async () => {
+		// First call (35 min) returns empty arrivals
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+		// Second call (95 min) returns empty arrivals
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+		// Third call (155 min) returns arrivals
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
+		});
+
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			1,
+			'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=35',
+			expect.any(Object)
+		);
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			2,
+			'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=95',
+			expect.any(Object)
+		);
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			3,
+			'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=155',
+			expect.any(Object)
+		);
+		expect(screen.queryByText(/No arrivals found in the next/)).not.toBeInTheDocument();
+	});
+
+	test('keeps stop header and info visible when initialized with empty SSR seed', async () => {
+		global.fetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, {
+			props: {
+				...defaultProps,
+				arrivalsAndDeparturesResponse: mockEmptyArrivalsAndDeparturesResponse
+			}
+		});
+
+		// The stop name and stop number must be visible immediately from the SSR seed
+		expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
+		expect(screen.getByText('Stop #75403')).toBeInTheDocument();
+
+		await waitFor(() => {
+			expect(screen.getByText('No arrivals found in the next 12 hours')).toBeInTheDocument();
+		});
+
+		// Header remains visible after auto-extension finishes
+		expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
+	});
+
+	test('handles error mid-extension without blanking header or leaking unvalidated window', async () => {
+		// 35 min succeeds with empty
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+		// 95 min succeeds with empty
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+		// 155 min rejects with network error
+		global.fetch.mockRejectedValueOnce(new Error('Network error'));
+
+		render(StopPane, {
+			props: {
+				...defaultProps,
+				arrivalsAndDeparturesResponse: mockEmptyArrivalsAndDeparturesResponse
+			}
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText('Unable to fetch arrival/departure data')).toBeInTheDocument();
+		});
+
+		// Stop header remains visible even after fetch failure
+		expect(screen.getByText('Pine St & 3rd Ave')).toBeInTheDocument();
+
+		// Verify fetch attempted 35, 95, 155
+		expect(global.fetch).toHaveBeenCalledTimes(3);
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			1,
+			'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=35',
+			expect.any(Object)
+		);
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			2,
+			'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=95',
+			expect.any(Object)
+		);
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			3,
+			'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=155',
+			expect.any(Object)
+		);
+	});
+
+	test('load-more click does not auto-extend even during initial load', async () => {
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, {
+			props: {
+				...defaultProps,
+				arrivalsAndDeparturesResponse: mockArrivalsAndDeparturesResponse
+			}
+		});
+
+		const loadMoreBtn = await screen.findByRole('button', { name: 'Load more arrivals' });
+
+		// Click load more: should make a single request for 35 + 30 = 65 minutes
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+
+		await userEvent.click(loadMoreBtn);
+
+		await waitFor(() => {
+			expect(global.fetch).toHaveBeenLastCalledWith(
+				'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=65',
+				expect.any(Object)
+			);
+		});
+
+		// Exactly 2 fetches total: 1 initial effect, 1 load-more (no auto-extension loop!)
+		expect(global.fetch).toHaveBeenCalledTimes(2);
+	});
+
+	test('periodic background polling decays back to default 35-minute window after exhaustion', async () => {
+		vi.useFakeTimers();
+
+		global.fetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		// Wait for the 9 initial auto-extension fetches to complete
+		await vi.waitFor(() => {
+			expect(global.fetch).toHaveBeenCalledTimes(9);
+		});
+
+		expect(screen.getByText('No arrivals found in the next 12 hours')).toBeInTheDocument();
+
+		// Advance timer by 30 seconds for background poll
+		await vi.advanceTimersByTimeAsync(30000);
+
+		// 10th fetch should be the 30s background poll, requesting 35 minutes (not 720!)
+		expect(global.fetch).toHaveBeenCalledTimes(10);
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			10,
+			'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=35',
+			expect.any(Object)
+		);
+
+		// The rider still sees the 12-hour empty message
+		expect(screen.getByText('No arrivals found in the next 12 hours')).toBeInTheDocument();
+
+		vi.useRealTimers();
+	});
+
+	test('respects configured PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES environment variable', async () => {
+		env.PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES = '155';
+
+		global.fetch.mockResolvedValue({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(screen.getByText('No arrivals found in the next 155 minutes')).toBeInTheDocument();
+		});
+
+		// Exactly 3 calls: 35, 95, 155
+		expect(global.fetch).toHaveBeenCalledTimes(3);
+		expect(screen.getByRole('button', { name: 'Load more arrivals' })).toBeDisabled();
+
+		delete env.PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES;
+	});
+
+	test('falls back to default 720 minutes when PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES is non-integer, decimal, or invalid', async () => {
+		for (const invalidValue of ['100.5', 'Infinity', '-50', 'not-a-number']) {
+			env.PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES = invalidValue;
+
+			global.fetch.mockReset();
+			global.fetch.mockResolvedValue({
+				ok: true,
+				status: 200,
+				json: async () => mockEmptyArrivalsAndDeparturesResponse
+			});
+
+			const { unmount } = render(StopPane, { props: defaultProps });
+
+			await waitFor(() => {
+				expect(screen.getByText('No arrivals found in the next 12 hours')).toBeInTheDocument();
+			});
+
+			expect(global.fetch).toHaveBeenCalledTimes(9);
+			unmount();
+		}
+
+		delete env.PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES;
+	});
+
+	test('preserves extended window on consecutive load-more clicks even after empty results', async () => {
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockArrivalsAndDeparturesResponse
+		});
+
+		render(StopPane, {
+			props: {
+				...defaultProps,
+				arrivalsAndDeparturesResponse: mockArrivalsAndDeparturesResponse
+			}
+		});
+
+		const loadMoreBtn = await screen.findByRole('button', { name: 'Load more arrivals' });
+
+		// First load more click: 35 + 30 = 65 minutes, returns empty arrivals
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+
+		await userEvent.click(loadMoreBtn);
+
+		await waitFor(() => {
+			expect(global.fetch).toHaveBeenLastCalledWith(
+				'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=65',
+				expect.any(Object)
+			);
+		});
+
+		// Button should NOT be disabled after loading completes because 65 < 720
+		await waitFor(() => {
+			expect(screen.getByRole('button', { name: 'Load more arrivals' })).not.toBeDisabled();
+		});
+
+		// Second load more click: 65 + 30 = 95 minutes, preserves window without resetting to 35
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => mockEmptyArrivalsAndDeparturesResponse
+		});
+
+		const secondLoadMoreBtn = screen.getByRole('button', { name: 'Load more arrivals' });
+		await userEvent.click(secondLoadMoreBtn);
+
+		await waitFor(() => {
+			expect(global.fetch).toHaveBeenLastCalledWith(
+				'/api/oba/arrivals-and-departures-for-stop/1_75403?minutesAfter=95',
+				expect.any(Object)
+			);
+		});
+
+		// Exactly 3 fetches total: 1 initial effect, 1 load-more (65), 1 load-more (95)
+		expect(global.fetch).toHaveBeenCalledTimes(3);
 	});
 });
