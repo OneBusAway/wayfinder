@@ -235,7 +235,10 @@
 			return null;
 		}
 		const latSpan = boundingBox.north - boundingBox.south;
-		const lngSpan = boundingBox.east - boundingBox.west;
+		const lngSpan =
+			boundingBox.east < boundingBox.west
+				? 360 + boundingBox.east - boundingBox.west
+				: boundingBox.east - boundingBox.west;
 		const key = cacheKey(zoomLevel, boundingBox);
 
 		if (stopsCache.has(key)) {

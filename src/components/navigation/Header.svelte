@@ -5,6 +5,7 @@
 		PUBLIC_NAV_BAR_LINKS
 	} from '$env/static/public';
 
+	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import OverflowMenu from './OverflowMenu.svelte';
 	import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher.svelte';
@@ -231,6 +232,17 @@
 			languageSwitcherResizeObserver.disconnect();
 		};
 	});
+
+	function handleHomeClick(e) {
+		if (!browser) return;
+		if (
+			e &&
+			(e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+		) {
+			return;
+		}
+		window.dispatchEvent(new CustomEvent('openStopsTab'));
+	}
 </script>
 
 <header
@@ -256,10 +268,15 @@
 			{/if}
 			{#if showRegionName || !hasValidLogo}
 				<!-- external URL -->
-				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-				<a href="/" class="region-name block text-xl font-extrabold text-brand-foreground">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -->
+				<a
+					href="/"
+					onclick={handleHomeClick}
+					class="region-name block text-xl font-extrabold text-brand-foreground"
+				>
 					{PUBLIC_OBA_REGION_NAME}
 				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			{/if}
 		</div>
 	</div>

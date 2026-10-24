@@ -70,13 +70,9 @@ describe('parseLocationQuery', () => {
 			error: 'latSpan and lonSpan must both be positive numbers'
 		});
 	});
-	it('ignores span validation errors when spansAdvisoryWhenRadius is true', () => {
-		expect(
-			parseLocationQuery(query('lat=1&lon=2&radius=500&latSpan=bad'), {
-				spansAdvisoryWhenRadius: true
-			})
-		).toEqual({
-			params: { lat: 1, lon: 2, radius: 500 }
+	it('rejects half-specified spans even when radius is present', () => {
+		expect(parseLocationQuery(query('lat=1&lon=2&radius=500&latSpan=0.1'))).toEqual({
+			error: 'latSpan and lonSpan must both be positive numbers'
 		});
 	});
 	it('uses client-facing lon/lonSpan param names in reads and errors', () => {
@@ -104,5 +100,14 @@ describe('parseLocationQuery', () => {
 	});
 	it('rejects an invalid geometryDetail', () => {
 		expect(parseLocationQuery(query('lat=1&lon=2&geometryDetail=x'))).toHaveProperty('error');
+	});
+	it('skips geometryDetail validation when the endpoint does not support it', () => {
+		expect(
+			parseLocationQuery(query('lat=1&lon=2&geometryDetail=bogus'), {
+				supportsGeometryDetail: false
+			})
+		).toEqual({
+			params: { lat: 1, lon: 2 }
+		});
 	});
 });
