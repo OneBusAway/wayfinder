@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Dialog from '$components/ui/dialog';
-	import { modalOpen } from '$src/stores/modalOpen';
 	import { ChevronLeft, ChevronRight } from '@lucide/svelte';
 	import ServiceAlertItem from './ServiceAlertItem.svelte';
 	import { t, locale } from 'svelte-i18n';
@@ -21,8 +20,9 @@
 		stopId?: string | null;
 	}
 
-	const { serviceAlerts = $bindable([]), stopId = null, routeIds = [] }: Props = $props();
+	const { serviceAlerts = [], stopId = null, routeIds = [] }: Props = $props();
 
+	let isModalOpen = $state(false);
 	let modalAlert = $state<ServiceAlert | null>(null);
 	let isAlertsHidden = $state(false);
 	let currentPage = $state(1);
@@ -50,7 +50,7 @@
 
 	function openModal(alert: ServiceAlert) {
 		modalAlert = alert;
-		modalOpen.set(true);
+		isModalOpen = true;
 	}
 
 	function toggleAlerts() {
@@ -135,7 +135,7 @@
 	</div>
 {/if}
 
-<Dialog.Root bind:open={$modalOpen}>
+<Dialog.Root bind:open={isModalOpen}>
 	{#if modalAlert}
 		<Dialog.Content class="flex max-h-[85dvh] flex-col sm:max-w-lg">
 			<Dialog.Header>

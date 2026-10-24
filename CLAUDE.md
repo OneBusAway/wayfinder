@@ -49,7 +49,7 @@ This project uses Svelte 5 with runes (`$state`, `$derived`, `$effect`, `$props`
 
 - `src/components/` - Svelte components organized by feature
 - `src/lib/` - Utilities and services
-- `src/stores/` - Svelte stores for global state (mapStore, modalOpen, userLocationStore, surveyStore)
+- `src/stores/` - Svelte stores for global state (mapStore, userLocationStore, surveyStore)
 - `src/routes/` - SvelteKit routes (pages and API endpoints)
 - `src/routes/api/` - Server-side API proxies to OBA and OTP servers
 - `src/config/` - Configuration files
@@ -87,7 +87,7 @@ Configured via `PUBLIC_OBA_MAP_PROVIDER` env var ("osm", "google", or "arcgis").
 
 - Component state: Svelte 5 runes (`$state`, `$derived`)
 - Global state: Svelte stores in `src/stores/`
-- Modal state: Centralized via `modalOpen` store
+- Modal state: Local `$state` in the component that owns the dialog, so it resets on unmount
 
 ### Internationalization
 
