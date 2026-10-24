@@ -27,8 +27,8 @@
 	 *
 	 * @typedef {ArrivalAndDepartureListResponse['data']['entry']['arrivalsAndDepartures'][number]} ArrivalsAndDeparture
 	 * @typedef {string | string[]} SurveyAnswer
-	 * @typedef {{ id: string | number, content: { type: string, label_text: string } }} SurveyQuestion
-	 * @typedef {{ id: string | number, questions: SurveyQuestion[], allows_multiple_responses?: boolean, always_visible?: boolean }} StopSurvey
+	 * @typedef {import('$stores/surveyStore').SurveyQuestion} SurveyQuestion
+	 * @typedef {import('$stores/surveyStore').Survey} StopSurvey
 	 * @typedef {{ question_id: SurveyQuestion['id'], question_label: string, question_type: string, answer: SurveyAnswer }} SurveyAnswerResponse
 	 *
 	 * @typedef {Object} Props

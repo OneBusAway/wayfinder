@@ -4,7 +4,8 @@
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {string} [value]
+	 * @property {(results: import('$lib/types').SearchResults) => void} handleSearchResults
+	 * @property {string | null} [value]
 	 */
 
 	/** @type {Props} */

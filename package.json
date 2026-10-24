@@ -35,7 +35,7 @@
 		"@testing-library/user-event": "^14.6.1",
 		"@types/eslint": "^8.56.7",
 		"@vitest/coverage-v8": "^2.1.8",
-		"bits-ui": "^2.19.5",
+		"bits-ui": "2.20.2",
 		"cn": "^0.4.0",
 		"eslint": "^9.0.0",
 		"eslint-config-prettier": "^9.1.0",
