@@ -14,18 +14,17 @@ export function parseGeometryDetail(value) {
 /**
  * Validates a location query: lat and lon (or renamed equivalents) required;
  * either a radius or both spans; optional geometryDetail.
- * @param {URLSearchParams} searchParams
  * @param {{
  *   lonParam?: string,
  *   lonSpanParam?: string,
- *   spansAdvisoryWhenRadius?: boolean
+ *   supportsGeometryDetail?: boolean
  * }} [options]
  * @returns {{ params: Record<string, number | string> } | { error: string }}
  */
 export function parseLocationQuery(searchParams, options = {}) {
 	const lonParam = options.lonParam ?? 'lon';
 	const lonSpanParam = options.lonSpanParam ?? 'lonSpan';
-	const spansAdvisoryWhenRadius = options.spansAdvisoryWhenRadius ?? false;
+	const supportsGeometryDetail = options.supportsGeometryDetail ?? true;
 
 	const lat = finiteNumber(searchParams.get('lat'));
 	const lon = finiteNumber(searchParams.get(lonParam));
@@ -37,19 +36,19 @@ export function parseLocationQuery(searchParams, options = {}) {
 
 	const radiusError = addRadius(params, searchParams.get('radius'));
 	if (radiusError) return { error: radiusError };
-	const spanError = addSpans(
-		params,
-		searchParams.get('latSpan'),
-		searchParams.get(lonSpanParam),
-		lonSpanParam
-	);
-	if (spanError && !(spansAdvisoryWhenRadius && 'radius' in params)) {
+	const rawLatSpan = searchParams.get('latSpan');
+	const rawLonSpan = searchParams.get(lonSpanParam);
+
+	const spanError = addSpans(params, rawLatSpan, rawLonSpan, lonSpanParam);
+	if (spanError) {
 		return { error: spanError };
 	}
 
-	const detail = parseGeometryDetail(searchParams.get('geometryDetail'));
-	if ('error' in detail) return { error: detail.error };
-	if (detail.value) params.geometryDetail = detail.value;
+	if (supportsGeometryDetail) {
+		const detail = parseGeometryDetail(searchParams.get('geometryDetail'));
+		if ('error' in detail) return { error: detail.error };
+		if (detail.value) params.geometryDetail = detail.value;
+	}
 	return { params };
 }
 

@@ -8,14 +8,11 @@ export async function GET({ url }) {
 	const parsed = parseLocationQuery(url.searchParams, {
 		lonParam: 'lng',
 		lonSpanParam: 'lngSpan',
-		spansAdvisoryWhenRadius: true
+		supportsGeometryDetail: false
 	});
 	if ('error' in parsed) {
 		return json({ error: parsed.error }, { status: 400 });
 	}
-
-	// stops-for-location does not accept geometryDetail; drop it if present.
-	delete parsed.params.geometryDetail;
 
 	const response = await oba.stopsForLocation.list(parsed.params);
 
