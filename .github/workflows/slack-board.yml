@@ -1,7 +1,7 @@
 # Rewrites the Wayfinder contributor board canvas in Slack.
 #
-# Needs one secret (SLACK_BOT_TOKEN) and two variables (SLACK_CHANNEL_ID,
-# SLACK_CANVAS_ID). See docs/slack-contributor-board.md.
+# Needs one secret (SLACK_BOT_TOKEN) and the SLACK_CANVAS_ID variable.
+# See docs/slack-contributor-board.md.
 #
 # This workflow is independent of the build: if Slack is down it fails on its
 # own and nothing else is affected.

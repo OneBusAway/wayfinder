@@ -33,6 +33,11 @@ const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const channel = valueOf('--channel') ?? process.env.SLACK_CHANNEL_ID;
 const canvasOverride = valueOf('--canvas') ?? process.env.SLACK_CANVAS_ID;
+const setupAccess = args.includes('--setup-access');
+const EDITORS = (valueOf('--editors') ?? process.env.SLACK_EDITOR_IDS ?? '')
+	.split(',')
+	.map((id) => id.trim())
+	.filter(Boolean);
 
 function valueOf(flag) {
 	const i = args.indexOf(flag);
@@ -355,14 +360,6 @@ async function slack(method, { query, json } = {}) {
 	return body;
 }
 
-async function existingCanvasId(channelId) {
-	const info = await slack('conversations.info', { query: { channel: channelId } });
-	const canvas = info.channel?.properties?.canvas;
-	debug('canvas property:', JSON.stringify(canvas));
-	if (!canvas) return undefined;
-	return typeof canvas === 'string' ? canvas : (canvas.document_id ?? canvas.file_id);
-}
-
 async function ensureTitle(canvasId) {
 	try {
 		await slack('canvases.edit', {
@@ -378,36 +375,63 @@ async function ensureTitle(canvasId) {
 	}
 }
 
-async function publish(channelId, markdown) {
-	const document_content = { type: 'markdown', markdown };
-	const canvasId = canvasOverride ?? (await existingCanvasId(channelId));
+/**
+ * The canvas is standalone and owned by the bot, not a channel canvas. A channel
+ * canvas inherits the channel's permissions, which means anyone who can post can
+ * edit or detach it. Owning it keeps editing to the bot and the people listed in
+ * SLACK_EDITOR_IDS, and keeps deletion to the bot alone.
+ */
+async function setAccess(canvasId, channelId, editors) {
+	if (!channelId) throw new Error('Pass --channel <id> or set SLACK_CHANNEL_ID.');
 
-	if (!canvasId) {
-		const created = await slack('conversations.canvases.create', {
-			json: { channel_id: channelId, document_content }
+	await slack('canvases.access.set', {
+		json: { canvas_id: canvasId, channel_ids: [channelId], access: 'read' }
+	});
+	console.error(`Everyone in ${channelId} can now view the canvas.`);
+
+	if (editors.length === 0) {
+		console.error('No SLACK_EDITOR_IDS set, so only the bot can edit it.');
+		return;
+	}
+
+	await slack('canvases.access.set', {
+		json: { canvas_id: canvasId, user_ids: editors, access: 'write' }
+	});
+	console.error(`Write access granted to ${editors.join(', ')}.`);
+}
+
+async function publish(markdown) {
+	const document_content = { type: 'markdown', markdown };
+
+	if (!canvasOverride) {
+		const created = await slack('canvases.create', {
+			json: { title: CANVAS_TITLE, document_content }
 		});
-		await ensureTitle(created.canvas_id);
 		console.error(
-			`Created a new canvas. Pass --canvas ${created.canvas_id} (or set SLACK_CANVAS_ID) ` +
-				'on every future run so it updates this one instead of making another.'
+			`Created canvas ${created.canvas_id}. Next: set SLACK_CANVAS_ID to it, then run ` +
+				'once with --setup-access to share it read-only with the channel.'
 		);
 		return { action: 'created', canvasId: created.canvas_id };
 	}
 
 	await slack('canvases.edit', {
-		json: { canvas_id: canvasId, changes: [{ operation: 'replace', document_content }] }
+		json: { canvas_id: canvasOverride, changes: [{ operation: 'replace', document_content }] }
 	});
-	await ensureTitle(canvasId);
-	return { action: 'replaced', canvasId };
+	await ensureTitle(canvasOverride);
+	return { action: 'replaced', canvasId: canvasOverride };
 }
 
-const markdown = buildBoard(await fetchRepoState());
-
-if (dryRun) {
-	console.log(markdown);
-	console.error('\n--- dry run: nothing was sent to Slack ---');
+if (setupAccess) {
+	if (!canvasOverride) throw new Error('Pass --canvas <id> or set SLACK_CANVAS_ID.');
+	await setAccess(canvasOverride, channel, EDITORS);
 } else {
-	if (!channel) throw new Error('Pass --channel <id> or set SLACK_CHANNEL_ID.');
-	const { action, canvasId } = await publish(channel, markdown);
-	console.error(`Canvas ${action} in ${channel} (${canvasId}).`);
+	const markdown = buildBoard(await fetchRepoState());
+
+	if (dryRun) {
+		console.log(markdown);
+		console.error('\n--- dry run: nothing was sent to Slack ---');
+	} else {
+		const { action, canvasId } = await publish(markdown);
+		console.error(`Canvas ${action} (${canvasId}).`);
+	}
 }

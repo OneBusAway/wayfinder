@@ -76,88 +76,99 @@ oauth_config:
   scopes:
     bot:
       - canvases:write
-      - channels:read
-      - groups:read
 settings:
   org_deploy_enabled: false
   socket_mode_enabled: false
   token_rotation_enabled: false
 ```
 
-| Scope            | Why                                                    |
-| ---------------- | ------------------------------------------------------ |
-| `canvases:write` | Create and replace the canvas                          |
-| `channels:read`  | Read channel info for a **public** channel             |
-| `groups:read`    | Same, for a **private** channel — needed while testing |
+One scope. `canvases:write` covers creating the canvas, replacing its contents,
+renaming it, and setting who can read or write it. The script makes no other
+kind of Slack call, so there is nothing else to grant.
 
-Nothing else is granted. `chat:write` is only needed once the event posts ship,
-and `canvases:read` only if you go back to editing individual sections instead
-of replacing the whole document. Add them then, not now: the fewer scopes the
-token carries, the less it can do if it leaks.
+`chat:write` is needed only once the event posts ship. `channels:read` and
+`groups:read` were needed by an earlier design that looked up a channel canvas;
+they are not needed now.
 
-The app must be invited to the channel: `/invite @Wayfinder Board`.
+The bot does not need to be a member of the channel. Access is granted to the
+canvas directly.
 
-## Canvas behaviour
+## Canvas ownership, and why it is not a channel canvas
 
-- A channel can hold **exactly one** channel canvas. `conversations.canvases.create`
-  fails with `channel_canvas_already_exists` if one is already there.
+The first version used a **channel canvas**, created with
+`conversations.canvases.create`. That turned out to be the wrong model. A
+channel canvas inherits the channel's permissions, so in a public channel
+anyone who can post can also edit it, change its sharing settings, or detach it
+from the channel. That is exactly what happened: a contributor changed the
+access settings, and the board ended up view-only for its own maintainer.
+
+The board now uses a **standalone canvas created by the bot**, which makes the
+bot its owner:
+
+- Only the bot and the users listed in `SLACK_EDITOR_IDS` can edit it.
+- Everyone in the channel gets read access, granted explicitly.
+- Nobody but the owner can delete it.
+
+Access is set in code, not by clicking, so it is reproducible and reviewable:
+
+```bash
+node scripts/slack-board.mjs --setup-access \
+  --canvas F0... --channel C0... --editors U06...,U0F...
+```
+
+That makes two `canvases.access.set` calls: one granting the channel `read`,
+one granting the named users `write`. Run it once at setup, and again if the
+editor list changes.
+
+Other things worth knowing:
+
 - `canvases.edit` with `operation: replace` and **no** `section_id` replaces the
-  entire document in one call. That is what this script does, so the script owns
-  the whole canvas and any human edit is overwritten on the next run. The board
-  says so in its header line.
-- A canvas in a public channel is **viewable by everyone in the workspace**. By
-  default anyone who can post in the channel can also edit it. Restricting that
-  is a paid-plan feature; where it is unavailable, the "edits are overwritten"
-  note is the mitigation.
-- The canvas title is set separately via `operation: rename`, because
-  `conversations.canvases.create` does not accept one. Slack renders that title
-  above the document, so the markdown deliberately starts with no `#` heading.
-- **Do not rely on auto-detecting the canvas ID.** `conversations.info` did not
-  report `properties.canvas` in our testing. When the ID cannot be found the
-  script falls through to creating a canvas, and that goes one of two ways:
-  Slack's docs say it should fail with `channel_canvas_already_exists`, but what
-  we actually observed was a second canvas appearing in the channel. Either way
-  the run does not update the board, so set `SLACK_CANVAS_ID` and never take
-  that path.
-
-## Slack API encoding
-
-A trap worth knowing: `conversations.info` rejected a JSON body with
-`invalid_arguments` in our testing, and worked as a GET with query parameters.
-Slack's reference does not flag this, so the error is easy to misread as a bad
-argument name. The canvas methods need JSON, because their arguments are nested.
-
-The script's `slack()` helper therefore sends GET with query parameters by
-default and JSON only for the canvas calls. If you add a method and hit
-`invalid_arguments` with arguments you are sure are correct, try the other
-encoding before anything else.
+  entire document in one call. The script owns the whole canvas, so edits made
+  in Slack are overwritten on the next run. The board says so in its header.
+- The canvas title is set separately via `operation: rename`, because the create
+  call's title is not always kept. Slack renders that title above the document,
+  so the markdown deliberately starts with no `#` heading.
+- A standalone canvas is **not a channel tab.** Add it to the channel as a
+  bookmark so it has a permanent, visible home. Keep its URL
+  (`https://<workspace>.slack.com/docs/<TEAM_ID>/<CANVAS_ID>`) somewhere safe —
+  it is the one handle no UI click can remove. `auth.test` returns the team ID.
+- Standalone canvases require a paid Slack plan. Probe with `canvases.create`
+  before committing to this design; free teams get an error.
+- **Always set `SLACK_CANVAS_ID`.** Without it the script creates a new canvas
+  every run.
 
 ## Configuration
 
 Repo → **Settings** → **Secrets and variables** → **Actions**.
 
-| Name               | Tab       | Example       | Secret? |
-| ------------------ | --------- | ------------- | ------- |
-| `SLACK_BOT_TOKEN`  | Secrets   | `xoxb-…`      | **Yes** |
-| `SLACK_CHANNEL_ID` | Variables | `C0AKW41FU7N` | No      |
-| `SLACK_CANVAS_ID`  | Variables | `F09…`        | No      |
+| Name               | Tab       | Example     | Secret? |
+| ------------------ | --------- | ----------- | ------- |
+| `SLACK_BOT_TOKEN`  | Secrets   | `xoxb-…`    | **Yes** |
+| `SLACK_CANVAS_ID`  | Variables | `F0…`       | No      |
+| `SLACK_CHANNEL_ID` | Variables | `C0…`       | No      |
+| `SLACK_EDITOR_IDS` | Variables | `U06…,U0F…` | No      |
 
-`GITHUB_TOKEN` is injected by Actions automatically; nothing to configure.
+Only the token is secret. The IDs go in Variables, where you can read them back
+— secrets are write-only, which makes debugging miserable.
+
+`SLACK_CHANNEL_ID` and `SLACK_EDITOR_IDS` are used only by `--setup-access`; the
+hourly run needs just the token and the canvas ID. `GITHUB_TOKEN` is injected by
+Actions automatically.
 
 Locally the script falls back to `gh auth token`, so `--dry-run` works with no
 setup at all.
 
 ## Rollout procedure
 
-Each step is reversible and nothing touches the public channel until step 5.
+Each step is reversible and nothing is visible to the channel until step 5.
 
-1. Create the Slack app, install it, invite it to a **private test channel**.
+1. Create the Slack app and install it.
 2. `node scripts/slack-board.mjs --dry-run` — prints markdown, calls nothing.
-3. Run it against the test channel. Verify tables render and that a second run
-   says `replaced`, not `created`.
-4. Capture the canvas ID the first run prints and pass `--canvas` from then on.
-5. Invite the bot to the real channel, create the canvas there, run it by hand
-   for a day or two.
+3. `node scripts/slack-board.mjs` with no canvas ID — creates a bot-owned canvas
+   and prints its ID. At this point only the bot can see it.
+4. Run again with `--canvas <id>` twice. Both should report `replaced`.
+5. `--setup-access` to grant the channel read and the maintainers write, then add
+   the canvas to the channel as a bookmark.
 6. Add the secret and variables, then merge the workflow.
 7. Trigger it by hand from the Actions tab. This is the first run with the repo
    secret rather than a shell variable, so it is where a mistyped variable name
