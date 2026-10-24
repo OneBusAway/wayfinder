@@ -385,7 +385,7 @@ async function setAccess(canvasId, channelId, editors) {
 	if (!channelId) throw new Error('Pass --channel <id> or set SLACK_CHANNEL_ID.');
 
 	await slack('canvases.access.set', {
-		json: { canvas_id: canvasId, channel_ids: [channelId], access: 'read' }
+		json: { canvas_id: canvasId, channel_ids: [channelId], access_level: 'read' }
 	});
 	console.error(`Everyone in ${channelId} can now view the canvas.`);
 
@@ -395,7 +395,7 @@ async function setAccess(canvasId, channelId, editors) {
 	}
 
 	await slack('canvases.access.set', {
-		json: { canvas_id: canvasId, user_ids: editors, access: 'write' }
+		json: { canvas_id: canvasId, user_ids: editors, access_level: 'write' }
 	});
 	console.error(`Write access granted to ${editors.join(', ')}.`);
 }
