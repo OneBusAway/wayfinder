@@ -1,6 +1,10 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import Header from '../Header.svelte';
+
+vi.mock('$app/environment', () => ({
+	browser: true
+}));
 
 // Mock environment variables
 vi.mock('$env/static/public', () => ({
@@ -180,5 +184,43 @@ describe('Header with region name hidden', () => {
 		// Should only have one link for the logo
 		const links = screen.getAllByRole('link', { name: /test region/i });
 		expect(links).toHaveLength(1);
+	});
+
+	test('dispatches openStopsTab event when logo is clicked', async () => {
+		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+		render(Header);
+
+		const logoLink = screen.getAllByRole('link', { name: /test region/i })[0];
+		await fireEvent.click(logoLink);
+
+		expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+	});
+
+	test('does not dispatch openStopsTab on modified or non-primary clicks', async () => {
+		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+		render(Header);
+
+		const logoLink = screen.getAllByRole('link', { name: /test region/i })[0];
+		dispatchSpy.mockClear();
+
+		// Ctrl-click
+		await fireEvent.click(logoLink, { ctrlKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Meta-click (Cmd-click on macOS)
+		await fireEvent.click(logoLink, { metaKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Shift-click
+		await fireEvent.click(logoLink, { shiftKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Alt-click
+		await fireEvent.click(logoLink, { altKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Non-primary click
+		await fireEvent.click(logoLink, { button: 1 });
+		expect(dispatchSpy).not.toHaveBeenCalled();
 	});
 });
