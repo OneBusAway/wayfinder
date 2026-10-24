@@ -29,8 +29,32 @@
 		isDarkMode && __OBA_LOGO_URL_DARK__ ? __OBA_LOGO_URL_DARK__ : PUBLIC_OBA_LOGO_URL
 	);
 
+	let imageFailed = $state(false);
+	let hasValidLogo = $derived(Boolean(logoUrl) && !imageFailed);
+
+	$effect(() => {
+		// Reset failed state if logoUrl changes
+		if (logoUrl) {
+			imageFailed = false;
+		}
+	});
+
+	function handleImageLoad() {
+		imageFailed = false;
+		if (logoElement) {
+			baseLogoWidth = logoElement.offsetWidth;
+		}
+		checkOverflow();
+	}
+
+	function handleImageError() {
+		imageFailed = true;
+		baseLogoWidth = 0;
+		checkOverflow();
+	}
+
 	let navContainer;
-	let logoElement;
+	let logoElement = $state();
 
 	const EXTRA_PADDING = 32;
 	const GAP_WIDTH = 16; // 1rem = 16px (gap-x-4)
@@ -77,11 +101,13 @@
 		// Calculate logo container width (logo + region name if shown + gaps + padding)
 		const regionNameEl = logoContainer?.querySelector('.region-name');
 		const regionNameWidth = regionNameEl?.offsetWidth || 0;
-		const logoContainerGap = showRegionName && regionNameWidth > 0 ? 8 : 0; // gap-x-2
+		const hasLogo = hasValidLogo && baseLogoWidth > 0;
+		const logoContainerGap = hasLogo && regionNameWidth > 0 ? 8 : 0; // gap-x-2
 
 		// Calculate available width with current logo height
-		const currentLogoWidth =
-			logoHeight === DEFAULT_LOGO_HEIGHT
+		const currentLogoWidth = !hasLogo
+			? 0
+			: logoHeight === DEFAULT_LOGO_HEIGHT
 				? baseLogoWidth
 				: (baseLogoWidth * logoHeight) / DEFAULT_LOGO_HEIGHT;
 		const logoContainerWidth =
@@ -165,10 +191,8 @@
 			if (logoElement.complete) {
 				baseLogoWidth = logoElement.offsetWidth;
 			} else {
-				logoElement.onload = () => {
-					baseLogoWidth = logoElement.offsetWidth;
-					checkOverflow();
-				};
+				logoElement.onload = handleImageLoad;
+				logoElement.onerror = handleImageError;
 			}
 		}
 
@@ -227,18 +251,22 @@
 >
 	<div class="logo-container flex items-center gap-2 px-1 py-1 md:gap-4 md:px-2 md:py-2">
 		<div class="flex items-center justify-center gap-x-2">
-			<!-- external URL -->
-			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-			<a href="/" onclick={handleHomeClick} class="block">
-				<img
-					bind:this={logoElement}
-					src={logoUrl}
-					alt={PUBLIC_OBA_REGION_NAME}
-					class="rounded-xs"
-					style="height: {logoHeight}px"
-				/>
-			</a>
-			{#if showRegionName}
+			{#if hasValidLogo}
+				<!-- external URL -->
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+				<a href="/" class="block">
+					<img
+						bind:this={logoElement}
+						src={logoUrl}
+						alt={PUBLIC_OBA_REGION_NAME}
+						class="rounded-xs"
+						style="height: {logoHeight}px"
+						onload={handleImageLoad}
+						onerror={handleImageError}
+					/>
+				</a>
+			{/if}
+			{#if showRegionName || !hasValidLogo}
 				<!-- external URL -->
 				<!-- eslint-disable svelte/no-navigation-without-resolve -->
 				<a
