@@ -1,12 +1,24 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import Header from '../Header.svelte';
 
-// Mock environment variables
-vi.mock('$env/static/public', () => ({
+let mockPublicEnv = {
 	PUBLIC_OBA_REGION_NAME: 'Test Region',
 	PUBLIC_OBA_LOGO_URL: '/test-logo.png',
 	PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}'
+};
+
+// Mock environment variables
+vi.mock('$env/static/public', () => ({
+	get PUBLIC_OBA_REGION_NAME() {
+		return mockPublicEnv.PUBLIC_OBA_REGION_NAME;
+	},
+	get PUBLIC_OBA_LOGO_URL() {
+		return mockPublicEnv.PUBLIC_OBA_LOGO_URL;
+	},
+	get PUBLIC_NAV_BAR_LINKS() {
+		return mockPublicEnv.PUBLIC_NAV_BAR_LINKS;
+	}
 }));
 
 // Set default value for the global define
@@ -42,6 +54,12 @@ vi.mock('$env/dynamic/public', () => ({
 
 describe('Header', () => {
 	beforeEach(() => {
+		mockPublicEnv = {
+			PUBLIC_OBA_REGION_NAME: 'Test Region',
+			PUBLIC_OBA_LOGO_URL: '/test-logo.png',
+			PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}'
+		};
+
 		// Mock ResizeObserver
 		global.ResizeObserver = vi.fn().mockImplementation(() => ({
 			observe: vi.fn(),
@@ -87,12 +105,7 @@ describe('Header', () => {
 	});
 
 	test('renders without navigation links when PUBLIC_NAV_BAR_LINKS is empty', () => {
-		// This test will use the mocked empty value
-		vi.doMock('$env/static/public', () => ({
-			PUBLIC_OBA_REGION_NAME: 'Test Region',
-			PUBLIC_OBA_LOGO_URL: '/test-logo.png',
-			PUBLIC_NAV_BAR_LINKS: ''
-		}));
+		mockPublicEnv.PUBLIC_NAV_BAR_LINKS = '';
 
 		render(Header);
 
@@ -140,10 +153,39 @@ describe('Header', () => {
 		const textLink = regionLinks.find((link) => link.textContent === 'Test Region');
 		expect(textLink).toHaveClass('block', 'text-xl', 'font-extrabold');
 	});
+
+	test('hides image and displays region name when logo image fails to load', async () => {
+		render(Header);
+
+		const logo = screen.getByRole('img');
+		expect(logo).toBeInTheDocument();
+
+		await fireEvent.error(logo);
+
+		expect(screen.queryByRole('img')).not.toBeInTheDocument();
+		expect(screen.getByText('Test Region')).toBeInTheDocument();
+
+		const links = screen.getAllByRole('link', { name: /test region/i });
+		expect(links).toHaveLength(1);
+	});
+
+	test('renders only region name when PUBLIC_OBA_LOGO_URL is empty', () => {
+		mockPublicEnv.PUBLIC_OBA_LOGO_URL = '';
+
+		render(Header);
+
+		expect(screen.queryByRole('img')).not.toBeInTheDocument();
+		expect(screen.getByText('Test Region')).toBeInTheDocument();
+	});
 });
 
 describe('Header with region name hidden', () => {
 	beforeEach(() => {
+		mockPublicEnv = {
+			PUBLIC_OBA_REGION_NAME: 'Test Region',
+			PUBLIC_OBA_LOGO_URL: '/test-logo.png',
+			PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}'
+		};
 		globalThis.__SHOW_REGION_NAME_IN_NAV_BAR__ = false;
 
 		// Mock ResizeObserver
@@ -180,5 +222,18 @@ describe('Header with region name hidden', () => {
 		// Should only have one link for the logo
 		const links = screen.getAllByRole('link', { name: /test region/i });
 		expect(links).toHaveLength(1);
+	});
+
+	test('falls back to region name when region name is hidden but logo fails to load', async () => {
+		render(Header);
+
+		expect(screen.queryByText('Test Region')).not.toBeInTheDocument();
+		const logo = screen.getByRole('img');
+		expect(logo).toBeInTheDocument();
+
+		await fireEvent.error(logo);
+
+		expect(screen.queryByRole('img')).not.toBeInTheDocument();
+		expect(screen.getByText('Test Region')).toBeInTheDocument();
 	});
 });
