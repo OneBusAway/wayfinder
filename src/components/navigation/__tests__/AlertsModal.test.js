@@ -284,7 +284,7 @@ describe('AlertsModal', () => {
 		expect(screen.getByRole('dialog', { name: 'Service Alert' })).toBeInTheDocument();
 	});
 
-	test('handles missing URL translation gracefully', () => {
+	test('does not render More Info button when URL translation is empty', () => {
 		const alertWithoutUrl = {
 			...mockAlert,
 			url: { translation: [] }
@@ -297,30 +297,43 @@ describe('AlertsModal', () => {
 			}
 		});
 
-		// Should still render the More Info button
-		const moreInfoButton = screen.getByRole('button', { name: 'More Info' });
-		expect(moreInfoButton).toBeInTheDocument();
+		// Should not render the More Info button
+		const moreInfoButton = screen.queryByRole('button', { name: 'More Info' });
+		expect(moreInfoButton).not.toBeInTheDocument();
 	});
 
-	test('More Info button with empty URL translation still calls window.open', async () => {
-		const user = userEvent.setup();
-		const alertWithEmptyUrl = {
+	test('does not render More Info button when URL text is whitespace or empty', () => {
+		const alertWithWhitespaceUrl = {
 			...mockAlert,
-			url: { translation: [] }
+			url: { translation: [{ language: 'en', text: '   ' }] }
 		};
 
 		render(AlertsModal, {
 			props: {
-				alert: alertWithEmptyUrl,
+				alert: alertWithWhitespaceUrl,
 				open: true
 			}
 		});
 
-		const moreInfoButton = screen.getByRole('button', { name: 'More Info' });
-		await user.click(moreInfoButton);
+		const moreInfoButton = screen.queryByRole('button', { name: 'More Info' });
+		expect(moreInfoButton).not.toBeInTheDocument();
+	});
 
-		// Should still call window.open, even if with empty string
-		expect(mockWindowOpen).toHaveBeenCalledWith('', '_blank');
+	test('does not render More Info button when alert has no url property', () => {
+		const alertWithoutUrlProp = {
+			...mockAlert,
+			url: undefined
+		};
+
+		render(AlertsModal, {
+			props: {
+				alert: alertWithoutUrlProp,
+				open: true
+			}
+		});
+
+		const moreInfoButton = screen.queryByRole('button', { name: 'More Info' });
+		expect(moreInfoButton).not.toBeInTheDocument();
 	});
 
 	test('handles missing translation properties gracefully', () => {
