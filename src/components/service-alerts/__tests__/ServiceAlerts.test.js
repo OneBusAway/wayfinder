@@ -1,22 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { get } from 'svelte/store';
 import ServiceAlerts from '../ServiceAlerts.svelte';
-import { modalOpen } from '$src/stores/modalOpen';
 import { mockServiceAlertsData } from '../../../tests/fixtures/obaData.js';
 
 const STOP_ID = '1_75403';
 const ROUTE_IDS = ['1_100479', '1_100044'];
 
 describe('ServiceAlerts', () => {
-	beforeEach(() => {
-		modalOpen.set(false);
-	});
-
 	afterEach(() => {
 		vi.clearAllMocks();
-		modalOpen.set(false);
 	});
 
 	it('orders relevant alerts first and shows group headings when both groups exist', () => {
@@ -115,6 +108,7 @@ describe('ServiceAlerts', () => {
 		});
 
 		await user.click(screen.getAllByRole('button', { name: 'service_alerts.open_alert' })[0]);
-		expect(get(modalOpen)).toBe(true);
+		const dialog = await screen.findByRole('dialog');
+		expect(within(dialog).getByText('Route 10 Detour')).toBeInTheDocument();
 	});
 });
