@@ -236,8 +236,7 @@ export default class OpenStreetMapProvider {
 		for (const [stopId, marker] of this.markersMap) {
 			if (!marker?.props) continue;
 
-			marker.props.interactive =
-				!stopSheetOpen || stopId === selectedStopId;
+			marker.props.interactive = !stopSheetOpen || stopId === selectedStopId;
 		}
 	}
 
