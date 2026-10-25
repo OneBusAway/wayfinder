@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "Прибытие и отправление"
 	},
+	"date_picker": {
+		"today": "Сегодня"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "Посмотреть расписание",
 		"no_am_schedules_available": "Нет расписания на первую половину дня",

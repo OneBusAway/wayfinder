@@ -12,10 +12,11 @@
 	} from '$lib/scheduleForStop';
 	import Accordion from '$components/containers/Accordion.svelte';
 	import AccordionItem from '$components/containers/AccordionItem.svelte';
-	import Datepicker from 'flowbite-svelte/Datepicker.svelte';
+	import { Button } from '$components/ui/button';
 	import { t, isLoading } from 'svelte-i18n';
-	import { getFirstDayOfWeek } from '$config/calendarConfig.js';
+	import { getWeekStartsOn } from '$config/calendarConfig';
 	import Skeleton from '$components/Skeleton.svelte';
+	import DatePicker from '$components/DatePicker.svelte';
 
 	let { data } = $props();
 
@@ -23,7 +24,7 @@
 
 	// Today's schedules come from the server, already grouped. Other dates
 	// replace them here in the browser only, so a refresh always starts from today.
-	let selectedDate: Date | null = $derived(serviceDayToDate(data.serviceDay));
+	let selectedDate: Date = $derived(serviceDayToDate(data.serviceDay));
 
 	// Null when a request for another date fails.
 	let schedules: RouteSchedule[] | null = $derived(data.schedules);
@@ -50,12 +51,9 @@
 	const stop = $derived(data.stop);
 	const stopId = $derived(data.stopId);
 
-	function selectDate(date: Date | null) {
+	function selectDate(date: Date) {
 		selectedDate = date;
-		// Null when the picker is cleared; keep showing the last schedule.
-		if (date) {
-			loadSchedule(dateToServiceDay(date));
-		}
+		loadSchedule(dateToServiceDay(date));
 	}
 
 	async function loadSchedule(serviceDay: string) {
@@ -118,24 +116,21 @@
 				{$isLoading ? '' : $t('schedule_for_stop.route_schedules')}
 			</h2>
 
-			<div class="mb-4 flex gap-4">
-				<div class="z-20 min-w-32 md:w-[30%]">
-					<Datepicker
+			<div class="mb-4 flex justify-between gap-4">
+				<div class="min-w-32 md:w-[30%]">
+					<DatePicker
 						bind:value={() => selectedDate, selectDate}
-						inputClass="w-96"
-						firstDayOfWeek={getFirstDayOfWeek()}
+						timeZone={regionTz}
+						weekStartsOn={getWeekStartsOn()}
 					/>
 				</div>
-
-				<div class="flex-1 text-right">
-					<button class="button" onclick={toggleAllRoutes}>
-						{$isLoading
-							? ''
-							: allRoutesExpanded
-								? $t('schedule_for_stop.collapse_all_routes')
-								: $t('schedule_for_stop.show_all_routes')}
-					</button>
-				</div>
+				<Button variant="secondary" onclick={toggleAllRoutes}>
+					{$isLoading
+						? ''
+						: allRoutesExpanded
+							? $t('schedule_for_stop.collapse_all_routes')
+							: $t('schedule_for_stop.show_all_routes')}
+				</Button>
 			</div>
 
 			<div
