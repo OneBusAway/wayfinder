@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "Taunuʻuga ma Alu Atu"
 	},
+	"date_picker": {
+		"today": "I le asō"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "Vaʻai Fuataga",
 		"no_am_schedules_available": "E leai ni fuataga o le taeao o loʻo avanoa",

@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "መድረሻዎች እና ማቆሚያዎች"
 	},
+	"date_picker": {
+		"today": "ዛሬ"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "ጊዜ ሰንጠረዥን ይመልከቱ",
 		"no_am_schedules_available": "ምንም AM ጊዜ ሰንጠረዦች አልተገኙም",

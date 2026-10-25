@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "ការមកដល់និងចេញដំណើរ"
 	},
+	"date_picker": {
+		"today": "ថ្ងៃនេះ"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "មើលកាលវិភាគ",
 		"no_am_schedules_available": "គ្មានកាលវិភាគពេលព្រឹកទេ",

@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "ການມາຮອດ ແລະ ການອອກເດີນທາງ"
 	},
+	"date_picker": {
+		"today": "ມື້ນີ້"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "ເບິ່ງຕາຕະລາງ",
 		"no_am_schedules_available": "ບໍ່ມີຕາຕະລາງຕອນເຊົ້າ",

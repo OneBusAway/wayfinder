@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "Dhufaatii fi Ka'umsa"
 	},
+	"date_picker": {
+		"today": "Har'a"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "Sagantaa Ilaali",
 		"no_am_schedules_available": "Sagantaan ganama hin jiru",

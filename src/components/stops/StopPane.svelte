@@ -429,7 +429,7 @@
 
 				{#if serviceAlerts?.length}
 					<div class="mb-4">
-						<ServiceAlerts bind:serviceAlerts stopId={stop.id} routeIds={stop.routeIds ?? []} />
+						<ServiceAlerts {serviceAlerts} stopId={stop.id} routeIds={stop.routeIds ?? []} />
 					</div>
 				{/if}
 

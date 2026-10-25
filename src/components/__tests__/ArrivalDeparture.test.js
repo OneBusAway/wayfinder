@@ -7,16 +7,27 @@ import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 vi.mock('svelte-i18n', () => {
 	const messages = {
 		'time.now': 'now',
-		'time.min_compact': '{n}m'
+		'time.min_compact': '{n}m',
+		'status.scheduled_arrival': 'Scheduled arriving at',
+		'status.scheduled_departure': 'Scheduled departure',
+		'status.arrived_at_time': 'Arrived at {time}',
+		'status.departed_at_time': 'Departed at {time}',
+		'status.arrived_ontime': 'Arrived on time',
+		'status.canceled_arrival': 'Canceled',
+		'status.frequency_until': 'Every {headway} min until {time}',
+		'status.scheduled': 'Scheduled'
 	};
 	return {
 		t: {
 			subscribe: (fn) => {
 				fn((key, options) => {
 					let str = messages[key] ?? key;
-					if (options?.values) {
-						for (const [name, value] of Object.entries(options.values)) {
-							str = str.replace(`{${name}}`, value);
+					const values = options?.values;
+					if (values && typeof values === 'object') {
+						for (const [name, value] of Object.entries(values)) {
+							if (name !== 'values') {
+								str = str.replace(`{${name}}`, value);
+							}
 						}
 					}
 					return str;
@@ -82,6 +93,147 @@ describe('ArrivalDeparture', () => {
 		});
 		const eta = screen.getByText('10m');
 		expect(eta.className).toContain('text-gray-500');
+	});
+
+	test('renders "Arrived at {time}" and suppresses negative ETA badge for a scheduled past arrival', () => {
+		const { container } = render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: false,
+					predictedArrivalTime: null,
+					scheduledArrivalTime: Date.now() - 4 * MIN,
+					scheduledDepartureTime: Date.now() - 4 * MIN
+				})
+			}
+		});
+		expect(screen.getByText('Arrived at 11:56 AM')).toBeInTheDocument();
+		expect(screen.queryByText('-4m')).not.toBeInTheDocument();
+		expect(screen.queryByText(/Scheduled arriving at/)).not.toBeInTheDocument();
+		expect(screen.queryByText('11:56 AM ·')).not.toBeInTheDocument();
+		expect(container.querySelector('svg.lucide-clock')).not.toBeInTheDocument();
+		expect(container.querySelector('svg.lucide-rss')).not.toBeInTheDocument();
+	});
+
+	test('renders "Departed at {time}" and suppresses negative ETA badge for a scheduled past departure (stopSequence 0)', () => {
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					stopSequence: 0,
+					predicted: false,
+					predictedArrivalTime: null,
+					predictedDepartureTime: null,
+					scheduledArrivalTime: Date.now() - 5 * MIN,
+					scheduledDepartureTime: Date.now() - 5 * MIN
+				})
+			}
+		});
+		expect(screen.getByText('Departed at 11:55 AM')).toBeInTheDocument();
+		expect(screen.queryByText('-5m')).not.toBeInTheDocument();
+		expect(screen.queryByText(/Scheduled departure/)).not.toBeInTheDocument();
+	});
+
+	test('renders future scheduled departure for stopSequence 0 when predictedArrivalTime is past and predictedDepartureTime is 0', () => {
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					stopSequence: 0,
+					predicted: true,
+					predictedArrivalTime: Date.now() - 5 * MIN,
+					scheduledArrivalTime: Date.now() - 5 * MIN,
+					predictedDepartureTime: 0,
+					scheduledDepartureTime: Date.now() + 10 * MIN
+				})
+			}
+		});
+		expect(screen.getByText('Scheduled departure')).toBeInTheDocument();
+		expect(screen.getByText('10m')).toBeInTheDocument();
+		expect(screen.queryByText('-5m')).not.toBeInTheDocument();
+		expect(screen.queryByText(/Departed at/)).not.toBeInTheDocument();
+	});
+
+	test('preserves time prefix and renders headway text for a frequency-based trip in the past', () => {
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: false,
+					scheduledArrivalTime: Date.now() - 5 * MIN,
+					scheduledDepartureTime: Date.now() - 5 * MIN,
+					frequency: {
+						startTime: Date.now() - 60 * MIN,
+						endTime: Date.now() + 60 * MIN,
+						headway: 600,
+						exactTimes: false
+					}
+				})
+			}
+		});
+		expect(screen.getByText(/11:55 AM ·/)).toBeInTheDocument();
+		expect(screen.getByText(/Every 10 min until/)).toBeInTheDocument();
+	});
+
+	test('falls back safely to "Scheduled" when scheduledTime is 0', () => {
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: false,
+					scheduledArrivalTime: 0,
+					scheduledDepartureTime: 0
+				})
+			}
+		});
+		expect(screen.getByText('Scheduled')).toBeInTheDocument();
+		expect(screen.queryByText(/1970/)).not.toBeInTheDocument();
+		expect(screen.queryByText(/Arrived at/)).not.toBeInTheDocument();
+		expect(screen.queryByText(/·/)).not.toBeInTheDocument();
+	});
+
+	test('renders "Scheduled arriving at" with positive ETA badge for future scheduled arrival', () => {
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: false,
+					predictedArrivalTime: null,
+					scheduledArrivalTime: Date.now() + 10 * MIN,
+					scheduledDepartureTime: Date.now() + 10 * MIN
+				})
+			}
+		});
+		expect(screen.getByText('Scheduled arriving at')).toBeInTheDocument();
+		expect(screen.getByText('10m')).toBeInTheDocument();
+	});
+
+	test('renders "Arrived on time" for predicted past arrival', () => {
+		const { container } = render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: true,
+					scheduledArrivalTime: Date.now() - 4 * MIN,
+					predictedArrivalTime: Date.now() - 4 * MIN,
+					scheduledDepartureTime: Date.now() - 4 * MIN,
+					predictedDepartureTime: Date.now() - 4 * MIN
+				})
+			}
+		});
+		expect(screen.getByText('Arrived on time')).toBeInTheDocument();
+		expect(screen.queryByText('-4m')).not.toBeInTheDocument();
+		expect(screen.queryByText(/Arrived at/)).not.toBeInTheDocument();
+		expect(container.querySelector('svg.lucide-rss')).toBeInTheDocument();
+	});
+
+	test('renders canceled status with scheduled time prefix for past canceled trip', () => {
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					tripStatus: { status: 'CANCELED' },
+					predicted: false,
+					predictedArrivalTime: null,
+					scheduledArrivalTime: Date.now() - 4 * MIN,
+					scheduledDepartureTime: Date.now() - 4 * MIN
+				})
+			}
+		});
+		expect(screen.getByText('Canceled')).toBeInTheDocument();
+		expect(screen.getByText('11:56 AM ·')).toBeInTheDocument();
 	});
 
 	// Regression guard for the overflow bug: a long headsign must wrap to a

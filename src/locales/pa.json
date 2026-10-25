@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "ਆਗਮਨ ਅਤੇ ਰਵਾਨਗੀਆਂ"
 	},
+	"date_picker": {
+		"today": "ਅੱਜ"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "ਸਮਾਂ-ਸਾਰਣੀ ਦੇਖੋ",
 		"no_am_schedules_available": "ਸਵੇਰ ਦੀ ਕੋਈ ਸਮਾਂ-ਸਾਰਣੀ ਉਪਲਬਧ ਨਹੀਂ",

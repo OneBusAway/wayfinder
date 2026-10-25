@@ -1,0 +1,48 @@
+# Rewrites the Wayfinder contributor board canvas in Slack.
+#
+# Needs one secret (SLACK_BOT_TOKEN) and the SLACK_CANVAS_ID variable.
+# See docs/slack-contributor-board.md.
+#
+# This workflow is independent of the build: if Slack is down it fails on its
+# own and nothing else is affected.
+
+name: Slack contributor board
+
+on:
+  # Offset from the hour; GitHub's scheduler is busiest exactly on the hour.
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+# Read-only: a bug in the script cannot modify the repository.
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+# Only the newest run writes, so a burst of triggers cannot race and leave
+# stale content on the canvas.
+concurrency:
+  group: slack-board
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+
+      # The script has no dependencies, so there is nothing to install.
+      - name: Update the Slack canvas
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ vars.SLACK_CHANNEL_ID }}
+          SLACK_CANVAS_ID: ${{ vars.SLACK_CANVAS_ID }}
+        run: node scripts/slack-board.mjs

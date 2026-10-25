@@ -190,6 +190,9 @@
 	"arrivals_and_departures_for_stop": {
 		"title": "Llegadas y Salidas"
 	},
+	"date_picker": {
+		"today": "Hoy"
+	},
 	"schedule_for_stop": {
 		"view_schedule": "Ver horario",
 		"no_am_schedules_available": "No hay horarios AM disponibles",

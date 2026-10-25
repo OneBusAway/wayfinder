@@ -97,14 +97,25 @@ describe('filterDeparted', () => {
 		expect(result).toHaveLength(1); // schedule says future, so kept
 	});
 
-	it('uses arrival times for stopSequence === 0 to match ArrivalDeparture rendering', () => {
+	it('uses departure times for stopSequence === 0 so layover departures are kept until departure', () => {
 		// First-stop layover: arrival already happened, departure is still future.
-		// ArrivalDeparture coerces stopSequence 0 → 1 and shows arrival ETA, so
-		// the filter must drop this row or it stays as "arrived N min ago".
+		// ArrivalDeparture uses departure time for stopSequence: 0, so the filter must keep
+		// this row until its departure time passes.
 		const arrival = makeArrival({
 			stopSequence: 0,
 			scheduledArrivalTime: 60000 * 95,
 			scheduledDepartureTime: 60000 * 105,
+			predicted: false
+		});
+		const result = filterDeparted([arrival], now);
+		expect(result).toHaveLength(1);
+	});
+
+	it('drops a first-stop row when its departure time has also passed', () => {
+		const arrival = makeArrival({
+			stopSequence: 0,
+			scheduledArrivalTime: 60000 * 90,
+			scheduledDepartureTime: 60000 * 95,
 			predicted: false
 		});
 		const result = filterDeparted([arrival], now);
@@ -117,6 +128,30 @@ describe('filterDeparted', () => {
 			scheduledArrivalTime: 60000 * 105,
 			scheduledDepartureTime: 60000 * 110,
 			predicted: false
+		});
+		const result = filterDeparted([arrival], now);
+		expect(result).toHaveLength(1);
+	});
+
+	it('falls back to arrival time when departure time is 0 for stopSequence === 0', () => {
+		const arrival = makeArrival({
+			stopSequence: 0,
+			scheduledArrivalTime: 60000 * 105,
+			scheduledDepartureTime: 0,
+			predicted: false
+		});
+		const result = filterDeparted([arrival], now);
+		expect(result).toHaveLength(1);
+	});
+
+	it('prefers scheduled departure over past predicted arrival when predicted departure is 0 for stopSequence === 0', () => {
+		const arrival = makeArrival({
+			stopSequence: 0,
+			predicted: true,
+			predictedArrivalTime: 60000 * 95,
+			scheduledArrivalTime: 60000 * 95,
+			predictedDepartureTime: 0,
+			scheduledDepartureTime: 60000 * 105
 		});
 		const result = filterDeparted([arrival], now);
 		expect(result).toHaveLength(1);
@@ -146,7 +181,7 @@ describe('filterDeparted', () => {
 		expect(result).toHaveLength(1); // scheduled time is in the future, so kept
 	});
 
-	it('uses predictedArrivalTime for stopSequence === 0 when predicted is true', () => {
+	it('uses predictedDepartureTime for stopSequence === 0 when predicted is true', () => {
 		const arrival = makeArrival({
 			stopSequence: 0,
 			scheduledArrivalTime: 60000 * 105,
@@ -156,13 +191,26 @@ describe('filterDeparted', () => {
 			predicted: true
 		});
 		const result = filterDeparted([arrival], now);
-		expect(result).toHaveLength(0);
+		expect(result).toHaveLength(1);
 	});
 
-	it('falls back to scheduledArrivalTime for stopSequence === 0 when predictedArrivalTime is 0', () => {
+	it('drops stopSequence === 0 when predictedDepartureTime has passed', () => {
 		const arrival = makeArrival({
 			stopSequence: 0,
 			scheduledArrivalTime: 60000 * 105,
+			predictedArrivalTime: 60000 * 105,
+			scheduledDepartureTime: 60000 * 110,
+			predictedDepartureTime: 60000 * 95,
+			predicted: true
+		});
+		const result = filterDeparted([arrival], now);
+		expect(result).toHaveLength(0);
+	});
+
+	it('falls back to scheduledDepartureTime for stopSequence === 0 when predictedDepartureTime is 0', () => {
+		const arrival = makeArrival({
+			stopSequence: 0,
+			scheduledArrivalTime: 60000 * 95,
 			predictedArrivalTime: 0,
 			scheduledDepartureTime: 60000 * 110,
 			predictedDepartureTime: 0,

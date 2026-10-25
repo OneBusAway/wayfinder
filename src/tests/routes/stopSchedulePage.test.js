@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { env } from '$env/dynamic/public';
 import { dateToServiceDay, getRouteSchedules } from '$lib/scheduleForStop';
 import StopSchedulePage from '../../routes/stops/[stopID]/schedule/+page.svelte';
+import { stubLayoutBox } from '../helpers/test-utils';
 
 vi.mock('$env/dynamic/public', () => ({
 	env: { PUBLIC_OBA_TIMEZONE: 'America/Los_Angeles' }
@@ -88,10 +89,12 @@ function renderPage(stopRouteSchedules, routes) {
 }
 
 async function selectDate(user, date) {
-	await user.click(screen.getByRole('button', { name: 'Open date picker' }));
+	const trigger = screen.getByRole('button', { name: 'date_picker.choose_date' });
+	stubLayoutBox(trigger);
+	await user.click(trigger);
 	await user.click(
-		screen.getByRole('gridcell', {
-			name: date.toLocaleDateString('default', {
+		await screen.findByRole('button', {
+			name: date.toLocaleDateString('en-US', {
 				weekday: 'long',
 				year: 'numeric',
 				month: 'long',
@@ -137,8 +140,8 @@ describe('/stops/[stopID]/schedule', () => {
 
 		expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(stop.name);
 		expect(screen.getByText('8 - Capitol Hill')).toBeInTheDocument();
-		expect(screen.getByRole('textbox')).toHaveValue(
-			new Date().toLocaleDateString('default', { year: 'numeric', month: 'long', day: 'numeric' })
+		expect(screen.getByRole('group', { name: 'date_picker.date' })).toHaveTextContent(
+			new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })
 		);
 		expect(container.querySelector('.animate-pulse')).not.toBeInTheDocument();
 		expect(fetchMock).not.toHaveBeenCalled();
