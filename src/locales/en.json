@@ -142,7 +142,9 @@
 		"depart_early": "Departed {delay} min early",
 		"departed_ontime": "Departed on time",
 		"scheduled_arrival": "Scheduled arriving at",
-		"scheduled_departure": "Scheduled departure"
+		"scheduled_departure": "Scheduled departure",
+		"arrived_at_time": "Arrived at {time}",
+		"departed_at_time": "Departed at {time}"
 	},
 	"alert": {
 		"more_info": "More info",

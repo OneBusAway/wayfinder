@@ -22,19 +22,38 @@ import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';
  */
 
 /**
- * Effective arrival time for ordering.
+ * Effective arrival/departure time for ordering.
  *
- * OBA sends `predictedArrivalTime: 0` — not null — when there is no real-time
- * prediction, so `predictedArrivalTime ?? scheduledArrivalTime` would read every
- * unpredicted arrival as "arriving at the epoch" and sort it to the front. This
- * mirrors the guard ArrivalDeparture.svelte already uses to pick its display time.
+ * OBA sends `predictedArrivalTime: 0` (or `predictedDepartureTime: 0`) — not null —
+ * when there is no real-time prediction, so `predictedTime ?? scheduledTime` would
+ * read every unpredicted arrival as "at the epoch" and sort it to the front.
+ * Mirrors the guard ArrivalDeparture.svelte and arrivalFiltering.js use, distinguishing
+ * first-stop origin rows (stopSequence === 0) as departures from intermediate/final stop
+ * rows as arrivals.
  * @param {Object} arrival
  * @returns {number}
  */
 function effectiveArrivalTime(arrival) {
-	return arrival.predicted && arrival.predictedArrivalTime > 0
-		? arrival.predictedArrivalTime
-		: arrival.scheduledArrivalTime;
+	const isFirstStop = (arrival.stopSequence ?? 1) === 0;
+	let predicted, scheduled;
+
+	if (isFirstStop) {
+		const hasDepartureTime =
+			(arrival.predicted && arrival.predictedDepartureTime > 0) ||
+			arrival.scheduledDepartureTime > 0;
+		if (hasDepartureTime) {
+			predicted = arrival.predictedDepartureTime;
+			scheduled = arrival.scheduledDepartureTime;
+		} else {
+			predicted = arrival.predictedArrivalTime;
+			scheduled = arrival.scheduledArrivalTime;
+		}
+	} else {
+		predicted = arrival.predictedArrivalTime;
+		scheduled = arrival.scheduledArrivalTime;
+	}
+
+	return arrival.predicted && predicted > 0 ? predicted : scheduled;
 }
 
 /**
