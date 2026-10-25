@@ -215,13 +215,15 @@
 			// rather than accumulating stale references from previous selections.
 			polylines = [];
 			const segmentCount = polylinesData?.length ?? 0;
-			for (const polylineData of polylinesData!) {
-				const polyline = await mapProvider.createPolyline(polylineData.points);
-				if (loadToken !== routeLoadToken) return;
-				// createPolyline returns null for an undecodable shape (on either
-				// provider); skip it so one bad segment degrades the route instead
-				// of leaving a null hole in the polylines array.
-				if (polyline) polylines.push(polyline);
+			if (polylinesData != null) {
+				for (const polylineData of polylinesData) {
+					const polyline = await mapProvider.createPolyline(polylineData.points);
+					if (loadToken !== routeLoadToken) return;
+					// createPolyline returns null for an undecodable shape (on either
+					// provider); skip it so one bad segment degrades the route instead
+					// of leaving a null hole in the polylines array.
+					if (polyline) polylines.push(polyline);
+				}
 			}
 
 			if (loadToken !== routeLoadToken) return;
@@ -475,7 +477,7 @@
 			{/if}
 		</div>
 
-		<Tabs.Content value="stops">
+		<Tabs.Content value="stops" class="text-base">
 			<SearchField value={query} {handleSearchResults} />
 
 			{#if !isSurveyAnswered && $surveyStore}
