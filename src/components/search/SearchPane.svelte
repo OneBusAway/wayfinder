@@ -1,4 +1,6 @@
 <script lang="ts">
+	import * as Tabs from '$components/ui/tabs';
+	import { Button } from '$components/ui/button';
 	import SearchField from '$components/search/SearchField.svelte';
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
 	import { onMount, onDestroy, tick } from 'svelte';
@@ -7,8 +9,6 @@
 	import { t } from 'svelte-i18n';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
-	import Tabs from 'flowbite-svelte/Tabs.svelte';
-	import TabItem from 'flowbite-svelte/TabItem.svelte';
 	import { env } from '$env/dynamic/public';
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
@@ -310,6 +310,20 @@
 		window.dispatchEvent(event);
 	}
 
+	function handleTabChange(value: string) {
+		switch (value) {
+			case 'plan':
+				handlePlanTripTabClick();
+				break;
+			case 'stops':
+				handleTabSwitch();
+				break;
+			default:
+				throw new Error(`Unknown tab ${value}`);
+		}
+		activeTab = value;
+	}
+
 	function handleTabSwitch() {
 		if (isContextMenuTrigger) return;
 
@@ -438,21 +452,30 @@
 <div
 	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-xs md:w-96 dark:bg-surface-dark ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
 >
-	<Tabs
-		tabStyle="none"
-		role="tablist"
-		activeClasses="bg-none border-b-2 border-brand-accent py-3 px-4"
-		inactiveClasses="py-3 px-4"
-		contentClass="rounded-lg bg-transparent pt-2 pb-4"
-	>
-		<TabItem
-			open={activeTab === 'stops'}
-			title={$t('tabs.stops-and-stations')}
-			on:click={() => {
-				handleTabSwitch();
-				activeTab = 'stops';
-			}}
-		>
+	<Tabs.Root bind:value={() => activeTab, handleTabChange} class="pb-4">
+		<div class="flex items-center justify-between border-b">
+			<Tabs.List variant="line">
+				<Tabs.Trigger value="stops">
+					{$t('tabs.stops-and-stations')}
+				</Tabs.Trigger>
+				{#if env.PUBLIC_OTP_SERVER_URL}
+					<Tabs.Trigger value="plan" disabled={!mapLoaded}>
+						{$t('tabs.plan_trip')}
+					</Tabs.Trigger>
+				{/if}
+			</Tabs.List>
+
+			{#if onCollapse}
+				<!-- Collapsing to the floating pill is a sub-md affordance; on wider
+				     viewports the pane always stays open. -->
+				<Button onclick={onCollapse} class="md:hidden" size="icon-sm" variant="secondary">
+					<X class="h-4 w-4 font-black text-black dark:text-white" />
+					<span class="sr-only">{$t('search.collapse')}</span>
+				</Button>
+			{/if}
+		</div>
+
+		<Tabs.Content value="stops">
 			<SearchField value={query} {handleSearchResults} />
 
 			{#if !isSurveyAnswered && $surveyStore}
@@ -513,33 +536,16 @@
 					{$t('search.for_a_list_of_available_routes')}</span
 				>
 			</div>
-		</TabItem>
+		</Tabs.Content>
 
 		{#if env.PUBLIC_OTP_SERVER_URL}
-			<TabItem
-				open={activeTab === 'plan'}
-				title={$t('tabs.plan_trip')}
-				on:click={() => {
-					handlePlanTripTabClick();
-					activeTab = 'plan';
-				}}
-				disabled={!mapLoaded}
-			>
-				{#if embedTripPlan}
+			<Tabs.Content value="plan">
+				<!-- Mount TripPlan only while its tab is open: it registers window
+				     listeners on mount, and shared-trip restore waits for that. -->
+				{#if embedTripPlan && activeTab === 'plan'}
 					<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
 				{/if}
-			</TabItem>
+			</Tabs.Content>
 		{/if}
-
-		{#if onCollapse}
-			<!-- Collapsing to the floating pill is a sub-md affordance; on wider
-			     viewports the pane always stays open. -->
-			<li role="presentation" class="ms-auto self-center md:hidden">
-				<button type="button" onclick={onCollapse} class="close-button">
-					<X class="h-4 w-4 font-black text-black dark:text-white" />
-					<span class="sr-only">{$t('search.collapse')}</span>
-				</button>
-			</li>
-		{/if}
-	</Tabs>
+	</Tabs.Root>
 </div>

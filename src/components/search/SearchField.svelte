@@ -1,15 +1,14 @@
-<script>
-	import { t } from 'svelte-i18n';
+<script lang="ts">
+	import type { SearchResults } from '$lib/types';
 	import analytics from '$lib/Insights';
+	import { t } from 'svelte-i18n';
 
-	/**
-	 * @typedef {Object} Props
-	 * @property {(results: import('$lib/types').SearchResults) => void} handleSearchResults
-	 * @property {string | null} [value]
-	 */
+	interface Props {
+		handleSearchResults: (results: SearchResults) => void;
+		value?: string | null;
+	}
 
-	/** @type {Props} */
-	let { value = $bindable(''), handleSearchResults } = $props();
+	let { handleSearchResults, value = $bindable('') }: Props = $props();
 
 	async function handleSearch() {
 		try {
@@ -24,12 +23,12 @@
 		}
 	}
 
-	const onHandleSearch = (event) => {
+	const onHandleSearch = (event: KeyboardEvent | MouseEvent) => {
 		const trimmedValue = (value || '').trim();
 		if (!trimmedValue) {
 			return;
 		}
-		if (event.key === 'Enter' || typeof event.key === 'undefined') {
+		if (!('key' in event) || event.key === 'Enter') {
 			handleSearch();
 		}
 	};
