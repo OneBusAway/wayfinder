@@ -133,6 +133,7 @@ export default class GoogleMapProvider {
 				icon: icon,
 				onClick: options.onClick,
 				isHighlighted: options.isHighlighted ?? false,
+				interactive: options.interactive ?? true,
 				showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom,
 				emphasis: options.emphasis ?? 'full',
 				dotColor: options.dotColor ?? null
@@ -354,6 +355,10 @@ export default class GoogleMapProvider {
 		}
 	}
 
+	/**
+	 * @param {boolean} stopSheetOpen
+	 * @param {string | null} [selectedStopId]
+	 */
 	setStopInteractivity(stopSheetOpen, selectedStopId = null) {
 		for (const [stopId, marker] of this.markersMap) {
 			if (!marker?.props) continue;
