@@ -35,8 +35,10 @@
 	}
 
 	function getUrlTranslation() {
-		return getTranslation(alert.url?.translation || []);
+		return getTranslation(alert.url?.translation || []).trim();
 	}
+
+	let alertUrl = $derived(getUrlTranslation());
 </script>
 
 <Dialog.Root bind:open>
@@ -58,9 +60,11 @@
 			>
 				{$t('alert.close')}
 			</Button>
-			<Button onclick={() => window.open(getUrlTranslation(), '_blank')}>
-				{$t('alert.more_info')}
-			</Button>
+			{#if alertUrl}
+				<Button onclick={() => window.open(alertUrl, '_blank')}>
+					{$t('alert.more_info')}
+				</Button>
+			{/if}
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
