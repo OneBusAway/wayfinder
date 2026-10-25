@@ -33,6 +33,7 @@
 	 * @property {{ lat: number, lng: number } | null} [initialCoords] - Optional initial coordinates from URL params
 	 * @property {ActiveRoute[]} [activeRoutes]
 	 * @property {Map<string, RouteColors>} [routeColors]
+	 * @property {boolean} [stopSheetOpen] - Whether a stop detail sheet is currently open
 	 * @property {boolean} [startInTripPlanMode] - Seeds the map's starting mode as trip-plan (not just the initial
 	 *   stop load skip below) so a shared trip link never briefly renders in NORMAL mode before switching.
 	 */
@@ -50,6 +51,7 @@
 		initialCoords = null,
 		activeRoutes = [],
 		routeColors = new Map(),
+		stopSheetOpen = false,
 		startInTripPlanMode = false
 	} = $props();
 
@@ -91,6 +93,12 @@
 			mapInstance.resetStopEmphasis();
 			mapInstance.setBasemapDimmed(false);
 		}
+	});
+
+	$effect(() => {
+		if (!mapInstance) return;
+
+		mapInstance.setStopInteractivity(stopSheetOpen, stop?.id ?? null);
 	});
 
 	let isTripPlanModeActive = $state(startInTripPlanMode);
@@ -401,6 +409,7 @@
 
 		// Check if this marker should be highlighted (if it's the currently selected stop)
 		const shouldHighlight = stop && s.id === stop.id;
+		const isInteractive = !stopSheetOpen || shouldHighlight;
 
 		// Seeded here rather than patched after batchAddMarkers, which defers creation
 		// into a rAF — a later setStopEmphasis() would iterate a markersMap that doesn't
@@ -413,6 +422,7 @@
 			position: { lat: s.lat, lng: s.lon },
 			stop: s,
 			isHighlighted: shouldHighlight,
+			interactive: isInteractive,
 			emphasis: shouldHighlight ? 'full' : (tier?.emphasis ?? 'full'),
 			// Gated the same way as emphasis: a selected stop always renders as a full
 			// pin, so a leftover ring color here would be dead data — but leaving it

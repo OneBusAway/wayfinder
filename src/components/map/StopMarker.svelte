@@ -10,6 +10,7 @@
 	 * @typedef {Object} Props
 	 * @property {Stop} stop
 	 * @property {(event: MouseEvent) => void} onClick
+	 * @property {boolean} [interactive] - Whether the marker can be activated or focused
 	 * @property {IconDefinition} icon - Font Awesome icon for the route type
 	 * @property {boolean} [isHighlighted]
 	 * @property {boolean} [showRoutesLabel]
@@ -22,6 +23,7 @@
 	let {
 		stop,
 		onClick,
+		interactive = true,
 		icon,
 		isHighlighted = false,
 		showRoutesLabel = false,
@@ -74,6 +76,9 @@
 	function toggleRoutesList(event) {
 		event.preventDefault();
 		event.stopPropagation();
+
+		if (!interactive) return;
+
 		isExpanded = !isExpanded;
 	}
 
@@ -81,11 +86,11 @@
 	 * @param {KeyboardEvent} event
 	 */
 	function handleRoutesLabelKeydown(event) {
-		if (event.key === 'Enter' || event.key === ' ') {
-			event.preventDefault();
-			event.stopPropagation();
-			toggleRoutesList(event);
-		}
+		if (!interactive || (event.key !== 'Enter' && event.key !== ' ')) return;
+
+		event.preventDefault();
+		event.stopPropagation();
+		toggleRoutesList(event);
 	}
 
 	$effect(() => {
@@ -99,7 +104,7 @@
 	<!-- The button keeps its 32px box in every tier. Collapsing the *icon* to a
 	     dot is the whole point, but collapsing the hit target with it would put
 	     the control under the WCAG 2.5.8 minimum and make it unusable on touch. -->
-	<button class="marker-hit-area h-8 w-8" onclick={onClick} aria-label={stop.name}>
+	<button class="marker-hit-area h-8 w-8" onclick={onClick} aria-label={stop.name} disabled={!interactive}>
 		{#if isFullPin}
 			<span class="custom-marker dark:border-[#5a2c2c] {isHighlighted ? 'highlight' : ''}">
 				<span class="bus-icon dark:text-white">
@@ -133,7 +138,7 @@
 	{#if isFullPin && showRoutesLabel && routesLabelText}
 		<div
 			role="button"
-			tabindex="0"
+			tabindex={interactive ? 0 : -1}
 			class="routes-label {isExpanded ? 'expanded' : ''} position-{labelPosition}"
 			onclick={toggleRoutesList}
 			onkeydown={handleRoutesLabelKeydown}

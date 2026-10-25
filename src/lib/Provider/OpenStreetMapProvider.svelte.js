@@ -232,6 +232,15 @@ export default class OpenStreetMapProvider {
 		}
 	}
 
+	setStopInteractivity(stopSheetOpen, selectedStopId = null) {
+		for (const [stopId, marker] of this.markersMap) {
+			if (!marker?.props) continue;
+
+			marker.props.interactive =
+				!stopSheetOpen || stopId === selectedStopId;
+		}
+	}
+
 	addPinMarker(position, text) {
 		if (!this.map) return null;
 

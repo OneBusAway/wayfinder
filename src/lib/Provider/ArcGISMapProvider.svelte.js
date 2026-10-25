@@ -362,6 +362,15 @@ export default class ArcGISMapProvider {
 		for (const marker of this.markersMap.values()) marker.props.showRoutesLabel = visible;
 	}
 
+	setStopInteractivity(stopSheetOpen, selectedStopId = null) {
+		for (const [stopId, marker] of this.markersMap) {
+			if (!marker?.props) continue;
+
+			marker.props.interactive =
+				!stopSheetOpen || stopId === selectedStopId;
+		}
+	}
+
 	highlightMarker(stopId) {
 		const marker = this.markersMap.get(stopId);
 		if (marker) marker.props.isHighlighted = true;

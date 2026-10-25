@@ -354,6 +354,15 @@ export default class GoogleMapProvider {
 		}
 	}
 
+	setStopInteractivity(stopSheetOpen, selectedStopId = null) {
+		for (const [stopId, marker] of this.markersMap) {
+			if (!marker?.props) continue;
+
+			marker.props.interactive =
+				!stopSheetOpen || stopId === selectedStopId;
+		}
+	}
+
 	removeStopMarkers() {
 		this.stopMarkers.forEach((marker) => {
 			marker.setMap(null);

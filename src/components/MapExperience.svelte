@@ -783,6 +783,7 @@
 		{startInTripPlanMode}
 		{activeRoutes}
 		{routeColors}
+		{stopSheetOpen}
 		bind:mapProvider
 	/>
 {/if}
