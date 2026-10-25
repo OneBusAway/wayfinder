@@ -5,12 +5,12 @@
 
 	interface Props {
 		icon: Component | IconDefinition;
-		subtitle?: string | null;
+		subtitle?: string;
 		title: string;
-		onclick: ((event: MouseEvent) => void) | null;
+		onclick: (event: MouseEvent) => void;
 	}
 
-	const { icon, onclick = null, subtitle = null, title }: Props = $props();
+	const { icon, onclick, subtitle, title }: Props = $props();
 </script>
 
 <button
@@ -25,7 +25,7 @@
 			<AppIcon {icon} class="h-6 w-6 text-gray-800" />
 		</div>
 		<div>
-			<h3 class="text-md font-semibold text-gray-700 dark:text-white">{title}</h3>
+			<h3 class="text-base font-semibold text-gray-700 dark:text-white">{title}</h3>
 			<p class="text-gray-700 dark:text-white">{subtitle}</p>
 		</div>
 	</div>

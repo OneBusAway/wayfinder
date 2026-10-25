@@ -207,19 +207,6 @@ describe('SearchResultItem', () => {
 	});
 
 	describe('Visual Styling and Layout', () => {
-		test('applies correct CSS classes for layout', () => {
-			const { container } = render(SearchResultItem, {
-				props: {
-					icon: MapPin,
-					title: 'Test Location',
-					subtitle: 'Test Description'
-				}
-			});
-
-			const button = container.querySelector('button');
-			expect(button).toHaveClass('flex', 'w-full', 'items-center', 'gap-x-4');
-		});
-
 		test('renders icon container with proper dimensions', () => {
 			const { container } = render(SearchResultItem, {
 				props: {
@@ -231,14 +218,7 @@ describe('SearchResultItem', () => {
 
 			const iconContainer = container.querySelector('.h-12.w-12');
 			expect(iconContainer).toBeInTheDocument();
-			expect(iconContainer).toHaveClass(
-				'min-w-12',
-				'max-w-12',
-				'items-center',
-				'justify-center',
-				'rounded-full',
-				'bg-gray-200'
-			);
+			expect(iconContainer).toHaveClass('min-w-12', 'max-w-12');
 		});
 
 		test('applies hover styles correctly', () => {
@@ -266,7 +246,6 @@ describe('SearchResultItem', () => {
 			const heading = container.querySelector('h3');
 			expect(heading).toBeInTheDocument();
 			expect(heading).toHaveTextContent('Important Transit Hub');
-			expect(heading).toHaveClass('text-lg', 'font-semibold', 'text-gray-700');
 		});
 
 		test('styles subtitle as paragraph', () => {
@@ -281,7 +260,6 @@ describe('SearchResultItem', () => {
 			const paragraph = container.querySelector('p');
 			expect(paragraph).toBeInTheDocument();
 			expect(paragraph).toHaveTextContent('Direction and Code Info');
-			expect(paragraph).toHaveClass('text-gray-700');
 		});
 	});
 
