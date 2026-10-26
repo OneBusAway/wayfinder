@@ -13,7 +13,7 @@
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
 	import { answeredSurveys, surveyStore } from '$stores/surveyStore';
-	import { removeAgencyPrefix, stopSubtitle } from '$lib/utils';
+	import { attachRoutesToStops, removeAgencyPrefix, stopSubtitle } from '$lib/utils';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { parseTripParams, hasTripParams, clearTripUrl } from '$lib/urlState';
@@ -199,6 +199,11 @@
 
 			const stopsForRoute: StopsForRouteResponse = await response.json();
 			if (loadToken !== routeLoadToken) return;
+
+			attachRoutesToStops(
+				stopsForRoute.data.references.stops,
+				stopsForRoute.data.references.routes
+			);
 
 			const stopsMap = new Map(stopsForRoute.data.references.stops.map((stop) => [stop.id, stop]));
 			const polylinesData = stopsForRoute.data.entry.polylines;
