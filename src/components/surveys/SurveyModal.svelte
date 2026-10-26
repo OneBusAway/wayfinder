@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Modal from 'flowbite-svelte/Modal.svelte';
-	import Button from 'flowbite-svelte/Button.svelte';
+	import * as Dialog from '$components/ui/dialog';
+	import { Button } from '$components/ui/button';
 	import SurveyQuestion from './SurveyQuestion.svelte';
 	import {
 		submitHeroQuestion as submitHeroQuestionUtil,
@@ -10,12 +10,14 @@
 	} from '$lib/Surveys/surveyUtils';
 
 	import { showSurveyModal, surveyStore } from '$stores/surveyStore';
-	import type { Survey, SurveyQuestion as SurveyQuestionData } from '$stores/surveyStore';
+	import type {
+		Survey,
+		SurveyAnswer,
+		SurveyQuestion as SurveyQuestionData
+	} from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
 	import type { Stop } from '$lib/types';
 	import SurveySubmitted from './SurveySubmitted.svelte';
-
-	type SurveyAnswer = string | string[];
 
 	interface SurveyAnswerResponse {
 		answer: SurveyAnswer | null;
@@ -59,26 +61,11 @@
 		user_identifier: getUserId()
 	};
 
-	function handleInputChange(event: Event, question: SurveyQuestionData, index: number) {
-		const type = question.content.type;
-		const input = event.target as HTMLInputElement;
-
-		if (type === 'text' || type === 'radio') {
-			userAnswers[index] = input.value;
-		} else if (type === 'checkbox') {
-			const value = input.value;
-			const previous = userAnswers[index];
-			const selected = Array.isArray(previous) ? previous : [];
-			if (input.checked) {
-				userAnswers[index] = [...selected, value];
-			} else {
-				const remaining = selected.filter((option) => option !== value);
-				if (remaining.length === 0) {
-					delete userAnswers[index];
-				} else {
-					userAnswers[index] = remaining;
-				}
-			}
+	function handleInputChange(question: SurveyQuestionData, index: number, answer: SurveyAnswer) {
+		if (Array.isArray(answer) && answer.length === 0) {
+			delete userAnswers[index];
+		} else {
+			userAnswers[index] = answer;
 		}
 
 		surveyResponse.responses[index] = {
@@ -141,41 +128,34 @@
 	}
 </script>
 
-{#if $showSurveyModal && currentSurvey}
-	<Modal
-		title={currentSurvey.name}
-		open={$showSurveyModal}
-		size="xl"
-		classBackdrop="bg-gray-900/50 dark:bg-gray-900/80"
-		class="max-w-5xl rounded-2xl"
-	>
-		<div class="flex flex-col space-y-2">
+{#if currentSurvey}
+	<Dialog.Root bind:open={$showSurveyModal}>
+		<Dialog.Content class="flex max-h-[85vh] flex-col sm:max-w-2xl">
+			<Dialog.Header>
+				<Dialog.Title>{currentSurvey.name}</Dialog.Title>
+			</Dialog.Header>
 			{#if surveySubmitted}
 				<SurveySubmitted />
 			{:else}
-				<div class="max-h-[60vh] overflow-y-auto p-2">
+				<div class="-mx-4 overflow-y-auto px-4">
 					{#if !heroQuestionAnswered && !skipHeroQuestion}
 						{#if heroQuestion}
 							{@const question = heroQuestion}
 							<SurveyQuestion
 								{question}
-								index={0}
 								value={userAnswers[0]}
-								onInputChange={(e: Event) => handleInputChange(e, question, 0)}
+								onInputChange={(answer) => handleInputChange(question, 0, answer)}
 								required={question.required}
 								error={errors[0]}
 							/>
 						{/if}
 					{:else}
-						<div class="space-y-8">
-							<!-- FIXME: each block has no key -->
-							<!-- eslint-disable-next-line svelte/require-each-key -->
-							{#each remainingQuestions as question, index}
+						<div class="flex flex-col gap-6">
+							{#each remainingQuestions as question, index (question.id)}
 								<SurveyQuestion
 									{question}
-									index={index + 1}
 									value={userAnswers[index + 1]}
-									onInputChange={(e: Event) => handleInputChange(e, question, index + 1)}
+									onInputChange={(answer) => handleInputChange(question, index + 1, answer)}
 									required={question.required}
 									error={errors[index + 1]}
 								/>
@@ -184,42 +164,20 @@
 					{/if}
 				</div>
 
-				<div
-					class="sticky bottom-0 flex justify-end gap-4 rounded-b-2xl border-t border-gray-200 bg-white pt-4 dark:border-gray-700 dark:bg-gray-800"
-				>
-					{#if !heroQuestionAnswered && !skipHeroQuestion}
-						<Button
-							onclick={() => skipSurvey(currentSurvey)}
-							color="red"
-							class="rounded-lg px-10 py-3 shadow-md transition-shadow hover:shadow-lg"
-						>
-							Cancel
-						</Button>
-						<Button
-							onclick={submitHeroQuestion}
-							color="green"
-							class="rounded-lg px-10 py-3 shadow-md transition-shadow hover:shadow-lg"
-						>
+				{#if !heroQuestionAnswered && !skipHeroQuestion}
+					<Dialog.Footer>
+						<Button onclick={() => skipSurvey(currentSurvey)} variant="outline">Cancel</Button>
+						<Button onclick={submitHeroQuestion}>
 							{remainingQuestions.length === 0 ? 'Submit' : 'Next'}
 						</Button>
-					{:else if remainingQuestions.length > 0}
-						<Button
-							onclick={() => skipSurvey(currentSurvey)}
-							color="red"
-							class="rounded-lg px-10 py-3 shadow-md transition-shadow hover:shadow-lg"
-						>
-							Skip
-						</Button>
-						<Button
-							onclick={handleSubmit}
-							color="green"
-							class="rounded-lg px-10 py-3 shadow-md transition-shadow hover:shadow-lg"
-						>
-							Submit
-						</Button>
-					{/if}
-				</div>
+					</Dialog.Footer>
+				{:else if remainingQuestions.length > 0}
+					<Dialog.Footer>
+						<Button onclick={() => skipSurvey(currentSurvey)} variant="outline">Skip</Button>
+						<Button onclick={handleSubmit}>Submit</Button>
+					</Dialog.Footer>
+				{/if}
 			{/if}
-		</div>
-	</Modal>
+		</Dialog.Content>
+	</Dialog.Root>
 {/if}

@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 
 export const showSurveyModal = writable(false);
 /**
+ * @typedef {string | string[]} SurveyAnswer a string, or the selected options of a checkbox question
  * @typedef {{ content: { label_text: string, options?: string[], survey_provider?: string, type: string, url?: string }, id: string | number, required?: boolean }} SurveyQuestion
  * @typedef {{ allows_multiple_responses?: boolean, always_visible?: boolean, id: string | number, name: string, questions: SurveyQuestion[] }} Survey
  */

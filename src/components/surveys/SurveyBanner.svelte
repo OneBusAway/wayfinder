@@ -47,17 +47,9 @@
 	);
 	let canSubmit = $derived(!submitting && (!needsAnswer || hasAnswer));
 
-	function handleChange(event) {
-		if (questionType === 'checkbox') {
-			const option = event.target.value;
-			const current = Array.isArray(answer) ? answer : [];
-			answer = event.target.checked
-				? [...current, option]
-				: current.filter((selected) => selected !== option);
-		} else {
-			answer = event.target.value;
-		}
-
+	/** @param {import('$stores/surveyStore').SurveyAnswer} value */
+	function handleChange(value) {
+		answer = value;
 		handleHeroQuestionChange(answer);
 	}
 
@@ -132,7 +124,6 @@
 			<div transition:slide|local={{ duration: 300 }} class="pb-4">
 				<SurveyQuestion
 					question={heroQuestion}
-					index={0}
 					value={answer}
 					required={heroQuestion.required}
 					onInputChange={handleChange}
