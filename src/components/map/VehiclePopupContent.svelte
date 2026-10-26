@@ -1,8 +1,6 @@
 <script>
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { CalendarClock, Clock, MapPin } from '@lucide/svelte';
-	import { prioritizedRouteTypeForDisplay } from '$config/routeConfig';
-	import { contrastRatio } from '$lib/colorUtils';
+	import RoutePill from '$components/map/RoutePill.svelte';
 	import { formatLastUpdated } from '$lib/dateTimeFormat';
 	import '$lib/i18n';
 	import { t } from 'svelte-i18n';
@@ -45,15 +43,6 @@
 		});
 	});
 
-	const badgeBackground = $derived(routeColor ? `#${routeColor}` : '#374151');
-	const badgeForeground = $derived.by(() => {
-		if (routeTextColor) return `#${routeTextColor}`;
-		return contrastRatio(badgeBackground, '#ffffff') >= contrastRatio(badgeBackground, '#000000')
-			? '#ffffff'
-			: '#000000';
-	});
-	const modeIcon = $derived(prioritizedRouteTypeForDisplay(routeType));
-
 	const displayVehicleId = $derived(vehicleId ? String(vehicleId).replace(/^[^_]+_/, '') : null);
 
 	const isStale = $derived(
@@ -83,13 +72,12 @@
 	<div class="flex flex-col gap-2.5 px-4 pt-3.5 pb-3">
 		<div class="flex flex-wrap items-center gap-2.5 pe-7">
 			{#if routeShortName}
-				<span
-					class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-sm font-bold"
-					style="background-color: {badgeBackground}; color: {badgeForeground};"
-				>
-					<FontAwesomeIcon icon={modeIcon} class="h-3 w-3" />
-					{routeShortName}
-				</span>
+				<RoutePill
+					shortName={routeShortName}
+					color={routeColor}
+					textColor={routeTextColor}
+					{routeType}
+				/>
 			{/if}
 			{#if isStale}
 				<span
