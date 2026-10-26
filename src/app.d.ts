@@ -12,6 +12,13 @@ declare global {
 			};
 		}
 	}
+
+	interface WindowEventMap {
+		contextMenuTripPlan: CustomEvent<{ lat: number; lng: number; type: 'from' | 'to' }>;
+		routeSelectedFromModal: CustomEvent<{
+			route: import('onebusaway-sdk/resources/routes-for-location').RoutesForLocationListResponse.Data.List;
+		}>;
+	}
 }
 
 export {};

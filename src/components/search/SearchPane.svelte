@@ -1,4 +1,6 @@
-<script>
+<script lang="ts">
+	import * as Tabs from '$components/ui/tabs';
+	import { Button } from '$components/ui/button';
 	import SearchField from '$components/search/SearchField.svelte';
 	import SearchResultItem from '$components/search/SearchResultItem.svelte';
 	import { onMount, onDestroy, tick } from 'svelte';
@@ -7,8 +9,6 @@
 	import { t } from 'svelte-i18n';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehicles } from '$lib/vehicleUtils';
 	import { calculateMidpoint } from '$lib/mathUtils';
-	import Tabs from 'flowbite-svelte/Tabs.svelte';
-	import TabItem from 'flowbite-svelte/TabItem.svelte';
 	import { env } from '$env/dynamic/public';
 	import TripPlan from '$components/trip-planner/TripPlan.svelte';
 	import { isMapLoaded } from '$src/stores/mapStore';
@@ -19,6 +19,58 @@
 	import { parseTripParams, hasTripParams, clearTripUrl } from '$lib/urlState';
 	import { notifyRouteLoadFailed, notifyPartialRouteShape } from '$lib/routeNotifications';
 	import { notifications } from '$stores/notificationStore';
+	import type { Snippet } from 'svelte';
+	import type { Unsubscriber } from 'svelte/store';
+	import type {
+		GeocodingResult,
+		MapProvider,
+		SearchResults,
+		Stop,
+		TripPlanResponse
+	} from '$lib/types';
+	import type { RoutesForLocationListResponse } from 'onebusaway-sdk/resources/routes-for-location';
+	import type { References } from 'onebusaway-sdk/resources/shared';
+	import type { StopsForRouteListResponse } from 'onebusaway-sdk/resources/stops-for-route';
+
+	type Route = RoutesForLocationListResponse.Data.List;
+
+	// The SDK types each stop grouping as holding `stopIds` directly, but the API
+	// nests them under `stopGroups`.
+	interface StopGrouping {
+		stopGroups?: ({ stopIds: string[] } | null)[];
+	}
+
+	interface StopsForRouteResponse {
+		data: Omit<StopsForRouteListResponse.Data, 'entry'> & {
+			entry: Omit<StopsForRouteListResponse.Data.Entry, 'stopGroupings'> & {
+				stopGroupings?: (StopGrouping | null)[];
+			};
+		};
+	}
+
+	interface RouteData {
+		currentIntervalId: number | null;
+		polylines: Polyline[];
+		route: Route;
+		stops: References.Stop[];
+	}
+
+	type Polyline = NonNullable<Awaited<ReturnType<MapProvider['createPolyline']>>>;
+
+	interface Props {
+		childContent: Snippet;
+		clearTripItineraries: () => void;
+		collapsed?: boolean;
+		cssClasses?: string;
+		embedTripPlan?: boolean;
+		handleMapStopMarkerSelect?: ((stop: Stop) => void) | null;
+		handleRouteSelected: (routeData: RouteData) => void;
+		handleStopMarkerSelect: (stop: Stop) => void;
+		handleTripPlan: (tripPlanData: { data: TripPlanResponse }) => void;
+		handleViewAllRoutes: () => void;
+		mapProvider: MapProvider;
+		onCollapse?: (() => void) | null;
+	}
 
 	let {
 		handleRouteSelected,
@@ -30,34 +82,34 @@
 		handleTripPlan,
 		clearTripItineraries,
 		cssClasses = '',
-		mapProvider = null,
+		mapProvider,
 		onCollapse = null,
 		collapsed = false,
 		// When false, Plan tab stays available but TripPlan mounts elsewhere
 		// (mobile bottom sheet). Avoids two TripPlan instances.
 		embedTripPlan = true,
 		childContent
-	} = $props();
+	}: Props = $props();
 
-	let routes = $state(null);
-	let stops = $state(null);
-	let location = $state(null);
-	let query = $state(null);
-	let polylines = [];
-	let currentIntervalId = null;
+	let routes = $state<Route[] | null>(null);
+	let stops = $state<Stop[] | null>(null);
+	let location = $state<GeocodingResult | null>(null);
+	let query = $state<string | null>(null);
+	let polylines: Polyline[] = [];
+	let currentIntervalId: number | null = null;
 	// Bumped on every route click so a slower, superseded load can detect a newer
 	// click took over (after one of its awaits) and bail instead of fighting the
 	// newer route for the camera, stop markers, and vehicle polling.
 	let routeLoadToken = 0;
 	// Id of the toast the current route load raised, so we only ever clear our
 	// own and never one owned by another component.
-	let notificationId = null;
+	let notificationId: number | null = null;
 	let mapLoaded = $state(false);
 	let isSurveyAnswered = $state(false);
 	let activeTab = $state('stops');
 	let isContextMenuTrigger = false;
 
-	function handleLocationClick(location) {
+	function handleLocationClick(location: GeocodingResult) {
 		clearResults();
 		const lat = location.geometry.location.lat;
 		const lng = location.geometry.location.lng;
@@ -65,7 +117,7 @@
 		mapProvider.setZoom(20);
 	}
 
-	function handleStopClick(stop) {
+	function handleStopClick(stop: Stop) {
 		clearResults();
 
 		const markerOptions = {
@@ -74,7 +126,6 @@
 			onClick: () => (handleMapStopMarkerSelect ?? handleStopMarkerSelect)(stop)
 		};
 		mapProvider.addMarker(markerOptions);
-
 		mapProvider.flyTo(stop.lat, stop.lon, 20);
 
 		setTimeout(() => {
@@ -87,22 +138,25 @@
 	 * Iterates through the nested stopGroupings to build a flat, ordered list of unique stops.
 	 * Maintains the order of stops as they appear in the groupings while preventing duplicates.
 	 *
-	 * @param {Array} stopGroupings - Array of stop grouping objects from the OBA API, where each
-	 *                                 grouping contains stopGroups with arrays of stopIds
-	 * @param {Map<string, Object>} stopsMap - Map of stop IDs to stop objects for quick lookups
-	 * @returns {Array<Object>} Ordered array of unique stop objects
+	 * @param stopGroupings - Array of stop grouping objects from the OBA API, where each grouping
+	 * 						  contains stopGroups with arrays of stopIds
+	 * @param stopsMap - Map of stop IDs to stop objects for quick lookups
+	 * @returns Ordered array of unique stop objects
 	 */
-	function extractOrderedStops(stopGroupings, stopsMap) {
+	function extractOrderedStops(
+		stopGroupings: (StopGrouping | null)[] | undefined,
+		stopsMap: Map<string, References.Stop>
+	): References.Stop[] {
 		if (!stopGroupings) return [];
 		if (stopGroupings.length === 0) return [];
 
-		let orderedStops = [];
+		let orderedStops: References.Stop[] = [];
 		// local to this function
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		let seenStopIds = new Set();
+		let seenStopIds = new Set<string>();
 
 		stopGroupings.forEach((grouping) => {
-			if (!grouping.stopGroups || grouping.stopGroups.length === 0) return;
+			if (!grouping?.stopGroups || grouping.stopGroups.length === 0) return;
 
 			grouping.stopGroups.forEach((group) => {
 				if (!group || group.stopIds.length === 0) return;
@@ -122,7 +176,7 @@
 		return orderedStops;
 	}
 
-	async function handleRouteClick(route) {
+	async function handleRouteClick(route: Route) {
 		const loadToken = ++routeLoadToken;
 		// Drop our prior retriable toast so a stale Retry for a previous route
 		// can't wipe markers/polylines after the user has moved on.
@@ -143,7 +197,7 @@
 				return;
 			}
 
-			const stopsForRoute = await response.json();
+			const stopsForRoute: StopsForRouteResponse = await response.json();
 			if (loadToken !== routeLoadToken) return;
 
 			const stopsMap = new Map(stopsForRoute.data.references.stops.map((stop) => [stop.id, stop]));
@@ -161,13 +215,15 @@
 			// rather than accumulating stale references from previous selections.
 			polylines = [];
 			const segmentCount = polylinesData?.length ?? 0;
-			for (const polylineData of polylinesData) {
-				const polyline = await mapProvider.createPolyline(polylineData.points);
-				if (loadToken !== routeLoadToken) return;
-				// createPolyline returns null for an undecodable shape (on either
-				// provider); skip it so one bad segment degrades the route instead
-				// of leaving a null hole in the polylines array.
-				if (polyline) polylines.push(polyline);
+			if (polylinesData != null) {
+				for (const polylineData of polylinesData) {
+					const polyline = await mapProvider.createPolyline(polylineData.points);
+					if (loadToken !== routeLoadToken) return;
+					// createPolyline returns null for an undecodable shape (on either
+					// provider); skip it so one bad segment degrades the route instead
+					// of leaving a null hole in the polylines array.
+					if (polyline) polylines.push(polyline);
+				}
 			}
 
 			if (loadToken !== routeLoadToken) return;
@@ -223,13 +279,13 @@
 		}
 	}
 
-	async function showStopsOnRoute(stops) {
+	async function showStopsOnRoute(stops: References.Stop[]) {
 		for (const stop of stops) {
 			mapProvider.addStopRouteMarker(stop, null);
 		}
 	}
 
-	function handleSearchResults(results) {
+	function handleSearchResults(results: SearchResults) {
 		routes = results.routes;
 		stops = results.stops;
 		location = results.location;
@@ -247,13 +303,27 @@
 
 		clearVehicleMarkersMap();
 		mapProvider.clearVehicleMarkers();
-		clearInterval(currentIntervalId);
+		clearInterval(currentIntervalId ?? undefined);
 		currentIntervalId = null;
 	}
 
 	function handlePlanTripTabClick() {
 		const event = new CustomEvent('planTripTabClicked');
 		window.dispatchEvent(event);
+	}
+
+	function handleTabChange(value: string) {
+		switch (value) {
+			case 'plan':
+				handlePlanTripTabClick();
+				break;
+			case 'stops':
+				handleTabSwitch();
+				break;
+			default:
+				throw new Error(`Unknown tab ${value}`);
+		}
+		activeTab = value;
 	}
 
 	function handleTabSwitch() {
@@ -276,13 +346,15 @@
 		}
 	});
 
-	let unsubscribeMapLoaded;
+	let unsubscribeMapLoaded: Unsubscriber | undefined;
 
-	function handleRouteSelectedFromModal(event) {
+	function handleRouteSelectedFromModal(event: CustomEvent<{ route: Route }>) {
 		handleRouteClick(event.detail.route);
 	}
 
-	async function handleContextMenuTripPlan(e) {
+	async function handleContextMenuTripPlan(
+		e: CustomEvent<{ lat: number; lng: number; type: 'from' | 'to' }>
+	) {
 		isContextMenuTrigger = true;
 		activeTab = 'plan';
 		try {
@@ -382,21 +454,30 @@
 <div
 	class={`modal-pane flex flex-col justify-between bg-white/80 backdrop-blur-xs md:w-96 dark:bg-surface-dark ${collapsed ? 'hidden md:flex' : ''} ${cssClasses}`}
 >
-	<Tabs
-		tabStyle="none"
-		role="tablist"
-		activeClasses="bg-none border-b-2 border-brand-accent py-3 px-4"
-		inactiveClasses="py-3 px-4"
-		contentClass="rounded-lg bg-transparent pt-2 pb-4"
-	>
-		<TabItem
-			open={activeTab === 'stops'}
-			title={$t('tabs.stops-and-stations')}
-			on:click={() => {
-				handleTabSwitch();
-				activeTab = 'stops';
-			}}
-		>
+	<Tabs.Root bind:value={() => activeTab, handleTabChange} class="pb-4">
+		<div class="flex items-center justify-between border-b">
+			<Tabs.List variant="line">
+				<Tabs.Trigger value="stops">
+					{$t('tabs.stops-and-stations')}
+				</Tabs.Trigger>
+				{#if env.PUBLIC_OTP_SERVER_URL}
+					<Tabs.Trigger value="plan" disabled={!mapLoaded}>
+						{$t('tabs.plan_trip')}
+					</Tabs.Trigger>
+				{/if}
+			</Tabs.List>
+
+			{#if onCollapse}
+				<!-- Collapsing to the floating pill is a sub-md affordance; on wider
+				     viewports the pane always stays open. -->
+				<Button onclick={onCollapse} class="md:hidden" size="icon-sm" variant="secondary">
+					<X class="h-4 w-4" />
+					<span class="sr-only">{$t('search.collapse')}</span>
+				</Button>
+			{/if}
+		</div>
+
+		<Tabs.Content value="stops" class="text-base">
 			<SearchField value={query} {handleSearchResults} />
 
 			{#if !isSurveyAnswered && $surveyStore}
@@ -417,31 +498,26 @@
 			<div class="max-h-96 overflow-y-auto">
 				{#if location}
 					<SearchResultItem
-						on:click={() => handleLocationClick(location)}
+						onclick={() => handleLocationClick(location!)}
 						title={location.formatted_address}
 						icon={MapPin}
 						subtitle={location?.types?.join(', ') || location.name}
 					/>
 				{/if}
-
-				{#if routes?.length > 0}
-					<!-- FIXME: each block has no key -->
-					<!-- eslint-disable-next-line svelte/require-each-key -->
-					{#each routes as route}
+				{#if routes?.length}
+					{#each routes as route (route.id)}
 						<SearchResultItem
-							on:click={() => handleRouteClick(route)}
+							onclick={() => handleRouteClick(route)}
 							icon={prioritizedRouteTypeForDisplay(route.type)}
 							title={`${$t('route')} ${removeAgencyPrefix(route.nullSafeShortName || route.id)}`}
 							subtitle={route.description}
 						/>
 					{/each}
 				{/if}
-				{#if stops?.length > 0}
-					<!-- FIXME: each block has no key -->
-					<!-- eslint-disable-next-line svelte/require-each-key -->
-					{#each stops as stop}
+				{#if stops?.length}
+					{#each stops as stop (stop.id)}
 						<SearchResultItem
-							on:click={() => handleStopClick(stop)}
+							onclick={() => handleStopClick(stop)}
 							icon={Signpost}
 							title={stop.name}
 							subtitle={stopSubtitle(stop, $t)}
@@ -462,33 +538,16 @@
 					{$t('search.for_a_list_of_available_routes')}</span
 				>
 			</div>
-		</TabItem>
+		</Tabs.Content>
 
 		{#if env.PUBLIC_OTP_SERVER_URL}
-			<TabItem
-				open={activeTab === 'plan'}
-				title={$t('tabs.plan_trip')}
-				on:click={() => {
-					handlePlanTripTabClick();
-					activeTab = 'plan';
-				}}
-				disabled={!mapLoaded}
-			>
-				{#if embedTripPlan}
+			<Tabs.Content value="plan">
+				<!-- Mount TripPlan only while its tab is open: it registers window
+				     listeners on mount, and shared-trip restore waits for that. -->
+				{#if embedTripPlan && activeTab === 'plan'}
 					<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
 				{/if}
-			</TabItem>
+			</Tabs.Content>
 		{/if}
-
-		{#if onCollapse}
-			<!-- Collapsing to the floating pill is a sub-md affordance; on wider
-			     viewports the pane always stays open. -->
-			<li role="presentation" class="ms-auto self-center md:hidden">
-				<button type="button" onclick={onCollapse} class="close-button">
-					<X class="h-4 w-4 font-black text-black dark:text-white" />
-					<span class="sr-only">{$t('search.collapse')}</span>
-				</button>
-			</li>
-		{/if}
-	</Tabs>
+	</Tabs.Root>
 </div>

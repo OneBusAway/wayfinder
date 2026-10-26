@@ -30,6 +30,27 @@
  */
 
 /**
+ * A single geocoder match returned by the search endpoint, normalized across
+ * providers.
+ *
+ * @typedef {Object} GeocodingResult
+ * @property {string} formatted_address
+ * @property {{ location: { lat: number, lng: number } }} geometry
+ * @property {string} name
+ * @property {string[]} [types]
+ */
+
+/**
+ * The `/api/oba/search` response: matching routes, stops and geocoded place.
+ *
+ * @typedef {Object} SearchResults
+ * @property {GeocodingResult | null} location
+ * @property {string} query
+ * @property {import('onebusaway-sdk/resources/routes-for-location').RoutesForLocationListResponse.Data.List[]} routes
+ * @property {Stop[]} stops
+ */
+
+/**
  * A provider result shown by the trip planner's place autocomplete. Bing does
  * not return a stable place identifier, so selection must also work by name.
  *

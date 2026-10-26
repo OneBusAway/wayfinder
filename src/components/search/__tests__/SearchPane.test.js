@@ -198,14 +198,14 @@ describe('SearchPane', () => {
 			const stopsTab = screen.getByRole('tab', { name: 'Stops & Stations' });
 			const tripTab = screen.getByRole('tab', { name: 'Plan Trip' });
 
-			await user.click(stopsTab);
-			expect(global.dispatchEvent).toHaveBeenCalledWith(
-				expect.objectContaining({ type: 'tabSwitched' })
-			);
-
 			await user.click(tripTab);
 			expect(global.dispatchEvent).toHaveBeenCalledWith(
 				expect.objectContaining({ type: 'planTripTabClicked' })
+			);
+
+			await user.click(stopsTab);
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'tabSwitched' })
 			);
 		});
 

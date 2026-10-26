@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import AlertsModal from '../AlertsModal.svelte';
@@ -150,7 +150,7 @@ describe('AlertsModal', () => {
 
 		await user.click(screen.getAllByRole('button', { name: 'Close' })[index]);
 
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	});
 
 	test('opens external link when More Info button is clicked', async () => {
@@ -449,6 +449,6 @@ describe('AlertsModal', () => {
 
 		await user.keyboard('{Escape}');
 
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	});
 });
