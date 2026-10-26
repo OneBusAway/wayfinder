@@ -43,7 +43,7 @@
 	interface StopsForRouteResponse {
 		data: Omit<StopsForRouteListResponse.Data, 'entry'> & {
 			entry: Omit<StopsForRouteListResponse.Data.Entry, 'stopGroupings'> & {
-				stopGroupings?: StopGrouping[];
+				stopGroupings?: (StopGrouping | null)[];
 			};
 		};
 	}
@@ -144,7 +144,7 @@
 	 * @returns Ordered array of unique stop objects
 	 */
 	function extractOrderedStops(
-		stopGroupings: StopGrouping[] | undefined,
+		stopGroupings: (StopGrouping | null)[] | undefined,
 		stopsMap: Map<string, References.Stop>
 	): References.Stop[] {
 		if (!stopGroupings) return [];
@@ -156,7 +156,7 @@
 		let seenStopIds = new Set<string>();
 
 		stopGroupings.forEach((grouping) => {
-			if (!grouping.stopGroups || grouping.stopGroups.length === 0) return;
+			if (!grouping?.stopGroups || grouping.stopGroups.length === 0) return;
 
 			grouping.stopGroups.forEach((group) => {
 				if (!group || group.stopIds.length === 0) return;
@@ -471,7 +471,7 @@
 				<!-- Collapsing to the floating pill is a sub-md affordance; on wider
 				     viewports the pane always stays open. -->
 				<Button onclick={onCollapse} class="md:hidden" size="icon-sm" variant="secondary">
-					<X class="h-4 w-4 font-black text-black dark:text-white" />
+					<X class="h-4 w-4" />
 					<span class="sr-only">{$t('search.collapse')}</span>
 				</Button>
 			{/if}

@@ -168,7 +168,7 @@ describe('SearchResultItem', () => {
 		});
 
 		test('supports screen reader navigation', () => {
-			const { container } = render(SearchResultItem, {
+			render(SearchResultItem, {
 				props: {
 					icon: faBus,
 					title: 'Route 8',
@@ -176,15 +176,22 @@ describe('SearchResultItem', () => {
 				}
 			});
 
-			const button = screen.getByRole('button');
+			const button = screen.getByRole('button', { name: /Route 8/ });
 
 			// Should be focusable
 			expect(button).toHaveAttribute('type', 'button');
+		});
 
-			// Content should be structured for screen readers
-			const heading = container.querySelector('h3');
-			expect(heading).toBeInTheDocument();
-			expect(heading).toHaveTextContent('Route 8');
+		test('keeps only phrasing content inside the button', () => {
+			const { container } = render(SearchResultItem, {
+				props: {
+					icon: MapPin,
+					title: 'Important Transit Hub',
+					subtitle: 'Major Transfer Point'
+				}
+			});
+
+			expect(container.querySelector('button div, button h3, button p')).toBeNull();
 		});
 
 		test('handles long text content gracefully', () => {
@@ -216,9 +223,9 @@ describe('SearchResultItem', () => {
 				}
 			});
 
-			const iconContainer = container.querySelector('.h-12.w-12');
+			const iconContainer = container.querySelector('.size-12');
 			expect(iconContainer).toBeInTheDocument();
-			expect(iconContainer).toHaveClass('min-w-12', 'max-w-12');
+			expect(iconContainer).toHaveClass('shrink-0');
 		});
 
 		test('applies hover styles correctly', () => {
@@ -234,22 +241,8 @@ describe('SearchResultItem', () => {
 			expect(button).toHaveClass('hover:bg-gray-200');
 		});
 
-		test('uses semantic heading tags for title', () => {
-			const { container } = render(SearchResultItem, {
-				props: {
-					icon: MapPin,
-					title: 'Important Transit Hub',
-					subtitle: 'Major Transfer Point'
-				}
-			});
-
-			const heading = container.querySelector('h3');
-			expect(heading).toBeInTheDocument();
-			expect(heading).toHaveTextContent('Important Transit Hub');
-		});
-
-		test('styles subtitle as paragraph', () => {
-			const { container } = render(SearchResultItem, {
+		test('renders title and subtitle on separate lines', () => {
+			render(SearchResultItem, {
 				props: {
 					icon: Signpost,
 					title: 'Stop Name',
@@ -257,9 +250,8 @@ describe('SearchResultItem', () => {
 				}
 			});
 
-			const paragraph = container.querySelector('p');
-			expect(paragraph).toBeInTheDocument();
-			expect(paragraph).toHaveTextContent('Direction and Code Info');
+			expect(screen.getByText('Stop Name')).toHaveClass('block');
+			expect(screen.getByText('Direction and Code Info')).toHaveClass('block');
 		});
 	});
 
@@ -293,7 +285,7 @@ describe('SearchResultItem', () => {
 			});
 
 			// Should still render the icon container
-			const iconContainer = container.querySelector('.h-12.w-12');
+			const iconContainer = container.querySelector('.size-12');
 			expect(iconContainer).toBeInTheDocument();
 		});
 
@@ -415,8 +407,8 @@ describe('SearchResultItem', () => {
 			});
 
 			// Both should have the same structural layout
-			const shortIconContainer = shortContainer.querySelector('.h-12.w-12');
-			const longIconContainer = longContainer.querySelector('.h-12.w-12');
+			const shortIconContainer = shortContainer.querySelector('.size-12');
+			const longIconContainer = longContainer.querySelector('.size-12');
 
 			expect(shortIconContainer).toBeInTheDocument();
 			expect(longIconContainer).toBeInTheDocument();

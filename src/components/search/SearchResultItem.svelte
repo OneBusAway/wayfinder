@@ -5,9 +5,9 @@
 
 	interface Props {
 		icon: Component | IconDefinition;
+		onclick: (event: MouseEvent) => void;
 		subtitle?: string;
 		title: string;
-		onclick: (event: MouseEvent) => void;
 	}
 
 	const { icon, onclick, subtitle, title }: Props = $props();
@@ -18,15 +18,13 @@
 	type="button"
 	{onclick}
 >
-	<div class="flex items-center gap-x-4">
-		<div
-			class="flex h-12 w-12 max-w-12 min-w-12 items-center justify-center rounded-full bg-gray-200"
-		>
-			<AppIcon {icon} class="h-6 w-6 text-gray-800" />
-		</div>
-		<div>
-			<h3 class="text-base font-semibold text-gray-700 dark:text-white">{title}</h3>
-			<p class="text-gray-700 dark:text-white">{subtitle}</p>
-		</div>
-	</div>
+	<span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-gray-200">
+		<AppIcon {icon} class="h-6 w-6 text-gray-800" />
+	</span>
+	<span class="min-w-0">
+		<span class="block text-base font-semibold text-gray-700 dark:text-white">{title}</span>
+		{#if subtitle}
+			<span class="block text-gray-700 dark:text-white">{subtitle}</span>
+		{/if}
+	</span>
 </button>
