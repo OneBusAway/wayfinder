@@ -145,7 +145,7 @@ describe('FavoritesFloatingControl', () => {
 
 		expect(onStopClick).toHaveBeenCalledTimes(1);
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 		expect(
 			screen.queryByRole('button', { name: 'Open Pine St & 3rd Ave' })
 		).not.toBeInTheDocument();
@@ -158,7 +158,7 @@ describe('FavoritesFloatingControl', () => {
 
 		await user.click(toggle);
 
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
 		expect(toggle).toHaveFocus();
 	});
@@ -214,7 +214,7 @@ describe('FavoritesFloatingControl', () => {
 		await openFavoritesDialog(toggle);
 
 		await user.keyboard('{Escape}');
-		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 		expect(toggle).toHaveFocus();
 	});
 });
