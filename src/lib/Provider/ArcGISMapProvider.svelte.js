@@ -474,7 +474,7 @@ export default class ArcGISMapProvider {
 		this.popupContentComponent = mount(PopupContent, {
 			target: container,
 			props: {
-				stopName: stop.name,
+				stop,
 				arrivalTime: stopTime?.arrivalTime ?? null,
 				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 			}
@@ -494,7 +494,7 @@ export default class ArcGISMapProvider {
 		this.popupContentComponent = mount(PopupContent, {
 			target: container,
 			props: {
-				stopName: stop.name,
+				stop,
 				arrivalTime,
 				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 			}

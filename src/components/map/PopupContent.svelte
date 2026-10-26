@@ -1,11 +1,11 @@
 <script>
 	import { t } from 'svelte-i18n';
 	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
-	let { stopName, arrivalTime, handleStopMarkerSelect } = $props();
+	let { stop, arrivalTime, handleStopMarkerSelect } = $props();
 </script>
 
 <div class="transform rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800">
-	<h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">{stopName}</h3>
+	<h3 class="text-xl font-bold text-gray-900 dark:text-gray-100">{stop?.name}</h3>
 
 	{#if arrivalTime != null}
 		<p class="my-4 flex items-center">
