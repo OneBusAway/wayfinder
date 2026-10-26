@@ -27,6 +27,7 @@ vi.mock('$components/MapContainer.svelte', () => ({
 		return {};
 	}
 }));
+
 // Captures the props MapExperience passes down (incl. handleRouteSelected) so the
 // route-flag-reset regression test below can invoke it the way the app does.
 let capturedSearchPaneProps = null;
@@ -36,6 +37,7 @@ vi.mock('$components/search/SearchPane.svelte', () => ({
 		return {};
 	}
 }));
+
 vi.mock('$components/search/CollapsedSearchField.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/routes/RouteModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/routes/ViewAllRoutesModal.svelte', () => ({ default: () => ({}) }));
@@ -52,7 +54,16 @@ vi.mock('$components/trip-planner/ClearRecentSearchesDialog.svelte', () => ({
 }));
 vi.mock('$components/surveys/SurveyModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/surveys/SurveyLauncher.svelte', () => ({ default: () => ({}) }));
-vi.mock('$components/navigation/AlertsModal.svelte', () => ({ default: () => ({}) }));
+
+// Captures the props MapExperience passes down so the null-alert regression
+// tests below can tell whether the modal was rendered at all.
+let capturedAlertsModalProps = null;
+vi.mock('$components/navigation/AlertsModal.svelte', () => ({
+	default: function AlertsModal(anchor, props) {
+		capturedAlertsModalProps = props;
+		return {};
+	}
+}));
 
 // The one child whose presence we assert on.
 let capturedSheetProps = null;
@@ -187,6 +198,38 @@ function arrivalsPayload(stopId, routes) {
 beforeEach(() => {
 	vi.clearAllMocks();
 	capturedTripPlanModalProps = null;
+	capturedAlertsModalProps = null;
+});
+
+test('does not render AlertsModal before an alert loads (null-alert SSR crash regression)', async () => {
+	setPage({
+		url: new URL('https://example.com/'),
+		params: {},
+		route: { id: '/(map)' },
+		state: {},
+		data: {}
+	});
+	render(MapExperience);
+	await tick();
+
+	expect(capturedAlertsModalProps).toBeNull();
+});
+
+test('renders AlertsModal open once an alert loads', async () => {
+	const ALERT = { headerText: { translation: [{ language: 'en', text: 'Detour' }] } };
+	global.fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ALERT });
+	setPage({
+		url: new URL('https://example.com/'),
+		params: {},
+		route: { id: '/(map)' },
+		state: {},
+		data: {}
+	});
+	render(MapExperience);
+
+	await vi.waitFor(() => expect(capturedAlertsModalProps).not.toBeNull());
+	expect(capturedAlertsModalProps.alert).toEqual(ALERT);
+	expect(capturedAlertsModalProps.open).toBe(true);
 });
 
 test('renders the stop sheet when the URL is a /map/stops path', () => {

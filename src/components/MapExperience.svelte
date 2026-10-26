@@ -661,7 +661,9 @@
 	<meta name="apple-mobile-web-app-title" content={PUBLIC_OBA_REGION_NAME} />
 </svelte:head>
 
-<AlertsModal bind:open={showAlertModal} {alert} />
+{#if alert}
+	<AlertsModal bind:open={showAlertModal} {alert} />
+{/if}
 
 {#if $isLoading}
 	<p>Loading...</p>
