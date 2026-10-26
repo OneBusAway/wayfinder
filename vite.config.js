@@ -8,9 +8,6 @@ dotenv.config();
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), svelteTesting()],
-	optimizeDeps: {
-		include: ['tailwind-merge', 'apexcharts', '@floating-ui/dom', 'deepmerge', 'intl-messageformat']
-	},
 	define: {
 		__SHOW_REGION_NAME_IN_NAV_BAR__: JSON.stringify(
 			process.env.SHOW_REGION_NAME_IN_NAV_BAR !== 'false'

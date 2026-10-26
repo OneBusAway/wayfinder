@@ -6,12 +6,13 @@
 //       checkbox questions)
 //   (b) remainingQuestionsLength derived at render time from the question
 //       count, not from post-click state
-//   (c) showSurveyModal.set(true) firing only AFTER a successful POST
+//   (c) the follow-up SurveyModal opening only AFTER a successful POST
 //   (d) the try/catch that rethrows so the banner can show its retry message
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach } from 'vitest';
 import StopPane from '../StopPane.svelte';
+import SurveyModal from '$components/surveys/SurveyModal.svelte';
 import {
 	mockStopData,
 	mockArrivalsAndDeparturesResponse
@@ -197,7 +198,7 @@ describe('StopPane.handleSurveyButtonClick (via real SurveyBanner)', () => {
 		expect(screen.queryByRole('button', { name: 'survey.submit' })).not.toBeInTheDocument();
 	});
 
-	test('(c) calls showSurveyModal.set(true) only after the POST resolves, not before', async () => {
+	test('(c) opens the follow-up SurveyModal only after the POST resolves, not before', async () => {
 		const survey = surveyWithQuestions([radioContent, radioContent]);
 		const user = await renderWithSurvey(survey);
 
@@ -207,18 +208,16 @@ describe('StopPane.handleSurveyButtonClick (via real SurveyBanner)', () => {
 			() => new Promise((resolve) => (releasePost = () => resolve('survey-response-1')))
 		);
 
-		const { showSurveyModal } = await import('$stores/surveyStore');
-
 		await user.click(screen.getByLabelText('Great'));
 		await user.click(screen.getByRole('button', { name: 'survey.next' }));
 
-		// The POST is in flight: showSurveyModal must NOT have been set yet.
-		// This assertion fails if `showSurveyModal.set(true)` is moved above
-		// the `await submitHeroQuestion(...)` call in StopPane.
-		expect(showSurveyModal.set).not.toHaveBeenCalled();
+		// The POST is in flight: the modal must NOT be mounted yet. This
+		// assertion fails if `surveyModalOpen = ...` is moved above the
+		// `await submitHeroQuestion(...)` call in StopPane.
+		expect(SurveyModal).not.toHaveBeenCalled();
 
 		releasePost();
-		await waitFor(() => expect(showSurveyModal.set).toHaveBeenCalledWith(true));
+		await waitFor(() => expect(SurveyModal).toHaveBeenCalled());
 	});
 
 	test('(d) rethrows a failed POST so the banner shows a retry message and does not advance', async () => {
@@ -228,7 +227,7 @@ describe('StopPane.handleSurveyButtonClick (via real SurveyBanner)', () => {
 		const { submitHeroQuestion } = await import('$lib/Surveys/surveyUtils');
 		vi.mocked(submitHeroQuestion).mockRejectedValue(new Error('network down'));
 
-		const { showSurveyModal, markSurveyAnswered } = await import('$stores/surveyStore');
+		const { markSurveyAnswered } = await import('$stores/surveyStore');
 
 		await user.click(screen.getByLabelText('Great'));
 		await user.click(screen.getByRole('button', { name: 'survey.submit' }));
@@ -240,7 +239,7 @@ describe('StopPane.handleSurveyButtonClick (via real SurveyBanner)', () => {
 		// The banner must stay mounted (showHeroQuestion untouched) and the
 		// success-only side effects must never fire.
 		expect(screen.getByRole('button', { name: 'survey.submit' })).toBeInTheDocument();
-		expect(showSurveyModal.set).not.toHaveBeenCalled();
+		expect(SurveyModal).not.toHaveBeenCalled();
 		expect(markSurveyAnswered).not.toHaveBeenCalled();
 	});
 });

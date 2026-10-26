@@ -11,7 +11,7 @@
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
-	import { surveyStore, showSurveyModal, markSurveyAnswered } from '$stores/surveyStore';
+	import { surveyStore, markSurveyAnswered } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
 	import SurveyBanner from '$components/surveys/SurveyBanner.svelte';
 	import analytics from '$lib/Insights';
@@ -256,7 +256,7 @@
 			// returns after the first submit/dismiss of the session.
 			showHeroQuestion = true;
 			heroAnswer = '';
-			nextSurveyQuestion = false;
+			surveyModalOpen = false;
 			surveyPublicIdentifier = null;
 		});
 	});
@@ -292,7 +292,9 @@
 
 	/** @type {SurveyAnswer} */
 	let heroAnswer = '';
-	let nextSurveyQuestion = $state(false);
+	// Local rather than the shared showSurveyModal store: MapExperience opens its
+	// own SurveyModal from that store, and sharing it would open both at once.
+	let surveyModalOpen = $state(false);
 	let surveyPublicIdentifier = $state(null);
 	let showHeroQuestion = $state(true);
 
@@ -337,10 +339,7 @@
 		}
 
 		// Only advance the flow once the hero answer is actually recorded.
-		if (remainingSurveyQuestions.length > 0) {
-			showSurveyModal.set(true);
-		}
-		nextSurveyQuestion = true;
+		surveyModalOpen = remainingSurveyQuestions.length > 0;
 
 		showHeroQuestion = false;
 		markSurveyAnswered(survey.id);
@@ -453,8 +452,13 @@
 						/>
 					{/key}
 				{/if}
-				{#if nextSurveyQuestion}
-					<SurveyModal {stop} skipHeroQuestion={true} surveyPublicId={surveyPublicIdentifier} />
+				{#if surveyModalOpen}
+					<SurveyModal
+						bind:open={surveyModalOpen}
+						{stop}
+						skipHeroQuestion={true}
+						surveyPublicId={surveyPublicIdentifier}
+					/>
 				{/if}
 
 				{#snippet loadMoreButton(emptyResults = false)}

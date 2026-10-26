@@ -761,7 +761,7 @@
 	</div>
 
 	{#if $showSurveyModal}
-		<SurveyModal />
+		<SurveyModal bind:open={$showSurveyModal} />
 	{/if}
 
 	{#if $showTripOptionsModal}

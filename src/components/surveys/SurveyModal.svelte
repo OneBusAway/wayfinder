@@ -9,7 +9,7 @@
 		submitSurvey
 	} from '$lib/Surveys/surveyUtils';
 
-	import { showSurveyModal, surveyStore } from '$stores/surveyStore';
+	import { surveyStore } from '$stores/surveyStore';
 	import type {
 		Survey,
 		SurveyAnswer,
@@ -27,12 +27,18 @@
 	}
 
 	interface Props {
+		open?: boolean;
 		skipHeroQuestion?: boolean;
 		stop?: Stop | null;
 		surveyPublicId?: string | null;
 	}
 
-	let { stop = $bindable(null), skipHeroQuestion, surveyPublicId }: Props = $props();
+	let {
+		open = $bindable(false),
+		stop = $bindable(null),
+		skipHeroQuestion,
+		surveyPublicId
+	}: Props = $props();
 
 	let userAnswers: SurveyAnswer[] = $state([]);
 	let heroQuestionAnswered = $state(false);
@@ -104,7 +110,7 @@
 		try {
 			surveyPublicIdentifier = await submitHeroQuestionUtil(surveyResponse);
 			heroQuestionAnswered = true;
-			submitSurvey(currentSurvey, false);
+			submitSurvey(currentSurvey);
 
 			if (remainingQuestions.length === 0) {
 				surveySubmitted = true;
@@ -124,12 +130,19 @@
 
 		updateSurveyResponse();
 		surveySubmitted = true;
-		submitSurvey(currentSurvey, true);
+		submitSurvey(currentSurvey);
+		// Leave the confirmation up long enough to read before closing.
+		setTimeout(() => (open = false), 3000);
+	}
+
+	function skip() {
+		skipSurvey(currentSurvey);
+		open = false;
 	}
 </script>
 
 {#if currentSurvey}
-	<Dialog.Root bind:open={$showSurveyModal}>
+	<Dialog.Root bind:open>
 		<Dialog.Content class="flex max-h-[85vh] flex-col sm:max-w-2xl">
 			<Dialog.Header>
 				<Dialog.Title>{currentSurvey.name}</Dialog.Title>
@@ -166,14 +179,14 @@
 
 				{#if !heroQuestionAnswered && !skipHeroQuestion}
 					<Dialog.Footer>
-						<Button onclick={() => skipSurvey(currentSurvey)} variant="outline">Cancel</Button>
+						<Button onclick={skip} variant="outline">Cancel</Button>
 						<Button onclick={submitHeroQuestion}>
 							{remainingQuestions.length === 0 ? 'Submit' : 'Next'}
 						</Button>
 					</Dialog.Footer>
 				{:else if remainingQuestions.length > 0}
 					<Dialog.Footer>
-						<Button onclick={() => skipSurvey(currentSurvey)} variant="outline">Skip</Button>
+						<Button onclick={skip} variant="outline">Skip</Button>
 						<Button onclick={handleSubmit}>Submit</Button>
 					</Dialog.Footer>
 				{/if}

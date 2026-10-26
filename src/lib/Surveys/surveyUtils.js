@@ -1,4 +1,4 @@
-import { markSurveyAnswered, showSurveyModal, surveyStore } from '$stores/surveyStore.js';
+import { markSurveyAnswered, surveyStore } from '$stores/surveyStore.js';
 
 export async function loadSurveys(stop = null, userId = null) {
 	try {
@@ -161,13 +161,8 @@ export async function updateSurveyResponse(surveyPublicIdentifier, surveyRespons
 	}
 }
 
-export function submitSurvey(survey, hideSurveyModal) {
+export function submitSurvey(survey) {
 	markSurveyAnswered(survey.id);
-	if (hideSurveyModal) {
-		setTimeout(() => {
-			showSurveyModal.set(false);
-		}, 3000);
-	}
 }
 
 export function skipSurvey(survey) {
@@ -182,5 +177,4 @@ export function skipSurvey(survey) {
 		// For one-time surveys: set permanent skip flag
 		localStorage.setItem(`survey_${survey.id}_skipped`, true);
 	}
-	showSurveyModal.set(false);
 }
