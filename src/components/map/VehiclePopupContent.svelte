@@ -78,7 +78,7 @@
 </script>
 
 <div
-	class="vehicle-popup-card w-72 max-w-full overflow-hidden rounded-xl bg-surface text-start text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
+	class="map-popup-card w-72 max-w-full overflow-hidden rounded-xl bg-surface text-start text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
 >
 	<div class="flex flex-col gap-2.5 px-4 pt-3.5 pb-3">
 		<div class="flex flex-wrap items-center gap-2.5 pe-7">
