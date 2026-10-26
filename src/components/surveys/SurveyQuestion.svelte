@@ -1,8 +1,22 @@
-<script>
+<script lang="ts">
 	import Radio from 'flowbite-svelte/Radio.svelte';
 	import Checkbox from 'flowbite-svelte/Checkbox.svelte';
 	import Input from 'flowbite-svelte/Input.svelte';
 	import { t } from 'svelte-i18n';
+
+	import type { SurveyQuestion } from '$stores/surveyStore';
+
+	interface Props {
+		error?: boolean;
+		index: number;
+		onInputChange: (event: Event, question: SurveyQuestion, index: number) => void;
+		question: SurveyQuestion;
+		required?: boolean;
+		/** A string, or the selected options of a checkbox question. */
+		value?: string | string[];
+		variant?: 'compact' | 'default';
+	}
+
 	let {
 		question,
 		required,
@@ -11,7 +25,7 @@
 		onInputChange,
 		variant = 'default',
 		error
-	} = $props();
+	}: Props = $props();
 
 	const baseClasses = {
 		label: `relative block font-semibold tracking-tight text-gray-900 dark:text-gray-100`,
@@ -31,7 +45,7 @@
 
 	// `error` is owned by the parent. This component never decides on its own
 	// that an answer is missing — it only reports the change upward.
-	function handleInput(event) {
+	function handleInput(event: Event) {
 		onInputChange(event, question, index);
 	}
 </script>
@@ -62,7 +76,7 @@
 			<Radio
 				name="radio-{index}"
 				value={option}
-				group={value}
+				group={typeof value === 'string' ? value : undefined}
 				onchange={handleInput}
 				class={`${baseClasses.option} ${sizeClasses.option}`}
 			>

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import Modal from 'flowbite-svelte/Modal.svelte';
 	import Button from 'flowbite-svelte/Button.svelte';
 	import SurveyQuestion from './SurveyQuestion.svelte';
@@ -10,48 +10,73 @@
 	} from '$lib/Surveys/surveyUtils';
 
 	import { showSurveyModal, surveyStore } from '$stores/surveyStore';
+	import type { Survey, SurveyQuestion as SurveyQuestionData } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
+	import type { Stop } from '$lib/types';
 	import SurveySubmitted from './SurveySubmitted.svelte';
 
-	let { stop = $bindable(null), skipHeroQuestion, surveyPublicId } = $props();
+	type SurveyAnswer = string | string[];
 
-	let userAnswers = $state([]);
-	let heroQuestionAnswered = $state(false);
-	let heroQuestion = $state(null);
-	let remainingQuestions = $state([]);
-	let surveyPublicIdentifier = $state(null);
-	let surveySubmitted = $state(false);
-	let errors = $state([]);
-
-	let currentSurvey = $state($surveyStore);
-
-	if (currentSurvey && currentSurvey.questions) {
-		heroQuestion = currentSurvey.questions[0];
-		remainingQuestions = currentSurvey.questions.slice(1);
+	interface SurveyAnswerResponse {
+		answer: SurveyAnswer | null;
+		question_id: SurveyQuestionData['id'];
+		question_label: string;
+		question_type: string;
 	}
 
-	let surveyResponse = {
-		survey_id: currentSurvey.id,
-		user_identifier: getUserId(),
+	interface Props {
+		skipHeroQuestion?: boolean;
+		stop?: Stop | null;
+		surveyPublicId?: string | null;
+	}
+
+	let { stop = $bindable(null), skipHeroQuestion, surveyPublicId }: Props = $props();
+
+	let userAnswers: SurveyAnswer[] = $state([]);
+	let heroQuestionAnswered = $state(false);
+	let surveyPublicIdentifier: string | null = $state(null);
+	let surveySubmitted = $state(false);
+	let errors: boolean[] = $state([]);
+
+	let currentSurvey: Survey | null = $state($surveyStore);
+
+	let heroQuestion: SurveyQuestionData | null = $state(currentSurvey?.questions?.[0] ?? null);
+	let remainingQuestions: SurveyQuestionData[] = $state(currentSurvey?.questions?.slice(1) ?? []);
+
+	let surveyResponse: {
+		responses: SurveyAnswerResponse[];
+		stop_identifier: Stop['id'] | null;
+		stop_latitude: Stop['lat'] | null;
+		stop_longitude: Stop['lon'] | null;
+		survey_id: Survey['id'] | null;
+		user_identifier: string;
+	} = {
+		responses: [],
 		stop_identifier: stop?.id ?? null,
 		stop_latitude: stop?.lat ?? null,
 		stop_longitude: stop?.lon ?? null,
-		responses: []
+		survey_id: currentSurvey?.id ?? null,
+		user_identifier: getUserId()
 	};
 
-	function handleInputChange(event, question, index) {
+	function handleInputChange(event: Event, question: SurveyQuestionData, index: number) {
 		const type = question.content.type;
+		const input = event.target as HTMLInputElement;
 
 		if (type === 'text' || type === 'radio') {
-			userAnswers[index] = event.target.value;
+			userAnswers[index] = input.value;
 		} else if (type === 'checkbox') {
-			const value = event.target.value;
-			if (event.target.checked) {
-				userAnswers[index] = [...(userAnswers[index] || []), value];
+			const value = input.value;
+			const previous = userAnswers[index];
+			const selected = Array.isArray(previous) ? previous : [];
+			if (input.checked) {
+				userAnswers[index] = [...selected, value];
 			} else {
-				userAnswers[index] = (userAnswers[index] || []).filter((option) => option !== value);
-				if (userAnswers[index].length === 0) {
+				const remaining = selected.filter((option) => option !== value);
+				if (remaining.length === 0) {
 					delete userAnswers[index];
+				} else {
+					userAnswers[index] = remaining;
 				}
 			}
 		}
@@ -66,10 +91,10 @@
 
 	function validateAnswers() {
 		let valid = true;
-		errors = new Array(currentSurvey.questions.length).fill(false);
+		errors = new Array(currentSurvey?.questions.length ?? 0).fill(false);
 
 		if (!heroQuestionAnswered && !skipHeroQuestion) {
-			if (heroQuestion.required && (!userAnswers[0] || userAnswers[0].length === 0)) {
+			if (heroQuestion?.required && (!userAnswers[0] || userAnswers[0].length === 0)) {
 				errors[0] = true;
 				valid = false;
 			}
@@ -120,7 +145,7 @@
 	<Modal
 		title={currentSurvey.name}
 		open={$showSurveyModal}
-		size="3xl"
+		size="xl"
 		classBackdrop="bg-gray-900/50 dark:bg-gray-900/80"
 		class="max-w-5xl rounded-2xl"
 	>
@@ -130,14 +155,17 @@
 			{:else}
 				<div class="max-h-[60vh] overflow-y-auto p-2">
 					{#if !heroQuestionAnswered && !skipHeroQuestion}
-						<SurveyQuestion
-							question={heroQuestion}
-							index={0}
-							value={userAnswers[0]}
-							onInputChange={(e) => handleInputChange(e, heroQuestion, 0)}
-							required={heroQuestion?.required}
-							error={errors[0]}
-						/>
+						{#if heroQuestion}
+							{@const question = heroQuestion}
+							<SurveyQuestion
+								{question}
+								index={0}
+								value={userAnswers[0]}
+								onInputChange={(e: Event) => handleInputChange(e, question, 0)}
+								required={question.required}
+								error={errors[0]}
+							/>
+						{/if}
 					{:else}
 						<div class="space-y-8">
 							<!-- FIXME: each block has no key -->
@@ -147,7 +175,7 @@
 									{question}
 									index={index + 1}
 									value={userAnswers[index + 1]}
-									onInputChange={(e) => handleInputChange(e, question, index + 1)}
+									onInputChange={(e: Event) => handleInputChange(e, question, index + 1)}
 									required={question.required}
 									error={errors[index + 1]}
 								/>
