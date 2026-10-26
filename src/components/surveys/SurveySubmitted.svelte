@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	let { message = 'Thank you for taking the survey!' } = $props();
 </script>
 

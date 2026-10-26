@@ -1,4 +1,3 @@
-import flowbitePlugin from 'flowbite/plugin';
 import dotenv from 'dotenv';
 import { generatePalette, darkenColor } from './src/lib/colorUtils.js';
 
@@ -6,10 +5,7 @@ dotenv.config();
 
 /** @type {import('tailwindcss').Config} */
 export default {
-	content: [
-		'./src/**/*.{html,js,svelte,ts}',
-		'./node_modules/flowbite-svelte/**/*.{html,js,svelte,ts}'
-	],
+	content: ['./src/**/*.{html,js,svelte,ts}'],
 
 	theme: {
 		extend: {
@@ -28,7 +24,7 @@ export default {
 				'surface-dark': '#111827',
 				'surface-foreground-dark': '#ffffff',
 
-				// flowbite-svelte - dynamically generated from brand accent color
+				// dynamically generated from brand accent color
 				primary: generatePalette(process.env.COLOR_BRAND_ACCENT || '#486621')
 			},
 			rotate: {
@@ -38,6 +34,6 @@ export default {
 		}
 	},
 
-	plugins: [require('@tailwindcss/forms'), flowbitePlugin],
+	plugins: [require('@tailwindcss/forms')],
 	darkMode: 'class'
 };

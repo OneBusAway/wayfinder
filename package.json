@@ -40,8 +40,6 @@
 		"eslint": "^9.0.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-svelte": "^3.23.1",
-		"flowbite": "^2.5.2",
-		"flowbite-svelte": "^0.47.2",
 		"globals": "^15.0.0",
 		"jsdom": "^26.0.0",
 		"msw": "^2.10.2",
@@ -63,7 +61,7 @@
 	"dependencies": {
 		"@arcgis/core": "4.33.14",
 		"@googlemaps/js-api-loader": "^1.16.8",
-		"@lucide/svelte": "1.49.0",
+		"@lucide/svelte": "^1.61.0",
 		"@maplibre/maplibre-gl-leaflet": "^0.0.22",
 		"dotenv": "^16.4.7",
 		"gtfs-realtime-bindings": "^1.1.1",
