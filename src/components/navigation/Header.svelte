@@ -6,7 +6,7 @@
 	} from '$env/static/public';
 
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import OverflowMenu from './OverflowMenu.svelte';
 	import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher.svelte';
 
@@ -47,9 +47,11 @@
 		checkOverflow();
 	}
 
-	function handleImageError() {
+	async function handleImageError() {
+		if (imageFailed) return;
 		imageFailed = true;
 		baseLogoWidth = 0;
+		await tick();
 		checkOverflow();
 	}
 
@@ -189,7 +191,11 @@
 		// Measure base logo width after image loads
 		if (logoElement) {
 			if (logoElement.complete) {
-				baseLogoWidth = logoElement.offsetWidth;
+				if (logoElement.naturalWidth === 0) {
+					handleImageError();
+				} else {
+					handleImageLoad();
+				}
 			} else {
 				logoElement.onload = handleImageLoad;
 				logoElement.onerror = handleImageError;
@@ -254,7 +260,7 @@
 			{#if hasValidLogo}
 				<!-- external URL -->
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-				<a href="/" class="block">
+				<a href="/" class="block" onclick={handleHomeClick}>
 					<img
 						bind:this={logoElement}
 						src={logoUrl}

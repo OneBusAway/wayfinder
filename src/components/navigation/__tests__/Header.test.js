@@ -2,6 +2,10 @@ import { render, screen, fireEvent } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import Header from '../Header.svelte';
 
+vi.mock('$app/environment', () => ({
+	browser: true
+}));
+
 let mockPublicEnv = {
 	PUBLIC_OBA_REGION_NAME: 'Test Region',
 	PUBLIC_OBA_LOGO_URL: '/test-logo.png',
@@ -177,6 +181,73 @@ describe('Header', () => {
 		expect(screen.queryByRole('img')).not.toBeInTheDocument();
 		expect(screen.getByText('Test Region')).toBeInTheDocument();
 	});
+
+	test('dispatches openStopsTab event when logo or region name is clicked', async () => {
+		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+		render(Header);
+
+		const links = screen.getAllByRole('link', { name: /test region/i });
+		const logoLink = links[0];
+		const regionNameLink = links[1];
+
+		dispatchSpy.mockClear();
+		await fireEvent.click(logoLink);
+		expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+
+		dispatchSpy.mockClear();
+		await fireEvent.click(regionNameLink);
+		expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+	});
+
+	test('does not dispatch openStopsTab on modified or non-primary clicks for logo and region name', async () => {
+		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+		render(Header);
+
+		const links = screen.getAllByRole('link', { name: /test region/i });
+		for (const link of links) {
+			dispatchSpy.mockClear();
+
+			// Ctrl-click
+			await fireEvent.click(link, { ctrlKey: true });
+			expect(dispatchSpy).not.toHaveBeenCalled();
+
+			// Meta-click (Cmd-click on macOS)
+			await fireEvent.click(link, { metaKey: true });
+			expect(dispatchSpy).not.toHaveBeenCalled();
+
+			// Shift-click
+			await fireEvent.click(link, { shiftKey: true });
+			expect(dispatchSpy).not.toHaveBeenCalled();
+
+			// Alt-click
+			await fireEvent.click(link, { altKey: true });
+			expect(dispatchSpy).not.toHaveBeenCalled();
+
+			// Non-primary click
+			await fireEvent.click(link, { button: 1 });
+			expect(dispatchSpy).not.toHaveBeenCalled();
+		}
+	});
+
+	test('keeps logo when image already completed successfully before hydration', () => {
+		vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+		vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(120);
+
+		render(Header);
+
+		expect(screen.getByRole('img')).toBeInTheDocument();
+		expect(screen.getByText('Test Region')).toBeInTheDocument();
+	});
+
+	test('falls back to region name when image failed before hydration', () => {
+		vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+		vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(0);
+
+		render(Header);
+
+		expect(screen.queryByRole('img')).not.toBeInTheDocument();
+		expect(screen.getByText('Test Region')).toBeInTheDocument();
+	});
 });
 
 describe('Header with region name hidden', () => {
@@ -235,5 +306,86 @@ describe('Header with region name hidden', () => {
 
 		expect(screen.queryByRole('img')).not.toBeInTheDocument();
 		expect(screen.getByText('Test Region')).toBeInTheDocument();
+	});
+
+	test('dispatches openStopsTab event when logo is clicked', async () => {
+		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+		render(Header);
+
+		const logoLink = screen.getAllByRole('link', { name: /test region/i })[0];
+		await fireEvent.click(logoLink);
+
+		expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+	});
+
+	test('does not dispatch openStopsTab on modified or non-primary clicks', async () => {
+		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+		render(Header);
+
+		const logoLink = screen.getAllByRole('link', { name: /test region/i })[0];
+		dispatchSpy.mockClear();
+
+		// Ctrl-click
+		await fireEvent.click(logoLink, { ctrlKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Meta-click (Cmd-click on macOS)
+		await fireEvent.click(logoLink, { metaKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Shift-click
+		await fireEvent.click(logoLink, { shiftKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Alt-click
+		await fireEvent.click(logoLink, { altKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Non-primary click
+		await fireEvent.click(logoLink, { button: 1 });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+	});
+
+	test('falls back to region name when image failed before hydration and region name is hidden', () => {
+		vi.spyOn(HTMLImageElement.prototype, 'complete', 'get').mockReturnValue(true);
+		vi.spyOn(HTMLImageElement.prototype, 'naturalWidth', 'get').mockReturnValue(0);
+
+		render(Header);
+
+		expect(screen.queryByRole('img')).not.toBeInTheDocument();
+		expect(screen.getByText('Test Region')).toBeInTheDocument();
+	});
+
+	test('dispatches openStopsTab event when fallback region name is clicked after image failure', async () => {
+		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+		render(Header);
+
+		const logo = screen.getByRole('img');
+		await fireEvent.error(logo);
+
+		const fallbackLink = screen.getByRole('link', { name: 'Test Region' });
+		dispatchSpy.mockClear();
+		await fireEvent.click(fallbackLink);
+
+		expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+	});
+
+	test('measures fallback region name in overflow calculation after image failure', async () => {
+		let measuredRegionNameWidth = null;
+		const originalQuerySelector = Element.prototype.querySelector;
+		vi.spyOn(Element.prototype, 'querySelector').mockImplementation(function (selector) {
+			const el = originalQuerySelector.call(this, selector);
+			if (selector === '.region-name' && el) {
+				Object.defineProperty(el, 'offsetWidth', { configurable: true, value: 150 });
+				measuredRegionNameWidth = el.offsetWidth;
+			}
+			return el;
+		});
+
+		render(Header);
+		const logo = screen.getByRole('img');
+		await fireEvent.error(logo);
+
+		expect(measuredRegionNameWidth).toBe(150);
 	});
 });
