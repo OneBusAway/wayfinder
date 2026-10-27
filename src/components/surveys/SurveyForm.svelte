@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
+	import { t } from 'svelte-i18n';
 	import * as Dialog from '$components/ui/dialog';
 	import { Button } from '$components/ui/button';
 	import SurveyQuestion from './SurveyQuestion.svelte';
@@ -42,6 +43,7 @@
 	let surveyPublicIdentifier: string | null = $state(null);
 	let surveySubmitted = $state(false);
 	let submitting = $state(false);
+	let submitFailed = $state(false);
 	let errors: boolean[] = $state([]);
 	let closeTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -107,6 +109,7 @@
 		if (submitting || !validateAnswers()) return;
 
 		submitting = true;
+		submitFailed = false;
 		try {
 			surveyPublicIdentifier = await submitHeroQuestionUtil(surveyResponse);
 			heroQuestionAnswered = true;
@@ -117,6 +120,7 @@
 			}
 		} catch (error) {
 			console.error('Error submitting hero question:', error);
+			submitFailed = true;
 		} finally {
 			submitting = false;
 		}
@@ -124,15 +128,25 @@
 
 	async function updateSurveyResponse() {
 		if (surveyPublicId) surveyPublicIdentifier = surveyPublicId;
-		updateSurveyResponseUtil(surveyPublicIdentifier, surveyResponse);
+		return updateSurveyResponseUtil(surveyPublicIdentifier, surveyResponse);
 	}
 
-	function handleSubmit() {
-		if (!validateAnswers()) return;
+	async function handleSubmit() {
+		if (submitting || !validateAnswers()) return;
 
-		updateSurveyResponse();
-		submitSurvey(currentSurvey);
-		showConfirmation();
+		submitting = true;
+		submitFailed = false;
+		try {
+			await updateSurveyResponse();
+			submitSurvey(currentSurvey);
+			showConfirmation();
+		} catch (error) {
+			// Leave the form open so the user can retry.
+			console.error('Error updating survey response:', error);
+			submitFailed = true;
+		} finally {
+			submitting = false;
+		}
 	}
 
 	function showConfirmation() {
@@ -188,6 +202,10 @@
 			{/if}
 		</div>
 
+		{#if submitFailed}
+			<p role="alert" class="text-sm text-destructive">{$t('survey.submit_failed')}</p>
+		{/if}
+
 		{#if !heroQuestionAnswered && !skipHeroQuestion}
 			<Dialog.Footer>
 				<Button onclick={skip} variant="outline">Cancel</Button>
@@ -198,7 +216,7 @@
 		{:else if remainingQuestions.length > 0}
 			<Dialog.Footer>
 				<Button onclick={skip} variant="outline">Skip</Button>
-				<Button onclick={handleSubmit}>Submit</Button>
+				<Button onclick={handleSubmit} disabled={submitting}>Submit</Button>
 			</Dialog.Footer>
 		{/if}
 	{/if}
