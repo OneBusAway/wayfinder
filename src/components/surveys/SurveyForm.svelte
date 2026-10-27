@@ -41,6 +41,7 @@
 	let heroQuestionAnswered = $state(false);
 	let surveyPublicIdentifier: string | null = $state(null);
 	let surveySubmitted = $state(false);
+	let submitting = $state(false);
 	let errors: boolean[] = $state([]);
 	let closeTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -103,8 +104,9 @@
 	}
 
 	async function submitHeroQuestion() {
-		if (!validateAnswers()) return;
+		if (submitting || !validateAnswers()) return;
 
+		submitting = true;
 		try {
 			surveyPublicIdentifier = await submitHeroQuestionUtil(surveyResponse);
 			heroQuestionAnswered = true;
@@ -115,6 +117,8 @@
 			}
 		} catch (error) {
 			console.error('Error submitting hero question:', error);
+		} finally {
+			submitting = false;
 		}
 	}
 
@@ -187,7 +191,7 @@
 		{#if !heroQuestionAnswered && !skipHeroQuestion}
 			<Dialog.Footer>
 				<Button onclick={skip} variant="outline">Cancel</Button>
-				<Button onclick={submitHeroQuestion}>
+				<Button onclick={submitHeroQuestion} disabled={submitting}>
 					{remainingQuestions.length === 0 ? 'Submit' : 'Next'}
 				</Button>
 			</Dialog.Footer>
