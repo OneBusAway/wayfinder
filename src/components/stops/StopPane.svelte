@@ -292,8 +292,6 @@
 
 	/** @type {SurveyAnswer} */
 	let heroAnswer = '';
-	// Local rather than the shared showSurveyModal store: MapExperience opens its
-	// own SurveyModal from that store, and sharing it would open both at once.
 	let surveyModalOpen = $state(false);
 	let surveyPublicIdentifier = $state(null);
 	let showHeroQuestion = $state(true);
