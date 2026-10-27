@@ -760,9 +760,7 @@
 		</div>
 	</div>
 
-	{#if $showSurveyModal}
-		<SurveyModal bind:open={$showSurveyModal} />
-	{/if}
+	<SurveyModal bind:open={$showSurveyModal} />
 
 	{#if $showTripOptionsModal}
 		<TripOptionsModal

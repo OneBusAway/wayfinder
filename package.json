@@ -61,7 +61,7 @@
 	"dependencies": {
 		"@arcgis/core": "4.33.14",
 		"@googlemaps/js-api-loader": "^1.16.8",
-		"@lucide/svelte": "^1.61.0",
+		"@lucide/svelte": "1.61.0",
 		"@maplibre/maplibre-gl-leaflet": "^0.0.22",
 		"dotenv": "^16.4.7",
 		"gtfs-realtime-bindings": "^1.1.1",

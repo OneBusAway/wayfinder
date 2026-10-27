@@ -1,30 +1,7 @@
 <script lang="ts">
 	import * as Dialog from '$components/ui/dialog';
-	import { Button } from '$components/ui/button';
-	import SurveyQuestion from './SurveyQuestion.svelte';
-	import {
-		submitHeroQuestion as submitHeroQuestionUtil,
-		updateSurveyResponse as updateSurveyResponseUtil,
-		skipSurvey,
-		submitSurvey
-	} from '$lib/Surveys/surveyUtils';
-
-	import { surveyStore } from '$stores/surveyStore';
-	import type {
-		Survey,
-		SurveyAnswer,
-		SurveyQuestion as SurveyQuestionData
-	} from '$stores/surveyStore';
-	import { getUserId } from '$lib/utils/user';
 	import type { Stop } from '$lib/types';
-	import SurveySubmitted from './SurveySubmitted.svelte';
-
-	interface SurveyAnswerResponse {
-		answer: SurveyAnswer | null;
-		question_id: SurveyQuestionData['id'];
-		question_label: string;
-		question_type: string;
-	}
+	import SurveyForm from './SurveyForm.svelte';
 
 	interface Props {
 		open?: boolean;
@@ -33,164 +10,27 @@
 		surveyPublicId?: string | null;
 	}
 
-	let {
-		open = $bindable(false),
-		stop = $bindable(null),
-		skipHeroQuestion,
-		surveyPublicId
-	}: Props = $props();
+	let { open = $bindable(false), skipHeroQuestion, stop = null, surveyPublicId }: Props = $props();
 
-	let userAnswers: SurveyAnswer[] = $state([]);
-	let heroQuestionAnswered = $state(false);
-	let surveyPublicIdentifier: string | null = $state(null);
-	let surveySubmitted = $state(false);
-	let errors: boolean[] = $state([]);
+	let form: ReturnType<typeof SurveyForm> | undefined = $state();
 
-	let currentSurvey: Survey | null = $state($surveyStore);
-
-	let heroQuestion: SurveyQuestionData | null = $state(currentSurvey?.questions?.[0] ?? null);
-	let remainingQuestions: SurveyQuestionData[] = $state(currentSurvey?.questions?.slice(1) ?? []);
-
-	let surveyResponse: {
-		responses: SurveyAnswerResponse[];
-		stop_identifier: Stop['id'] | null;
-		stop_latitude: Stop['lat'] | null;
-		stop_longitude: Stop['lon'] | null;
-		survey_id: Survey['id'] | null;
-		user_identifier: string;
-	} = {
-		responses: [],
-		stop_identifier: stop?.id ?? null,
-		stop_latitude: stop?.lat ?? null,
-		stop_longitude: stop?.lon ?? null,
-		survey_id: currentSurvey?.id ?? null,
-		user_identifier: getUserId()
-	};
-
-	function handleInputChange(question: SurveyQuestionData, index: number, answer: SurveyAnswer) {
-		if (Array.isArray(answer) && answer.length === 0) {
-			delete userAnswers[index];
-		} else {
-			userAnswers[index] = answer;
-		}
-
-		surveyResponse.responses[index] = {
-			question_id: question.id,
-			question_label: question.content.label_text,
-			question_type: question.content.type,
-			answer: userAnswers[index] || null
-		};
-	}
-
-	function validateAnswers() {
-		let valid = true;
-		errors = new Array(currentSurvey?.questions.length ?? 0).fill(false);
-
-		if (!heroQuestionAnswered && !skipHeroQuestion) {
-			if (heroQuestion?.required && (!userAnswers[0] || userAnswers[0].length === 0)) {
-				errors[0] = true;
-				valid = false;
-			}
-		} else {
-			remainingQuestions.forEach((question, index) => {
-				const answer = userAnswers[index + 1];
-				if (question.required && (!answer || (Array.isArray(answer) && answer.length === 0))) {
-					errors[index + 1] = true;
-					valid = false;
-				}
-			});
-		}
-
-		return valid;
-	}
-
-	async function submitHeroQuestion() {
-		if (!validateAnswers()) return;
-
-		try {
-			surveyPublicIdentifier = await submitHeroQuestionUtil(surveyResponse);
-			heroQuestionAnswered = true;
-			submitSurvey(currentSurvey);
-
-			if (remainingQuestions.length === 0) {
-				surveySubmitted = true;
-			}
-		} catch (error) {
-			console.error('Error submitting hero question:', error);
-		}
-	}
-
-	async function updateSurveyResponse() {
-		if (surveyPublicId) surveyPublicIdentifier = surveyPublicId;
-		updateSurveyResponseUtil(surveyPublicIdentifier, surveyResponse);
-	}
-
-	function handleSubmit() {
-		if (!validateAnswers()) return;
-
-		updateSurveyResponse();
-		surveySubmitted = true;
-		submitSurvey(currentSurvey);
-		// Leave the confirmation up long enough to read before closing.
-		setTimeout(() => (open = false), 3000);
-	}
-
-	function skip() {
-		skipSurvey(currentSurvey);
-		open = false;
+	// Fires only for the dialog's own dismissals (close button, Escape, outside
+	// click), not when `open` is set from code.
+	function handleOpenChange(isOpen: boolean) {
+		if (!isOpen) form?.dismiss();
 	}
 </script>
 
-{#if currentSurvey}
-	<Dialog.Root bind:open>
-		<Dialog.Content class="flex max-h-[85vh] flex-col sm:max-w-2xl">
-			<Dialog.Header>
-				<Dialog.Title>{currentSurvey.name}</Dialog.Title>
-			</Dialog.Header>
-			{#if surveySubmitted}
-				<SurveySubmitted />
-			{:else}
-				<div class="-mx-4 overflow-y-auto px-4">
-					{#if !heroQuestionAnswered && !skipHeroQuestion}
-						{#if heroQuestion}
-							{@const question = heroQuestion}
-							<SurveyQuestion
-								{question}
-								value={userAnswers[0]}
-								onInputChange={(answer) => handleInputChange(question, 0, answer)}
-								required={question.required}
-								error={errors[0]}
-							/>
-						{/if}
-					{:else}
-						<div class="flex flex-col gap-6">
-							{#each remainingQuestions as question, index (question.id)}
-								<SurveyQuestion
-									{question}
-									value={userAnswers[index + 1]}
-									onInputChange={(answer) => handleInputChange(question, index + 1, answer)}
-									required={question.required}
-									error={errors[index + 1]}
-								/>
-							{/each}
-						</div>
-					{/if}
-				</div>
-
-				{#if !heroQuestionAnswered && !skipHeroQuestion}
-					<Dialog.Footer>
-						<Button onclick={skip} variant="outline">Cancel</Button>
-						<Button onclick={submitHeroQuestion}>
-							{remainingQuestions.length === 0 ? 'Submit' : 'Next'}
-						</Button>
-					</Dialog.Footer>
-				{:else if remainingQuestions.length > 0}
-					<Dialog.Footer>
-						<Button onclick={skip} variant="outline">Skip</Button>
-						<Button onclick={handleSubmit}>Submit</Button>
-					</Dialog.Footer>
-				{/if}
-			{/if}
-		</Dialog.Content>
-	</Dialog.Root>
-{/if}
+<Dialog.Root bind:open onOpenChange={handleOpenChange}>
+	<Dialog.Content class="flex max-h-[85vh] flex-col sm:max-w-2xl">
+		<!-- The form unmounts with the content after the close animation, so each
+		     open starts with fresh answers and no pending auto-close timer. -->
+		<SurveyForm
+			bind:this={form}
+			onClose={() => (open = false)}
+			{skipHeroQuestion}
+			{stop}
+			{surveyPublicId}
+		/>
+	</Dialog.Content>
+</Dialog.Root>

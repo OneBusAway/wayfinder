@@ -450,14 +450,12 @@
 						/>
 					{/key}
 				{/if}
-				{#if surveyModalOpen}
-					<SurveyModal
-						bind:open={surveyModalOpen}
-						{stop}
-						skipHeroQuestion={true}
-						surveyPublicId={surveyPublicIdentifier}
-					/>
-				{/if}
+				<SurveyModal
+					bind:open={surveyModalOpen}
+					{stop}
+					skipHeroQuestion={true}
+					surveyPublicId={surveyPublicIdentifier}
+				/>
 
 				{#snippet loadMoreButton(emptyResults = false)}
 					<div class="flex flex-col items-center gap-2">

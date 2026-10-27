@@ -64,9 +64,6 @@ vi.mock('$stores/surveyStore', () => ({
 			return { unsubscribe: () => {} };
 		})
 	},
-	showSurveyModal: {
-		set: vi.fn()
-	},
 	markSurveyAnswered: vi.fn()
 }));
 
@@ -164,6 +161,12 @@ async function renderWithSurvey(survey) {
 	return user;
 }
 
+// Svelte 5 calls a component as `Component(anchor, props)`; `props` exposes the
+// current values through getters, so reading it later sees updates.
+function modalProps() {
+	return vi.mocked(SurveyModal).mock.calls.at(-1)[1];
+}
+
 describe('StopPane.handleSurveyButtonClick (via real SurveyBanner)', () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
@@ -211,13 +214,15 @@ describe('StopPane.handleSurveyButtonClick (via real SurveyBanner)', () => {
 		await user.click(screen.getByLabelText('Great'));
 		await user.click(screen.getByRole('button', { name: 'survey.next' }));
 
-		// The POST is in flight: the modal must NOT be mounted yet. This
+		// The POST is in flight: the modal must NOT be open yet. This
 		// assertion fails if `surveyModalOpen = ...` is moved above the
 		// `await submitHeroQuestion(...)` call in StopPane.
-		expect(SurveyModal).not.toHaveBeenCalled();
+		expect(modalProps().open).toBe(false);
 
 		releasePost();
-		await waitFor(() => expect(SurveyModal).toHaveBeenCalled());
+		await waitFor(() => expect(modalProps().open).toBe(true));
+		expect(modalProps().skipHeroQuestion).toBe(true);
+		expect(modalProps().surveyPublicId).toBe('survey-response-1');
 	});
 
 	test('(d) rethrows a failed POST so the banner shows a retry message and does not advance', async () => {
@@ -239,7 +244,7 @@ describe('StopPane.handleSurveyButtonClick (via real SurveyBanner)', () => {
 		// The banner must stay mounted (showHeroQuestion untouched) and the
 		// success-only side effects must never fire.
 		expect(screen.getByRole('button', { name: 'survey.submit' })).toBeInTheDocument();
-		expect(SurveyModal).not.toHaveBeenCalled();
+		expect(modalProps().open).toBe(false);
 		expect(markSurveyAnswered).not.toHaveBeenCalled();
 	});
 });
