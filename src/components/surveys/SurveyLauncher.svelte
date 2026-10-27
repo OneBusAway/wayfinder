@@ -9,9 +9,9 @@
 
 {#if $surveyStore?.show_on_map}
 	<div
-		class="w-full rounded-xs border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-700 dark:bg-black"
+		class="rounded border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-700 dark:bg-black"
 	>
-		<div class="flex items-center justify-between">
+		<div class="flex items-center justify-between gap-3">
 			<h2 class="text-lg font-semibold text-gray-900 dark:text-white">
 				{$surveyStore.name}
 			</h2>
