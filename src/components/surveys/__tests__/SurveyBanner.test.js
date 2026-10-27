@@ -28,11 +28,11 @@ const radioContent = {
 
 function defaultProps(overrides = {}) {
 	return {
-		currentStopSurvey: surveyWithHero(radioContent),
-		handleSkip: vi.fn(),
-		handleSurveyButtonClick: vi.fn().mockResolvedValue(undefined),
-		handleHeroQuestionChange: vi.fn(),
+		onHeroQuestionChange: vi.fn(),
+		onSkip: vi.fn(),
+		onSurveyButtonClick: vi.fn().mockResolvedValue(undefined),
 		remainingQuestionsLength: 0,
+		stopSurvey: surveyWithHero(radioContent),
 		...overrides
 	};
 }
@@ -46,15 +46,7 @@ describe('SurveyBanner — collapsed', () => {
 
 	test('renders nothing when the survey has no questions', () => {
 		const { container } = render(SurveyBanner, {
-			props: defaultProps({ currentStopSurvey: { id: 7, name: 'Empty', questions: [] } })
-		});
-
-		expect(container.textContent.trim()).toBe('');
-	});
-
-	test('renders nothing when there is no survey at all', () => {
-		const { container } = render(SurveyBanner, {
-			props: defaultProps({ currentStopSurvey: null })
+			props: defaultProps({ stopSurvey: { id: 7, name: 'Empty', questions: [] } })
 		});
 
 		expect(container.textContent.trim()).toBe('');
@@ -91,14 +83,14 @@ describe('SurveyBanner — collapsed', () => {
 		expect(screen.getByLabelText('Very Easy')).toBeInTheDocument();
 	});
 
-	test('dismiss calls handleSkip and not the submit handler', async () => {
+	test('dismiss calls onSkip and not the submit handler', async () => {
 		const props = defaultProps();
 		render(SurveyBanner, { props });
 
 		await user.click(screen.getByRole('button', { name: 'survey.dismiss' }));
 
-		expect(props.handleSkip).toHaveBeenCalledTimes(1);
-		expect(props.handleSurveyButtonClick).not.toHaveBeenCalled();
+		expect(props.onSkip).toHaveBeenCalledTimes(1);
+		expect(props.onSurveyButtonClick).not.toHaveBeenCalled();
 	});
 });
 
@@ -132,7 +124,7 @@ describe('SurveyBanner — expanded', () => {
 
 		await user.click(screen.getByLabelText('Neutral'));
 
-		expect(props.handleHeroQuestionChange).toHaveBeenCalledWith('Neutral');
+		expect(props.onHeroQuestionChange).toHaveBeenCalledWith('Neutral');
 	});
 
 	test('never shows the required message unprompted', async () => {
@@ -149,7 +141,7 @@ describe('SurveyBanner — expanded', () => {
 
 	test('checkbox answers accumulate and unchecking removes them', async () => {
 		const props = await renderExpanded({
-			currentStopSurvey: surveyWithHero({
+			stopSurvey: surveyWithHero({
 				type: 'checkbox',
 				label_text: 'Which amenities does this stop have?',
 				options: ['Shelter', 'Bench', 'Lighting']
@@ -160,20 +152,20 @@ describe('SurveyBanner — expanded', () => {
 
 		await user.click(screen.getByLabelText('Shelter'));
 		await user.click(screen.getByLabelText('Bench'));
-		expect(props.handleHeroQuestionChange).toHaveBeenLastCalledWith(['Shelter', 'Bench']);
+		expect(props.onHeroQuestionChange).toHaveBeenLastCalledWith(['Shelter', 'Bench']);
 
 		await user.click(screen.getByLabelText('Shelter'));
-		expect(props.handleHeroQuestionChange).toHaveBeenLastCalledWith(['Bench']);
+		expect(props.onHeroQuestionChange).toHaveBeenLastCalledWith(['Bench']);
 		expect(submitButton).toBeEnabled();
 
 		await user.click(screen.getByLabelText('Bench'));
-		expect(props.handleHeroQuestionChange).toHaveBeenLastCalledWith([]);
+		expect(props.onHeroQuestionChange).toHaveBeenLastCalledWith([]);
 		expect(submitButton).toBeDisabled();
 	});
 
 	test('a label question can be submitted with no answer', async () => {
 		const props = await renderExpanded({
-			currentStopSurvey: surveyWithHero(
+			stopSurvey: surveyWithHero(
 				{ type: 'label', label_text: 'Thanks for riding with us.' },
 				{ required: false }
 			)
@@ -183,12 +175,12 @@ describe('SurveyBanner — expanded', () => {
 		expect(submitButton).toBeEnabled();
 
 		await user.click(submitButton);
-		expect(props.handleSurveyButtonClick).toHaveBeenCalledTimes(1);
+		expect(props.onSurveyButtonClick).toHaveBeenCalledTimes(1);
 	});
 
 	test('an external_survey question renders a link and no submit button', async () => {
 		await renderExpanded({
-			currentStopSurvey: surveyWithHero({
+			stopSurvey: surveyWithHero({
 				type: 'external_survey',
 				label_text: 'Take our rider survey',
 				url: 'https://example.com/survey'
@@ -211,8 +203,8 @@ describe('SurveyBanner — expanded', () => {
 
 	test('submit is disabled while in flight and the handler is called once', async () => {
 		let release;
-		const handleSurveyButtonClick = vi.fn(() => new Promise((resolve) => (release = resolve)));
-		await renderExpanded({ handleSurveyButtonClick });
+		const onSurveyButtonClick = vi.fn(() => new Promise((resolve) => (release = resolve)));
+		await renderExpanded({ onSurveyButtonClick });
 
 		await user.click(screen.getByLabelText('Very Easy'));
 		const submitButton = screen.getByRole('button', { name: 'survey.submit' });
@@ -222,12 +214,12 @@ describe('SurveyBanner — expanded', () => {
 
 		release();
 		await vi.waitFor(() => expect(submitButton).toBeEnabled());
-		expect(handleSurveyButtonClick).toHaveBeenCalledTimes(1);
+		expect(onSurveyButtonClick).toHaveBeenCalledTimes(1);
 	});
 
 	test('a rejected submit shows the failure message and re-enables submit', async () => {
 		await renderExpanded({
-			handleSurveyButtonClick: vi.fn().mockRejectedValue(new Error('network down'))
+			onSurveyButtonClick: vi.fn().mockRejectedValue(new Error('network down'))
 		});
 
 		await user.click(screen.getByLabelText('Very Easy'));

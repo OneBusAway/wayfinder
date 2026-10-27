@@ -442,11 +442,11 @@
 					     stop's expanded/answer state would carry over. -->
 					{#key stop.id}
 						<SurveyBanner
-							{currentStopSurvey}
-							{handleSkip}
-							{handleSurveyButtonClick}
-							{handleHeroQuestionChange}
-							remainingQuestionsLength={(currentStopSurvey?.questions?.length ?? 1) - 1}
+							onHeroQuestionChange={handleHeroQuestionChange}
+							onSkip={handleSkip}
+							onSurveyButtonClick={handleSurveyButtonClick}
+							remainingQuestionsLength={(currentStopSurvey.questions?.length ?? 1) - 1}
+							stopSurvey={currentStopSurvey}
 						/>
 					{/key}
 				{/if}

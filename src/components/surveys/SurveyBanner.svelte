@@ -3,7 +3,7 @@
 	 * Compact, collapsible survey banner for the stop pane.
 	 *
 	 * Owns all presentation state (expanded, answer, error, in-flight) and
-	 * delegates the network call to StopPane via handleSurveyButtonClick.
+	 * delegates the network call to StopPane via onSurveyButtonClick.
 	 */
 	import { slide } from 'svelte/transition';
 	import { MessageCircleMore, ChevronDown, ChevronUp, X } from '@lucide/svelte';
@@ -12,19 +12,19 @@
 	import SurveyQuestion from '$components/surveys/SurveyQuestion.svelte';
 
 	interface Props {
-		currentStopSurvey: Survey | null;
-		handleHeroQuestionChange: (answer: SurveyAnswer) => void;
-		handleSkip: () => void;
+		onHeroQuestionChange: (answer: SurveyAnswer) => void;
+		onSkip: () => void;
 		/** Rejects when the POST fails, so the banner can offer a retry. */
-		handleSurveyButtonClick: (survey: Survey) => Promise<void>;
+		onSurveyButtonClick: (survey: Survey) => Promise<void>;
 		remainingQuestionsLength?: number;
+		stopSurvey: Survey;
 	}
 
 	let {
-		currentStopSurvey,
-		handleHeroQuestionChange,
-		handleSkip,
-		handleSurveyButtonClick,
+		stopSurvey,
+		onHeroQuestionChange,
+		onSkip,
+		onSurveyButtonClick,
 		remainingQuestionsLength = 0
 	}: Props = $props();
 
@@ -33,7 +33,7 @@
 	let submitting = $state(false);
 	let submitFailed = $state(false);
 
-	let heroQuestion = $derived(currentStopSurvey?.questions[0] ?? null);
+	let heroQuestion = $derived(stopSurvey.questions[0] ?? null);
 	let questionType = $derived(heroQuestion?.content.type ?? null);
 
 	// `label` questions are informational, so they submit with no answer —
@@ -49,17 +49,17 @@
 
 	function handleChange(value: SurveyAnswer) {
 		answer = value;
-		handleHeroQuestionChange(answer);
+		onHeroQuestionChange(answer);
 	}
 
 	async function submit() {
-		if (submitting || !currentStopSurvey) return;
+		if (submitting) return;
 
 		submitting = true;
 		submitFailed = false;
 
 		try {
-			await handleSurveyButtonClick(currentStopSurvey);
+			await onSurveyButtonClick(stopSurvey);
 		} catch {
 			// StopPane leaves the banner mounted on failure so the user can retry.
 			submitFailed = true;
@@ -69,7 +69,7 @@
 	}
 </script>
 
-{#if currentStopSurvey && heroQuestion?.content}
+{#if heroQuestion?.content}
 	<!-- -mx-4 bleeds to the edges of both containers that host StopPane: the
 	     bottom sheet body (px-4) and StandalonePage (p-4). -->
 	<div
@@ -92,7 +92,7 @@
 				<!-- min-w-0 lets these truncate instead of pushing the buttons off-screen. -->
 				<span class="min-w-0 flex-1">
 					<span class="block truncate font-bold text-gray-900 dark:text-white">
-						{currentStopSurvey.name}
+						{stopSurvey.name}
 					</span>
 					<span class="block truncate text-sm text-gray-600 dark:text-gray-300">
 						{heroQuestion.content.label_text}
@@ -110,7 +110,7 @@
 
 			<button
 				type="button"
-				onclick={handleSkip}
+				onclick={onSkip}
 				aria-label={$t('survey.dismiss')}
 				class="flex-none px-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
 			>
