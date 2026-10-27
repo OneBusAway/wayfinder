@@ -1,38 +1,40 @@
-<script>
+<script lang="ts">
 	/**
 	 * Compact, collapsible survey banner for the stop pane.
 	 *
 	 * Owns all presentation state (expanded, answer, error, in-flight) and
 	 * delegates the network call to StopPane via handleSurveyButtonClick.
-	 *
-	 * @typedef {Object} Props
-	 * @property {Object} currentStopSurvey - Survey from surveyStore
-	 * @property {Function} handleSkip - Dismisses the survey
-	 * @property {Function} handleSurveyButtonClick - Awaited; POSTs the hero answer. May reject.
-	 * @property {Function} handleHeroQuestionChange - Called with the resolved answer value
-	 * @property {number} remainingQuestionsLength - Drives the Submit vs. Next label
 	 */
 	import { slide } from 'svelte/transition';
 	import { MessageCircleMore, ChevronDown, ChevronUp, X } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
+	import type { Survey, SurveyAnswer } from '$stores/surveyStore';
 	import SurveyQuestion from '$components/surveys/SurveyQuestion.svelte';
 
-	/** @type {Props} */
+	interface Props {
+		currentStopSurvey: Survey | null;
+		handleHeroQuestionChange: (answer: SurveyAnswer) => void;
+		handleSkip: () => void;
+		/** Rejects when the POST fails, so the banner can offer a retry. */
+		handleSurveyButtonClick: (survey: Survey) => Promise<void>;
+		remainingQuestionsLength?: number;
+	}
+
 	let {
 		currentStopSurvey,
+		handleHeroQuestionChange,
 		handleSkip,
 		handleSurveyButtonClick,
-		handleHeroQuestionChange,
 		remainingQuestionsLength = 0
-	} = $props();
+	}: Props = $props();
 
 	let expanded = $state(false);
-	let answer = $state('');
+	let answer = $state<SurveyAnswer>('');
 	let submitting = $state(false);
 	let submitFailed = $state(false);
 
-	let heroQuestion = $derived(currentStopSurvey?.questions?.[0] ?? null);
-	let questionType = $derived(heroQuestion?.content?.type ?? null);
+	let heroQuestion = $derived(currentStopSurvey?.questions[0] ?? null);
+	let questionType = $derived(heroQuestion?.content.type ?? null);
 
 	// `label` questions are informational, so they submit with no answer —
 	// this mirrors the exemption in StopPane.handleSurveyButtonClick.
@@ -42,19 +44,16 @@
 	// event, so a Submit button here could never do anything but no-op.
 	let showSubmit = $derived(questionType !== 'external_survey');
 
-	let hasAnswer = $derived(
-		Array.isArray(answer) ? answer.length > 0 : String(answer ?? '').trim() !== ''
-	);
+	let hasAnswer = $derived(Array.isArray(answer) ? answer.length > 0 : answer.trim() !== '');
 	let canSubmit = $derived(!submitting && (!needsAnswer || hasAnswer));
 
-	/** @param {import('$stores/surveyStore').SurveyAnswer} value */
-	function handleChange(value) {
+	function handleChange(value: SurveyAnswer) {
 		answer = value;
 		handleHeroQuestionChange(answer);
 	}
 
 	async function submit() {
-		if (submitting) return;
+		if (submitting || !currentStopSurvey) return;
 
 		submitting = true;
 		submitFailed = false;
@@ -70,7 +69,7 @@
 	}
 </script>
 
-{#if heroQuestion?.content}
+{#if currentStopSurvey && heroQuestion?.content}
 	<!-- -mx-4 bleeds to the edges of both containers that host StopPane: the
 	     bottom sheet body (px-4) and StandalonePage (p-4). -->
 	<div
