@@ -67,7 +67,8 @@ describe('getCurrentTimeForInput', () => {
 	it('falls back to local time when timeZone is invalid', () => {
 		const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
 		vi.setSystemTime(new Date('2024-01-16T10:30:00Z'));
-		expect(getCurrentTimeForInput('Invalid/Timezone')).toMatch(/^\d{2}:\d{2}$/);
+		const localTime = getCurrentTimeForInput();
+		expect(getCurrentTimeForInput('Invalid/Timezone')).toBe(localTime);
 		expect(spy).toHaveBeenCalledWith(
 			expect.stringContaining('getCurrentTimeForInput: invalid timezone "Invalid/Timezone"')
 		);
