@@ -30,8 +30,7 @@ function defaultProps(overrides = {}) {
 	return {
 		onHeroQuestionChange: vi.fn(),
 		onSkip: vi.fn(),
-		onSurveyButtonClick: vi.fn().mockResolvedValue(undefined),
-		remainingQuestionsLength: 0,
+		onSubmit: vi.fn().mockResolvedValue(undefined),
 		stopSurvey: surveyWithHero(radioContent),
 		...overrides
 	};
@@ -90,7 +89,7 @@ describe('SurveyBanner — collapsed', () => {
 		await user.click(screen.getByRole('button', { name: 'survey.dismiss' }));
 
 		expect(props.onSkip).toHaveBeenCalledTimes(1);
-		expect(props.onSurveyButtonClick).not.toHaveBeenCalled();
+		expect(props.onSubmit).not.toHaveBeenCalled();
 	});
 });
 
@@ -175,7 +174,7 @@ describe('SurveyBanner — expanded', () => {
 		expect(submitButton).toBeEnabled();
 
 		await user.click(submitButton);
-		expect(props.onSurveyButtonClick).toHaveBeenCalledTimes(1);
+		expect(props.onSubmit).toHaveBeenCalledTimes(1);
 	});
 
 	test('an external_survey question renders a link and no submit button', async () => {
@@ -196,15 +195,17 @@ describe('SurveyBanner — expanded', () => {
 	});
 
 	test('reads "next" when the survey has more questions', async () => {
-		await renderExpanded({ remainingQuestionsLength: 3 });
+		const stopSurvey = surveyWithHero(radioContent);
+		stopSurvey.questions.push({ id: 2, content: { type: 'text', label_text: 'Anything else?' } });
+		await renderExpanded({ stopSurvey });
 
 		expect(screen.getByRole('button', { name: 'survey.next' })).toBeInTheDocument();
 	});
 
 	test('submit is disabled while in flight and the handler is called once', async () => {
 		let release;
-		const onSurveyButtonClick = vi.fn(() => new Promise((resolve) => (release = resolve)));
-		await renderExpanded({ onSurveyButtonClick });
+		const onSubmit = vi.fn(() => new Promise((resolve) => (release = resolve)));
+		await renderExpanded({ onSubmit });
 
 		await user.click(screen.getByLabelText('Very Easy'));
 		const submitButton = screen.getByRole('button', { name: 'survey.submit' });
@@ -214,12 +215,12 @@ describe('SurveyBanner — expanded', () => {
 
 		release();
 		await vi.waitFor(() => expect(submitButton).toBeEnabled());
-		expect(onSurveyButtonClick).toHaveBeenCalledTimes(1);
+		expect(onSubmit).toHaveBeenCalledTimes(1);
 	});
 
 	test('a rejected submit shows the failure message and re-enables submit', async () => {
 		await renderExpanded({
-			onSurveyButtonClick: vi.fn().mockRejectedValue(new Error('network down'))
+			onSubmit: vi.fn().mockRejectedValue(new Error('network down'))
 		});
 
 		await user.click(screen.getByLabelText('Very Easy'));

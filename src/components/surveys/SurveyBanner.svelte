@@ -3,7 +3,7 @@
 	 * Compact, collapsible survey banner for the stop pane.
 	 *
 	 * Owns all presentation state (expanded, answer, error, in-flight) and
-	 * delegates the network call to StopPane via onSurveyButtonClick.
+	 * delegates the network call to StopPane via onSubmit.
 	 */
 	import { slide } from 'svelte/transition';
 	import { MessageCircleMore, ChevronDown, ChevronUp, X } from '@lucide/svelte';
@@ -15,18 +15,11 @@
 		onHeroQuestionChange: (answer: SurveyAnswer) => void;
 		onSkip: () => void;
 		/** Rejects when the POST fails, so the banner can offer a retry. */
-		onSurveyButtonClick: (survey: Survey) => Promise<void>;
-		remainingQuestionsLength?: number;
+		onSubmit: () => Promise<void>;
 		stopSurvey: Survey;
 	}
 
-	let {
-		stopSurvey,
-		onHeroQuestionChange,
-		onSkip,
-		onSurveyButtonClick,
-		remainingQuestionsLength = 0
-	}: Props = $props();
+	let { onHeroQuestionChange, onSkip, onSubmit, stopSurvey }: Props = $props();
 
 	let expanded = $state(false);
 	let answer = $state<SurveyAnswer>('');
@@ -34,6 +27,7 @@
 	let submitFailed = $state(false);
 
 	let heroQuestion = $derived(stopSurvey.questions[0] ?? null);
+	let remainingQuestionsLength = $derived(stopSurvey.questions.length - 1);
 	let questionType = $derived(heroQuestion?.content.type ?? null);
 
 	// `label` questions are informational, so they submit with no answer —
@@ -59,7 +53,7 @@
 		submitFailed = false;
 
 		try {
-			await onSurveyButtonClick(stopSurvey);
+			await onSubmit();
 		} catch {
 			// StopPane leaves the banner mounted on failure so the user can retry.
 			submitFailed = true;

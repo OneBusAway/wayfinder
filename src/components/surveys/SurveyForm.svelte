@@ -162,7 +162,8 @@
 
 	/** Treats closing the dialog before submitting like the Cancel/Skip buttons. */
 	export function dismiss() {
-		if (currentSurvey && !surveySubmitted) skipSurvey(currentSurvey);
+		// A pending submit may still succeed, so don't also record a skip.
+		if (currentSurvey && !surveySubmitted && !submitting) skipSurvey(currentSurvey);
 	}
 
 	onDestroy(() => clearTimeout(closeTimer));

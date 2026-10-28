@@ -1,10 +1,10 @@
 // Integration coverage for StopPane.handleSurveyButtonClick exercised through
 // the REAL SurveyBanner component (StopPane.test.js mocks SurveyBanner, and
-// SurveyBanner.test.js mocks handleSurveyButtonClick, so the contract between
+// SurveyBanner.test.js mocks onSubmit, so the contract between
 // them was previously untested from either end). Covers four fixed behaviors:
 //   (a) the array-aware empty guard (heroAnswerIsEmpty handles string[] from
 //       checkbox questions)
-//   (b) remainingQuestionsLength derived at render time from the question
+//   (b) the Submit vs. Next label derived at render time from the question
 //       count, not from post-click state
 //   (c) the follow-up SurveyModal opening only AFTER a successful POST
 //   (d) the try/catch that rethrows so the banner can show its retry message
@@ -196,7 +196,7 @@ describe('StopPane.handleSurveyButtonClick (via real SurveyBanner)', () => {
 		await renderWithSurvey(survey);
 
 		// remainingSurveyQuestions (post-click state) is still [] at this point;
-		// the label must come from currentStopSurvey.questions.length instead.
+		// the label must come from the survey's question count instead.
 		expect(screen.getByRole('button', { name: 'survey.next' })).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: 'survey.submit' })).not.toBeInTheDocument();
 	});

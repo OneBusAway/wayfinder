@@ -93,6 +93,7 @@
 	let interval = null;
 	/** @type {StopSurvey | null} */
 	// FIXME: $state synced by $effect, use writable $derived
+	/** @type {StopSurvey | null} */
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let currentStopSurvey = $state(null);
 	/** @type {SurveyQuestion[]} */
@@ -301,8 +302,10 @@
 		return !heroAnswer || heroAnswer.trim() === '';
 	}
 
-	/** @param {StopSurvey} survey */
-	async function handleSurveyButtonClick(survey) {
+	async function handleSurveyButtonClick() {
+		const survey = currentStopSurvey;
+		if (!survey) return;
+
 		let heroQuestion = survey.questions[0];
 		remainingSurveyQuestions = survey.questions.slice(1);
 
@@ -444,8 +447,7 @@
 						<SurveyBanner
 							onHeroQuestionChange={handleHeroQuestionChange}
 							onSkip={handleSkip}
-							onSurveyButtonClick={handleSurveyButtonClick}
-							remainingQuestionsLength={(currentStopSurvey.questions?.length ?? 1) - 1}
+							onSubmit={handleSurveyButtonClick}
 							stopSurvey={currentStopSurvey}
 						/>
 					{/key}
