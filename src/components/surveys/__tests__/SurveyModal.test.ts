@@ -73,7 +73,7 @@ describe('SurveyModal', () => {
 		useSurvey(1);
 		render(SurveyModal, { props: { open: true } });
 
-		await user.click(screen.getByRole('button', { name: 'Cancel' }));
+		await user.click(screen.getByRole('button', { name: 'survey.cancel' }));
 
 		expect(skipSurvey).toHaveBeenCalledTimes(1);
 		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -85,8 +85,8 @@ describe('SurveyModal', () => {
 		render(SurveyModal, { props: { open: true } });
 
 		await user.click(screen.getByLabelText('Great'));
-		await user.click(screen.getByRole('button', { name: 'Submit' }));
-		await screen.findByText('Thank you for taking the survey!');
+		await user.click(screen.getByRole('button', { name: 'survey.submit' }));
+		await screen.findByText('survey.thank_you');
 
 		await user.keyboard('{Escape}');
 
@@ -100,7 +100,7 @@ describe('SurveyModal', () => {
 		render(SurveyModal, { props: { open: true } });
 
 		await user.click(screen.getByLabelText('Great'));
-		await user.click(screen.getByRole('button', { name: 'Submit' }));
+		await user.click(screen.getByRole('button', { name: 'survey.submit' }));
 		await user.keyboard('{Escape}');
 
 		expect(skipSurvey).not.toHaveBeenCalled();
@@ -113,13 +113,13 @@ describe('SurveyModal', () => {
 		render(SurveyModal, { props: { open: true } });
 
 		await user.click(screen.getByLabelText('Great'));
-		const submit = screen.getByRole('button', { name: 'Submit' });
+		const submit = screen.getByRole('button', { name: 'survey.submit' });
 		await user.click(submit);
 		await user.click(submit);
 
 		expect(submitHeroQuestion).toHaveBeenCalledTimes(1);
 		release('response-1');
-		await screen.findByText('Thank you for taking the survey!');
+		await screen.findByText('survey.thank_you');
 	});
 
 	test('a failed update keeps the form open with an error and does not mark it submitted', async () => {
@@ -130,12 +130,12 @@ describe('SurveyModal', () => {
 		});
 
 		await user.click(screen.getByLabelText('Great'));
-		await user.click(screen.getByRole('button', { name: 'Submit' }));
+		await user.click(screen.getByRole('button', { name: 'survey.submit' }));
 
 		expect(await screen.findByText('survey.submit_failed')).toBeInTheDocument();
 		expect(submitSurvey).not.toHaveBeenCalled();
-		expect(screen.queryByText('Thank you for taking the survey!')).not.toBeInTheDocument();
-		expect(screen.getByRole('button', { name: 'Submit' })).toBeEnabled();
+		expect(screen.queryByText('survey.thank_you')).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'survey.submit' })).toBeEnabled();
 	});
 
 	test('closes on its own 3 seconds after the confirmation', async () => {
@@ -146,8 +146,8 @@ describe('SurveyModal', () => {
 		render(SurveyModal, { props: { open: true } });
 
 		await user.click(screen.getByLabelText('Great'));
-		await user.click(screen.getByRole('button', { name: 'Submit' }));
-		await screen.findByText('Thank you for taking the survey!');
+		await user.click(screen.getByRole('button', { name: 'survey.submit' }));
+		await screen.findByText('survey.thank_you');
 
 		vi.advanceTimersByTime(3000);
 

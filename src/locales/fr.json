@@ -109,7 +109,11 @@
 		"dismiss": "Ignorer le sondage",
 		"submit": "Envoyer",
 		"next": "Suivant",
-		"submit_failed": "Impossible d'envoyer votre réponse. Veuillez réessayer."
+		"submit_failed": "Impossible d'envoyer votre réponse. Veuillez réessayer.",
+		"cancel": "Annuler",
+		"skip": "Passer",
+		"submitted": "Sondage envoyé",
+		"thank_you": "Merci d'avoir répondu au sondage !"
 	},
 	"header": {
 		"home": "Accueil",

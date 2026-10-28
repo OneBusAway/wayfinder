@@ -209,15 +209,15 @@
 
 		{#if !heroQuestionAnswered && !skipHeroQuestion}
 			<Dialog.Footer>
-				<Button onclick={skip} variant="outline">Cancel</Button>
+				<Button onclick={skip} variant="outline">{$t('survey.cancel')}</Button>
 				<Button onclick={submitHeroQuestion} disabled={submitting}>
-					{remainingQuestions.length === 0 ? 'Submit' : 'Next'}
+					{remainingQuestions.length === 0 ? $t('survey.submit') : $t('survey.next')}
 				</Button>
 			</Dialog.Footer>
 		{:else if remainingQuestions.length > 0}
 			<Dialog.Footer>
-				<Button onclick={skip} variant="outline">Skip</Button>
-				<Button onclick={handleSubmit} disabled={submitting}>Submit</Button>
+				<Button onclick={skip} variant="outline">{$t('survey.skip')}</Button>
+				<Button onclick={handleSubmit} disabled={submitting}>{$t('survey.submit')}</Button>
 			</Dialog.Footer>
 		{/if}
 	{/if}

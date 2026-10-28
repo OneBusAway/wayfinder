@@ -109,7 +109,11 @@
 		"dismiss": "I-dismiss ang survey",
 		"submit": "Isumite",
 		"next": "Susunod",
-		"submit_failed": "Hindi naipadala ang iyong sagot. Pakisubukang muli."
+		"submit_failed": "Hindi naipadala ang iyong sagot. Pakisubukang muli.",
+		"cancel": "Kanselahin",
+		"skip": "Laktawan",
+		"submitted": "Naisumite ang survey",
+		"thank_you": "Salamat sa pagsagot sa survey!"
 	},
 	"header": {
 		"home": "Home",

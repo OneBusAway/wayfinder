@@ -109,7 +109,11 @@
 		"dismiss": "Zamknij ankietę",
 		"submit": "Wyślij",
 		"next": "Dalej",
-		"submit_failed": "Nie udało się wysłać odpowiedzi. Spróbuj ponownie."
+		"submit_failed": "Nie udało się wysłać odpowiedzi. Spróbuj ponownie.",
+		"cancel": "Anuluj",
+		"skip": "Pomiń",
+		"submitted": "Ankieta wysłana",
+		"thank_you": "Dziękujemy za wypełnienie ankiety!"
 	},
 	"header": {
 		"home": "Strona główna",

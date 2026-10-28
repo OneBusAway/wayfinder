@@ -109,7 +109,11 @@
 		"dismiss": "Fèmen sondaj la",
 		"submit": "Voye",
 		"next": "Pwochen",
-		"submit_failed": "Nou pa t ka voye repons ou an. Tanpri eseye ankò."
+		"submit_failed": "Nou pa t ka voye repons ou an. Tanpri eseye ankò.",
+		"cancel": "Anile",
+		"skip": "Sote",
+		"submitted": "Sondaj la voye",
+		"thank_you": "Mèsi paske w te reponn sondaj la!"
 	},
 	"header": {
 		"home": "Akèy",

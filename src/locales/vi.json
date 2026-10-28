@@ -109,7 +109,11 @@
 		"dismiss": "Bỏ qua khảo sát",
 		"submit": "Gửi",
 		"next": "Tiếp theo",
-		"submit_failed": "Không thể gửi câu trả lời. Vui lòng thử lại."
+		"submit_failed": "Không thể gửi câu trả lời. Vui lòng thử lại.",
+		"cancel": "Hủy",
+		"skip": "Bỏ qua",
+		"submitted": "Đã gửi khảo sát",
+		"thank_you": "Cảm ơn bạn đã tham gia khảo sát!"
 	},
 	"header": {
 		"home": "Trang chủ",
