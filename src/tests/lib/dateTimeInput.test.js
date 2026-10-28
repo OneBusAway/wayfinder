@@ -47,4 +47,30 @@ describe('getCurrentTimeForInput', () => {
 		vi.setSystemTime(new Date('2024-01-16T04:52:00Z'));
 		expect(getCurrentTimeForInput('America/Los_Angeles')).toBe('20:52');
 	});
+
+	it('returns 00:00 at midnight instead of 24:00', () => {
+		vi.setSystemTime(new Date('2024-01-16T00:00:00Z'));
+		expect(getCurrentTimeForInput('UTC')).toBe('00:00');
+	});
+
+	it('pads single-digit hours and minutes with leading zeroes at midnight', () => {
+		vi.setSystemTime(new Date('2024-01-16T00:05:00Z'));
+		expect(getCurrentTimeForInput('UTC')).toBe('00:05');
+	});
+
+	it('returns agency-local midnight correctly when timeZone is provided', () => {
+		// 8:00 AM UTC = 12:00 AM PST (UTC-8 in January)
+		vi.setSystemTime(new Date('2024-01-16T08:00:00Z'));
+		expect(getCurrentTimeForInput('America/Los_Angeles')).toBe('00:00');
+	});
+
+	it('falls back to local time when timeZone is invalid', () => {
+		const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.setSystemTime(new Date('2024-01-16T10:30:00Z'));
+		expect(getCurrentTimeForInput('Invalid/Timezone')).toMatch(/^\d{2}:\d{2}$/);
+		expect(spy).toHaveBeenCalledWith(
+			expect.stringContaining('getCurrentTimeForInput: invalid timezone "Invalid/Timezone"')
+		);
+		spy.mockRestore();
+	});
 });
