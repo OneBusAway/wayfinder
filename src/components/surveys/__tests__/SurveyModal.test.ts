@@ -1,8 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
-import userEvent from '@testing-library/user-event';
+import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import SurveyModal from '../SurveyModal.svelte';
 import { surveyStore } from '$stores/surveyStore';
+import type { Survey, SurveyQuestion } from '$stores/surveyStore';
 import {
 	skipSurvey,
 	submitHeroQuestion,
@@ -21,14 +22,14 @@ vi.mock('$lib/utils/user', () => ({
 	getUserId: vi.fn(() => 'user-1')
 }));
 
-const radioQuestion = (id) => ({
+const radioQuestion = (id: number): SurveyQuestion => ({
 	content: { label_text: `Question ${id}`, options: ['Great', 'Okay'], type: 'radio' },
 	id,
 	required: true
 });
 
-function useSurvey(questionCount) {
-	const survey = {
+function useSurvey(questionCount: number): Survey {
+	const survey: Survey = {
 		id: 7,
 		name: 'Rider survey',
 		questions: Array.from({ length: questionCount }, (_, i) => radioQuestion(i + 1)),
@@ -39,14 +40,14 @@ function useSurvey(questionCount) {
 }
 
 /** A promise that stays pending until `release` is called. */
-function deferred() {
-	let release;
-	const promise = new Promise((resolve) => (release = resolve));
+function deferred<T>() {
+	let release!: (value: T) => void;
+	const promise = new Promise<T>((resolve) => (release = resolve));
 	return { promise, release };
 }
 
 describe('SurveyModal', () => {
-	let user;
+	let user: UserEvent;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -94,7 +95,7 @@ describe('SurveyModal', () => {
 
 	test('closing while a submit is pending does not record a skip', async () => {
 		useSurvey(1);
-		const { promise } = deferred();
+		const { promise } = deferred<string>();
 		vi.mocked(submitHeroQuestion).mockReturnValue(promise);
 		render(SurveyModal, { props: { open: true } });
 
@@ -107,7 +108,7 @@ describe('SurveyModal', () => {
 
 	test('repeated clicks send the answer once while the submit is pending', async () => {
 		useSurvey(1);
-		const { promise, release } = deferred();
+		const { promise, release } = deferred<string>();
 		vi.mocked(submitHeroQuestion).mockReturnValue(promise);
 		render(SurveyModal, { props: { open: true } });
 
