@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import {
 	debounce,
 	directionLabel,
+	navBarLinkLabel,
 	removeAgencyPrefix,
 	routeShortNamesForStop,
 	stopSubtitle
@@ -251,5 +252,49 @@ describe('stopSubtitle', () => {
 
 	it('falls back to the id without its agency prefix when the stop has no code', () => {
 		expect(stopSubtitle({ id: '1_75403', direction: 'S' }, translate)).toBe('South · Code: 75403');
+	});
+});
+
+describe('navBarLinkLabel', () => {
+	const mockTranslations = {
+		'header.home': 'Inicio',
+		'header.about': 'Acerca de',
+		'header.contact': 'Contacto',
+		'header.fares_and_tolls': 'Tarifas y peajes',
+		'header.custom_link': 'Enlace personalizado'
+	};
+
+	const translate = (id, options) => mockTranslations[id] ?? options?.default ?? id;
+
+	it('translates standard English link keys to their localized values', () => {
+		expect(navBarLinkLabel('Home', translate)).toBe('Inicio');
+		expect(navBarLinkLabel('About', translate)).toBe('Acerca de');
+		expect(navBarLinkLabel('Contact', translate)).toBe('Contacto');
+		expect(navBarLinkLabel('Fares & Tolls', translate)).toBe('Tarifas y peajes');
+	});
+
+	it('translates explicit header.* keys', () => {
+		expect(navBarLinkLabel('header.home', translate)).toBe('Inicio');
+		expect(navBarLinkLabel('header.custom_link', translate)).toBe('Enlace personalizado');
+	});
+
+	it('normalizes arbitrary keys to header.* format', () => {
+		expect(navBarLinkLabel('Custom Link', translate)).toBe('Enlace personalizado');
+	});
+
+	it('falls back to the raw key when translation is not found', () => {
+		expect(navBarLinkLabel('GitHub', translate)).toBe('GitHub');
+		expect(navBarLinkLabel('Unknown Page', translate)).toBe('Unknown Page');
+	});
+
+	it('safely handles non-string or empty input', () => {
+		expect(navBarLinkLabel('', translate)).toBe('');
+		expect(navBarLinkLabel(null, translate)).toBeNull();
+		expect(navBarLinkLabel(undefined, translate)).toBeUndefined();
+	});
+
+	it('safely handles missing or invalid translate function', () => {
+		expect(navBarLinkLabel('Home', null)).toBe('Home');
+		expect(navBarLinkLabel('Home', undefined)).toBe('Home');
 	});
 });
