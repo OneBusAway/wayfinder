@@ -109,7 +109,11 @@
 		"dismiss": "Dispensar pesquisa",
 		"submit": "Enviar",
 		"next": "Avançar",
-		"submit_failed": "Não foi possível enviar sua resposta. Tente novamente."
+		"submit_failed": "Não foi possível enviar sua resposta. Tente novamente.",
+		"cancel": "Cancelar",
+		"skip": "Pular",
+		"submitted": "Pesquisa enviada",
+		"thank_you": "Obrigado por responder à pesquisa!"
 	},
 	"header": {
 		"home": "Início",

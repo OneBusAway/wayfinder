@@ -109,7 +109,11 @@
 		"dismiss": "Qorannoo cufi",
 		"submit": "Ergi",
 		"next": "Itti Aanu",
-		"submit_failed": "Deebii kee erguun hin danda'amne. Maaloo irra deebi'ii yaali."
+		"submit_failed": "Deebii kee erguun hin danda'amne. Maaloo irra deebi'ii yaali.",
+		"cancel": "Haqi",
+		"skip": "Darbi",
+		"submitted": "Qorannoon ergameera",
+		"thank_you": "Qorannoo kana irratti hirmaachuu keessaniif galatoomaa!"
 	},
 	"header": {
 		"home": "Mana",

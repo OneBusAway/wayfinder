@@ -12,7 +12,7 @@
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
-	import { surveyStore, showSurveyModal, markSurveyAnswered } from '$stores/surveyStore';
+	import { surveyStore, markSurveyAnswered } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
 	import SurveyBanner from '$components/surveys/SurveyBanner.svelte';
 	import analytics from '$lib/Insights';
@@ -103,6 +103,7 @@
 	let interval = null;
 	/** @type {StopSurvey | null} */
 	// FIXME: $state synced by $effect, use writable $derived
+	/** @type {StopSurvey | null} */
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let currentStopSurvey = $state(null);
 	/** @type {SurveyQuestion[]} */
@@ -384,7 +385,7 @@
 			// returns after the first submit/dismiss of the session.
 			showHeroQuestion = true;
 			heroAnswer = '';
-			nextSurveyQuestion = false;
+			surveyModalOpen = false;
 			surveyPublicIdentifier = null;
 		});
 	});
@@ -421,7 +422,7 @@
 
 	/** @type {SurveyAnswer} */
 	let heroAnswer = '';
-	let nextSurveyQuestion = $state(false);
+	let surveyModalOpen = $state(false);
 	let surveyPublicIdentifier = $state(null);
 	let showHeroQuestion = $state(true);
 
@@ -430,8 +431,10 @@
 		return !heroAnswer || heroAnswer.trim() === '';
 	}
 
-	/** @param {StopSurvey} survey */
-	async function handleSurveyButtonClick(survey) {
+	async function handleSurveyButtonClick() {
+		const survey = currentStopSurvey;
+		if (!survey) return;
+
 		let heroQuestion = survey.questions[0];
 		remainingSurveyQuestions = survey.questions.slice(1);
 
@@ -466,10 +469,7 @@
 		}
 
 		// Only advance the flow once the hero answer is actually recorded.
-		if (remainingSurveyQuestions.length > 0) {
-			showSurveyModal.set(true);
-		}
-		nextSurveyQuestion = true;
+		surveyModalOpen = remainingSurveyQuestions.length > 0;
 
 		showHeroQuestion = false;
 		markSurveyAnswered(survey.id);
@@ -574,17 +574,19 @@
 					     stop's expanded/answer state would carry over. -->
 					{#key stop.id}
 						<SurveyBanner
-							{currentStopSurvey}
-							{handleSkip}
-							{handleSurveyButtonClick}
-							{handleHeroQuestionChange}
-							remainingQuestionsLength={(currentStopSurvey?.questions?.length ?? 1) - 1}
+							onHeroQuestionChange={handleHeroQuestionChange}
+							onSkip={handleSkip}
+							onSubmit={handleSurveyButtonClick}
+							stopSurvey={currentStopSurvey}
 						/>
 					{/key}
 				{/if}
-				{#if nextSurveyQuestion}
-					<SurveyModal {stop} skipHeroQuestion={true} surveyPublicId={surveyPublicIdentifier} />
-				{/if}
+				<SurveyModal
+					bind:open={surveyModalOpen}
+					{stop}
+					skipHeroQuestion={true}
+					surveyPublicId={surveyPublicIdentifier}
+				/>
 
 				{#snippet loadMoreButton(emptyResults = false)}
 					<div class="flex flex-col items-center gap-2">

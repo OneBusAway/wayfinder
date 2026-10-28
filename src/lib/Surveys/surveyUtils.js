@@ -1,4 +1,4 @@
-import { markSurveyAnswered, showSurveyModal, surveyStore } from '$stores/surveyStore.js';
+import { markSurveyAnswered, surveyStore } from '$stores/surveyStore.js';
 
 export async function loadSurveys(stop = null, userId = null) {
 	try {
@@ -141,7 +141,9 @@ export async function updateSurveyResponse(surveyPublicIdentifier, surveyRespons
 	try {
 		const payload = {
 			...surveyResponse,
-			responses: JSON.stringify(surveyResponse.responses)
+			// Responses are indexed by question, so unanswered questions leave
+			// holes that would serialize as null.
+			responses: JSON.stringify(surveyResponse.responses.filter(Boolean))
 		};
 		const response = await fetch(`/api/oba/surveys/update-survey/${surveyPublicIdentifier}`, {
 			method: 'POST',
@@ -161,13 +163,8 @@ export async function updateSurveyResponse(surveyPublicIdentifier, surveyRespons
 	}
 }
 
-export function submitSurvey(survey, hideSurveyModal) {
+export function submitSurvey(survey) {
 	markSurveyAnswered(survey.id);
-	if (hideSurveyModal) {
-		setTimeout(() => {
-			showSurveyModal.set(false);
-		}, 3000);
-	}
 }
 
 export function skipSurvey(survey) {
@@ -182,5 +179,7 @@ export function skipSurvey(survey) {
 		// For one-time surveys: set permanent skip flag
 		localStorage.setItem(`survey_${survey.id}_skipped`, true);
 	}
-	showSurveyModal.set(false);
+
+	// A skipped survey is filtered out on the next load, so stop offering it now.
+	surveyStore.update((current) => (current?.id === survey.id ? null : current));
 }

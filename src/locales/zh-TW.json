@@ -109,7 +109,11 @@
 		"dismiss": "關閉問卷",
 		"submit": "送出",
 		"next": "下一題",
-		"submit_failed": "無法送出您的回答。請再試一次。"
+		"submit_failed": "無法送出您的回答。請再試一次。",
+		"cancel": "取消",
+		"skip": "略過",
+		"submitted": "問卷已提交",
+		"thank_you": "感謝您參與問卷調查！"
 	},
 	"header": {
 		"home": "首頁",

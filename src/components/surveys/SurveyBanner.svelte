@@ -1,38 +1,34 @@
-<script>
+<script lang="ts">
 	/**
 	 * Compact, collapsible survey banner for the stop pane.
 	 *
 	 * Owns all presentation state (expanded, answer, error, in-flight) and
-	 * delegates the network call to StopPane via handleSurveyButtonClick.
-	 *
-	 * @typedef {Object} Props
-	 * @property {Object} currentStopSurvey - Survey from surveyStore
-	 * @property {Function} handleSkip - Dismisses the survey
-	 * @property {Function} handleSurveyButtonClick - Awaited; POSTs the hero answer. May reject.
-	 * @property {Function} handleHeroQuestionChange - Called with the resolved answer value
-	 * @property {number} remainingQuestionsLength - Drives the Submit vs. Next label
+	 * delegates the network call to StopPane via onSubmit.
 	 */
 	import { slide } from 'svelte/transition';
 	import { MessageCircleMore, ChevronDown, ChevronUp, X } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';
+	import type { Survey, SurveyAnswer } from '$stores/surveyStore';
 	import SurveyQuestion from '$components/surveys/SurveyQuestion.svelte';
 
-	/** @type {Props} */
-	let {
-		currentStopSurvey,
-		handleSkip,
-		handleSurveyButtonClick,
-		handleHeroQuestionChange,
-		remainingQuestionsLength = 0
-	} = $props();
+	interface Props {
+		onHeroQuestionChange: (answer: SurveyAnswer) => void;
+		onSkip: () => void;
+		/** Rejects when the POST fails, so the banner can offer a retry. */
+		onSubmit: () => Promise<void>;
+		stopSurvey: Survey;
+	}
+
+	let { onHeroQuestionChange, onSkip, onSubmit, stopSurvey }: Props = $props();
 
 	let expanded = $state(false);
-	let answer = $state('');
+	let answer = $state<SurveyAnswer>('');
 	let submitting = $state(false);
 	let submitFailed = $state(false);
 
-	let heroQuestion = $derived(currentStopSurvey?.questions?.[0] ?? null);
-	let questionType = $derived(heroQuestion?.content?.type ?? null);
+	let heroQuestion = $derived(stopSurvey.questions[0] ?? null);
+	let remainingQuestionsLength = $derived(stopSurvey.questions.length - 1);
+	let questionType = $derived(heroQuestion?.content.type ?? null);
 
 	// `label` questions are informational, so they submit with no answer —
 	// this mirrors the exemption in StopPane.handleSurveyButtonClick.
@@ -42,23 +38,12 @@
 	// event, so a Submit button here could never do anything but no-op.
 	let showSubmit = $derived(questionType !== 'external_survey');
 
-	let hasAnswer = $derived(
-		Array.isArray(answer) ? answer.length > 0 : String(answer ?? '').trim() !== ''
-	);
+	let hasAnswer = $derived(Array.isArray(answer) ? answer.length > 0 : answer.trim() !== '');
 	let canSubmit = $derived(!submitting && (!needsAnswer || hasAnswer));
 
-	function handleChange(event) {
-		if (questionType === 'checkbox') {
-			const option = event.target.value;
-			const current = Array.isArray(answer) ? answer : [];
-			answer = event.target.checked
-				? [...current, option]
-				: current.filter((selected) => selected !== option);
-		} else {
-			answer = event.target.value;
-		}
-
-		handleHeroQuestionChange(answer);
+	function handleChange(value: SurveyAnswer) {
+		answer = value;
+		onHeroQuestionChange(answer);
 	}
 
 	async function submit() {
@@ -68,7 +53,7 @@
 		submitFailed = false;
 
 		try {
-			await handleSurveyButtonClick(currentStopSurvey);
+			await onSubmit();
 		} catch {
 			// StopPane leaves the banner mounted on failure so the user can retry.
 			submitFailed = true;
@@ -101,7 +86,7 @@
 				<!-- min-w-0 lets these truncate instead of pushing the buttons off-screen. -->
 				<span class="min-w-0 flex-1">
 					<span class="block truncate font-bold text-gray-900 dark:text-white">
-						{currentStopSurvey.name}
+						{stopSurvey.name}
 					</span>
 					<span class="block truncate text-sm text-gray-600 dark:text-gray-300">
 						{heroQuestion.content.label_text}
@@ -119,7 +104,7 @@
 
 			<button
 				type="button"
-				onclick={handleSkip}
+				onclick={onSkip}
 				aria-label={$t('survey.dismiss')}
 				class="flex-none px-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
 			>
@@ -132,7 +117,6 @@
 			<div transition:slide|local={{ duration: 300 }} class="pb-4">
 				<SurveyQuestion
 					question={heroQuestion}
-					index={0}
 					value={answer}
 					required={heroQuestion.required}
 					onInputChange={handleChange}

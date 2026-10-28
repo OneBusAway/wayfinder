@@ -109,7 +109,11 @@
 		"dismiss": "설문 닫기",
 		"submit": "제출",
 		"next": "다음",
-		"submit_failed": "답변을 보내지 못했습니다. 다시 시도해 주세요."
+		"submit_failed": "답변을 보내지 못했습니다. 다시 시도해 주세요.",
+		"cancel": "취소",
+		"skip": "건너뛰기",
+		"submitted": "설문이 제출되었습니다",
+		"thank_you": "설문에 참여해 주셔서 감사합니다!"
 	},
 	"header": {
 		"home": "홈",

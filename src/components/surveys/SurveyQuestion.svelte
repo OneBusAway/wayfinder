@@ -1,116 +1,129 @@
-<script>
-	import Radio from 'flowbite-svelte/Radio.svelte';
-	import Checkbox from 'flowbite-svelte/Checkbox.svelte';
-	import Input from 'flowbite-svelte/Input.svelte';
+<script lang="ts">
+	import { Button } from '$components/ui/button';
+	import { Checkbox } from '$components/ui/checkbox';
+	import { Input } from '$components/ui/input';
+	import * as RadioGroup from '$components/ui/radio-group';
+	import { cn } from '$lib/utils/shadcn.js';
 	import { t } from 'svelte-i18n';
+
+	import type { SurveyAnswer, SurveyQuestion } from '$stores/surveyStore';
+
+	interface Props {
+		error?: boolean;
+		/** Receives the question's whole new answer after every change. */
+		onInputChange: (answer: SurveyAnswer) => void;
+		question: SurveyQuestion;
+		required?: boolean;
+		value?: SurveyAnswer;
+		variant?: 'compact' | 'default';
+	}
+
 	let {
+		error,
+		onInputChange,
 		question,
 		required,
-		index,
-		value = $bindable(''),
-		onInputChange,
-		variant = 'default',
-		error
-	} = $props();
+		value = '',
+		variant = 'default'
+	}: Props = $props();
 
-	const baseClasses = {
-		label: `relative block font-semibold tracking-tight text-gray-900 dark:text-gray-100`,
-		input: `w-full rounded border bg-gray-50 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100`,
-		option: `rounded font-medium text-gray-800 transition-all hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700`
-	};
+	const id = $props.id();
+	const errorId = `${id}-error`;
 
-	const sizeClasses = {
-		label: variant === 'compact' ? 'mb-2 text-xl' : 'mb-4 text-2xl',
-		input: variant === 'compact' ? 'mt-1 px-3 py-2 text-lg' : 'mt-2 px-5 py-4 text-xl',
-		option: variant === 'compact' ? 'p-1 text-lg' : 'p-2 text-lg'
-	};
+	let type = $derived(question.content.type);
+	let selected = $derived(Array.isArray(value) ? value : []);
 
-	const errorClasses = {
-		label: variant === 'compact' ? 'text-red-500' : 'text-xl text-red-500'
-	};
+	let compact = $derived(variant === 'compact');
+	let titleClass = $derived(cn('font-medium text-foreground', compact ? 'text-sm' : 'text-base'));
+	// The Shadcn Checkbox and RadioGroupItem default to size-4, which is small
+	// for the modal's full-width questions.
+	let controlClass = $derived(compact ? undefined : 'size-5');
+	let optionLabelClass = $derived(cn('text-foreground', compact ? 'text-sm' : 'text-base'));
 
 	// `error` is owned by the parent. This component never decides on its own
 	// that an answer is missing — it only reports the change upward.
-	function handleInput(event) {
-		onInputChange(event, question, index);
+	function toggleOption(option: string, checked: boolean) {
+		onInputChange(checked ? [...selected, option] : selected.filter((o) => o !== option));
 	}
 </script>
 
-<label class={`${baseClasses.label} ${sizeClasses.label}`} for="question-{index}">
-	{#if question.content.type !== 'label'}
-		{question.content.label_text}
+{#snippet title()}
+	{question.content.label_text}
+	{#if required}
+		<span class="text-destructive" aria-label={$t('survey.required_question')}>*</span>
 	{/if}
-	{#if required && question.content.type !== 'label'}
-		<span class="ml-1 text-red-500" aria-label={$t('survey.required_question')}>*</span>
-	{/if}
-</label>
+{/snippet}
 
-{#if question.content.type === 'text'}
-	<Input
-		id="question-{index}"
-		type="text"
-		{value}
-		placeholder="Type your answer..."
-		oninput={handleInput}
-		class={`${baseClasses.input} ${sizeClasses.input} ${error ? 'border-red-500' : ''}`}
-	/>
-{:else if question.content.type === 'radio'}
-	<div class={`mt-2 space-y-${variant === 'compact' ? '0' : '2'}`}>
-		<!-- FIXME: each block has no key -->
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each question.content.options as option}
-			<Radio
-				name="radio-{index}"
-				value={option}
-				group={value}
-				onchange={handleInput}
-				class={`${baseClasses.option} ${sizeClasses.option}`}
-			>
-				{option}
-			</Radio>
-		{/each}
-	</div>
-{:else if question.content.type === 'checkbox'}
-	<div class={`mt-2 space-y-${variant === 'compact' ? '0' : '2'}`}>
-		<!-- FIXME: each block has no key -->
-		<!-- eslint-disable-next-line svelte/require-each-key -->
-		{#each question.content.options as option}
-			<Checkbox
-				name="checkbox-{index}"
-				value={option}
-				checked={value?.includes(option)}
-				onchange={handleInput}
-				class={`${baseClasses.option} ${sizeClasses.option}`}
-			>
-				{option}
-			</Checkbox>
-		{/each}
-	</div>
-{:else if question.content.type === 'label'}
-	<p class={`${sizeClasses.label} text-semibold mt-4 font-bold dark:text-white`}>
-		{question.content.label_text}
-	</p>
-{:else if question.content.type === 'external_survey'}
-	<div class="mt-4">
-		<!-- external URL -->
-		<!-- eslint-disable svelte/no-navigation-without-resolve -->
-		<a
-			href={question.content.url}
-			target="_blank"
-			rel="noopener noreferrer"
-			class="inline-block text-xl font-semibold text-blue-500 underline transition-all hover:text-blue-600"
+<div class="flex flex-col gap-3">
+	{#if type === 'text'}
+		<label for="{id}-input" class={titleClass}>{@render title()}</label>
+		<Input
+			id="{id}-input"
+			value={typeof value === 'string' ? value : ''}
+			placeholder="Type your answer..."
+			aria-invalid={error || undefined}
+			aria-describedby={error ? errorId : undefined}
+			oninput={(e) => onInputChange(e.currentTarget.value)}
+		/>
+	{:else if type === 'radio'}
+		<p id="{id}-title" class={titleClass}>{@render title()}</p>
+		<RadioGroup.Root
+			value={typeof value === 'string' ? value : ''}
+			onValueChange={onInputChange}
+			aria-labelledby="{id}-title"
+			aria-invalid={error || undefined}
+			aria-describedby={error ? errorId : undefined}
 		>
-			{question.content.label_text}
-		</a>
-		<!-- eslint-enable svelte/no-navigation-without-resolve -->
-		{#if question.content.survey_provider}
-			<p class="mt-1 text-gray-500">
-				Powered by {question.content.survey_provider}
-			</p>
-		{/if}
-	</div>
-{/if}
+			{#each question.content.options ?? [] as option, i (option)}
+				<div class="flex items-center gap-2">
+					<RadioGroup.Item
+						id="{id}-{i}"
+						value={option}
+						aria-invalid={error || undefined}
+						class={controlClass}
+					/>
+					<label for="{id}-{i}" class={optionLabelClass}>{option}</label>
+				</div>
+			{/each}
+		</RadioGroup.Root>
+	{:else if type === 'checkbox'}
+		<fieldset class="flex flex-col gap-3" aria-describedby={error ? errorId : undefined}>
+			<legend class={cn(titleClass, 'mb-3')}>{@render title()}</legend>
+			{#each question.content.options ?? [] as option, i (option)}
+				<div class="flex items-center gap-2">
+					<Checkbox
+						id="{id}-{i}"
+						checked={selected.includes(option)}
+						onCheckedChange={(checked) => toggleOption(option, checked)}
+						aria-invalid={error || undefined}
+						class={controlClass}
+					/>
+					<label for="{id}-{i}" class={optionLabelClass}>{option}</label>
+				</div>
+			{/each}
+		</fieldset>
+	{:else if type === 'label'}
+		<p class={titleClass}>{question.content.label_text}</p>
+	{:else if type === 'external_survey'}
+		<div class="flex flex-col items-start gap-1">
+			<Button
+				variant="link"
+				href={question.content.url}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="h-auto p-0"
+			>
+				{question.content.label_text}
+			</Button>
+			{#if question.content.survey_provider}
+				<p class="text-sm text-muted-foreground">
+					Powered by {question.content.survey_provider}
+				</p>
+			{/if}
+		</div>
+	{/if}
 
-{#if error && question.content.type !== 'label'}
-	<p class={`${errorClasses.label} mt-4`}>{$t('survey.required_answer')}</p>
-{/if}
+	{#if error && type !== 'label'}
+		<p id={errorId} class="text-sm text-destructive">{$t('survey.required_answer')}</p>
+	{/if}
+</div>

@@ -109,7 +109,11 @@
 		"dismiss": "Tapuni le suʻesuʻega",
 		"submit": "Lafo",
 		"next": "Sosoo",
-		"submit_failed": "E leʻi mafai ona lafo lau tali. Faʻamolemole toe taumafai."
+		"submit_failed": "E leʻi mafai ona lafo lau tali. Faʻamolemole toe taumafai.",
+		"cancel": "Faaleaogā",
+		"skip": "Pasi",
+		"submitted": "Ua lafo le suʻesuʻega",
+		"thank_you": "Faafetai mo le auai i le suʻesuʻega!"
 	},
 	"header": {
 		"home": "Aiga",

@@ -109,7 +109,11 @@
 		"dismiss": "Iska dhaaf sahanka",
 		"submit": "Gudbi",
 		"next": "Xiga",
-		"submit_failed": "Jawaabtaada lama diri karin. Fadlan mar kale isku day."
+		"submit_failed": "Jawaabtaada lama diri karin. Fadlan mar kale isku day.",
+		"cancel": "Jooji",
+		"skip": "Ka gudub",
+		"submitted": "Sahanka waa la diray",
+		"thank_you": "Waad ku mahadsan tahay ka qaybgalka sahanka!"
 	},
 	"header": {
 		"home": "Bogga Hore",

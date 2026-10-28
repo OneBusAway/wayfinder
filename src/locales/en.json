@@ -109,7 +109,11 @@
 		"dismiss": "Dismiss survey",
 		"submit": "Submit",
 		"next": "Next",
-		"submit_failed": "Couldn't send your answer. Please try again."
+		"submit_failed": "Couldn't send your answer. Please try again.",
+		"cancel": "Cancel",
+		"skip": "Skip",
+		"submitted": "Survey Submitted",
+		"thank_you": "Thank you for taking the survey!"
 	},
 	"header": {
 		"home": "Home",

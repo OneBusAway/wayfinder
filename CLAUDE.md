@@ -104,7 +104,7 @@ When writing tests, the setup file already mocks `$env/static/public`, `$env/sta
 
 ## Styling
 
-- Tailwind CSS with Flowbite components
+- Tailwind CSS with Shadcn components
 - Lucide icons via `@lucide/svelte`, except transit-mode icons (bus, train, ferry, etc.), which use Font Awesome solid icons for legibility on the map (#643). `$components/icons/AppIcon.svelte` renders either kind where a slot can hold both.
 - Brand colors configurable via `COLOR_*` env vars (processed at build time)
 - Dark mode support via theme system

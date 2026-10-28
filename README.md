@@ -75,7 +75,7 @@ Customize the application's color scheme via environment variables:
 
 #### Generated Primary Palette
 
-A full 10-shade color palette is automatically generated from `COLOR_BRAND_ACCENT` for use with Flowbite components:
+A full 10-shade color palette is automatically generated from `COLOR_BRAND_ACCENT`:
 
 | Shade         | Description                                  |
 | ------------- | -------------------------------------------- |

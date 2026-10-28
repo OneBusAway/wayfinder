@@ -109,7 +109,11 @@
 		"dismiss": "Descartar encuesta",
 		"submit": "Enviar",
 		"next": "Siguiente",
-		"submit_failed": "No se pudo enviar tu respuesta. Inténtalo de nuevo."
+		"submit_failed": "No se pudo enviar tu respuesta. Inténtalo de nuevo.",
+		"cancel": "Cancelar",
+		"skip": "Omitir",
+		"submitted": "Encuesta enviada",
+		"thank_you": "¡Gracias por responder la encuesta!"
 	},
 	"header": {
 		"home": "Inicio",
