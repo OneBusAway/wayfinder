@@ -154,6 +154,52 @@ describe('calculateMidpoint', () => {
 		const result = calculateMidpoint(null);
 		expect(result).toBeNull();
 	});
+
+	it('returns null when any stop has NaN coordinates', () => {
+		const stops = [
+			{ lat: NaN, lon: -122.3321 },
+			{ lat: 47.6092, lon: -122.3331 }
+		];
+		expect(calculateMidpoint(stops)).toBeNull();
+	});
+
+	it('returns null when any stop has undefined coordinates', () => {
+		const stops = [
+			{ lat: 47.6062, lon: -122.3321 },
+			{ lat: undefined, lon: -122.3331 }
+		];
+		expect(calculateMidpoint(stops)).toBeNull();
+	});
+
+	it('returns null when any stop has non-finite coordinates', () => {
+		const stops = [
+			{ lat: Infinity, lon: -122.3321 },
+			{ lat: 47.6092, lon: -122.3331 }
+		];
+		expect(calculateMidpoint(stops)).toBeNull();
+	});
+
+	it('returns null when a stop element is null or malformed', () => {
+		const stops = [{ lat: 47.6062, lon: -122.3321 }, null, {}];
+		expect(calculateMidpoint(stops)).toBeNull();
+	});
+
+	it('handles coordinate tuples and multiple coordinate arguments', () => {
+		const result = calculateMidpoint([47.6062, -122.3321], [47.6092, -122.3331]);
+		expect(result.lat).toBeCloseTo(47.6077);
+		expect(result.lon).toBeCloseTo(-122.3326);
+	});
+
+	it('handles single valid coordinate tuple', () => {
+		const result = calculateMidpoint([47.6062, -122.3321]);
+		expect(result).toEqual({ lat: 47.6062, lon: -122.3321 });
+	});
+
+	it('returns null for invalid coordinate tuples or arguments', () => {
+		expect(calculateMidpoint([NaN, -122.3], [47.6, -122.3])).toBeNull();
+		expect(calculateMidpoint([NaN, 0])).toBeNull();
+		expect(calculateMidpoint([undefined, undefined])).toBeNull();
+	});
 });
 
 describe('calculateBoundsFromAgencies', () => {
