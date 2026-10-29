@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+	import { Button } from '$components/ui/button';
 	import { page } from '$app/stores';
 	import { _ } from 'svelte-i18n';
 	import { ArrowLeft, Ban, CircleAlert, House, Map, TriangleAlert } from '@lucide/svelte';
@@ -37,7 +38,7 @@
 	};
 
 	// Safe wrapper for $_() that catches i18n initialization errors
-	function safeTranslate(key, fallback) {
+	function safeTranslate(key: string, fallback: string) {
 		try {
 			const tFn = $_;
 			if (typeof tFn === 'function') {
@@ -46,7 +47,10 @@
 			}
 			return fallback;
 		} catch (e) {
-			console.warn(`[i18n fallback] Error translating ${key}:`, e.message);
+			console.warn(
+				`[i18n fallback] Error translating ${key}:`,
+				e instanceof Error ? e.message : ''
+			);
 			return fallback;
 		}
 	}
@@ -102,11 +106,12 @@
 		<div class="flex gap-3">
 			<!-- FIXME: navigation path not built with resolve() -->
 			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-			<a href="/" class="button--primary inline-flex items-center gap-2" id="error-go-home">
+			<Button href="/" id="error-go-home">
 				<House class="h-4 w-4" />
 				{goHomeText}
-			</a>
-			<button
+			</Button>
+			<Button
+				id="error-go-back"
 				onclick={() => {
 					if (history.length > 1) {
 						history.back();
@@ -114,12 +119,11 @@
 						window.location.href = '/';
 					}
 				}}
-				class="button inline-flex items-center gap-2 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-gray-700"
-				id="error-go-back"
+				variant="outline"
 			>
 				<ArrowLeft class="rotate-rtl h-4 w-4" />
 				{goBackText}
-			</button>
+			</Button>
 		</div>
 	</div>
 </div>

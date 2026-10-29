@@ -109,14 +109,6 @@
 		@apply dark:bg-brand-accent dark:text-white dark:hover:bg-brand-accent-dark;
 	}
 
-	.button {
-		@apply rounded-md bg-surface px-3 py-2 text-sm font-semibold text-surface-foreground shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50;
-	}
-
-	.button--primary {
-		@apply rounded-md bg-brand-accent px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-brand-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent;
-	}
-
 	.rtl {
 		@apply flex-row-reverse text-right;
 		direction: rtl;
