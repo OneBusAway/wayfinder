@@ -69,6 +69,7 @@
 		handleTripPlan: (tripPlanData: { data: TripPlanResponse }) => void;
 		handleViewAllRoutes: () => void;
 		mapProvider: MapProvider;
+		isStopInteractive?: (stop: Stop) => boolean;
 		onCollapse?: (() => void) | null;
 	}
 
@@ -83,6 +84,7 @@
 		clearTripItineraries,
 		cssClasses = '',
 		mapProvider,
+		isStopInteractive,
 		onCollapse = null,
 		collapsed = false,
 		// When false, Plan tab stays available but TripPlan mounts elsewhere
@@ -123,7 +125,8 @@
 		const markerOptions = {
 			stop: stop,
 			position: { lat: stop.lat, lng: stop.lon },
-			onClick: () => (handleMapStopMarkerSelect ?? handleStopMarkerSelect)(stop)
+			onClick: () => (handleMapStopMarkerSelect ?? handleStopMarkerSelect)(stop),
+			isInteractive: () => isStopInteractive?.(stop) ?? true
 		};
 		mapProvider.addMarker(markerOptions);
 		mapProvider.flyTo(stop.lat, stop.lon, 20);
