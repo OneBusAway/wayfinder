@@ -103,7 +103,7 @@
 			</p>
 		{/if}
 
-		<div class="flex gap-3">
+		<div class="flex flex-wrap justify-center gap-3">
 			<!-- FIXME: navigation path not built with resolve() -->
 			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
 			<Button href="/" id="error-go-home">
