@@ -200,6 +200,57 @@ describe('calculateMidpoint', () => {
 		expect(calculateMidpoint([NaN, 0])).toBeNull();
 		expect(calculateMidpoint([undefined, undefined])).toBeNull();
 	});
+
+	it('returns null when latitude or longitude is out of geographic range', () => {
+		// Out-of-range latitude in stop objects
+		expect(
+			calculateMidpoint([
+				{ lat: 120, lon: -122.3321 },
+				{ lat: 47.6092, lon: -122.3331 }
+			])
+		).toBeNull();
+		expect(
+			calculateMidpoint([
+				{ lat: -95, lon: -122.3321 },
+				{ lat: 47.6092, lon: -122.3331 }
+			])
+		).toBeNull();
+
+		// Out-of-range longitude in stop objects
+		expect(
+			calculateMidpoint([
+				{ lat: 47.6062, lon: 185 },
+				{ lat: 47.6092, lon: -122.3331 }
+			])
+		).toBeNull();
+		expect(
+			calculateMidpoint([
+				{ lat: 47.6062, lon: -190 },
+				{ lat: 47.6092, lon: -122.3331 }
+			])
+		).toBeNull();
+
+		// Out-of-range coordinates in single tuple
+		expect(calculateMidpoint([120, -122.3321])).toBeNull();
+		expect(calculateMidpoint([-95, -122.3321])).toBeNull();
+		expect(calculateMidpoint([47.6062, 185])).toBeNull();
+		expect(calculateMidpoint([47.6062, -190])).toBeNull();
+
+		// Out-of-range coordinates in multi-argument tuples
+		expect(calculateMidpoint([120, -122.3], [47.6, -122.3])).toBeNull();
+		expect(calculateMidpoint([47.6, -122.3], [47.6, 200])).toBeNull();
+	});
+
+	it('accepts coordinates at the geographic range boundaries', () => {
+		const result = calculateMidpoint([
+			{ lat: 90, lon: 180 },
+			{ lat: -90, lon: -180 }
+		]);
+		expect(result).toEqual({ lat: 0, lon: 0 });
+
+		const tupleResult = calculateMidpoint([90, 180]);
+		expect(tupleResult).toEqual({ lat: 90, lon: 180 });
+	});
 });
 
 describe('calculateBoundsFromAgencies', () => {
