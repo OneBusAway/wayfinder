@@ -180,7 +180,7 @@ export default class OpenStreetMapProvider {
 			icon: icon,
 			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false,
-			interactive: options.interactive ?? true,
+			isInteractive: options.isInteractive,
 			showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom,
 			emphasis: options.emphasis ?? 'full',
 			dotColor: options.dotColor ?? null
@@ -230,18 +230,6 @@ export default class OpenStreetMapProvider {
 			if (marker?.props) {
 				marker.props.showRoutesLabel = shouldShow;
 			}
-		}
-	}
-
-	/**
-	 * @param {boolean} stopSheetOpen
-	 * @param {string | null} [selectedStopId]
-	 */
-	setStopInteractivity(stopSheetOpen, selectedStopId = null) {
-		for (const [stopId, marker] of this.markersMap) {
-			if (!marker?.props) continue;
-
-			marker.props.interactive = !stopSheetOpen || stopId === selectedStopId;
 		}
 	}
 

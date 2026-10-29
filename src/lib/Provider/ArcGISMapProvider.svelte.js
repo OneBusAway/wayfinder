@@ -317,7 +317,7 @@ export default class ArcGISMapProvider {
 			icon: chooseStopIcon(options.stop, options.icon),
 			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false,
-			interactive: options.interactive ?? true,
+			isInteractive: options.isInteractive,
 			showRoutesLabel: this.getZoom() >= this.showStopsRoutesAtZoom,
 			emphasis: options.emphasis ?? 'full',
 			dotColor: options.dotColor ?? null
@@ -361,18 +361,6 @@ export default class ArcGISMapProvider {
 		if (visible === this.routeLabelsVisible) return;
 		this.routeLabelsVisible = visible;
 		for (const marker of this.markersMap.values()) marker.props.showRoutesLabel = visible;
-	}
-
-	/**
-	 * @param {boolean} stopSheetOpen
-	 * @param {string | null} [selectedStopId]
-	 */
-	setStopInteractivity(stopSheetOpen, selectedStopId = null) {
-		for (const [stopId, marker] of this.markersMap) {
-			if (!marker?.props) continue;
-
-			marker.props.interactive = !stopSheetOpen || stopId === selectedStopId;
-		}
 	}
 
 	highlightMarker(stopId) {

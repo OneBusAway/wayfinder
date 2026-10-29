@@ -99,7 +99,7 @@ describe('StopMarker emphasis', () => {
 	});
 
 	test('disables the marker button when not interactive', () => {
-		renderMarker({ interactive: false });
+		renderMarker({ isInteractive: () => false });
 
 		const button = screen.getByRole('button', { name: stop.name });
 		expect(button).toBeDisabled();
@@ -114,7 +114,7 @@ describe('StopMarker emphasis', () => {
 				icon: faBus,
 				onClick: vi.fn(),
 				showRoutesLabel: true,
-				interactive: false
+				isInteractive: () => false
 			}
 		});
 
@@ -131,7 +131,7 @@ describe('StopMarker emphasis', () => {
 				icon: faBus,
 				onClick: vi.fn(),
 				showRoutesLabel: true,
-				interactive: false
+				isInteractive: () => false
 			}
 		});
 

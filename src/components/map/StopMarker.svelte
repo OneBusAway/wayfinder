@@ -10,7 +10,7 @@
 	 * @typedef {Object} Props
 	 * @property {Stop} stop
 	 * @property {(event: MouseEvent) => void} onClick
-	 * @property {boolean} [interactive] - Whether the marker can be activated or focused
+	 * @property {() => boolean} [isInteractive] - Whether the marker can be activated or focused
 	 * @property {IconDefinition} icon - Font Awesome icon for the route type
 	 * @property {boolean} [isHighlighted]
 	 * @property {boolean} [showRoutesLabel]
@@ -23,13 +23,15 @@
 	let {
 		stop,
 		onClick,
-		interactive = true,
+		isInteractive = () => true,
 		icon,
 		isHighlighted = false,
 		showRoutesLabel = false,
 		emphasis = 'full',
 		dotColor = null
 	} = $props();
+
+	const interactive = $derived(isInteractive());
 
 	const MAX_ROUTES_TO_SHOW = 3;
 	let isExpanded = $state(false);
@@ -148,6 +150,7 @@
 			onclick={toggleRoutesList}
 			onkeydown={handleRoutesLabelKeydown}
 			aria-expanded={isExpanded}
+			aria-disabled={!interactive}
 			aria-label={isExpanded ? 'Collapse route list' : `Show all ${routeNames.length} routes`}
 		>
 			<span class="label-text">{routesLabelText}</span>
