@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
+import { msToLocalArrivalDepartureTimeString } from '$lib/dateTimeFormat';
 
 // Local i18n mock that interpolates {name} values (the global setup mock returns keys).
 // A small dictionary stands in for en.json's format strings so interpolated keys
@@ -15,7 +16,10 @@ vi.mock('svelte-i18n', () => {
 		'status.arrived_ontime': 'Arrived on time',
 		'status.canceled_arrival': 'Canceled',
 		'status.frequency_until': 'Every {headway} min until {time}',
-		'status.scheduled': 'Scheduled'
+		'status.scheduled': 'Scheduled',
+		'status.late_without_arrive_depart': '{delay}m late',
+		'status.early_without_arrive_depart': '{delay}m early',
+		'status.on_time': 'On time'
 	};
 	return {
 		t: {
@@ -96,17 +100,20 @@ describe('ArrivalDeparture', () => {
 	});
 
 	test('renders "Arrived at {time}" and suppresses negative ETA badge for a scheduled past arrival', () => {
+		const scheduledTime = Date.now() - 4 * MIN;
 		const { container } = render(ArrivalDeparture, {
 			props: {
 				arrivalDeparture: baseArrival({
 					predicted: false,
 					predictedArrivalTime: null,
-					scheduledArrivalTime: Date.now() - 4 * MIN,
-					scheduledDepartureTime: Date.now() - 4 * MIN
+					scheduledArrivalTime: scheduledTime,
+					scheduledDepartureTime: scheduledTime
 				})
 			}
 		});
-		expect(screen.getByText('Arrived at 11:56 AM')).toBeInTheDocument();
+		expect(
+			screen.getByText(`Arrived at ${msToLocalArrivalDepartureTimeString(scheduledTime)}`)
+		).toBeInTheDocument();
 		expect(screen.queryByText('-4m')).not.toBeInTheDocument();
 		expect(screen.queryByText(/Scheduled arriving at/)).not.toBeInTheDocument();
 		expect(screen.queryByText('11:56 AM ·')).not.toBeInTheDocument();
@@ -115,6 +122,7 @@ describe('ArrivalDeparture', () => {
 	});
 
 	test('renders "Departed at {time}" and suppresses negative ETA badge for a scheduled past departure (stopSequence 0)', () => {
+		const scheduledTime = Date.now() - 5 * MIN;
 		render(ArrivalDeparture, {
 			props: {
 				arrivalDeparture: baseArrival({
@@ -122,12 +130,14 @@ describe('ArrivalDeparture', () => {
 					predicted: false,
 					predictedArrivalTime: null,
 					predictedDepartureTime: null,
-					scheduledArrivalTime: Date.now() - 5 * MIN,
-					scheduledDepartureTime: Date.now() - 5 * MIN
+					scheduledArrivalTime: scheduledTime,
+					scheduledDepartureTime: scheduledTime
 				})
 			}
 		});
-		expect(screen.getByText('Departed at 11:55 AM')).toBeInTheDocument();
+		expect(
+			screen.getByText(`Departed at ${msToLocalArrivalDepartureTimeString(scheduledTime)}`)
+		).toBeInTheDocument();
 		expect(screen.queryByText('-5m')).not.toBeInTheDocument();
 		expect(screen.queryByText(/Scheduled departure/)).not.toBeInTheDocument();
 	});
@@ -152,12 +162,13 @@ describe('ArrivalDeparture', () => {
 	});
 
 	test('preserves time prefix and renders headway text for a frequency-based trip in the past', () => {
+		const scheduledTime = Date.now() - 5 * MIN;
 		render(ArrivalDeparture, {
 			props: {
 				arrivalDeparture: baseArrival({
 					predicted: false,
-					scheduledArrivalTime: Date.now() - 5 * MIN,
-					scheduledDepartureTime: Date.now() - 5 * MIN,
+					scheduledArrivalTime: scheduledTime,
+					scheduledDepartureTime: scheduledTime,
 					frequency: {
 						startTime: Date.now() - 60 * MIN,
 						endTime: Date.now() + 60 * MIN,
@@ -167,7 +178,9 @@ describe('ArrivalDeparture', () => {
 				})
 			}
 		});
-		expect(screen.getByText(/11:55 AM ·/)).toBeInTheDocument();
+		expect(
+			screen.getByText(`${msToLocalArrivalDepartureTimeString(scheduledTime)} ·`)
+		).toBeInTheDocument();
 		expect(screen.getByText(/Every 10 min until/)).toBeInTheDocument();
 	});
 
@@ -221,19 +234,177 @@ describe('ArrivalDeparture', () => {
 	});
 
 	test('renders canceled status with scheduled time prefix for past canceled trip', () => {
+		const scheduledTime = Date.now() - 4 * MIN;
 		render(ArrivalDeparture, {
 			props: {
 				arrivalDeparture: baseArrival({
 					tripStatus: { status: 'CANCELED' },
 					predicted: false,
 					predictedArrivalTime: null,
-					scheduledArrivalTime: Date.now() - 4 * MIN,
-					scheduledDepartureTime: Date.now() - 4 * MIN
+					scheduledArrivalTime: scheduledTime,
+					scheduledDepartureTime: scheduledTime
 				})
 			}
 		});
 		expect(screen.getByText('Canceled')).toBeInTheDocument();
-		expect(screen.getByText('11:56 AM ·')).toBeInTheDocument();
+		expect(
+			screen.getByText(`${msToLocalArrivalDepartureTimeString(scheduledTime)} ·`)
+		).toBeInTheDocument();
+	});
+
+	test.each([
+		['a differing live prediction', true, 10, 13, 13],
+		['a live prediction equal to schedule', true, 10, 10, 10],
+		['scheduled fallback without a prediction', false, 10, 13, 10],
+		['scheduled fallback for an invalid prediction', true, 10, 13, 10, 0]
+	])(
+		'displays %s',
+		(_label, predicted, scheduledMinutes, predictedMinutes, expectedMinutes, invalidPrediction) => {
+			const scheduledTime = Date.now() + scheduledMinutes * MIN;
+			const predictedTime = invalidPrediction ?? Date.now() + predictedMinutes * MIN;
+			render(ArrivalDeparture, {
+				props: {
+					arrivalDeparture: baseArrival({
+						predicted,
+						scheduledArrivalTime: scheduledTime,
+						predictedArrivalTime: predictedTime
+					})
+				}
+			});
+
+			expect(
+				screen.getByText(
+					`${msToLocalArrivalDepartureTimeString(Date.now() + expectedMinutes * MIN)} ·`
+				)
+			).toBeInTheDocument();
+		}
+	);
+
+	test('replaces a stale 10:14 arrival with refreshed 10:34 data', async () => {
+		vi.setSystemTime(new Date(2026, 6, 22, 10, 0));
+		const firstArrivalTime = Date.now() + 14 * MIN;
+		const refreshedArrivalTime = Date.now() + 34 * MIN;
+		const { rerender } = render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: false,
+					scheduledArrivalTime: firstArrivalTime,
+					predictedArrivalTime: null
+				})
+			}
+		});
+
+		expect(
+			screen.getByText(`${msToLocalArrivalDepartureTimeString(firstArrivalTime)} ·`)
+		).toBeInTheDocument();
+		expect(screen.getByText('14m')).toBeInTheDocument();
+
+		await rerender({
+			arrivalDeparture: baseArrival({
+				predicted: false,
+				scheduledArrivalTime: refreshedArrivalTime,
+				predictedArrivalTime: null
+			})
+		});
+
+		expect(
+			screen.queryByText(`${msToLocalArrivalDepartureTimeString(firstArrivalTime)} ·`)
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByText(`${msToLocalArrivalDepartureTimeString(refreshedArrivalTime)} ·`)
+		).toBeInTheDocument();
+		expect(screen.queryByText('14m')).not.toBeInTheDocument();
+		expect(screen.getByText('34m')).toBeInTheDocument();
+	});
+
+	test('refreshes a live prediction and continues calculating delay from schedule', async () => {
+		const scheduledTime = Date.now() + 10 * MIN;
+		const firstPrediction = Date.now() + 13 * MIN;
+		const refreshedPrediction = Date.now() + 15 * MIN;
+		const { rerender } = render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: true,
+					scheduledArrivalTime: scheduledTime,
+					predictedArrivalTime: firstPrediction
+				})
+			}
+		});
+
+		expect(
+			screen.getByText(`${msToLocalArrivalDepartureTimeString(firstPrediction)} ·`)
+		).toBeInTheDocument();
+		expect(screen.getByText('3m late')).toBeInTheDocument();
+
+		await rerender({
+			arrivalDeparture: baseArrival({
+				predicted: true,
+				scheduledArrivalTime: scheduledTime,
+				predictedArrivalTime: refreshedPrediction
+			})
+		});
+
+		expect(
+			screen.queryByText(`${msToLocalArrivalDepartureTimeString(firstPrediction)} ·`)
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByText(`${msToLocalArrivalDepartureTimeString(refreshedPrediction)} ·`)
+		).toBeInTheDocument();
+		expect(screen.getByText('5m late')).toBeInTheDocument();
+	});
+
+	test.each([
+		['late', 60000, '1m late'],
+		['early', -60000, '1m early'],
+		['on time', 0, 'On time']
+	])('calculates %s from the exact timestamp difference', (_label, difference, expectedLabel) => {
+		const scheduledTime = Date.now() + 10 * MIN + 5000;
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: true,
+					scheduledArrivalTime: scheduledTime,
+					predictedArrivalTime: scheduledTime + difference
+				})
+			}
+		});
+
+		expect(screen.getByText(expectedLabel)).toBeInTheDocument();
+	});
+
+	test('preserves late direction without rounding a one-second difference to a minute', () => {
+		const scheduledTime = Date.now() + 10 * MIN + 59500;
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: true,
+					scheduledArrivalTime: scheduledTime,
+					predictedArrivalTime: scheduledTime + 1000
+				})
+			}
+		});
+
+		expect(screen.getByText('0m late')).toBeInTheDocument();
+	});
+
+	test('rounds a 30-second deviation to one minute when both times show the same minute', () => {
+		const scheduledTime = Date.now() + 10 * MIN + 5000;
+		const predictedTime = scheduledTime + 30000;
+		expect(msToLocalArrivalDepartureTimeString(predictedTime)).toBe(
+			msToLocalArrivalDepartureTimeString(scheduledTime)
+		);
+
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: true,
+					scheduledArrivalTime: scheduledTime,
+					predictedArrivalTime: predictedTime
+				})
+			}
+		});
+
+		expect(screen.getByText('1m late')).toBeInTheDocument();
 	});
 
 	// Regression guard for the overflow bug: a long headsign must wrap to a
