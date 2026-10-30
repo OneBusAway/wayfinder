@@ -61,16 +61,13 @@
 				const query = new URLSearchParams({
 					includeTrip: 'true',
 					includeSchedule: 'true',
-					includeStatus: 'true'
-				});
-				if (selectedServiceDate != null) {
-					query.set('serviceDate', String(selectedServiceDate));
-				}
+					includeStatus: 'true',
+					...(selectedServiceDate != null ? { serviceDate: String(selectedServiceDate) } : {})
+				}).toString();
 
-				const response = await fetch(
-					`/api/oba/trip-details/${selectedTripId}?${query.toString()}`,
-					{ signal: controller.signal }
-				);
+				const response = await fetch(`/api/oba/trip-details/${selectedTripId}?${query}`, {
+					signal: controller.signal
+				});
 
 				if (!response.ok) {
 					throw new Error('Unable to fetch trip details');
@@ -249,7 +246,7 @@
 								>
 									{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 								</div>
-								<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+								<div class="text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
 									{formatScheduleTimeFromSeconds(
 										tripStop.arrivalTime,
 										tripDetails.serviceDate ?? serviceDate,
