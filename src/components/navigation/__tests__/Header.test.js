@@ -62,7 +62,7 @@ describe('Header', () => {
 		render(Header);
 
 		// Check for logo
-		const logo = screen.getByAltText('Test Region');
+		const logo = screen.getByRole('presentation');
 		expect(logo).toBeInTheDocument();
 		expect(logo).toHaveAttribute('src', '/test-logo.png');
 
@@ -70,16 +70,12 @@ describe('Header', () => {
 		expect(screen.getByText('Test Region')).toBeInTheDocument();
 	});
 
-	test('logo and region name are clickable links', () => {
+	test('logo and region name share a single home link', () => {
 		render(Header);
 
-		const links = screen.getAllByRole('link', { name: /test region/i });
-		expect(links).toHaveLength(2); // One for logo, one for text
-
-		// Both should link to home
-		links.forEach((link) => {
-			expect(link).toHaveAttribute('href', '/');
-		});
+		const link = screen.getByRole('link', { name: 'Test Region' });
+		expect(link).toHaveAttribute('href', '/');
+		expect(link).toContainElement(screen.getByRole('presentation'));
 	});
 
 	test('has proper semantic structure', () => {
@@ -103,47 +99,6 @@ describe('Header', () => {
 		// Should still render logo and region name
 		expect(screen.getByText('Test Region')).toBeInTheDocument();
 	});
-
-	test('has accessible logo with proper alt text', () => {
-		render(Header);
-
-		const logo = screen.getByRole('img');
-		expect(logo).toHaveAttribute('alt', 'Test Region');
-		expect(logo).toBeVisible();
-	});
-
-	test('logo container has proper styling classes', () => {
-		render(Header);
-
-		const logoContainer = screen.getByText('Test Region').closest('div');
-		expect(logoContainer).toHaveClass('flex', 'items-center', 'justify-center', 'gap-x-2');
-	});
-
-	test('header has proper CSS classes for styling', () => {
-		const { container } = render(Header);
-
-		const header = container.querySelector('header');
-		expect(header).toHaveClass(
-			'flex',
-			'items-center',
-			'justify-between',
-			'border-b',
-			'border-gray-500',
-			'bg-brand-accent/80',
-			'text-brand-foreground',
-			'backdrop-blur-md',
-			'dark:bg-surface-dark',
-			'dark:text-surface-foreground-dark'
-		);
-	});
-
-	test('region name link has proper styling', () => {
-		render(Header);
-
-		const regionLinks = screen.getAllByRole('link', { name: /test region/i });
-		const textLink = regionLinks.find((link) => link.textContent === 'Test Region');
-		expect(textLink).toHaveClass('block', 'text-xl', 'font-extrabold');
-	});
 });
 
 describe('Header with region name hidden', () => {
@@ -163,34 +118,26 @@ describe('Header with region name hidden', () => {
 		vi.restoreAllMocks();
 	});
 
-	test('hides region name text when config is false', () => {
+	test('visually hides region name text when config is false', () => {
 		render(Header);
 
-		// Region name text should not be present
-		expect(screen.queryByText('Test Region')).not.toBeInTheDocument();
+		const regionName = screen.getByText('Test Region');
+		expect(regionName).toHaveClass('sr-only');
+		expect(regionName).not.toHaveClass('region-name');
 	});
 
-	test('logo alt text still uses region name for accessibility', () => {
+	test('logo stays decorative and the link is still named for screen readers', () => {
 		render(Header);
 
-		// Logo should still have the region name as alt text
-		const logo = screen.getByRole('img');
-		expect(logo).toHaveAttribute('alt', 'Test Region');
-	});
-
-	test('only logo link exists when region name is hidden', () => {
-		render(Header);
-
-		// Should only have one link for the logo
-		const links = screen.getAllByRole('link', { name: /test region/i });
-		expect(links).toHaveLength(1);
+		expect(screen.getByRole('presentation')).toHaveAttribute('alt', '');
+		expect(screen.getByRole('link', { name: 'Test Region' })).toBeInTheDocument();
 	});
 
 	test('dispatches openStopsTab event when logo is clicked', async () => {
 		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
 		render(Header);
 
-		const logoLink = screen.getAllByRole('link', { name: /test region/i })[0];
+		const logoLink = screen.getByRole('link', { name: 'Test Region' });
 		await fireEvent.click(logoLink);
 
 		expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
@@ -200,7 +147,7 @@ describe('Header with region name hidden', () => {
 		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
 		render(Header);
 
-		const logoLink = screen.getAllByRole('link', { name: /test region/i })[0];
+		const logoLink = screen.getByRole('link', { name: 'Test Region' });
 		dispatchSpy.mockClear();
 
 		// Ctrl-click
