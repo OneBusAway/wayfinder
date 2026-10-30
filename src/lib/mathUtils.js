@@ -20,27 +20,52 @@ export function toDirection(orientation) {
 	return Math.abs(direction);
 }
 
+function isValidCoordinate(lat, lon) {
+	return (
+		Number.isFinite(lat) &&
+		Number.isFinite(lon) &&
+		lat >= -90 &&
+		lat <= 90 &&
+		lon >= -180 &&
+		lon <= 180
+	);
+}
+
 /**
  * calculate midpoint of a list of stops so we can show the route on the map
- * @param {Array} stops - List of stops with {lat, lon}
- * @returns {{lat: number, lon: number} | null} Midpoint with {lat, lon}, or null if there are no stops
+ * @param {Array} stops - List of stops with {lat, lon} or [lat, lon] tuples
+ * @param {...any} rest - Additional coordinate arguments
+ * @returns {{lat: number, lon: number} | null} Midpoint with {lat, lon}, or null if there are no stops or invalid coordinates
  */
-export function calculateMidpoint(stops) {
+export function calculateMidpoint(stops, ...rest) {
+	const items = rest.length > 0 ? [stops, ...rest] : stops;
 	// return null if stops is null or empty
-	if (!Array.isArray(stops) || stops.length === 0) {
+	if (!Array.isArray(items) || items.length === 0) {
 		return null;
+	}
+
+	// Handle single [lat, lon] coordinate pair
+	if (items.length === 2 && typeof items[0] === 'number' && typeof items[1] === 'number') {
+		return isValidCoordinate(items[0], items[1]) ? { lat: items[0], lon: items[1] } : null;
 	}
 
 	let totalLat = 0;
 	let totalLon = 0;
 
-	for (const stop of stops) {
-		totalLat += stop.lat;
-		totalLon += stop.lon;
+	for (const stop of items) {
+		const lat = Array.isArray(stop) ? stop[0] : stop?.lat;
+		const lon = Array.isArray(stop) ? stop[1] : stop?.lon;
+
+		if (!isValidCoordinate(lat, lon)) {
+			return null;
+		}
+
+		totalLat += lat;
+		totalLon += lon;
 	}
 
-	const midpointLat = totalLat / stops.length;
-	const midpointLon = totalLon / stops.length;
+	const midpointLat = totalLat / items.length;
+	const midpointLon = totalLon / items.length;
 
 	return { lat: midpointLat, lon: midpointLon };
 }

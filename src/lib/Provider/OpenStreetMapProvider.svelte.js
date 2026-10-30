@@ -180,6 +180,7 @@ export default class OpenStreetMapProvider {
 			icon: icon,
 			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false,
+			isInteractive: options.isInteractive,
 			showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom,
 			emphasis: options.emphasis ?? 'full',
 			dotColor: options.dotColor ?? null
@@ -413,7 +414,7 @@ export default class OpenStreetMapProvider {
 		this.popupContentComponent = mount(PopupContent, {
 			target: popupContainer,
 			props: {
-				stopName: stop.name,
+				stop,
 				arrivalTime: stopTime ? stopTime.arrivalTime : null,
 				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 			}
@@ -434,7 +435,7 @@ export default class OpenStreetMapProvider {
 			this.popupContentComponent = mount(PopupContent, {
 				target: popupContainer,
 				props: {
-					stopName: stop.name,
+					stop,
 					arrivalTime: arrivalTime,
 					handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 				}

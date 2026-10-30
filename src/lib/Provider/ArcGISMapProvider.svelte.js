@@ -317,6 +317,7 @@ export default class ArcGISMapProvider {
 			icon: chooseStopIcon(options.stop, options.icon),
 			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false,
+			isInteractive: options.isInteractive,
 			showRoutesLabel: this.getZoom() >= this.showStopsRoutesAtZoom,
 			emphasis: options.emphasis ?? 'full',
 			dotColor: options.dotColor ?? null
@@ -474,7 +475,7 @@ export default class ArcGISMapProvider {
 		this.popupContentComponent = mount(PopupContent, {
 			target: container,
 			props: {
-				stopName: stop.name,
+				stop,
 				arrivalTime: stopTime?.arrivalTime ?? null,
 				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 			}
@@ -494,7 +495,7 @@ export default class ArcGISMapProvider {
 		this.popupContentComponent = mount(PopupContent, {
 			target: container,
 			props: {
-				stopName: stop.name,
+				stop,
 				arrivalTime,
 				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 			}

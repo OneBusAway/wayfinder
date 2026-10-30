@@ -1,4 +1,5 @@
 <script>
+	import { attachRoutesToStops } from '$lib/utils';
 	import { calculateMidpoint } from '$lib/mathUtils';
 	import { clearVehicleMarkersMap, fetchAndUpdateVehiclesForRoutes } from '$lib/vehicleUtils';
 	import { mapContrastColor } from '$lib/colorUtils';
@@ -152,7 +153,10 @@
 			}
 
 			const stopTimes = tripData?.data?.entry?.schedule?.stopTimes ?? [];
-			const stops = tripData?.data?.references?.stops ?? [];
+			const stops = attachRoutesToStops(
+				tripData?.data?.references?.stops ?? [],
+				tripData?.data?.references?.routes
+			);
 
 			// Fit the view to the full route shape so it's always centered and
 			// visible regardless of route length. Fall back to the stops' midpoint

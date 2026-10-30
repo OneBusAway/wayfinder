@@ -414,7 +414,11 @@ describe('SearchPane', () => {
 			await user.click(screen.getByRole('button', { name: /search/i }));
 			await user.click((await screen.findByText('Stop 1')).closest('button'));
 
-			const { onClick } = mockMapProvider.addMarker.mock.calls[0][0];
+			const { onClick, isInteractive } = mockMapProvider.addMarker.mock.calls[0][0];
+
+			expect(isInteractive).toEqual(expect.any(Function));
+			expect(isInteractive()).toBe(true);
+
 			onClick();
 
 			expect(handleMapStopMarkerSelect).toHaveBeenCalledWith(

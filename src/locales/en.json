@@ -294,6 +294,7 @@
 		"effect_no_effect": "No effect",
 		"effect_accessibility": "Accessibility issue"
 	},
+	"arrives_at": "Arrives {time}",
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
 		"view_details": "View Details",

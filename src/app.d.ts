@@ -18,7 +18,12 @@ declare global {
 		routeSelectedFromModal: CustomEvent<{
 			route: import('onebusaway-sdk/resources/routes-for-location').RoutesForLocationListResponse.Data.List;
 		}>;
+		themeChange: CustomEvent<{ darkMode: boolean }>;
 	}
+
+	/** Build-time constants injected by `define` in vite.config.js. */
+	const __OBA_LOGO_URL_DARK__: string;
+	const __SHOW_REGION_NAME_IN_NAV_BAR__: boolean;
 }
 
 export {};

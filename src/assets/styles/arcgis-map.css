@@ -44,13 +44,13 @@
 	color: #f3f4f6;
 }
 
-.esri-popup__main-container:has(.vehicle-popup-card) {
+.esri-popup__main-container:has(.map-popup-card) {
 	border-radius: 0.75rem;
 	overflow: hidden;
 }
 
-.dark .esri-popup:has(.vehicle-popup-card) .esri-popup__main-container,
-.dark .esri-popup:has(.vehicle-popup-card) .esri-popup__pointer-direction,
-.dark .esri-popup:has(.vehicle-popup-card) .esri-features__header {
+.dark .esri-popup:has(.map-popup-card) .esri-popup__main-container,
+.dark .esri-popup:has(.map-popup-card) .esri-popup__pointer-direction,
+.dark .esri-popup:has(.map-popup-card) .esri-features__header {
 	background-color: #111827;
 }
