@@ -529,6 +529,12 @@ describe('formatLastUpdated', () => {
 		expect(result).toBe('1 sec ago');
 	});
 
+	it('shows 0 secs for a timestamp ahead of the device clock', () => {
+		const timestamp = new Date('2024-01-16T12:00:05Z').valueOf();
+		const result = formatLastUpdated(timestamp, translations);
+		expect(result).toBe('0 secs ago');
+	});
+
 	it('works with different translation objects', () => {
 		const spanishTranslations = {
 			min: 'min',

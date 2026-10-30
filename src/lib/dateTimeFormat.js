@@ -377,7 +377,8 @@ export function formatLastUpdated(timestamp, translations) {
 	if (!Number.isFinite(timestamp)) return 'N/A';
 	const date = Temporal.Instant.fromEpochMilliseconds(timestamp);
 	const now = Temporal.Now.instant();
-	const { minutes, seconds } = now.since(date).round({ largestUnit: 'minute' });
+	const elapsed = now.since(date).round({ largestUnit: 'minute' });
+	const { minutes, seconds } = elapsed.sign < 0 ? { minutes: 0, seconds: 0 } : elapsed;
 
 	const minutesLabel = minutes === 1 ? translations.min : (translations.mins ?? translations.min);
 	const secondsLabel = seconds === 1 ? translations.sec : (translations.secs ?? translations.sec);
