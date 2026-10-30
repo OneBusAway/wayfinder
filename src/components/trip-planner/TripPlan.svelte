@@ -36,11 +36,20 @@
 	let selectedTo = $state(null);
 	let isLoadingFrom = $state(false);
 	let isLoadingTo = $state(false);
+
+	// Separate from isLoading*: those track autocomplete, while these track the
+	// geocode after a suggestion is picked, during which selectedFrom/selectedTo
+	// still hold the previous coordinates.
+	let isGeocodingFrom = $state(false);
+	let isGeocodingTo = $state(false);
+	let isGeocoding = $derived(isGeocodingFrom || isGeocodingTo);
+
 	let fromMarker;
 	let toMarker;
 	let loading = $state(false);
 	let fromRequestId = 0;
 	let toRequestId = 0;
+	let planRequestId = 0;
 	let fromAutocompleteRequestId = 0;
 	let toAutocompleteRequestId = 0;
 	// Recent trips stay behind a compact control so the plan form doesn't grow
@@ -150,8 +159,10 @@
 
 		if (isFrom) {
 			fromResults = [];
+			isGeocodingFrom = true;
 		} else {
 			toResults = [];
+			isGeocodingTo = true;
 		}
 
 		try {
@@ -182,12 +193,23 @@
 			}
 		} catch (error) {
 			console.error('Error selecting location:', error);
+		} finally {
+			if (isFrom && currentRequestId === fromRequestId) {
+				isGeocodingFrom = false;
+			} else if (!isFrom && currentRequestId === toRequestId) {
+				isGeocodingTo = false;
+			}
 		}
 	}
 
 	function clearInput(isFrom) {
 		invalidateAutocompleteRequest(isFrom);
+		// A plan in flight is for the trip being cleared, so drop its result.
+		planRequestId++;
+		loading = false;
 		if (isFrom) {
+			fromRequestId++;
+			isGeocodingFrom = false;
 			fromPlace = '';
 			fromResults = [];
 			isLoadingFrom = false;
@@ -197,6 +219,8 @@
 				fromMarker = null;
 			}
 		} else {
+			toRequestId++;
+			isGeocodingTo = false;
 			toPlace = '';
 			toResults = [];
 			isLoadingTo = false;
@@ -222,6 +246,13 @@
 	}
 
 	function swapLocations() {
+		// A pending geocode would land in the field it was picked for, which now
+		// holds the other location, so drop it and swap what is already selected.
+		fromRequestId++;
+		toRequestId++;
+		isGeocodingFrom = false;
+		isGeocodingTo = false;
+
 		const result = swapTripLocations({
 			fromPlace,
 			toPlace,
@@ -301,10 +332,13 @@
 	}
 
 	async function planTrip() {
-		if (!selectedFrom || !selectedTo) {
+		if (!selectedFrom || !selectedTo || isGeocoding) {
 			return;
 		}
 
+		// Swap and recent-trip selection can start a plan while another is still in
+		// flight, and responses may arrive out of order.
+		const requestId = ++planRequestId;
 		loading = true;
 		try {
 			mapProvider.clearAllPolylines();
@@ -323,6 +357,7 @@
 			// modal opens either with results or a visible error — a shared-link
 			// recipient never lands on a blank, dead-end map.
 			const data = await fetchTripPlan(selectedFrom, selectedTo);
+			if (requestId !== planRequestId) return;
 			handleTripPlan({ data });
 
 			if (!data.error) {
@@ -342,7 +377,9 @@
 		} catch (error) {
 			console.error('Unexpected error while planning trip:', error);
 		} finally {
-			loading = false;
+			if (requestId === planRequestId) {
+				loading = false;
+			}
 		}
 	}
 
@@ -567,7 +604,7 @@
 			</Button>
 		{/if}
 		<div class="flex-1"></div>
-		<Button disabled={!selectedFrom || !selectedTo} onclick={planTrip}>
+		<Button disabled={!selectedFrom || !selectedTo || isGeocoding} onclick={planTrip}>
 			{#if loading}
 				<svg
 					class="mr-2 h-5 w-5 animate-spin text-white disabled:dark:text-gray-400"
