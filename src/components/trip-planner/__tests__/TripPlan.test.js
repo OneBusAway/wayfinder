@@ -356,6 +356,72 @@ describe('TripPlan shared URL round trip', () => {
 		unmount();
 	});
 
+	it('ignores an older plan response that resolves after a newer one', async () => {
+		const resolvePlans = [];
+		global.fetch = vi.fn(
+			() =>
+				new Promise((resolve) => {
+					resolvePlans.push((itineraryId) =>
+						resolve({
+							ok: true,
+							json: () => Promise.resolve({ plan: { itineraries: [{ id: itineraryId }] } })
+						})
+					);
+				})
+		);
+		const { unmount } = render(TripPlan, { props });
+
+		window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: sharedTrip }));
+		window.dispatchEvent(
+			new CustomEvent('loadSharedTrip', {
+				detail: { ...sharedTrip, fromPlace: 'Work', toPlace: 'Home' }
+			})
+		);
+		await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
+
+		resolvePlans[1]('newer');
+		await waitFor(() => expect(props.handleTripPlan).toHaveBeenCalledOnce());
+		expect(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' })).toBeEnabled();
+
+		resolvePlans[0]('older');
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(props.handleTripPlan).toHaveBeenCalledOnce();
+		expect(props.handleTripPlan).toHaveBeenCalledWith({
+			data: { plan: { itineraries: [{ id: 'newer' }] } }
+		});
+		unmount();
+	});
+
+	it('ignores a plan response that resolves after an input is cleared', async () => {
+		let resolvePlan;
+		global.fetch = vi.fn(
+			() =>
+				new Promise((resolve) => {
+					resolvePlan = () =>
+						resolve({
+							ok: true,
+							json: () => Promise.resolve({ plan: { itineraries: [{ id: 'itin-1' }] } })
+						});
+				})
+		);
+		const { unmount } = render(TripPlan, { props });
+
+		window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: sharedTrip }));
+		await waitFor(() => expect(global.fetch).toHaveBeenCalledOnce());
+
+		await fireEvent.click(screen.getAllByRole('button', { name: 'search.clear' })[0]);
+		expect(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' })).toBeDisabled();
+
+		resolvePlan();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(props.handleTripPlan).not.toHaveBeenCalled();
+		const url = new URL(navigation.replaceState.mock.calls.at(-1)[0]);
+		expect(url.searchParams.has('from')).toBe(false);
+		unmount();
+	});
+
 	it('surfaces an error via handleTripPlan when a shared link has broken/invalid params', async () => {
 		const { unmount } = render(TripPlan, { props });
 
@@ -397,6 +463,135 @@ describe('TripPlan shared URL round trip', () => {
 		await waitFor(() => expect(setItemSpy).toHaveBeenCalled());
 
 		setItemSpy.mockRestore();
+		unmount();
+	});
+});
+
+describe('TripPlan pending location selection', () => {
+	let mapProvider;
+	let props;
+	let resolveGeocode;
+
+	beforeEach(() => {
+		let markerId = 0;
+		mapProvider = {
+			addPinMarker: vi.fn(() => ({ id: `marker-${++markerId}` })),
+			removePinMarker: vi.fn(),
+			clearAllPolylines: vi.fn()
+		};
+		props = {
+			handleTripPlan: vi.fn(),
+			clearTripItineraries: vi.fn(),
+			mapProvider
+		};
+		global.fetch = vi.fn((url) => {
+			if (url.startsWith('/api/oba/place-suggestions')) {
+				return Promise.resolve({
+					ok: true,
+					json: () =>
+						Promise.resolve({
+							suggestions: [{ displayText: 'Capitol Hill', name: 'Capitol Hill' }]
+						})
+				});
+			}
+			if (url.startsWith('/api/oba/geocode-location')) {
+				return new Promise((resolve) => {
+					resolveGeocode = () =>
+						resolve({
+							ok: true,
+							json: () =>
+								Promise.resolve({
+									location: { geometry: { location: { lat: 47.62, lng: -122.32 } } }
+								})
+						});
+				});
+			}
+			return Promise.resolve({
+				ok: true,
+				json: () => Promise.resolve({ plan: { itineraries: [] } })
+			});
+		});
+	});
+
+	afterEach(() => {
+		vi.clearAllMocks();
+		vi.useRealTimers();
+		delete global.fetch;
+	});
+
+	it('disables Plan until the picked suggestion finishes geocoding', async () => {
+		vi.useFakeTimers();
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const planButton = screen.getByRole('button', { name: 'trip-planner.plan_your_trip' });
+		expect(planButton).toBeEnabled();
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+
+		expect(planButton).toBeDisabled();
+
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+
+		expect(planButton).toBeEnabled();
+		expect(mapProvider.addPinMarker).toHaveBeenLastCalledWith(
+			{ lat: 47.62, lng: -122.32 },
+			'trip-planner.from'
+		);
+		unmount();
+	});
+
+	it('ignores a pending geocode when the field is cleared', async () => {
+		vi.useFakeTimers();
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+
+		await fireEvent.click(screen.getAllByRole('button', { name: 'search.clear' })[0]);
+
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+
+		// The superseded geocode must not repopulate the cleared field.
+		expect(fromInput).toHaveValue('');
+		unmount();
+	});
+
+	it('keeps Swap enabled mid-geocode and ignores the pending geocode once swapped', async () => {
+		vi.useFakeTimers();
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const [fromInput, toInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+
+		const swapButton = screen.getByRole('button', { name: 'trip-planner.swap_locations' });
+		expect(swapButton).toBeEnabled();
+		await fireEvent.click(swapButton);
+		expect(global.fetch).toHaveBeenLastCalledWith(expect.stringContaining('/api/otp/plan'));
+
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+
+		expect(fromInput).toHaveValue('47.70000, -122.40000');
+		expect(toInput).toHaveValue('47.60000, -122.30000');
+		expect(mapProvider.addPinMarker).not.toHaveBeenCalledWith(
+			{ lat: 47.62, lng: -122.32 },
+			expect.anything()
+		);
 		unmount();
 	});
 });

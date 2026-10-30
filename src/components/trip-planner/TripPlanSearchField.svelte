@@ -1,20 +1,20 @@
-<script>
-	// @ts-check
+<script lang="ts">
 	import { MapPin, X } from '@lucide/svelte';
+	import type { FormEventHandler } from 'svelte/elements';
+	import type { PlaceSuggestion } from '$lib/types';
 	import { t } from 'svelte-i18n';
-	/**
-	 * @typedef {Object} Props
-	 * @property {string} [inputId]
-	 * @property {string} [place]
-	 * @property {import('$lib/types').PlaceSuggestion[]} [results]
-	 * @property {boolean} [isLoading]
-	 * @property {(value: string) => void} onInput
-	 * @property {() => void} onClear
-	 * @property {(suggestion: import('$lib/types').PlaceSuggestion) => void} onSelect
-	 * @property {() => void} [onDismiss]
-	 */
 
-	/** @type {Props} */
+	interface Props {
+		inputId?: string;
+		place?: string;
+		results?: PlaceSuggestion[];
+		isLoading?: boolean;
+		onInput: (value: string) => void;
+		onClear: () => void;
+		onSelect: (suggestion: PlaceSuggestion) => void;
+		onDismiss?: () => void;
+	}
+
 	let {
 		inputId = 'location-input',
 		place = $bindable(''),
@@ -24,35 +24,31 @@
 		onClear,
 		onSelect,
 		onDismiss = () => {}
-	} = $props();
+	}: Props = $props();
 
 	let activeIndex = $state(-1);
 	let listboxId = $derived(`${inputId}-listbox`);
 	let hasResults = $derived(!isLoading && Array.isArray(results) && results.length > 0);
 
-	/** @param {Event & { currentTarget: HTMLInputElement }} event */
-	function handleInput(event) {
+	const handleInput: FormEventHandler<HTMLInputElement> = function handleInput(event) {
 		activeIndex = -1;
 		onInput(event.currentTarget.value);
-	}
+	};
 
 	function handleClear() {
 		onClear();
 	}
 
-	/** @param {import('$lib/types').PlaceSuggestion} result */
-	function handleSelect(result) {
+	function handleSelect(result: PlaceSuggestion) {
 		activeIndex = -1;
 		onSelect(result);
 	}
 
-	/** @param {number} index */
-	function optionId(index) {
+	function optionId(index: number) {
 		return `${listboxId}-option-${index}`;
 	}
 
-	/** @param {KeyboardEvent} event */
-	function handleKeydown(event) {
+	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
 			if (!hasResults && !isLoading) return;
 
@@ -95,6 +91,7 @@
 		aria-haspopup="listbox"
 		aria-controls={hasResults ? listboxId : undefined}
 		aria-activedescendant={hasResults && activeIndex >= 0 ? optionId(activeIndex) : undefined}
+		autocomplete="off"
 		placeholder="{$t('trip-planner.search_for_a_place')}..."
 		class="block w-full rounded-md border-gray-300 pr-10 text-sm text-black shadow-xs focus:border-blue-500 focus:ring-blue-500"
 	/>
@@ -121,9 +118,9 @@
 			role="listbox"
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg"
 		>
-			<!-- FIXME: each block has no key -->
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each results as result, index}
+			<!-- Only Google returns a placeId, and geocoders can repeat a name or place, so prefix
+			     the index to keep keys unique. -->
+			{#each results as result, index (`${index}:${result.placeId ?? result.displayText}`)}
 				<li role="presentation">
 					<button
 						id={optionId(index)}
