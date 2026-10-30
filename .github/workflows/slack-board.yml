@@ -28,6 +28,8 @@ concurrency:
 
 jobs:
   update:
+    # Run only in OneBusAway's primary repo, forks have no Slack fork
+    if: github.repository == 'OneBusAway/wayfinder'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
