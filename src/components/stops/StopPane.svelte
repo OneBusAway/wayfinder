@@ -650,7 +650,7 @@
 											{stop}
 											tripId={arrival.tripId}
 											serviceDate={arrival.serviceDate}
-											scheduledArrivalTime={arrival.scheduledArrivalTime}
+											vehicleId={arrival.vehicleId}
 										/>
 									</AccordionItem>
 								</div>

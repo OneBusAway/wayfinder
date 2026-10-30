@@ -1,9 +1,46 @@
 import { describe, it, expect } from 'vitest';
 import {
+	resolveLiveState,
 	resolveVehicleStopIndex,
 	computeVisibleStopRange,
 	buildStopSegments
 } from '$lib/tripDetailsUtils.js';
+
+describe('resolveLiveState', () => {
+	it('accepts status only when active trip and selected vehicle match', () => {
+		expect(
+			resolveLiveState(
+				{ status: { activeTripId: 'trip-a', vehicleId: 'vehicle-a' } },
+				'trip-a',
+				'vehicle-a'
+			)
+		).toEqual({ state: 'live', isLive: true });
+	});
+
+	it('treats a different or missing active trip as a previous-trip state', () => {
+		expect(
+			resolveLiveState({ status: { activeTripId: 'trip-b', vehicleId: 'vehicle-a' } }, 'trip-a')
+		).toEqual({ state: 'previous-trip', isLive: false });
+		expect(resolveLiveState({ status: { vehicleId: 'vehicle-a' } }, 'trip-a')).toEqual({
+			state: 'previous-trip',
+			isLive: false
+		});
+	});
+
+	it('treats a different vehicle as a previous-trip state', () => {
+		expect(
+			resolveLiveState(
+				{ status: { activeTripId: 'trip-a', vehicleId: 'vehicle-b' } },
+				'trip-a',
+				'vehicle-a'
+			)
+		).toEqual({ state: 'previous-trip', isLive: false });
+	});
+
+	it('falls back to scheduled state when no live status is available', () => {
+		expect(resolveLiveState(null, 'trip-a')).toEqual({ state: 'scheduled', isLive: false });
+	});
+});
 
 describe('resolveVehicleStopIndex', () => {
 	const stopTimes = [{ stopId: 'a' }, { stopId: 'b' }, { stopId: 'c' }, { stopId: 'd' }];

@@ -1,33 +1,38 @@
 <script>
 	import { _ } from 'svelte-i18n';
-	import { onMount, onDestroy } from 'svelte';
+	import { untrack } from 'svelte';
 	import { Check, MapPin, RadioTower } from '@lucide/svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faBus } from '@fortawesome/free-solid-svg-icons';
-	import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
-	import { resolveVehicleStopIndex, buildStopSegments } from '$lib/tripDetailsUtils';
+	import { formatScheduleTimeFromSeconds } from '$lib/dateTimeFormat';
+	import {
+		resolveLiveState,
+		resolveVehicleStopIndex,
+		buildStopSegments
+	} from '$lib/tripDetailsUtils';
 
 	/**
 	 * @typedef {Object} Props
 	 * @property {import('$lib/types').Stop} stop
 	 * @property {string} tripId
 	 * @property {number | null} [serviceDate]
-	 * @property {number | null} [scheduledArrivalTime] - The scheduled arrival time (ms since
-	 *   epoch) for the arrival row the rider tapped. Forwarded to the trip-details API as the
-	 *   `time` parameter so the server resolves the correct trip instance rather than the one
-	 *   currently running at the time of the request.
+	 * @property {string | null} [vehicleId]
 	 */
 
 	/** @type {Props} */
-	let { stop, tripId, serviceDate = null, scheduledArrivalTime = null } = $props();
+	let { stop, tripId, serviceDate = null, vehicleId = null } = $props();
 
 	let tripDetails = $state(null);
 	let routeInfo = $state(null);
 	let stopInfo = $state({});
 	let error = $state(null);
-	let interval;
-	let busPosition = $state(-1);
-	let abortController = null;
+	let latestRequestId = 0;
+	let liveState = $derived(resolveLiveState(tripDetails, tripId, vehicleId));
+	let busPosition = $derived(
+		liveState.isLive
+			? resolveVehicleStopIndex(tripDetails?.status, tripDetails?.schedule?.stopTimes)
+			: -1
+	);
 
 	// Rows to render for the segment from the vehicle's current position through
 	// the rider's selected stop: stops already passed and stops beyond the rider's
@@ -37,80 +42,112 @@
 		buildStopSegments(tripDetails?.schedule?.stopTimes, busPosition, stop.id)
 	);
 
-	// Locate the vehicle along the trip using the stop IDs the server reports for
-	// exactly this purpose. `closestStop` is the stop nearest the vehicle's
-	// current position; fall back to `nextStop`. (The previous approach compared
-	// raw lat/lon ranges, which assumed stops were ordered monotonically by
-	// coordinate and so highlighted the wrong stop on most route directions.)
-	function calculateBusPosition() {
-		busPosition = resolveVehicleStopIndex(tripDetails?.status, tripDetails?.schedule?.stopTimes);
-	}
+	$effect(() => {
+		const selectedTripId = tripId;
+		const selectedServiceDate = serviceDate;
+		const controller = new AbortController();
+		let timer;
+		let disposed = false;
 
-	async function loadTripDetails() {
-		// Cancel the previous request if it exists
-		if (abortController) {
-			abortController.abort();
-		}
-		abortController = new AbortController();
+		tripDetails = null;
+		routeInfo = null;
+		stopInfo = {};
+		error = null;
 
-		try {
-			let url = `/api/oba/trip-details/${tripId}?includeTrip=true&includeSchedule=true&includeStatus=true`;
-			if (serviceDate) {
-				url += `&serviceDate=${serviceDate}`;
-			}
-			// Anchor the lookup to the scheduled departure the rider tapped.
-			// Without this, the OBA server resolves the trip against the current
-			// wall-clock time and may return the next trip when the selected one
-			// has already departed its upstream stops (issue #330).
-			if (scheduledArrivalTime) {
-				url += `&time=${scheduledArrivalTime}`;
-			}
-			const response = await fetch(url, {
-				signal: abortController.signal
-			});
+		async function loadTripDetails() {
+			const requestId = ++latestRequestId;
+			const selectedVehicleId = untrack(() => vehicleId);
+			try {
+				const query = new URLSearchParams({
+					includeTrip: 'true',
+					includeSchedule: 'true',
+					includeStatus: 'true'
+				});
+				if (selectedServiceDate != null) {
+					query.set('serviceDate', String(selectedServiceDate));
+				}
 
-			if (!response.ok) {
-				error = 'Unable to fetch trip details';
-				return;
-			}
+				const response = await fetch(
+					`/api/oba/trip-details/${selectedTripId}?${query.toString()}`,
+					{ signal: controller.signal }
+				);
 
-			const jsonBody = await response.json();
-			const data = jsonBody.data;
+				if (!response.ok) {
+					throw new Error('Unable to fetch trip details');
+				}
 
-			tripDetails = data.entry;
+				const jsonBody = await response.json();
+				const data = jsonBody?.data;
+				const entry = data?.entry;
+				const status = entry?.status;
 
-			if (data?.references?.routes) {
-				routeInfo = data.references.routes.find((route) => route.id === tripDetails.routeId);
-			}
+				const tripIdMismatch = entry?.tripId !== selectedTripId;
+				const serviceDateMismatch =
+					selectedServiceDate != null && entry?.serviceDate !== selectedServiceDate;
+				if (tripIdMismatch || serviceDateMismatch) {
+					if (import.meta.env.DEV) {
+						console.warn('Trip details response did not match the selected trip', {
+							selected: {
+								tripId: selectedTripId,
+								serviceDate: selectedServiceDate
+							},
+							response: {
+								tripId: entry?.tripId ?? null,
+								serviceDate: entry?.serviceDate ?? null
+							}
+						});
+					}
+					throw new Error('Trip details response did not match the selected trip');
+				}
 
-			if (data?.references?.stops) {
-				stopInfo = data.references.stops.reduce((acc, stop) => {
-					acc[stop.id] = stop;
+				if (
+					selectedVehicleId != null &&
+					status?.vehicleId !== selectedVehicleId &&
+					import.meta.env.DEV
+				) {
+					console.warn('Trip details vehicle did not match the selected arrival', {
+						selectedVehicleId,
+						responseVehicleId: status?.vehicleId ?? null,
+						tripId: selectedTripId
+					});
+				}
+
+				if (requestId !== latestRequestId || controller.signal.aborted) return;
+				tripDetails = entry;
+				routeInfo = data?.references?.routes?.find((route) => route.id === entry.routeId) ?? null;
+				stopInfo = (data?.references?.stops ?? []).reduce((acc, item) => {
+					acc[item.id] = item;
 					return acc;
 				}, {});
-			}
-
-			calculateBusPosition();
-		} catch (err) {
-			if (err.name !== 'AbortError') {
-				console.error('Error fetching trip details:', err);
-				error = 'Error fetching trip details';
+			} catch (err) {
+				if (
+					requestId === latestRequestId &&
+					!controller.signal.aborted &&
+					!(err instanceof Error && err.name === 'AbortError')
+				) {
+					console.error('Error fetching trip details:', err);
+					error =
+						err instanceof Error &&
+						(err.message === 'Unable to fetch trip details' ||
+							err.message === 'Trip details response did not match the selected trip')
+							? err.message
+							: 'Error fetching trip details';
+				}
+			} finally {
+				if (!disposed && !controller.signal.aborted && requestId === latestRequestId) {
+					timer = setTimeout(loadTripDetails, 30000);
+				}
 			}
 		}
-	}
 
-	onMount(() => {
-		loadTripDetails();
-		interval = setInterval(loadTripDetails, 30000);
-	});
+		void loadTripDetails();
 
-	onDestroy(() => {
-		clearInterval(interval);
-		interval = null;
-		if (abortController) {
-			abortController.abort();
-			abortController = null;
-		}
+		return () => {
+			disposed = true;
+			clearTimeout(timer);
+			controller.abort();
+			latestRequestId++;
+		};
 	});
 </script>
 
@@ -118,11 +155,13 @@
 	{#if error}
 		<p>{error}</p>
 	{:else if tripDetails}
-		{#if tripDetails.status?.vehicleId}
+		{#if liveState.isLive}
 			<h2 class="flex items-center gap-2 text-sm font-semibold">
 				<RadioTower class="h-4 w-4 text-brand" />
 				{$_('trip_details.live_vehicle', { values: { vehicleId: tripDetails.status.vehicleId } })}
 			</h2>
+		{:else if liveState.state === 'previous-trip'}
+			<h2 class="text-sm font-semibold">{$_('trip_details.previous_trip')}</h2>
 		{:else if routeInfo}
 			<h2 class="text-sm font-semibold">
 				{$_('trip_details.route')}
@@ -210,8 +249,12 @@
 								>
 									{stopInfo[tripStop.stopId] ? stopInfo[tripStop.stopId].name : tripStop.stopId}
 								</div>
-								<div class="text-sm whitespace-nowrap text-gray-500 dark:text-gray-400">
-									{formatSecondsFromMidnight(tripStop.arrivalTime)}
+								<div class="whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+									{formatScheduleTimeFromSeconds(
+										tripStop.arrivalTime,
+										tripDetails.serviceDate ?? serviceDate,
+										tripDetails.schedule.timeZone
+									)}
 								</div>
 							</div>
 						</div>
