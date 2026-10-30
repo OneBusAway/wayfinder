@@ -1,11 +1,12 @@
 <script>
 	import { debounce } from '$lib/utils';
 	import { onMount, onDestroy } from 'svelte';
+	import { Button } from '$components/ui/button/';
 	import TripPlanSearchField from './TripPlanSearchField.svelte';
 	import OptionsPill from './OptionsPill.svelte';
 	import { browser } from '$app/environment';
 	import { t } from 'svelte-i18n';
-	import { ArrowLeftRight, History } from '@lucide/svelte';
+	import { ArrowLeftRight, Circle, History, MapPin } from '@lucide/svelte';
 	import {
 		tripOptions,
 		showTripOptionsModal,
@@ -238,6 +239,9 @@
 		selectedTo = result.selectedTo;
 		fromMarker = result.fromMarker;
 		toMarker = result.toMarker;
+
+		// Auto-run the search
+		planTrip();
 	}
 
 	// Always resolves to an OTP-response-shaped object ({ plan } or { error }),
@@ -455,7 +459,7 @@
 		}
 	});
 
-	async function handleRecentTripSelect(trip) {
+	function handleRecentTripSelect(trip) {
 		showRecentTrips = false;
 		fromPlace = trip.fromPlace;
 		toPlace = trip.toPlace;
@@ -463,30 +467,29 @@
 		selectedTo = trip.toCoords;
 
 		// Auto-run the search
-		await planTrip();
+		planTrip();
 	}
 </script>
 
 <div>
-	<!-- From/To fields: Mobile flexbox (labels above fields) | sm+: stacked vertical -->
-	<div class="flex flex-row items-center justify-between gap-x-2">
-		<div class="flex w-full flex-col gap-y-4">
-			<!-- From: mobile-only label -->
-			<label
-				for="from-location-input"
-				class="pt-2 text-xs font-medium text-gray-700 sm:hidden dark:text-white"
-			>
-				{$t('trip-planner.from')}:
-			</label>
-			<!-- From: field wrapper -->
-			<div>
-				<label
-					for="from-location-input"
-					class="hidden text-sm font-medium text-gray-700 sm:block dark:text-white"
-				>
-					{$t('trip-planner.from')}:
+	<div class="flex flex-row items-center justify-between gap-x-2 py-1">
+		<div class="flex w-full gap-x-3">
+			<div class="flex flex-col items-center py-3">
+				<label for="from-location-input" class="flex">
+					<Circle aria-hidden="true" class="size-4 shrink-0 text-gray-500 dark:text-gray-400" />
+					<span class="sr-only">{$t('trip-planner.from')}</span>
 				</label>
-				<div class="sm:mt-1">
+				<div
+					aria-hidden="true"
+					class="my-1 w-0 flex-1 border-l-2 border-dotted border-gray-400 dark:border-gray-500"
+				></div>
+				<label for="to-location-input" class="flex">
+					<MapPin aria-hidden="true" class="size-4 shrink-0 text-red-600 dark:text-red-400" />
+					<span class="sr-only">{$t('trip-planner.to')}</span>
+				</label>
+			</div>
+			<div class="flex w-full flex-col gap-y-2">
+				<div>
 					<TripPlanSearchField
 						inputId="from-location-input"
 						place={fromPlace}
@@ -498,24 +501,7 @@
 						onDismiss={() => dismissSearchResults(true)}
 					/>
 				</div>
-			</div>
-
-			<!-- To: mobile-only label -->
-			<label
-				for="to-location-input"
-				class="pt-2 text-xs font-medium text-gray-700 sm:hidden dark:text-white"
-			>
-				{$t('trip-planner.to')}:
-			</label>
-			<!-- To: field wrapper -->
-			<div>
-				<label
-					for="to-location-input"
-					class="hidden text-sm font-medium text-gray-700 sm:block dark:text-white"
-				>
-					{$t('trip-planner.to')}:
-				</label>
-				<div class="sm:mt-1">
+				<div>
 					<TripPlanSearchField
 						inputId="to-location-input"
 						place={toPlace}
@@ -529,23 +515,22 @@
 				</div>
 			</div>
 		</div>
-		<!-- Swap Button: centered between From and To -->
 		<div class="flex justify-center">
-			<button
-				type="button"
-				onclick={swapLocations}
-				disabled={!fromPlace && !toPlace}
+			<Button
 				aria-label={$t('trip-planner.swap_locations')}
-				class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition-all hover:bg-gray-50 hover:text-gray-900 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:text-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200 dark:disabled:border-gray-700 dark:disabled:bg-gray-800 dark:disabled:text-gray-600"
+				class="h-8 w-8 rounded-full"
+				disabled={!fromPlace && !toPlace}
+				onclick={swapLocations}
+				variant="outline"
 			>
-				<ArrowLeftRight class="h-4 w-4 rotate-90" />
-			</button>
+				<ArrowLeftRight class="size-4 rotate-90" />
+			</Button>
 		</div>
 	</div>
 
 	<!-- Options Pills (only show non-default options) -->
 	{#if $tripOptions.departureType !== 'now' || $tripOptions.wheelchair || $tripOptions.optimize === 'fewestTransfers' || $tripOptions.maxWalkDistance !== DEFAULT_WALK_DISTANCE_METERS}
-		<div class="mt-4 flex flex-wrap gap-1.5">
+		<div class="mt-3 flex flex-wrap gap-1.5">
 			{#if $tripOptions.departureType !== 'now'}
 				<OptionsPill icon="🕐" label={formatDepartureDisplay($tripOptions, $t, regionTz)} />
 			{/if}
@@ -564,38 +549,25 @@
 		</div>
 	{/if}
 
-	<!-- Button Row -->
-	<div class="mt-4 flex items-stretch gap-2">
-		<button
-			type="button"
-			onclick={() => showTripOptionsModal.set(true)}
-			class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-		>
+	<div class="mt-3 flex items-stretch gap-2">
+		<Button type="button" variant="outline" onclick={() => showTripOptionsModal.set(true)}>
 			{$t('trip-planner.options')}
-		</button>
+		</Button>
 		{#if $recentTrips.length > 0}
-			<button
-				type="button"
-				onclick={() => (showRecentTrips = !showRecentTrips)}
+			<Button
 				aria-expanded={showRecentTrips}
 				aria-controls="trip-plan-recent-trips"
-				class="inline-flex items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-				class:border-brand-accent={showRecentTrips}
-				class:text-brand-accent={showRecentTrips}
-				class:dark:border-brand={showRecentTrips}
-				class:dark:text-brand={showRecentTrips}
+				class="aria-expanded:border-brand-accent aria-expanded:text-brand-accent dark:aria-expanded:border-brand dark:aria-expanded:text-brand"
+				variant="outline"
+				onclick={() => (showRecentTrips = !showRecentTrips)}
 			>
 				<History class="h-3.5 w-3.5" />
 				<span class="hidden md:inline">{$t('trip-planner.recents')}</span>
 				<span class="sr-only md:hidden">{$t('trip-planner.recent_searches')}</span>
-			</button>
+			</Button>
 		{/if}
 		<div class="flex-1"></div>
-		<button
-			onclick={planTrip}
-			class="flex items-center justify-center rounded-md bg-brand-accent px-4 py-2 text-white shadow-md transition-colors hover:bg-brand-accent-dark disabled:cursor-not-allowed disabled:bg-gray-300 dark:bg-green-800 dark:hover:bg-green-900 disabled:dark:bg-gray-700/50 disabled:dark:text-gray-400"
-			disabled={!selectedFrom || !selectedTo}
-		>
+		<Button disabled={!selectedFrom || !selectedTo} onclick={planTrip}>
 			{#if loading}
 				<svg
 					class="mr-2 h-5 w-5 animate-spin text-white disabled:dark:text-gray-400"
@@ -612,7 +584,7 @@
 			{:else}
 				{$t('trip-planner.plan_your_trip')}
 			{/if}
-		</button>
+		</Button>
 	</div>
 
 	{#if showRecentTrips && $recentTrips.length > 0}
