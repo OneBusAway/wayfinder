@@ -317,6 +317,7 @@ export default class ArcGISMapProvider {
 			icon: chooseStopIcon(options.stop, options.icon),
 			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false,
+			isInteractive: options.isInteractive,
 			showRoutesLabel: this.getZoom() >= this.showStopsRoutesAtZoom,
 			emphasis: options.emphasis ?? 'full',
 			dotColor: options.dotColor ?? null

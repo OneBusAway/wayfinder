@@ -97,4 +97,47 @@ describe('StopMarker emphasis', () => {
 		});
 		expect(screen.getByText('C, 22')).toBeInTheDocument();
 	});
+
+	test('disables the marker button when not interactive', () => {
+		renderMarker({ isInteractive: () => false });
+
+		const button = screen.getByRole('button', { name: stop.name });
+		expect(button).toBeDisabled();
+	});
+
+	test('removes the routes label from the tab order when not interactive', () => {
+		const withRoutes = { ...stop, routes: [{ shortName: 'C' }, { shortName: '22' }] };
+
+		render(StopMarker, {
+			props: {
+				stop: withRoutes,
+				icon: faBus,
+				onClick: vi.fn(),
+				showRoutesLabel: true,
+				isInteractive: () => false
+			}
+		});
+
+		const routesLabel = screen.getByRole('button', { name: 'Show all 2 routes' });
+		expect(routesLabel).toHaveAttribute('tabindex', '-1');
+	});
+
+	test('does not expand the routes label when not interactive', async () => {
+		const withRoutes = { ...stop, routes: [{ shortName: 'C' }, { shortName: '22' }] };
+
+		render(StopMarker, {
+			props: {
+				stop: withRoutes,
+				icon: faBus,
+				onClick: vi.fn(),
+				showRoutesLabel: true,
+				isInteractive: () => false
+			}
+		});
+
+		const routesLabel = screen.getByRole('button', { name: 'Show all 2 routes' });
+		await routesLabel.click();
+
+		expect(routesLabel).toHaveAttribute('aria-expanded', 'false');
+	});
 });

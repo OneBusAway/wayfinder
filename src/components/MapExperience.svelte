@@ -186,7 +186,8 @@
 		mapProvider.addMarker({
 			stop: favorite,
 			position: { lat: favorite.lat, lng: favorite.lon },
-			onClick: () => handleMapStopMarkerSelect(favorite)
+			onClick: () => handleMapStopMarkerSelect(favorite),
+			isInteractive: () => !selectedStopId || favorite.id === selectedStopId
 		});
 		handleStopMarkerSelect(favorite);
 	}
@@ -681,6 +682,7 @@
 				{/if}
 				<SearchPane
 					{mapProvider}
+					isStopInteractive={(stop) => !selectedStopId || stop.id === selectedStopId}
 					cssClasses="pointer-events-auto"
 					collapsed={showCollapsedSearch || hideSearchForMobilePlan}
 					embedTripPlan={!mobilePlanSheetOpen}
@@ -783,6 +785,7 @@
 		{startInTripPlanMode}
 		{activeRoutes}
 		{routeColors}
+		{stopSheetOpen}
 		bind:mapProvider
 	/>
 {/if}

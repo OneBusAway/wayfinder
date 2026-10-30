@@ -46,6 +46,7 @@ function makeProvider() {
 		addMarker: vi.fn(),
 		clearAllStopMarkers: vi.fn(),
 		setStopEmphasis: vi.fn(),
+		setStopInteractivity: vi.fn(),
 		resetStopEmphasis: vi.fn(),
 		setBasemapDimmed: vi.fn(),
 		setTheme: vi.fn()

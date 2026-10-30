@@ -180,6 +180,7 @@ export default class OpenStreetMapProvider {
 			icon: icon,
 			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false,
+			isInteractive: options.isInteractive,
 			showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom,
 			emphasis: options.emphasis ?? 'full',
 			dotColor: options.dotColor ?? null
