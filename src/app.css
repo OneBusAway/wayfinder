@@ -7,6 +7,73 @@
    on the same node — e.g. modal-pane's dark:bg-surface-dark vs bg-white/80. */
 @custom-variant dark (&:is(.dark, .dark *));
 
+/* shadcn-svelte theme. Each token maps onto a color from tailwind.config.js so
+   shadcn components pick up the region's COLOR_* branding and match the
+   existing light and dark styles. */
+:root {
+	--background: theme(colors.surface);
+	--foreground: theme(colors.surface-foreground);
+	--card: theme(colors.surface);
+	--card-foreground: theme(colors.surface-foreground);
+	--popover: theme(colors.surface);
+	--popover-foreground: theme(colors.surface-foreground);
+	--primary: theme(colors.brand-accent);
+	--primary-foreground: theme(colors.white);
+	--secondary: theme(colors.gray.200);
+	--secondary-foreground: theme(colors.gray.800);
+	--muted: theme(colors.gray.100);
+	--muted-foreground: theme(colors.gray.500);
+	--accent: theme(colors.gray.100);
+	--accent-foreground: theme(colors.gray.900);
+	--destructive: theme(colors.red.600);
+	--border: theme(colors.gray.200);
+	--input: theme(colors.gray.300);
+	--ring: theme(colors.brand-accent);
+	--radius: 0.5rem;
+}
+
+.dark {
+	--background: theme(colors.surface-dark);
+	--foreground: theme(colors.surface-foreground-dark);
+	--card: theme(colors.surface-dark);
+	--card-foreground: theme(colors.surface-foreground-dark);
+	--popover: theme(colors.gray.800);
+	--popover-foreground: theme(colors.surface-foreground-dark);
+	--primary: theme(colors.brand-accent);
+	--primary-foreground: theme(colors.white);
+	--secondary: theme(colors.gray.700);
+	--secondary-foreground: theme(colors.gray.200);
+	--muted: theme(colors.gray.800);
+	--muted-foreground: theme(colors.gray.400);
+	--accent: theme(colors.gray.700);
+	--accent-foreground: theme(colors.white);
+	--destructive: theme(colors.red.500);
+	--border: theme(colors.gray.700);
+	--input: theme(colors.gray.600);
+	--ring: theme(colors.brand);
+}
+
+@theme inline {
+	--color-ring: var(--ring);
+	--color-input: var(--input);
+	--color-border: var(--border);
+	--color-destructive: var(--destructive);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-accent: var(--accent);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-muted: var(--muted);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-secondary: var(--secondary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary: var(--primary);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-popover: var(--popover);
+	--color-card-foreground: var(--card-foreground);
+	--color-card: var(--card);
+	--color-foreground: var(--foreground);
+	--color-background: var(--background);
+}
+
 @layer base {
 	*,
 	::after,
@@ -14,6 +81,10 @@
 	::backdrop,
 	::file-selector-button {
 		@apply border-border;
+	}
+
+	body {
+		@apply bg-background text-foreground;
 	}
 
 	/* v4 preflight drops cursor:pointer on buttons — restore v3 behavior.
@@ -161,71 +232,4 @@
 	from {
 		visibility: hidden;
 	}
-}
-
-/* shadcn-svelte theme. Each token maps onto a color from tailwind.config.js so
-   shadcn components pick up the region's COLOR_* branding and match the
-   existing light and dark styles. */
-:root {
-	--background: theme(colors.surface);
-	--foreground: theme(colors.surface-foreground);
-	--card: theme(colors.surface);
-	--card-foreground: theme(colors.surface-foreground);
-	--popover: theme(colors.surface);
-	--popover-foreground: theme(colors.surface-foreground);
-	--primary: theme(colors.brand-accent);
-	--primary-foreground: theme(colors.white);
-	--secondary: theme(colors.gray.200);
-	--secondary-foreground: theme(colors.gray.800);
-	--muted: theme(colors.gray.100);
-	--muted-foreground: theme(colors.gray.500);
-	--accent: theme(colors.gray.100);
-	--accent-foreground: theme(colors.gray.900);
-	--destructive: theme(colors.red.600);
-	--border: theme(colors.gray.200);
-	--input: theme(colors.gray.300);
-	--ring: theme(colors.brand-accent);
-	--radius: 0.5rem;
-}
-
-.dark {
-	--background: theme(colors.surface-dark);
-	--foreground: theme(colors.surface-foreground-dark);
-	--card: theme(colors.surface-dark);
-	--card-foreground: theme(colors.surface-foreground-dark);
-	--popover: theme(colors.gray.800);
-	--popover-foreground: theme(colors.surface-foreground-dark);
-	--primary: theme(colors.brand-accent);
-	--primary-foreground: theme(colors.white);
-	--secondary: theme(colors.gray.700);
-	--secondary-foreground: theme(colors.gray.200);
-	--muted: theme(colors.gray.800);
-	--muted-foreground: theme(colors.gray.400);
-	--accent: theme(colors.gray.700);
-	--accent-foreground: theme(colors.white);
-	--destructive: theme(colors.red.500);
-	--border: theme(colors.gray.700);
-	--input: theme(colors.gray.600);
-	--ring: theme(colors.brand);
-}
-
-@theme inline {
-	--color-ring: var(--ring);
-	--color-input: var(--input);
-	--color-border: var(--border);
-	--color-destructive: var(--destructive);
-	--color-accent-foreground: var(--accent-foreground);
-	--color-accent: var(--accent);
-	--color-muted-foreground: var(--muted-foreground);
-	--color-muted: var(--muted);
-	--color-secondary-foreground: var(--secondary-foreground);
-	--color-secondary: var(--secondary);
-	--color-primary-foreground: var(--primary-foreground);
-	--color-primary: var(--primary);
-	--color-popover-foreground: var(--popover-foreground);
-	--color-popover: var(--popover);
-	--color-card-foreground: var(--card-foreground);
-	--color-card: var(--card);
-	--color-foreground: var(--foreground);
-	--color-background: var(--background);
 }
