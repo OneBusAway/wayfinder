@@ -142,6 +142,46 @@ export function formatSecondsFromMidnight(secondsSinceMidnight) {
 }
 
 /**
+ * Format a scheduled service-day time in the browser's local timezone.
+ *
+ * OBA schedule times are seconds since midnight in the schedule timezone,
+ * while serviceDate identifies midnight at the start of that service day.
+ *
+ * @param {number} secondsSinceMidnight
+ * @param {number | null | undefined} serviceDate milliseconds since Unix epoch
+ * @param {string | null | undefined} timeZone schedule timezone
+ * @returns {string}
+ */
+export function formatScheduleTimeFromSeconds(secondsSinceMidnight, serviceDate, timeZone) {
+	if (!Number.isFinite(secondsSinceMidnight)) return '';
+	if (!Number.isFinite(serviceDate) || !timeZone) {
+		return formatSecondsFromMidnight(secondsSinceMidnight);
+	}
+
+	try {
+		const serviceDay = Temporal.Instant.fromEpochMilliseconds(serviceDate)
+			.toZonedDateTimeISO(timeZone)
+			.toPlainDate();
+		const dayOffset = Math.floor(secondsSinceMidnight / 86400);
+		const secondsOfDay = secondsSinceMidnight - dayOffset * 86400;
+		const plainTime = new Temporal.PlainTime().add({ seconds: secondsOfDay });
+		const instant = serviceDay
+			.add({ days: dayOffset })
+			.toZonedDateTime({ timeZone, plainTime })
+			.toInstant();
+
+		return msToLocalArrivalDepartureTimeString(instant.epochMilliseconds);
+	} catch (error) {
+		if (!(error instanceof RangeError)) throw error;
+		console.error('formatScheduleTimeFromSeconds: invalid service date or timezone', {
+			serviceDate,
+			timeZone
+		});
+		return formatSecondsFromMidnight(secondsSinceMidnight);
+	}
+}
+
+/**
  * Helper to format departure time for pill display
  * Accepts an optional translator function for i18n support
  * @param {Object} opts - Options object containing departureType, departureTime, and departureDate

@@ -8,39 +8,63 @@ import {
 	mockEmptyArrivalsAndDeparturesResponse
 } from '../../../tests/fixtures/obaData.js';
 import { env } from '$env/dynamic/public';
+import { visibleArrivals } from '$lib/arrivalFiltering.js';
 
-// Mock complex child components
+// Mock complex child components while tracking instance identity across polls.
+const arrivalDepartureMock = vi.hoisted(() => ({ instances: [] }));
+const tripDetailsPaneMock = vi.hoisted(() => ({ instances: [] }));
+
 vi.mock('$components/ArrivalDeparture.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({
-		$set: vi.fn(),
-		$destroy: vi.fn(),
-		$on: vi.fn()
-	}))
+	default: vi.fn((_anchor, props) => {
+		const instance = { ...props, destroyed: false };
+		arrivalDepartureMock.instances.push(instance);
+		return {
+			$set: vi.fn((updatedProps) => Object.assign(instance, updatedProps)),
+			$destroy: vi.fn(() => {
+				instance.destroyed = true;
+			}),
+			$on: vi.fn()
+		};
+	})
 }));
 
 vi.mock('$components/oba/TripDetailsPane.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({
-		$set: vi.fn(),
-		$destroy: vi.fn(),
-		$on: vi.fn()
-	}))
+	default: vi.fn((anchor, props) => {
+		const instance = { ...props, destroyed: false };
+		tripDetailsPaneMock.instances.push(instance);
+		return {
+			$set: vi.fn((updatedProps) => Object.assign(instance, updatedProps)),
+			$destroy: vi.fn(() => {
+				instance.destroyed = true;
+			}),
+			$on: vi.fn()
+		};
+	})
 }));
 
+// Keep the accordion test double local to this file and render every item body
+// without creating Svelte context that could leak into other mounted tests.
 vi.mock('$components/containers/SingleSelectAccordion.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({
-		$set: vi.fn(),
-		$destroy: vi.fn(),
-		$on: vi.fn(),
-		handleAccordionSelectionChanged: vi.fn()
-	}))
+	default: vi.fn((anchor, props) => {
+		props.children?.(anchor);
+		return {
+			$set: vi.fn(),
+			$destroy: vi.fn(),
+			$on: vi.fn()
+		};
+	})
 }));
 
 vi.mock('$components/containers/AccordionItem.svelte', () => ({
-	default: vi.fn().mockImplementation(() => ({
-		$set: vi.fn(),
-		$destroy: vi.fn(),
-		$on: vi.fn()
-	}))
+	default: vi.fn((anchor, props) => {
+		props.header?.(anchor, () => false);
+		props.children?.(anchor);
+		return {
+			$set: vi.fn(),
+			$destroy: vi.fn(),
+			$on: vi.fn()
+		};
+	})
 }));
 
 // Stub card: sets its bound `services` only when a test opts in via onDemandStub.
@@ -127,6 +151,7 @@ vi.mock('svelte-i18n', () => ({
 					routes: 'Routes',
 					arrivals_and_departures: 'Arrivals and departures',
 					'schedule_for_stop.view_schedule': 'View Schedule',
+					'trip_details.previous_trip': 'Vehicle is finishing a previous trip',
 					load_more_arrivals: 'Load more arrivals',
 					loading: 'Loading...',
 					no_arrivals_found_in_next_minutes: 'No arrivals found in the next {minutes} minutes',
@@ -166,6 +191,8 @@ describe('StopPane', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		onDemandStub.services = [];
+		tripDetailsPaneMock.instances.length = 0;
+		arrivalDepartureMock.instances.length = 0;
 
 		// Reset fetch mock
 		global.fetch.mockReset();
@@ -174,6 +201,7 @@ describe('StopPane', () => {
 	afterEach(() => {
 		vi.clearAllTimers();
 		delete env.PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES;
+		vi.useRealTimers();
 	});
 
 	const defaultProps = {
@@ -395,6 +423,106 @@ describe('StopPane', () => {
 		});
 
 		expect(screen.queryByText('View Schedule')).not.toBeInTheDocument();
+	});
+
+	test('passes each arrival trip identity to its own trip details pane', async () => {
+		const arrivals = mockArrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures.map(
+			(arrival, index) => ({
+				...arrival,
+				tripId: `1_selected_trip_${index}`,
+				serviceDate: 1738800000000 + index,
+				vehicleId: `1_vehicle_${index}`
+			})
+		);
+
+		const arrivalsResponse = {
+			...mockArrivalsAndDeparturesResponse,
+			data: {
+				...mockArrivalsAndDeparturesResponse.data,
+				entry: {
+					...mockArrivalsAndDeparturesResponse.data.entry,
+					arrivalsAndDepartures: arrivals
+				}
+			}
+		};
+
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => arrivalsResponse
+		});
+
+		render(StopPane, { props: defaultProps });
+
+		await waitFor(() => {
+			expect(tripDetailsPaneMock.instances).toHaveLength(arrivals.length);
+		});
+
+		expect(
+			tripDetailsPaneMock.instances.map(({ tripId, serviceDate, vehicleId }) => ({
+				tripId,
+				serviceDate,
+				vehicleId
+			}))
+		).toEqual(
+			arrivals.map(({ tripId, serviceDate, vehicleId }) => ({
+				tripId,
+				serviceDate,
+				vehicleId
+			}))
+		);
+		expect(
+			tripDetailsPaneMock.instances.every((instance) => !('scheduledArrivalTime' in instance))
+		).toBe(true);
+	});
+
+	test('keys a refreshed arrival by its trip identity instead of reusing the row at its index', async () => {
+		const firstArrivalTime = Date.now() + 14 * 60000;
+		const refreshedArrivalTime = Date.now() + 34 * 60000;
+		const serviceDate = Date.now();
+		const makeArrival = (tripId, arrivalTime) => ({
+			...mockArrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures[0],
+			tripId,
+			serviceDate,
+			stopSequence: 3,
+			vehicleId: '1_4001',
+			predicted: false,
+			predictedArrivalTime: null,
+			scheduledArrivalTime: arrivalTime,
+			scheduledDepartureTime: arrivalTime
+		});
+		const withArrival = (arrival) => ({
+			...mockArrivalsAndDeparturesResponse,
+			data: {
+				...mockArrivalsAndDeparturesResponse.data,
+				entry: {
+					...mockArrivalsAndDeparturesResponse.data.entry,
+					arrivalsAndDepartures: [arrival]
+				}
+			}
+		});
+		const firstArrival = makeArrival('trip-1014', firstArrivalTime);
+		expect(visibleArrivals([firstArrival], Date.now())).toHaveLength(1);
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => withArrival(firstArrival)
+		});
+		const pane = render(StopPane, { props: defaultProps });
+		await waitFor(() => expect(arrivalDepartureMock.instances).toHaveLength(1));
+		expect(arrivalDepartureMock.instances[0].arrivalDeparture.scheduledArrivalTime).toBe(
+			firstArrivalTime
+		);
+
+		global.fetch.mockResolvedValueOnce({
+			ok: true,
+			json: async () => withArrival(makeArrival('trip-1034', refreshedArrivalTime))
+		});
+		await pane.component.refresh();
+		await waitFor(() => expect(arrivalDepartureMock.instances).toHaveLength(2));
+		expect(arrivalDepartureMock.instances[1].arrivalDeparture.tripId).toBe('trip-1034');
+		expect(arrivalDepartureMock.instances[1].arrivalDeparture.scheduledArrivalTime).toBe(
+			refreshedArrivalTime
+		);
 	});
 
 	test('handles API error response (500)', async () => {
