@@ -184,23 +184,6 @@ describe('calculateMidpoint', () => {
 		expect(calculateMidpoint(stops)).toBeNull();
 	});
 
-	it('handles coordinate tuples and multiple coordinate arguments', () => {
-		const result = calculateMidpoint([47.6062, -122.3321], [47.6092, -122.3331]);
-		expect(result.lat).toBeCloseTo(47.6077);
-		expect(result.lon).toBeCloseTo(-122.3326);
-	});
-
-	it('handles single valid coordinate tuple', () => {
-		const result = calculateMidpoint([47.6062, -122.3321]);
-		expect(result).toEqual({ lat: 47.6062, lon: -122.3321 });
-	});
-
-	it('returns null for invalid coordinate tuples or arguments', () => {
-		expect(calculateMidpoint([NaN, -122.3], [47.6, -122.3])).toBeNull();
-		expect(calculateMidpoint([NaN, 0])).toBeNull();
-		expect(calculateMidpoint([undefined, undefined])).toBeNull();
-	});
-
 	it('returns null when latitude or longitude is out of geographic range', () => {
 		// Out-of-range latitude in stop objects
 		expect(
@@ -235,10 +218,6 @@ describe('calculateMidpoint', () => {
 		expect(calculateMidpoint([-95, -122.3321])).toBeNull();
 		expect(calculateMidpoint([47.6062, 185])).toBeNull();
 		expect(calculateMidpoint([47.6062, -190])).toBeNull();
-
-		// Out-of-range coordinates in multi-argument tuples
-		expect(calculateMidpoint([120, -122.3], [47.6, -122.3])).toBeNull();
-		expect(calculateMidpoint([47.6, -122.3], [47.6, 200])).toBeNull();
 	});
 
 	it('accepts coordinates at the geographic range boundaries', () => {
@@ -247,9 +226,6 @@ describe('calculateMidpoint', () => {
 			{ lat: -90, lon: -180 }
 		]);
 		expect(result).toEqual({ lat: 0, lon: 0 });
-
-		const tupleResult = calculateMidpoint([90, 180]);
-		expect(tupleResult).toEqual({ lat: 90, lon: 180 });
 	});
 });
 

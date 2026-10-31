@@ -33,28 +33,21 @@ function isValidCoordinate(lat, lon) {
 
 /**
  * calculate midpoint of a list of stops so we can show the route on the map
- * @param {Array} stops - List of stops with {lat, lon} or [lat, lon] tuples
- * @param {...any} rest - Additional coordinate arguments
+ * @param {Array<{lat: number, lon: number}>} stops - List of stops
  * @returns {{lat: number, lon: number} | null} Midpoint with {lat, lon}, or null if there are no stops or invalid coordinates
  */
-export function calculateMidpoint(stops, ...rest) {
-	const items = rest.length > 0 ? [stops, ...rest] : stops;
+export function calculateMidpoint(stops) {
 	// return null if stops is null or empty
-	if (!Array.isArray(items) || items.length === 0) {
+	if (!Array.isArray(stops) || stops.length === 0) {
 		return null;
-	}
-
-	// Handle single [lat, lon] coordinate pair
-	if (items.length === 2 && typeof items[0] === 'number' && typeof items[1] === 'number') {
-		return isValidCoordinate(items[0], items[1]) ? { lat: items[0], lon: items[1] } : null;
 	}
 
 	let totalLat = 0;
 	let totalLon = 0;
 
-	for (const stop of items) {
-		const lat = Array.isArray(stop) ? stop[0] : stop?.lat;
-		const lon = Array.isArray(stop) ? stop[1] : stop?.lon;
+	for (const stop of stops) {
+		const lat = stop?.lat;
+		const lon = stop?.lon;
 
 		if (!isValidCoordinate(lat, lon)) {
 			return null;
@@ -64,8 +57,8 @@ export function calculateMidpoint(stops, ...rest) {
 		totalLon += lon;
 	}
 
-	const midpointLat = totalLat / items.length;
-	const midpointLon = totalLon / items.length;
+	const midpointLat = totalLat / stops.length;
+	const midpointLon = totalLon / stops.length;
 
 	return { lat: midpointLat, lon: midpointLon };
 }
