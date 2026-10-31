@@ -31,12 +31,15 @@ export function resolveLiveState(details, tripId, vehicleId = null) {
 	if (!status) return { state: 'scheduled', isLive: false };
 
 	const activeTripMatches = status.activeTripId === tripId;
-	const vehicleMatches = vehicleId == null || vehicleId === '' || status.vehicleId === vehicleId;
-	if (activeTripMatches && status.vehicleId && vehicleMatches) {
+	const selectedVehicleAvailable = vehicleId != null && vehicleId !== '';
+	const responseVehicleAvailable = Boolean(status.vehicleId);
+	const vehicleMismatch =
+		selectedVehicleAvailable && responseVehicleAvailable && status.vehicleId !== vehicleId;
+	if (activeTripMatches && responseVehicleAvailable && !vehicleMismatch) {
 		return { state: 'live', isLive: true };
 	}
 
-	if (!activeTripMatches || !vehicleMatches) {
+	if (!activeTripMatches || vehicleMismatch) {
 		return { state: 'previous-trip', isLive: false };
 	}
 

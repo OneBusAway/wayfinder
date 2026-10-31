@@ -389,7 +389,7 @@ describe('ArrivalDeparture', () => {
 			}
 		});
 
-		expect(screen.getByText('On time')).toBeInTheDocument();
+		expect(screen.getByText('On time')).toHaveClass('text-green-600');
 		expect(screen.queryByText('0m late')).not.toBeInTheDocument();
 	});
 
@@ -405,7 +405,7 @@ describe('ArrivalDeparture', () => {
 			}
 		});
 
-		expect(screen.getByText('On time')).toBeInTheDocument();
+		expect(screen.getByText('On time')).toHaveClass('text-green-600');
 		expect(screen.queryByText('0m early')).not.toBeInTheDocument();
 	});
 
@@ -451,32 +451,35 @@ describe('ArrivalDeparture', () => {
 				}
 			});
 
-			expect(screen.getByText(expectedLabel)).toBeInTheDocument();
+			expect(screen.getByText(expectedLabel)).toHaveClass('text-green-600');
 		}
 	);
 
 	test.each([
-		['arrival late', 1, 60000, 'Arrived 1m late'],
-		['arrival early', 1, -60000, 'Arrived 1m early'],
-		['departure late', 0, 60000, 'Departed 1m late'],
-		['departure early', 0, -60000, 'Departed 1m early']
-	])('preserves direction for a non-zero %s', (_label, stopSequence, difference, expectedLabel) => {
-		const scheduledTime = Date.now() - 10 * MIN;
-		render(ArrivalDeparture, {
-			props: {
-				arrivalDeparture: baseArrival({
-					stopSequence,
-					predicted: true,
-					scheduledArrivalTime: scheduledTime,
-					predictedArrivalTime: scheduledTime + difference,
-					scheduledDepartureTime: scheduledTime,
-					predictedDepartureTime: scheduledTime + difference
-				})
-			}
-		});
+		['arrival late', 1, 60000, 'Arrived 1m late', 'text-violet-600'],
+		['arrival early', 1, -60000, 'Arrived 1m early', 'text-red-600'],
+		['departure late', 0, 60000, 'Departed 1m late', 'text-violet-600'],
+		['departure early', 0, -60000, 'Departed 1m early', 'text-red-600']
+	])(
+		'preserves direction and color for a non-zero %s',
+		(_label, stopSequence, difference, expectedLabel, expectedColor) => {
+			const scheduledTime = Date.now() - 10 * MIN;
+			render(ArrivalDeparture, {
+				props: {
+					arrivalDeparture: baseArrival({
+						stopSequence,
+						predicted: true,
+						scheduledArrivalTime: scheduledTime,
+						predictedArrivalTime: scheduledTime + difference,
+						scheduledDepartureTime: scheduledTime,
+						predictedDepartureTime: scheduledTime + difference
+					})
+				}
+			});
 
-		expect(screen.getByText(expectedLabel)).toBeInTheDocument();
-	});
+			expect(screen.getByText(expectedLabel)).toHaveClass(expectedColor);
+		}
+	);
 
 	// Regression guard for the overflow bug: a long headsign must wrap to a
 	// second line (and clamp/shrink after) rather than push the ETA off the

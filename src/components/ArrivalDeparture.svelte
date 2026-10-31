@@ -27,7 +27,7 @@
 	let frequency = $derived(arrivalDeparture.frequency);
 	let stopSequence = $derived(arrivalDeparture.stopSequence ?? 1); // Default to 1 if not provided
 
-	function computeColor(delay, isPredicted) {
+	function computeColor(roundedDelay, isPredicted) {
 		// Each colored branch returns the 600 shade for light mode (passes WCAG AA
 		// on white) paired with the 400 shade in dark mode (passes on gray-800).
 		// The colored 500 shades fail 4.5:1 in both modes for normal-size status
@@ -39,9 +39,9 @@
 			return 'text-gray-500 dark:text-gray-400';
 		}
 
-		if (delay > 0) {
+		if (roundedDelay > 0) {
 			return 'text-violet-600 dark:text-violet-400';
-		} else if (delay < -1) {
+		} else if (roundedDelay < 0) {
 			return 'text-red-600 dark:text-red-400';
 		} else {
 			return 'text-green-600 dark:text-green-400';
@@ -75,6 +75,7 @@
 		const predictedMins = predicted ? Math.floor(predicted / MS_IN_MINS) : 0;
 		const delayMs = predicted - scheduled;
 		const delay = scheduled > 0 && predicted > 0 ? delayMs / MS_IN_MINS : 0;
+		const roundedDelay = delay < 0 ? -Math.round(Math.abs(delay)) : Math.round(Math.abs(delay));
 
 		// eta is "estimated time of arrival" in minutes:
 		// - Positive number: Bus arrives/departs in X minutes from now (e.g., eta = 5 means "5 minutes from now")
@@ -95,8 +96,15 @@
 
 		const isCanceled = tripStatus && tripStatus.status === 'CANCELED';
 		const isScheduledPast = !isPredicted && eta < 0 && !frequency && scheduled > 0;
-		const color = computeColor(delay, isPredicted);
-		const statusText = computeStatusLabel(now, isPredicted, delay, isArrival, eta, scheduled);
+		const color = computeColor(roundedDelay, isPredicted);
+		const statusText = computeStatusLabel(
+			now,
+			isPredicted,
+			roundedDelay,
+			isArrival,
+			eta,
+			scheduled
+		);
 		const timeText = computeTimeLabel(eta);
 
 		return {
@@ -150,8 +158,6 @@
 			}
 		}
 
-		const roundedDelay = Math.round(Math.abs(delay));
-
 		if (isPredicted) {
 			if (eta >= 0) {
 				// Bus hasn't yet arrived/departed
@@ -159,36 +165,36 @@
 			} else {
 				// Arrival/departure time has passed
 				if (!includeArrivalDepartureInStatusLabel) {
-					if (roundedDelay === 0) {
+					if (delay === 0) {
 						return $t('status.on_time');
 					} else if (delay > 0) {
 						return $t('status.late_without_arrive_depart', {
-							values: { delay: roundedDelay }
+							values: { delay: Math.abs(delay) }
 						});
 					} else if (delay < 0) {
 						return $t('status.early_without_arrive_depart', {
-							values: { delay: roundedDelay }
+							values: { delay: Math.abs(delay) }
 						});
 					}
 				}
 
 				if (isArrival) {
 					// Is an arrival time
-					if (roundedDelay === 0) {
+					if (delay === 0) {
 						return $t('status.arrived_ontime');
 					} else if (delay > 0) {
-						return $t('status.arrived_delayed', { values: { delay: roundedDelay } });
+						return $t('status.arrived_delayed', { values: { delay: Math.abs(delay) } });
 					} else if (delay < 0) {
-						return $t('status.arrived_early', { values: { delay: roundedDelay } });
+						return $t('status.arrived_early', { values: { delay: Math.abs(delay) } });
 					}
 				} else {
 					// Is a departure time
-					if (roundedDelay === 0) {
+					if (delay === 0) {
 						return $t('status.departed_ontime');
 					} else if (delay > 0) {
-						return $t('status.depart_delayed', { values: { delay: roundedDelay } });
+						return $t('status.depart_delayed', { values: { delay: Math.abs(delay) } });
 					} else if (delay < 0) {
-						return $t('status.depart_early', { values: { delay: roundedDelay } });
+						return $t('status.depart_early', { values: { delay: Math.abs(delay) } });
 					}
 				}
 			}
@@ -212,16 +218,15 @@
 	}
 
 	function computeArrivalLabelFromDelay(delay) {
-		const roundedDelay = Math.round(Math.abs(delay));
-		if (roundedDelay === 0) {
+		if (delay === 0) {
 			return $t('status.on_time');
 		} else if (delay > 0) {
 			return $t('status.late_without_arrive_depart', {
-				values: { delay: roundedDelay }
+				values: { delay: Math.abs(delay) }
 			});
 		} else if (delay < 0) {
 			return $t('status.early_without_arrive_depart', {
-				values: { delay: roundedDelay }
+				values: { delay: Math.abs(delay) }
 			});
 		}
 	}

@@ -51,6 +51,19 @@ describe('resolveLiveState', () => {
 		expect(resolveLiveState(null, 'trip-a')).toEqual({ state: 'scheduled', isLive: false });
 	});
 
+	it.each([undefined, ''])(
+		'does not classify a matching trip as previous when its response vehicle ID is unavailable (%j)',
+		(responseVehicleId) => {
+			expect(
+				resolveLiveState(
+					{ status: { activeTripId: 'trip-a', vehicleId: responseVehicleId } },
+					'trip-a',
+					'vehicle-a'
+				)
+			).toEqual({ state: 'scheduled', isLive: false });
+		}
+	);
+
 	it('requires the status to include a vehicle ID before marking it live', () => {
 		expect(resolveLiveState({ status: { activeTripId: 'trip-a' } }, 'trip-a')).toEqual({
 			state: 'scheduled',
