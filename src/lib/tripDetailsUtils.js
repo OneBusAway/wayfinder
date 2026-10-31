@@ -31,7 +31,7 @@ export function resolveLiveState(details, tripId, vehicleId = null) {
 	if (!status) return { state: 'scheduled', isLive: false };
 
 	const activeTripMatches = status.activeTripId === tripId;
-	const vehicleMatches = vehicleId == null || status.vehicleId === vehicleId;
+	const vehicleMatches = vehicleId == null || vehicleId === '' || status.vehicleId === vehicleId;
 	if (activeTripMatches && status.vehicleId && vehicleMatches) {
 		return { state: 'live', isLive: true };
 	}

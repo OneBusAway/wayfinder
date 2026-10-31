@@ -14,6 +14,11 @@ vi.mock('svelte-i18n', () => {
 		'status.arrived_at_time': 'Arrived at {time}',
 		'status.departed_at_time': 'Departed at {time}',
 		'status.arrived_ontime': 'Arrived on time',
+		'status.arrived_delayed': 'Arrived {delay}m late',
+		'status.arrived_early': 'Arrived {delay}m early',
+		'status.departed_ontime': 'Departed on time',
+		'status.depart_delayed': 'Departed {delay}m late',
+		'status.depart_early': 'Departed {delay}m early',
 		'status.canceled_arrival': 'Canceled',
 		'status.frequency_until': 'Every {headway} min until {time}',
 		'status.scheduled': 'Scheduled',
@@ -372,7 +377,7 @@ describe('ArrivalDeparture', () => {
 		expect(screen.getByText(expectedLabel)).toBeInTheDocument();
 	});
 
-	test('preserves late direction without rounding a one-second difference to a minute', () => {
+	test('shows on time instead of zero minutes late for a one-second difference', () => {
 		const scheduledTime = Date.now() + 10 * MIN + 59500;
 		render(ArrivalDeparture, {
 			props: {
@@ -384,7 +389,24 @@ describe('ArrivalDeparture', () => {
 			}
 		});
 
-		expect(screen.getByText('0m late')).toBeInTheDocument();
+		expect(screen.getByText('On time')).toBeInTheDocument();
+		expect(screen.queryByText('0m late')).not.toBeInTheDocument();
+	});
+
+	test('shows on time instead of zero minutes early for a one-second difference', () => {
+		const scheduledTime = Date.now() + 10 * MIN + 59500;
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					predicted: true,
+					scheduledArrivalTime: scheduledTime,
+					predictedArrivalTime: scheduledTime - 1000
+				})
+			}
+		});
+
+		expect(screen.getByText('On time')).toBeInTheDocument();
+		expect(screen.queryByText('0m early')).not.toBeInTheDocument();
 	});
 
 	test('rounds a 30-second deviation to one minute when both times show the same minute', () => {
@@ -405,6 +427,55 @@ describe('ArrivalDeparture', () => {
 		});
 
 		expect(screen.getByText('1m late')).toBeInTheDocument();
+	});
+
+	test.each([
+		['arrival late', 1, 1000, 'Arrived on time'],
+		['arrival early', 1, -1000, 'Arrived on time'],
+		['departure late', 0, 1000, 'Departed on time'],
+		['departure early', 0, -1000, 'Departed on time']
+	])(
+		'uses an on-time label for a sub-minute %s',
+		(_label, stopSequence, difference, expectedLabel) => {
+			const scheduledTime = Date.now() - 10 * MIN;
+			render(ArrivalDeparture, {
+				props: {
+					arrivalDeparture: baseArrival({
+						stopSequence,
+						predicted: true,
+						scheduledArrivalTime: scheduledTime,
+						predictedArrivalTime: scheduledTime + difference,
+						scheduledDepartureTime: scheduledTime,
+						predictedDepartureTime: scheduledTime + difference
+					})
+				}
+			});
+
+			expect(screen.getByText(expectedLabel)).toBeInTheDocument();
+		}
+	);
+
+	test.each([
+		['arrival late', 1, 60000, 'Arrived 1m late'],
+		['arrival early', 1, -60000, 'Arrived 1m early'],
+		['departure late', 0, 60000, 'Departed 1m late'],
+		['departure early', 0, -60000, 'Departed 1m early']
+	])('preserves direction for a non-zero %s', (_label, stopSequence, difference, expectedLabel) => {
+		const scheduledTime = Date.now() - 10 * MIN;
+		render(ArrivalDeparture, {
+			props: {
+				arrivalDeparture: baseArrival({
+					stopSequence,
+					predicted: true,
+					scheduledArrivalTime: scheduledTime,
+					predictedArrivalTime: scheduledTime + difference,
+					scheduledDepartureTime: scheduledTime,
+					predictedDepartureTime: scheduledTime + difference
+				})
+			}
+		});
+
+		expect(screen.getByText(expectedLabel)).toBeInTheDocument();
 	});
 
 	// Regression guard for the overflow bug: a long headsign must wrap to a

@@ -247,6 +247,27 @@ describe('TripDetailsPane', () => {
 		}
 	});
 
+	test('clears a request error only after a successful refresh', async () => {
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({ ok: false })
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => mockTripResponse({ vehicleId: null })
+			});
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.stubGlobal('fetch', fetchMock);
+		render(TripDetailsPane, { props: { stop, tripId: '1_trip' } });
+
+		await waitFor(() =>
+			expect(screen.getByText('Unable to fetch trip details')).toBeInTheDocument()
+		);
+		await vi.advanceTimersByTimeAsync(30000);
+		await waitFor(() => expect(screen.getByText(stop.name)).toBeInTheDocument());
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(screen.queryByText('Unable to fetch trip details')).not.toBeInTheDocument();
+	});
+
 	test('includes serviceDate zero and never adds a time parameter', async () => {
 		const fetchMock = vi.fn().mockResolvedValue({
 			ok: true,

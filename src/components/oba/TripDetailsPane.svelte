@@ -52,7 +52,6 @@
 		tripDetails = null;
 		routeInfo = null;
 		stopInfo = {};
-		error = null;
 
 		async function loadTripDetails() {
 			const requestId = ++latestRequestId;
@@ -110,6 +109,7 @@
 				}
 
 				if (requestId !== latestRequestId || controller.signal.aborted) return;
+				error = null;
 				tripDetails = entry;
 				routeInfo = data?.references?.routes?.find((route) => route.id === entry.routeId) ?? null;
 				stopInfo = (data?.references?.stops ?? []).reduce((acc, item) => {

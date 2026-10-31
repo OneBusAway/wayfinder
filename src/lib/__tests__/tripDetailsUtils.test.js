@@ -17,6 +17,16 @@ describe('resolveLiveState', () => {
 		).toEqual({ state: 'live', isLive: true });
 	});
 
+	it.each([null, ''])('treats a selected vehicle ID of %j as no vehicle filter', (vehicleId) => {
+		expect(
+			resolveLiveState(
+				{ status: { activeTripId: 'trip-a', vehicleId: 'vehicle-a' } },
+				'trip-a',
+				vehicleId
+			)
+		).toEqual({ state: 'live', isLive: true });
+	});
+
 	it('treats a different or missing active trip as a previous-trip state', () => {
 		expect(
 			resolveLiveState({ status: { activeTripId: 'trip-b', vehicleId: 'vehicle-a' } }, 'trip-a')
@@ -39,6 +49,13 @@ describe('resolveLiveState', () => {
 
 	it('falls back to scheduled state when no live status is available', () => {
 		expect(resolveLiveState(null, 'trip-a')).toEqual({ state: 'scheduled', isLive: false });
+	});
+
+	it('requires the status to include a vehicle ID before marking it live', () => {
+		expect(resolveLiveState({ status: { activeTripId: 'trip-a' } }, 'trip-a')).toEqual({
+			state: 'scheduled',
+			isLive: false
+		});
 	});
 });
 
