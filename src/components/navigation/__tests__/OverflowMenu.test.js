@@ -4,14 +4,56 @@ import { afterEach, expect, test, describe, vi } from 'vitest';
 import OverflowMenu from '../OverflowMenu.svelte';
 import { stubLayoutBox } from '../../../tests/helpers/test-utils';
 
+let currentLocale = 'en';
+const localeSubscribers = new Set();
+const messages = {
+	en: {
+		'header.home': 'Home',
+		'header.about': 'About',
+		'header.contact': 'Contact'
+	},
+	es: {
+		'header.home': 'Inicio',
+		'header.about': 'Acerca de',
+		'header.contact': 'Contacto'
+	}
+};
+
+const notifyLocaleChange = () => {
+	localeSubscribers.forEach((fn) =>
+		fn((key, options) => messages[currentLocale]?.[key] ?? options?.default ?? key)
+	);
+};
+
+vi.mock('svelte-i18n', () => ({
+	locale: {
+		subscribe: (fn) => {
+			fn(currentLocale);
+			return () => {};
+		},
+		set: (newLoc) => {
+			currentLocale = newLoc;
+			notifyLocaleChange();
+		}
+	},
+	t: {
+		subscribe: (fn) => {
+			localeSubscribers.add(fn);
+			fn((key, options) => messages[currentLocale]?.[key] ?? options?.default ?? key);
+			return () => localeSubscribers.delete(fn);
+		}
+	}
+}));
+
 describe('OverflowMenu', () => {
 	const mockLinks = [
-		{ key: 'About', value: '/about' },
-		{ key: 'Contact', value: '/contact' },
+		{ key: 'header.about', value: '/about' },
+		{ key: 'header.contact', value: '/contact' },
 		{ key: 'GitHub', value: 'https://github.com/OneBusAway' }
 	];
 
 	afterEach(() => {
+		currentLocale = 'en';
 		vi.restoreAllMocks();
 	});
 
@@ -44,7 +86,8 @@ describe('OverflowMenu', () => {
 		expect(button).toHaveAttribute('aria-controls', dialog.id);
 
 		for (const { key, value } of mockLinks) {
-			const link = await screen.findByRole('link', { name: key });
+			const label = messages[currentLocale]?.[key] ?? key;
+			const link = await screen.findByRole('link', { name: label });
 			expect(link).toHaveAttribute('href', value);
 		}
 
@@ -115,5 +158,18 @@ describe('OverflowMenu', () => {
 
 		expect(screen.queryByRole('link', { name: 'About' })).not.toBeInTheDocument();
 		expect(await screen.findByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+	});
+
+	test('translates link labels when switching languages', async () => {
+		currentLocale = 'es';
+		notifyLocaleChange();
+		const user = userEvent.setup();
+		const { button } = renderOverflowMenu({ links: mockLinks });
+
+		await user.click(button);
+
+		expect(await screen.findByRole('link', { name: 'Acerca de' })).toBeInTheDocument();
+		expect(await screen.findByRole('link', { name: 'Contacto' })).toBeInTheDocument();
+		expect(await screen.findByRole('link', { name: 'GitHub' })).toBeInTheDocument();
 	});
 });
