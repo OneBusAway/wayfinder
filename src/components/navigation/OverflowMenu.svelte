@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Popover from '$components/ui/popover/index';
+	import { t } from 'svelte-i18n';
 
 	interface Props {
 		links: { key: string; value: string }[];
@@ -45,7 +46,7 @@
 				href={value}
 				onclick={closePopover}
 			>
-				{key}
+				{$t(key, { default: key })}
 			</a>
 			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		{/each}
