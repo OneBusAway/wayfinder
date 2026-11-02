@@ -118,9 +118,8 @@
 			role="listbox"
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg"
 		>
-			<!-- Only Google returns a placeId, and geocoders can repeat a name or place, so prefix
-			     the index to keep keys unique. -->
-			{#each results as result, index (`${index}:${result.placeId ?? result.displayText}`)}
+			<!-- Geocoders do not provide unique indentifiers so `index` is the only possible key. -->
+			{#each results as result, index (index)}
 				<li role="presentation">
 					<button
 						id={optionId(index)}
