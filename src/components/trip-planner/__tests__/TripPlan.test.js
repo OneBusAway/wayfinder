@@ -214,6 +214,45 @@ describe('TripPlan autocomplete dismissal', () => {
 		unmount();
 	});
 
+	it('drops a pending lookup when the locations are swapped', async () => {
+		vi.useFakeTimers();
+		let resolveSuggestions;
+		global.fetch = vi.fn(
+			() =>
+				new Promise((resolve) => {
+					resolveSuggestions = () =>
+						resolve({
+							ok: true,
+							json: () =>
+								Promise.resolve({
+									suggestions: [{ displayText: 'Capitol Hill', name: 'Capitol Hill' }]
+								})
+						});
+				})
+		);
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		expect(global.fetch).toHaveBeenCalledOnce();
+
+		await fireEvent.click(screen.getByRole('button', { name: 'trip-planner.swap_locations' }));
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+		resolveSuggestions();
+		await vi.advanceTimersByTimeAsync(0);
+		for (let i = 0; i < 4; i += 1) {
+			await Promise.resolve();
+		}
+		await tick();
+
+		expect(fromInput).toHaveValue('47.70000, -122.40000');
+		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+		unmount();
+	});
+
 	it('does not strand a loading field when the other field is typed during its debounce', async () => {
 		vi.useFakeTimers();
 		const resolveSuggestions = [];

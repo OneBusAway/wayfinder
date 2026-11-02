@@ -245,9 +245,11 @@
 		}
 	}
 
-	// A pending geocode would land in the field it was picked for after the
-	// rider has replaced that field's location, so drop it.
-	function cancelPendingGeocodes() {
+	// A pending geocode or autocomplete would land in the field it was started for
+	// after the rider has replaced that field's location, so drop it.
+	function cancelPendingLookups() {
+		dismissSearchResults(true);
+		dismissSearchResults(false);
 		fromRequestId++;
 		toRequestId++;
 		isGeocodingFrom = false;
@@ -255,7 +257,7 @@
 	}
 
 	function swapLocations() {
-		cancelPendingGeocodes();
+		cancelPendingLookups();
 
 		const result = swapTripLocations({
 			fromPlace,
@@ -438,15 +440,13 @@
 	// malformed detail payload must not become an unhandled rejection — planTrip
 	// itself already can't throw, but this also guards the destructuring above it.
 	async function handleLoadSharedTrip(e) {
-		cancelPendingGeocodes();
 		try {
 			const { selectedFrom: from, selectedTo: to, fromPlace: fp, toPlace: tp } = e.detail;
+			cancelPendingLookups();
 			fromPlace = fp;
 			toPlace = tp;
 			selectedFrom = from;
 			selectedTo = to;
-			fromResults = [];
-			toResults = [];
 			await planTrip();
 		} catch (error) {
 			console.error('Failed to restore shared trip:', error);
@@ -511,7 +511,7 @@
 
 	function handleRecentTripSelect(trip) {
 		showRecentTrips = false;
-		cancelPendingGeocodes();
+		cancelPendingLookups();
 		fromPlace = trip.fromPlace;
 		toPlace = trip.toPlace;
 		selectedFrom = trip.fromCoords;
@@ -569,9 +569,9 @@
 		<div class="flex justify-center">
 			<Button
 				aria-label={$t('trip-planner.swap_locations')}
-				class="h-8 w-8 rounded-full"
 				disabled={!fromPlace && !toPlace}
 				onclick={swapLocations}
+				size="icon-sm"
 				variant="outline"
 			>
 				<ArrowLeftRight class="size-4 rotate-90" />
