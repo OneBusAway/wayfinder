@@ -620,6 +620,17 @@ describe('convertToISO8601', () => {
 		expect(convertToISO8601('011-14-2026', '09:00 AM')).toBeNull();
 	});
 
+	it.each([
+		['02-31-2026', '09:00 AM'],
+		['13-01-2026', '09:00 AM'],
+		['01-14-2026', '13:00 AM'],
+		['01-14-2026', '13:00 PM'],
+		['01-14-2026', '0:30 PM'],
+		['01-14-2026', '09:75 AM']
+	])('returns null for the out of range value %s %s', (date, time) => {
+		expect(convertToISO8601(date, time)).toBeNull();
+	});
+
 	it('returns null when date is null', () => {
 		expect(convertToISO8601(null, '9:00 AM')).toBeNull();
 	});
