@@ -217,9 +217,9 @@ describe('TripPlan autocomplete dismissal', () => {
 	it('drops a pending lookup when the locations are swapped', async () => {
 		vi.useFakeTimers();
 		let resolveSuggestions;
-		global.fetch = vi.fn(
-			() =>
-				new Promise((resolve) => {
+		global.fetch = vi.fn((url) => {
+			if (url.startsWith('/api/oba/place-suggestions')) {
+				return new Promise((resolve) => {
 					resolveSuggestions = () =>
 						resolve({
 							ok: true,
@@ -228,8 +228,13 @@ describe('TripPlan autocomplete dismissal', () => {
 									suggestions: [{ displayText: 'Capitol Hill', name: 'Capitol Hill' }]
 								})
 						});
-				})
-		);
+				});
+			}
+			return Promise.resolve({
+				ok: true,
+				json: () => Promise.resolve({ plan: { itineraries: [] } })
+			});
+		});
 		const { unmount } = render(TripPlan, { props });
 		await selectFromAndTo(mapProvider);
 
@@ -249,6 +254,49 @@ describe('TripPlan autocomplete dismissal', () => {
 		await tick();
 
 		expect(fromInput).toHaveValue('47.70000, -122.40000');
+		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+		unmount();
+	});
+
+	it('stops loading when a map point replaces a field with a pending lookup', async () => {
+		vi.useFakeTimers();
+		let resolveSuggestions;
+		global.fetch = vi.fn(
+			() =>
+				new Promise((resolve) => {
+					resolveSuggestions = () =>
+						resolve({
+							ok: true,
+							json: () =>
+								Promise.resolve({
+									suggestions: [{ displayText: 'Capitol Hill', name: 'Capitol Hill' }]
+								})
+						});
+				})
+		);
+		const { unmount } = render(TripPlan, { props });
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		expect(global.fetch).toHaveBeenCalledOnce();
+		expect(screen.getByRole('status')).toBeInTheDocument();
+
+		window.dispatchEvent(
+			new CustomEvent('setTripPlanLocation', { detail: { type: 'from', lat: 47.6, lng: -122.3 } })
+		);
+		await tick();
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+		resolveSuggestions();
+		await vi.advanceTimersByTimeAsync(0);
+		for (let i = 0; i < 4; i += 1) {
+			await Promise.resolve();
+		}
+		await tick();
+
+		expect(fromInput).toHaveValue('47.60000, -122.30000');
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
 		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 		unmount();
 	});
@@ -650,7 +698,7 @@ describe('TripPlan pending location selection', () => {
 		const swapButton = screen.getByRole('button', { name: 'trip-planner.swap_locations' });
 		expect(swapButton).toBeEnabled();
 		await fireEvent.click(swapButton);
-		expect(global.fetch).toHaveBeenLastCalledWith(expect.stringContaining('/api/otp/plan'));
+		expect(global.fetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/otp/plan'));
 
 		resolveGeocode();
 		await vi.advanceTimersByTimeAsync(0);
@@ -662,6 +710,26 @@ describe('TripPlan pending location selection', () => {
 			{ lat: 47.62, lng: -122.32 },
 			expect.anything()
 		);
+		unmount();
+	});
+
+	it('does not plan on Swap when the trip was never planned', async () => {
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		await fireEvent.click(screen.getByRole('button', { name: 'trip-planner.swap_locations' }));
+
+		expect(global.fetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/otp/plan'));
+		unmount();
+	});
+
+	it('re-plans on Swap once the trip has been planned', async () => {
+		const { unmount } = render(TripPlan, { props: { ...props, tripPlanAttempted: true } });
+		await selectFromAndTo(mapProvider);
+
+		await fireEvent.click(screen.getByRole('button', { name: 'trip-planner.swap_locations' }));
+
+		expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/otp/plan'));
 		unmount();
 	});
 

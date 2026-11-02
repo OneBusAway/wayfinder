@@ -538,7 +538,7 @@ describe('TripPlanModal showForm embedding', () => {
 				closePane: vi.fn(),
 				snap: 'half',
 				showForm: true,
-				hasPlanned: true,
+				tripPlanAttempted: true,
 				handleTripPlan: vi.fn(),
 				clearTripItineraries: vi.fn()
 			}

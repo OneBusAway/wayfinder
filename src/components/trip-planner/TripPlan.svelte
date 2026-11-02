@@ -26,7 +26,7 @@
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
-	let { handleTripPlan, mapProvider, clearTripItineraries } = $props();
+	let { handleTripPlan, mapProvider, clearTripItineraries, tripPlanAttempted = false } = $props();
 
 	let fromPlace = $state('');
 	let toPlace = $state('');
@@ -136,8 +136,8 @@
 
 	async function handleSearchInput(query, isFrom) {
 		// Retyping a field starts a new trip, so drop any prior results/empty-state
-		// (and the parent's hasPlanned flag) instead of letting "No itineraries
-		// found" linger under the form while the rider edits.
+		// (and the parent's tripPlanAttempted flag) instead of letting "No
+		// itineraries found" linger under the form while the rider edits.
 		clearTripItineraries();
 		const requestId = invalidateAutocompleteRequest(isFrom);
 		if (query.trim() === '') {
@@ -277,8 +277,11 @@
 		fromMarker = result.fromMarker;
 		toMarker = result.toMarker;
 
-		// Auto-run the search
-		planTrip();
+		// Re-plan only a trip the rider already asked for. A plan still in flight
+		// is for the pre-swap direction, so it is replaced too.
+		if (tripPlanAttempted || loading) {
+			planTrip();
+		}
 	}
 
 	// Always resolves to an OTP-response-shaped object ({ plan } or { error }),
@@ -407,7 +410,7 @@
 
 		clearTripItineraries();
 		// Anything in flight is for the location being replaced, so drop it.
-		invalidateAutocompleteRequest(type === 'from');
+		dismissSearchResults(type === 'from');
 		planRequestId++;
 		loading = false;
 
@@ -419,7 +422,6 @@
 			}
 			selectedFrom = coords;
 			fromPlace = label;
-			fromResults = [];
 			fromMarker = mapProvider.addPinMarker(coords, $t('trip-planner.from'));
 		} else if (type === 'to') {
 			toRequestId++;
@@ -429,7 +431,6 @@
 			}
 			selectedTo = coords;
 			toPlace = label;
-			toResults = [];
 			toMarker = mapProvider.addPinMarker(coords, $t('trip-planner.to'));
 		}
 	}
