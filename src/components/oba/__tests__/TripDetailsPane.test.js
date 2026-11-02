@@ -4,6 +4,7 @@ import {
 	formatSecondsFromMidnight,
 	msToLocalArrivalDepartureTimeString
 } from '$lib/dateTimeFormat';
+import { tick } from 'svelte';
 
 // Local i18n mock that interpolates {vehicleId}.
 //
@@ -284,9 +285,21 @@ describe('TripDetailsPane', () => {
 
 	test('discards a late response after switching selected trips', async () => {
 		let resolveA;
+		let resolveJsonA;
+		let notifyJsonStarted;
+
 		const responseA = new Promise((resolve) => {
 			resolveA = resolve;
 		});
+
+		const jsonA = new Promise((resolve) => {
+			resolveJsonA = resolve;
+		});
+
+		const jsonStarted = new Promise((resolve) => {
+			notifyJsonStarted = resolve;
+		});
+
 		const fetchMock = vi.fn((url) =>
 			String(url).includes('/trip-A')
 				? responseA
@@ -301,27 +314,43 @@ describe('TripDetailsPane', () => {
 							})
 					})
 		);
+
 		vi.stubGlobal('fetch', fetchMock);
+
 		const { rerender } = render(TripDetailsPane, {
 			props: { stop, tripId: 'trip-A', serviceDate: 1 }
 		});
+
 		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
 		await rerender({ stop, tripId: 'trip-B', serviceDate: 2 });
-		await waitFor(() => expect(screen.getByText('Trip B schedule')).toBeInTheDocument());
+
+		await waitFor(() => {
+			expect(screen.getByText('Trip B schedule')).toBeInTheDocument();
+		});
 
 		resolveA({
 			ok: true,
-			json: async () =>
-				mockTripResponse({
-					tripId: 'trip-A',
-					serviceDate: 1,
-					vehicleId: null,
-					responseStopName: 'Late trip A schedule'
-				})
+			json: () => {
+				notifyJsonStarted();
+				return jsonA;
+			}
 		});
+
+		await jsonStarted;
+
+		resolveJsonA(
+			mockTripResponse({
+				tripId: 'trip-A',
+				serviceDate: 1,
+				vehicleId: null,
+				responseStopName: 'Late trip A schedule'
+			})
+		);
+
 		await Promise.resolve();
-		await Promise.resolve();
+		await tick();
+
 		expect(screen.queryByText('Late trip A schedule')).not.toBeInTheDocument();
 		expect(screen.getByText('Trip B schedule')).toBeInTheDocument();
 	});
