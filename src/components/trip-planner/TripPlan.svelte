@@ -245,13 +245,17 @@
 		}
 	}
 
-	function swapLocations() {
-		// A pending geocode would land in the field it was picked for, which now
-		// holds the other location, so drop it and swap what is already selected.
+	// A pending geocode would land in the field it was picked for after the
+	// rider has replaced that field's location, so drop it.
+	function cancelPendingGeocodes() {
 		fromRequestId++;
 		toRequestId++;
 		isGeocodingFrom = false;
 		isGeocodingTo = false;
+	}
+
+	function swapLocations() {
+		cancelPendingGeocodes();
 
 		const result = swapTripLocations({
 			fromPlace,
@@ -332,7 +336,7 @@
 	}
 
 	async function planTrip() {
-		if (!selectedFrom || !selectedTo || isGeocoding) {
+		if (!selectedFrom || !selectedTo) {
 			return;
 		}
 
@@ -400,8 +404,14 @@
 		const label = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 
 		clearTripItineraries();
+		// Anything in flight is for the location being replaced, so drop it.
+		invalidateAutocompleteRequest(type === 'from');
+		planRequestId++;
+		loading = false;
 
 		if (type === 'from') {
+			fromRequestId++;
+			isGeocodingFrom = false;
 			if (fromMarker) {
 				mapProvider.removePinMarker(fromMarker);
 			}
@@ -410,6 +420,8 @@
 			fromResults = [];
 			fromMarker = mapProvider.addPinMarker(coords, $t('trip-planner.from'));
 		} else if (type === 'to') {
+			toRequestId++;
+			isGeocodingTo = false;
 			if (toMarker) {
 				mapProvider.removePinMarker(toMarker);
 			}
@@ -426,6 +438,7 @@
 	// malformed detail payload must not become an unhandled rejection — planTrip
 	// itself already can't throw, but this also guards the destructuring above it.
 	async function handleLoadSharedTrip(e) {
+		cancelPendingGeocodes();
 		try {
 			const { selectedFrom: from, selectedTo: to, fromPlace: fp, toPlace: tp } = e.detail;
 			fromPlace = fp;
@@ -498,6 +511,7 @@
 
 	function handleRecentTripSelect(trip) {
 		showRecentTrips = false;
+		cancelPendingGeocodes();
 		fromPlace = trip.fromPlace;
 		toPlace = trip.toPlace;
 		selectedFrom = trip.fromCoords;

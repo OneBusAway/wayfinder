@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import TripPlan from '../TripPlan.svelte';
 import * as navigation from '$app/navigation';
+import { recentTrips } from '$stores/recentTripsStore';
 
 vi.mock('$app/environment', () => ({
 	browser: true,
@@ -422,6 +423,36 @@ describe('TripPlan shared URL round trip', () => {
 		unmount();
 	});
 
+	it('ignores a plan response that resolves after a location is picked on the map', async () => {
+		let resolvePlan;
+		global.fetch = vi.fn(
+			() =>
+				new Promise((resolve) => {
+					resolvePlan = () =>
+						resolve({
+							ok: true,
+							json: () => Promise.resolve({ plan: { itineraries: [{ id: 'itin-1' }] } })
+						});
+				})
+		);
+		const { unmount } = render(TripPlan, { props });
+
+		window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: sharedTrip }));
+		await waitFor(() => expect(global.fetch).toHaveBeenCalledOnce());
+
+		window.dispatchEvent(
+			new CustomEvent('setTripPlanLocation', { detail: { type: 'from', lat: 47.5, lng: -122.2 } })
+		);
+		await tick();
+		expect(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' })).toBeEnabled();
+
+		resolvePlan();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(props.handleTripPlan).not.toHaveBeenCalled();
+		unmount();
+	});
+
 	it('surfaces an error via handleTripPlan when a shared link has broken/invalid params', async () => {
 		const { unmount } = render(TripPlan, { props });
 
@@ -592,6 +623,72 @@ describe('TripPlan pending location selection', () => {
 			{ lat: 47.62, lng: -122.32 },
 			expect.anything()
 		);
+		unmount();
+	});
+
+	it('enables Plan and ignores the pending geocode once the location is picked on the map', async () => {
+		vi.useFakeTimers();
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+
+		const planButton = screen.getByRole('button', { name: 'trip-planner.plan_your_trip' });
+		expect(planButton).toBeDisabled();
+
+		window.dispatchEvent(
+			new CustomEvent('setTripPlanLocation', { detail: { type: 'from', lat: 47.5, lng: -122.2 } })
+		);
+		await tick();
+		expect(planButton).toBeEnabled();
+
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+
+		expect(fromInput).toHaveValue('47.50000, -122.20000');
+		expect(mapProvider.addPinMarker).not.toHaveBeenCalledWith(
+			{ lat: 47.62, lng: -122.32 },
+			expect.anything()
+		);
+		unmount();
+	});
+
+	it('plans a recent trip picked mid-geocode and ignores the pending geocode', async () => {
+		vi.useFakeTimers();
+		recentTrips.clearAll();
+		recentTrips.addTrip({
+			fromPlace: 'Home',
+			toPlace: 'Work',
+			selectedFrom: { lat: 47.5, lng: -122.2 },
+			selectedTo: { lat: 47.8, lng: -122.5 }
+		});
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const [fromInput, toInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+
+		await fireEvent.click(screen.getByRole('button', { name: /trip-planner\.recents/ }));
+		await fireEvent.click(screen.getByRole('button', { name: 'trip-planner.recent_trip' }));
+		expect(global.fetch).toHaveBeenLastCalledWith(expect.stringContaining('/api/otp/plan'));
+
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+
+		expect(fromInput).toHaveValue('Home');
+		expect(toInput).toHaveValue('Work');
+		expect(mapProvider.addPinMarker).not.toHaveBeenCalledWith(
+			{ lat: 47.62, lng: -122.32 },
+			expect.anything()
+		);
+		recentTrips.clearAll();
 		unmount();
 	});
 });
