@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
+import { get } from 'svelte/store';
 import TripPlan from '../TripPlan.svelte';
 import * as navigation from '$app/navigation';
 import { recentTrips } from '$stores/recentTripsStore';
@@ -510,16 +511,17 @@ describe('TripPlan shared URL round trip', () => {
 		unmount();
 	});
 
-	it('ignores a plan response that resolves after a location is picked on the map', async () => {
-		let resolvePlan;
+	it('re-plans when a location is picked on the map mid-plan and ignores the older response', async () => {
+		const resolvePlans = [];
 		global.fetch = vi.fn(
 			() =>
 				new Promise((resolve) => {
-					resolvePlan = () =>
+					resolvePlans.push((itineraryId) =>
 						resolve({
 							ok: true,
-							json: () => Promise.resolve({ plan: { itineraries: [{ id: 'itin-1' }] } })
-						});
+							json: () => Promise.resolve({ plan: { itineraries: [{ id: itineraryId }] } })
+						})
+					);
 				})
 		);
 		const { unmount } = render(TripPlan, { props });
@@ -530,17 +532,22 @@ describe('TripPlan shared URL round trip', () => {
 		window.dispatchEvent(
 			new CustomEvent('setTripPlanLocation', { detail: { type: 'from', lat: 47.5, lng: -122.2 } })
 		);
-		await tick();
-		expect(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' })).toBeEnabled();
+		await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
+		expect(global.fetch.mock.lastCall[0]).toMatch(/fromPlace=47\.50*%2C-122\.20*/);
 
-		resolvePlan();
+		resolvePlans[0]('older');
 		await new Promise((resolve) => setTimeout(resolve, 0));
-
 		expect(props.handleTripPlan).not.toHaveBeenCalled();
+
+		resolvePlans[1]('newer');
+		await waitFor(() => expect(props.handleTripPlan).toHaveBeenCalledOnce());
+		expect(props.handleTripPlan).toHaveBeenCalledWith({
+			data: { plan: { itineraries: [{ id: 'newer' }] } }
+		});
 		unmount();
 	});
 
-	it('ignores a plan response that resolves after an input is retyped', async () => {
+	it('keeps the route and a pending plan while an input is retyped', async () => {
 		let resolvePlan;
 		global.fetch = vi.fn(
 			() =>
@@ -559,12 +566,11 @@ describe('TripPlan shared URL round trip', () => {
 
 		const [fromInput] = screen.getAllByRole('combobox');
 		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
-		expect(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' })).toBeEnabled();
+
+		expect(props.clearTripItineraries).not.toHaveBeenCalled();
 
 		resolvePlan();
-		await new Promise((resolve) => setTimeout(resolve, 0));
-
-		expect(props.handleTripPlan).not.toHaveBeenCalled();
+		await waitFor(() => expect(props.handleTripPlan).toHaveBeenCalledOnce());
 		unmount();
 	});
 
@@ -750,14 +756,95 @@ describe('TripPlan pending location selection', () => {
 		await vi.advanceTimersByTimeAsync(0);
 		await tick();
 
-		// The typed text moves with the field it was typed into; the geocode for it
-		// must not resolve into either field.
+		// Text typed but not picked is dropped, and the geocode for it must not
+		// resolve into either field.
 		expect(fromInput).toHaveValue('47.70000, -122.40000');
-		expect(toInput).toHaveValue('Capitol');
+		expect(toInput).toHaveValue('47.60000, -122.30000');
 		expect(mapProvider.addPinMarker).not.toHaveBeenCalledWith(
 			{ lat: 47.62, lng: -122.32 },
 			expect.anything()
 		);
+		unmount();
+	});
+
+	it('does not plan when a suggestion is picked before the trip was planned', async () => {
+		vi.useFakeTimers();
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+
+		expect(fromInput).toHaveValue('Capitol Hill');
+		expect(global.fetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/otp/plan'));
+		unmount();
+	});
+
+	it('re-plans when a suggestion is picked once the trip has been planned', async () => {
+		vi.useFakeTimers();
+		const { unmount } = render(TripPlan, { props: { ...props, tripPlanAttempted: true } });
+		await selectFromAndTo(mapProvider);
+		// Setting the locations on the map already re-planned the trip.
+		global.fetch.mockClear();
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+		expect(global.fetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/otp/plan'));
+
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+
+		expect(global.fetch.mock.lastCall[0]).toMatch(
+			/^\/api\/otp\/plan\?.*fromPlace=47\.620*%2C-122\.320*/
+		);
+		unmount();
+	});
+
+	it('plans with the chosen location label, not text typed but not picked', async () => {
+		recentTrips.clearAll();
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' }));
+		await waitFor(() => expect(props.handleTripPlan).toHaveBeenCalledOnce());
+
+		expect(get(recentTrips)[0]).toMatchObject({
+			fromPlace: '47.60000, -122.30000',
+			toPlace: '47.70000, -122.40000'
+		});
+		recentTrips.clearAll();
+		unmount();
+	});
+
+	it('re-plans when a location is picked on the map once the trip has been planned', async () => {
+		const { unmount } = render(TripPlan, { props: { ...props, tripPlanAttempted: true } });
+
+		await selectFromAndTo(mapProvider);
+
+		expect(global.fetch).toHaveBeenCalledOnce();
+		expect(global.fetch.mock.lastCall[0]).toMatch(
+			/^\/api\/otp\/plan\?.*fromPlace=47\.60*%2C-122\.30*/
+		);
+		expect(props.clearTripItineraries).not.toHaveBeenCalled();
+		unmount();
+	});
+
+	it('does not plan when a location is picked on the map before the trip was planned', async () => {
+		const { unmount } = render(TripPlan, { props });
+
+		await selectFromAndTo(mapProvider);
+
+		expect(global.fetch).not.toHaveBeenCalled();
 		unmount();
 	});
 
@@ -774,6 +861,8 @@ describe('TripPlan pending location selection', () => {
 	it('re-plans on Swap once the trip has been planned', async () => {
 		const { unmount } = render(TripPlan, { props: { ...props, tripPlanAttempted: true } });
 		await selectFromAndTo(mapProvider);
+		// Setting the locations on the map already re-planned the trip.
+		global.fetch.mockClear();
 
 		await fireEvent.click(screen.getByRole('button', { name: 'trip-planner.swap_locations' }));
 

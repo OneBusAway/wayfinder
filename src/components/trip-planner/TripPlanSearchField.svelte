@@ -6,9 +6,9 @@
 
 	interface Props {
 		inputId?: string;
-		place?: string;
-		results?: PlaceSuggestion[];
 		isLoading?: boolean;
+		results?: PlaceSuggestion[];
+		value?: string;
 		onInput: (value: string) => void;
 		onClear: () => void;
 		onSelect: (suggestion: PlaceSuggestion) => void;
@@ -17,9 +17,9 @@
 
 	let {
 		inputId = 'location-input',
-		place = $bindable(''),
-		results = [],
 		isLoading = false,
+		results = [],
+		value = $bindable(''),
 		onInput,
 		onClear,
 		onSelect,
@@ -80,9 +80,10 @@
 
 <div class="relative">
 	<input
+		autocomplete="off"
 		id={inputId}
 		type="text"
-		bind:value={place}
+		bind:value
 		oninput={handleInput}
 		onkeydown={handleKeydown}
 		role="combobox"
@@ -91,11 +92,10 @@
 		aria-haspopup="listbox"
 		aria-controls={hasResults ? listboxId : undefined}
 		aria-activedescendant={hasResults && activeIndex >= 0 ? optionId(activeIndex) : undefined}
-		autocomplete="off"
 		placeholder="{$t('trip-planner.search_for_a_place')}..."
 		class="block w-full rounded-md border-gray-300 pr-10 text-sm text-black shadow-xs focus:border-blue-500 focus:ring-blue-500"
 	/>
-	{#if place}
+	{#if value}
 		<button
 			type="button"
 			class="absolute inset-y-0 right-0 flex items-center pr-3"

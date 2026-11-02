@@ -30,6 +30,8 @@
 
 	let fromPlace = $state('');
 	let toPlace = $state('');
+	let fromQuery = $state('');
+	let toQuery = $state('');
 	let fromResults = $state([]);
 	let toResults = $state([]);
 	let selectedFrom = $state(null);
@@ -135,13 +137,7 @@
 	}
 
 	async function handleSearchInput(query, isFrom) {
-		// Retyping a field starts a new trip, so drop any prior results/empty-state
-		// (and the parent's tripPlanAttempted flag) instead of letting "No
-		// itineraries found" linger under the form while the rider edits. A plan in
-		// flight is for the trip being edited, so drop its result too.
-		clearTripItineraries();
-		planRequestId++;
-		loading = false;
+		// Typing only searches. The current route stays until a suggestion is picked.
 		const requestId = invalidateAutocompleteRequest(isFrom);
 		if (query.trim() === '') {
 			if (isFrom) {
@@ -185,14 +181,19 @@
 				}
 				selectedFrom = response.location.geometry.location;
 				fromMarker = mapProvider.addPinMarker(selectedFrom, $t('trip-planner.from'));
-				fromPlace = suggestion.name;
+				fromPlace = fromQuery = suggestion.name;
 			} else {
 				if (toMarker) {
 					mapProvider.removePinMarker(toMarker);
 				}
 				selectedTo = response.location.geometry.location;
 				toMarker = mapProvider.addPinMarker(selectedTo, $t('trip-planner.to'));
-				toPlace = suggestion.name;
+				toPlace = toQuery = suggestion.name;
+			}
+
+			// Like swap, re-plan only a trip the rider already asked for.
+			if (tripPlanAttempted || loading) {
+				planTrip();
 			}
 		} catch (error) {
 			console.error('Error selecting location:', error);
@@ -213,7 +214,7 @@
 		if (isFrom) {
 			fromRequestId++;
 			isGeocodingFrom = false;
-			fromPlace = '';
+			fromPlace = fromQuery = '';
 			fromResults = [];
 			isLoadingFrom = false;
 			selectedFrom = null;
@@ -224,7 +225,7 @@
 		} else {
 			toRequestId++;
 			isGeocodingTo = false;
-			toPlace = '';
+			toPlace = toQuery = '';
 			toResults = [];
 			isLoadingTo = false;
 			selectedTo = null;
@@ -273,8 +274,9 @@
 			t: $t
 		});
 
-		fromPlace = result.fromPlace;
-		toPlace = result.toPlace;
+		// Text typed but not picked is dropped, so each field shows its location.
+		fromPlace = fromQuery = result.fromPlace;
+		toPlace = toQuery = result.toPlace;
 		selectedFrom = result.selectedFrom;
 		selectedTo = result.selectedTo;
 		fromMarker = result.fromMarker;
@@ -411,11 +413,8 @@
 		const coords = { lat, lng };
 		const label = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 
-		clearTripItineraries();
-		// Anything in flight is for the location being replaced, so drop it.
+		// A lookup in flight is for the location being replaced, so drop it.
 		dismissSearchResults(type === 'from');
-		planRequestId++;
-		loading = false;
 
 		if (type === 'from') {
 			fromRequestId++;
@@ -424,7 +423,7 @@
 				mapProvider.removePinMarker(fromMarker);
 			}
 			selectedFrom = coords;
-			fromPlace = label;
+			fromPlace = fromQuery = label;
 			fromMarker = mapProvider.addPinMarker(coords, $t('trip-planner.from'));
 		} else if (type === 'to') {
 			toRequestId++;
@@ -433,8 +432,14 @@
 				mapProvider.removePinMarker(toMarker);
 			}
 			selectedTo = coords;
-			toPlace = label;
+			toPlace = toQuery = label;
 			toMarker = mapProvider.addPinMarker(coords, $t('trip-planner.to'));
+		}
+
+		// Like swap, re-plan only a trip the rider already asked for. A plan still
+		// in flight is for the replaced location, so it is replaced too.
+		if (tripPlanAttempted || loading) {
+			planTrip();
 		}
 	}
 
@@ -447,8 +452,8 @@
 		try {
 			const { selectedFrom: from, selectedTo: to, fromPlace: fp, toPlace: tp } = e.detail;
 			cancelPendingLookups();
-			fromPlace = fp;
-			toPlace = tp;
+			fromPlace = fromQuery = fp;
+			toPlace = toQuery = tp;
 			selectedFrom = from;
 			selectedTo = to;
 			await planTrip();
@@ -516,8 +521,8 @@
 	function handleRecentTripSelect(trip) {
 		showRecentTrips = false;
 		cancelPendingLookups();
-		fromPlace = trip.fromPlace;
-		toPlace = trip.toPlace;
+		fromPlace = fromQuery = trip.fromPlace;
+		toPlace = toQuery = trip.toPlace;
 		selectedFrom = trip.fromCoords;
 		selectedTo = trip.toCoords;
 
@@ -547,9 +552,9 @@
 				<div>
 					<TripPlanSearchField
 						inputId="from-location-input"
-						bind:place={fromPlace}
-						results={fromResults}
 						isLoading={isLoadingFrom}
+						results={fromResults}
+						bind:value={fromQuery}
 						onInput={(query) => handleSearchInput(query, true)}
 						onClear={() => clearInput(true)}
 						onSelect={(location) => selectLocation(location, true)}
@@ -559,13 +564,13 @@
 				<div>
 					<TripPlanSearchField
 						inputId="to-location-input"
-						bind:place={toPlace}
-						results={toResults}
 						isLoading={isLoadingTo}
-						onInput={(query) => handleSearchInput(query, false)}
+						results={toResults}
+						bind:value={toQuery}
 						onClear={() => clearInput(false)}
-						onSelect={(location) => selectLocation(location, false)}
 						onDismiss={() => dismissSearchResults(false)}
+						onInput={(query) => handleSearchInput(query, false)}
+						onSelect={(location) => selectLocation(location, false)}
 					/>
 				</div>
 			</div>
@@ -622,7 +627,7 @@
 			</Button>
 		{/if}
 		<div class="flex-1"></div>
-		<Button disabled={!selectedFrom || !selectedTo || isGeocoding} onclick={planTrip}>
+		<Button disabled={!selectedFrom || !selectedTo || isGeocoding || loading} onclick={planTrip}>
 			{#if loading}
 				<svg
 					class="size-4 animate-spin"
