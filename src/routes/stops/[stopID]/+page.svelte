@@ -13,6 +13,11 @@
 
 	let { data } = $props();
 	const stop = data.stopData.entry;
+	const routes = $derived(
+		data.stopData.references?.routes ??
+			arrivalsAndDeparturesResponse?.data?.references?.routes ??
+			[]
+	);
 	let arrivalsAndDeparturesResponse = $state(data.arrivalsAndDeparturesResponse ?? null);
 
 	const currentUserLocation = $state($userLocation);
@@ -50,6 +55,8 @@
 		stopLat={stop.lat}
 		stopLon={stop.lon}
 		stopCode={stop.code}
+		routeIds={stop.routeIds ?? []}
+		{routes}
 	/>
-	<StopPane {stop} bind:arrivalsAndDeparturesResponse />
+	<StopPane {stop} showHeroCard={false} bind:arrivalsAndDeparturesResponse />
 </StandalonePage>
