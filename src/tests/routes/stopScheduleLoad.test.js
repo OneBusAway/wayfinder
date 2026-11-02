@@ -36,8 +36,13 @@ describe('/stops/[stopID]/schedule load', () => {
 		const result = await load({ params: { stopID: stop.id } });
 
 		expect(getScheduleForStop).toHaveBeenCalledWith(stop.id, '2026-10-02');
-		expect(result).toEqual({ schedules: [], serviceDay: '2026-10-02', stop, stopId: stop.id });
-	});
+		expect(result).toEqual({
+	routes: [{ id: '1_100', shortName: '8' }],
+	schedules: [],
+	serviceDay: '2026-10-02',
+	stop,
+	stopId: stop.id
+});
 
 	test("sends the schedules grouped in the region's timezone, ready to render", async () => {
 		getScheduleForStop.mockResolvedValue(

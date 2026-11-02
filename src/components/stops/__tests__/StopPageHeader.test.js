@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, within } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach } from 'vitest';
 import StopPageHeader from '../StopPageHeader.svelte';
 import { createMockPageStore } from '../../../tests/helpers/test-utils.js';
@@ -31,14 +31,13 @@ vi.mock('svelte-i18n', () => ({
 			fn((key) => {
 				// Return mock translations for specific keys
 				const translations = {
-					'schedule_for_stop.stop_id': 'Stop ID',
-					'schedule_for_stop.direction': 'Direction',
-					'schedule_for_stop.no_direction': 'None',
 					'arrivals_and_departures_for_stop.title': 'Arrivals & Departures',
 					'schedule_for_stop.route_schedules': 'Route Schedules',
 					'navigation.back_to_map': 'Back to Map',
 					'favorites.add': 'Add to favorites',
 					'favorites.remove': 'Remove from favorites',
+					'favorites.stop_code': 'Code',
+					routes: 'Routes',
 					// The header must render these, not the raw "N"/"S" compass codes.
 					'direction.N': 'North',
 					'direction.S': 'South'
@@ -78,6 +77,13 @@ describe('StopPageHeader', () => {
 		stopCode: '75403'
 	};
 
+	const routes = [
+		{ id: '1_100', shortName: '8', color: '28813F', textColor: 'FFFFFF', type: 3 },
+		{ id: '1_101', shortName: '10', color: 'FFD700', type: 3 },
+		{ id: '1_102', shortName: '2', type: 3 },
+		{ id: '1_999', shortName: '99', type: 3 }
+	];
+
 	test('renders a favorite toggle next to the stop name', () => {
 		render(StopPageHeader, { props: defaultProps });
 
@@ -99,55 +105,109 @@ describe('StopPageHeader', () => {
 
 		const heading = screen.getByRole('heading', { level: 1 });
 		expect(heading).toHaveTextContent('Pine St & 3rd Ave');
-		expect(heading).toHaveClass('text-3xl', 'font-bold', 'text-brand-accent');
+		expect(heading).toHaveClass('text-2xl', 'font-bold', 'text-surface-foreground');
 	});
 
-	test('displays stop ID with proper label', () => {
+	test('shows the direction and stop code in a subtitle', () => {
 		render(StopPageHeader, { props: defaultProps });
 
-		expect(screen.getByText('Stop ID:')).toBeInTheDocument();
-		expect(screen.getByText('75403')).toBeInTheDocument();
+		expect(screen.getByText('North · Code: 75403')).toBeInTheDocument();
 	});
 
-	test('displays stop direction with proper label', () => {
-		render(StopPageHeader, { props: defaultProps });
-
-		expect(screen.getByText('Direction:')).toBeInTheDocument();
-		expect(screen.getByText('North')).toBeInTheDocument();
-	});
-
-	test('shows a faded "None" when the stop has no direction', () => {
+	test('shows only the stop code when the stop has no direction', () => {
 		render(StopPageHeader, {
 			props: { ...defaultProps, stopDirection: '' }
 		});
 
-		expect(screen.getByText('Direction:')).toBeInTheDocument();
-		expect(screen.getByText('None')).toHaveClass('text-gray-600');
+		expect(screen.getByText('Code: 75403')).toBeInTheDocument();
 	});
 
-	test('has proper header styling classes', () => {
-		render(StopPageHeader, { props: defaultProps });
+	test('falls back to the stop id without its agency prefix when there is no stop code', () => {
+		render(StopPageHeader, {
+			props: { ...defaultProps, stopId: '1_12345', stopCode: null }
+		});
 
-		const mainContainer = screen.getByRole('heading', { level: 1 }).closest('.my-4');
-		expect(mainContainer).toHaveClass('my-4');
-
-		const headerContainer = screen.getByRole('heading', { level: 1 }).closest('.text-center');
-		expect(headerContainer).toHaveClass('text-center');
+		expect(screen.getByText('North · Code: 12345')).toBeInTheDocument();
 	});
 
-	test('includes map marker icon', () => {
-		render(StopPageHeader, { props: defaultProps });
+	test('handles different stop directions', () => {
+		render(StopPageHeader, { props: { ...defaultProps, stopDirection: 'S' } });
 
-		const stopIdSection = screen.getByText('Stop ID:').parentElement;
-		expect(stopIdSection.querySelector('svg')).toBeInTheDocument();
+		expect(screen.getByText('South · Code: 75403')).toBeInTheDocument();
 	});
 
 	test('includes CompassArrow component', () => {
 		render(StopPageHeader, { props: defaultProps });
 
-		// The CompassArrow component should be rendered in the direction section
-		const directionSection = screen.getByText('Direction:').parentElement;
-		expect(directionSection).toBeInTheDocument();
+		expect(screen.getByTestId('compass-arrow')).toBeInTheDocument();
+	});
+
+	test('no longer renders the separate Stop ID and Direction chips', () => {
+		render(StopPageHeader, { props: defaultProps });
+
+		expect(screen.queryByText('Stop ID:')).not.toBeInTheDocument();
+		expect(screen.queryByText('Direction:')).not.toBeInTheDocument();
+	});
+
+	describe('route pills', () => {
+		test('shows one pill for each route that serves the stop', () => {
+			render(StopPageHeader, {
+				props: { ...defaultProps, routes, routeIds: ['1_100', '1_101'] }
+			});
+
+			const list = screen.getByRole('list', { name: 'Routes' });
+			expect(within(list).getAllByRole('listitem')).toHaveLength(2);
+			expect(within(list).getByText('8')).toBeInTheDocument();
+			expect(within(list).getByText('10')).toBeInTheDocument();
+		});
+
+		test('does not show routes that do not serve the stop', () => {
+			render(StopPageHeader, {
+				props: { ...defaultProps, routes, routeIds: ['1_100'] }
+			});
+
+			expect(screen.queryByText('99')).not.toBeInTheDocument();
+			expect(screen.queryByText('10')).not.toBeInTheDocument();
+		});
+
+		test('sorts pills in natural order, so 2 comes before 10', () => {
+			render(StopPageHeader, {
+				props: { ...defaultProps, routes, routeIds: ['1_101', '1_102', '1_100'] }
+			});
+
+			const items = within(screen.getByRole('list', { name: 'Routes' })).getAllByRole('listitem');
+			expect(items.map((item) => item.textContent.trim())).toEqual(['2', '8', '10']);
+		});
+
+		test('uses the route color for the pill background', () => {
+			render(StopPageHeader, {
+				props: { ...defaultProps, routes, routeIds: ['1_100'] }
+			});
+
+			expect(screen.getByText('8')).toHaveStyle({ backgroundColor: '#28813F' });
+		});
+
+		test('falls back to the route id without its agency prefix when there is no short name', () => {
+			render(StopPageHeader, {
+				props: { ...defaultProps, routes: [{ id: '1_555' }], routeIds: ['1_555'] }
+			});
+
+			expect(screen.getByText('555')).toBeInTheDocument();
+		});
+
+		test('renders no route list when the stop has no routes', () => {
+			render(StopPageHeader, { props: defaultProps });
+
+			expect(screen.queryByRole('list')).not.toBeInTheDocument();
+		});
+
+		test('renders no route list when none of the routes serve the stop', () => {
+			render(StopPageHeader, {
+				props: { ...defaultProps, routes, routeIds: ['1_does-not-exist'] }
+			});
+
+			expect(screen.queryByRole('list')).not.toBeInTheDocument();
+		});
 	});
 
 	test('renders tab navigation with correct links', () => {
@@ -189,29 +249,9 @@ describe('StopPageHeader', () => {
 		expect(scheduleTab).toBeInTheDocument();
 	});
 
-	test('handles different stop directions', () => {
-		const propsWithSouthDirection = {
-			...defaultProps,
-			stopDirection: 'S'
-		};
+	test('uses the stop id in the tab links', () => {
+		render(StopPageHeader, { props: { ...defaultProps, stopId: '1_12345' } });
 
-		render(StopPageHeader, { props: propsWithSouthDirection });
-
-		expect(screen.getByText('Direction:')).toBeInTheDocument();
-		expect(screen.getByText('South')).toBeInTheDocument();
-	});
-
-	test('handles different stop IDs', () => {
-		const propsWithDifferentId = {
-			...defaultProps,
-			stopId: '1_12345'
-		};
-
-		render(StopPageHeader, { props: propsWithDifferentId });
-
-		expect(screen.getByText('12345')).toBeInTheDocument();
-
-		// Check that tab links use the new stop ID
 		const arrivalsTab = screen.getByRole('link', { name: /arrivals & departures/i });
 		expect(arrivalsTab).toHaveAttribute('href', '/stops/1_12345');
 
@@ -231,6 +271,8 @@ describe('StopPageHeader', () => {
 		expect(heading).toHaveTextContent(
 			'Very Long Stop Name That Should Still Display Properly In The Header'
 		);
+		// Lets the name wrap instead of pushing the favorite toggle off-screen.
+		expect(heading).toHaveClass('min-w-0', 'break-words');
 	});
 
 	test('handles empty or missing props gracefully', () => {
@@ -266,18 +308,6 @@ describe('StopPageHeader', () => {
 				link.textContent.includes('Route Schedules')
 		);
 		expect(tabLinks).toHaveLength(2);
-	});
-
-	test('uses semantic HTML structure', () => {
-		const { container } = render(StopPageHeader, { props: defaultProps });
-
-		// Main heading should be h1
-		const mainHeading = screen.getByRole('heading', { level: 1 });
-		expect(mainHeading.tagName).toBe('H1');
-
-		// Strong elements should be used for labels
-		const strongElements = container.querySelectorAll('strong');
-		expect(strongElements.length).toBeGreaterThan(0);
 	});
 
 	test('renders back to map button with proper styling and functionality', () => {
