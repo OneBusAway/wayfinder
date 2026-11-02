@@ -137,8 +137,11 @@
 	async function handleSearchInput(query, isFrom) {
 		// Retyping a field starts a new trip, so drop any prior results/empty-state
 		// (and the parent's tripPlanAttempted flag) instead of letting "No
-		// itineraries found" linger under the form while the rider edits.
+		// itineraries found" linger under the form while the rider edits. A plan in
+		// flight is for the trip being edited, so drop its result too.
 		clearTripItineraries();
+		planRequestId++;
+		loading = false;
 		const requestId = invalidateAutocompleteRequest(isFrom);
 		if (query.trim() === '') {
 			if (isFrom) {
@@ -544,7 +547,7 @@
 				<div>
 					<TripPlanSearchField
 						inputId="from-location-input"
-						place={fromPlace}
+						bind:place={fromPlace}
 						results={fromResults}
 						isLoading={isLoadingFrom}
 						onInput={(query) => handleSearchInput(query, true)}
@@ -556,7 +559,7 @@
 				<div>
 					<TripPlanSearchField
 						inputId="to-location-input"
-						place={toPlace}
+						bind:place={toPlace}
 						results={toResults}
 						isLoading={isLoadingTo}
 						onInput={(query) => handleSearchInput(query, false)}
@@ -602,7 +605,7 @@
 	{/if}
 
 	<div class="mt-3 flex items-stretch gap-2">
-		<Button type="button" variant="outline" onclick={() => showTripOptionsModal.set(true)}>
+		<Button variant="outline" onclick={() => showTripOptionsModal.set(true)}>
 			{$t('trip-planner.options')}
 		</Button>
 		{#if $recentTrips.length > 0}
@@ -613,7 +616,7 @@
 				variant="outline"
 				onclick={() => (showRecentTrips = !showRecentTrips)}
 			>
-				<History class="h-3.5 w-3.5" />
+				<History class="size-4" />
 				<span class="hidden md:inline">{$t('trip-planner.recents')}</span>
 				<span class="sr-only md:hidden">{$t('trip-planner.recent_searches')}</span>
 			</Button>
@@ -622,7 +625,7 @@
 		<Button disabled={!selectedFrom || !selectedTo || isGeocoding} onclick={planTrip}>
 			{#if loading}
 				<svg
-					class="mr-2 h-5 w-5 animate-spin text-white disabled:dark:text-gray-400"
+					class="size-4 animate-spin"
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
 					viewBox="0 0 24 24"

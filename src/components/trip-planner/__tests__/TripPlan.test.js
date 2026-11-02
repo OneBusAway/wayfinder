@@ -540,6 +540,34 @@ describe('TripPlan shared URL round trip', () => {
 		unmount();
 	});
 
+	it('ignores a plan response that resolves after an input is retyped', async () => {
+		let resolvePlan;
+		global.fetch = vi.fn(
+			() =>
+				new Promise((resolve) => {
+					resolvePlan = () =>
+						resolve({
+							ok: true,
+							json: () => Promise.resolve({ plan: { itineraries: [{ id: 'itin-1' }] } })
+						});
+				})
+		);
+		const { unmount } = render(TripPlan, { props });
+
+		window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: sharedTrip }));
+		await waitFor(() => expect(global.fetch).toHaveBeenCalledOnce());
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		expect(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' })).toBeEnabled();
+
+		resolvePlan();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(props.handleTripPlan).not.toHaveBeenCalled();
+		unmount();
+	});
+
 	it('surfaces an error via handleTripPlan when a shared link has broken/invalid params', async () => {
 		const { unmount } = render(TripPlan, { props });
 
@@ -664,6 +692,24 @@ describe('TripPlan pending location selection', () => {
 		unmount();
 	});
 
+	it('shows the picked suggestion when it matches the current location', async () => {
+		vi.useFakeTimers();
+		const { unmount } = render(TripPlan, { props });
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		for (let pass = 0; pass < 2; pass += 1) {
+			await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+			await vi.advanceTimersByTimeAsync(500);
+			await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+			resolveGeocode();
+			await vi.advanceTimersByTimeAsync(0);
+			await tick();
+
+			expect(fromInput).toHaveValue('Capitol Hill');
+		}
+		unmount();
+	});
+
 	it('ignores a pending geocode when the field is cleared', async () => {
 		vi.useFakeTimers();
 		const { unmount } = render(TripPlan, { props });
@@ -704,8 +750,10 @@ describe('TripPlan pending location selection', () => {
 		await vi.advanceTimersByTimeAsync(0);
 		await tick();
 
+		// The typed text moves with the field it was typed into; the geocode for it
+		// must not resolve into either field.
 		expect(fromInput).toHaveValue('47.70000, -122.40000');
-		expect(toInput).toHaveValue('47.60000, -122.30000');
+		expect(toInput).toHaveValue('Capitol');
 		expect(mapProvider.addPinMarker).not.toHaveBeenCalledWith(
 			{ lat: 47.62, lng: -122.32 },
 			expect.anything()
