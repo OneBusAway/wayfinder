@@ -71,8 +71,7 @@
 		mapProvider: MapProvider;
 		isStopInteractive?: (stop: Stop) => boolean;
 		onCollapse?: (() => void) | null;
-		// True after the rider submits a plan (even if zero results)
-		tripPlanAttempted?: boolean;
+		tripPlanAttempted: boolean;
 	}
 
 	let {
