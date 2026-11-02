@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
-import { get } from 'svelte/store';
 import TripPlan from '../TripPlan.svelte';
 import * as navigation from '$app/navigation';
 import { recentTrips } from '$stores/recentTripsStore';
@@ -808,21 +807,36 @@ describe('TripPlan pending location selection', () => {
 		unmount();
 	});
 
-	it('plans with the chosen location label, not text typed but not picked', async () => {
-		recentTrips.clearAll();
+	it('disables Plan while a field has text that was not picked', async () => {
+		vi.useFakeTimers();
 		const { unmount } = render(TripPlan, { props });
 		await selectFromAndTo(mapProvider);
 
+		const planButton = screen.getByRole('button', { name: 'trip-planner.plan_your_trip' });
 		const [fromInput] = screen.getAllByRole('combobox');
 		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
-		await fireEvent.click(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' }));
-		await waitFor(() => expect(props.handleTripPlan).toHaveBeenCalledOnce());
+		expect(planButton).toBeDisabled();
 
-		expect(get(recentTrips)[0]).toMatchObject({
-			fromPlace: '47.60000, -122.30000',
-			toPlace: '47.70000, -122.40000'
-		});
-		recentTrips.clearAll();
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+
+		expect(planButton).toBeEnabled();
+		unmount();
+	});
+
+	it('clears the location when a field is erased, like the clear button', async () => {
+		const { unmount } = render(TripPlan, { props });
+		const { fromMarker } = await selectFromAndTo(mapProvider);
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: '' } });
+
+		expect(mapProvider.removePinMarker).toHaveBeenCalledWith(fromMarker);
+		expect(props.clearTripItineraries).toHaveBeenCalled();
+		expect(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' })).toBeDisabled();
 		unmount();
 	});
 

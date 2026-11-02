@@ -46,6 +46,11 @@
 	let isGeocodingTo = $state(false);
 	let isGeocoding = $derived(isGeocodingFrom || isGeocodingTo);
 
+	// The field was typed in without picking a new location. Plan waits for a pick
+	// so the fields always show the locations being planned.
+	let isFromEdited = $derived(fromQuery !== fromPlace);
+	let isToEdited = $derived(toQuery !== toPlace);
+
 	let fromMarker;
 	let toMarker;
 	let loading = $state(false);
@@ -137,6 +142,12 @@
 	}
 
 	async function handleSearchInput(query, isFrom) {
+		// Erasing every character is the same as the clear button.
+		if (query === '') {
+			clearInput(isFrom);
+			return;
+		}
+
 		// Typing only searches. The current route stays until a suggestion is picked.
 		const requestId = invalidateAutocompleteRequest(isFrom);
 		if (query.trim() === '') {
@@ -627,7 +638,15 @@
 			</Button>
 		{/if}
 		<div class="flex-1"></div>
-		<Button disabled={!selectedFrom || !selectedTo || isGeocoding || loading} onclick={planTrip}>
+		<Button
+			disabled={!selectedFrom ||
+				!selectedTo ||
+				isFromEdited ||
+				isToEdited ||
+				isGeocoding ||
+				loading}
+			onclick={planTrip}
+		>
 			{#if loading}
 				<svg
 					class="size-4 animate-spin"
