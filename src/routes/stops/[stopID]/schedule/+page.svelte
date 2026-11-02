@@ -108,6 +108,8 @@
 		stopLat={stop.lat}
 		stopLon={stop.lon}
 		stopCode={stop.code}
+		routeIds={stop.routeIds ?? []}
+		routes={data.routes ?? []}
 	/>
 
 	<div class="flex flex-col">
