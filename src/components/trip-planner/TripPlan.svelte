@@ -164,6 +164,20 @@
 		fetchResults(query, requestId);
 	}
 
+	// Re-plan only a trip the rider already asked for. A plan still in flight is
+	// for the replaced location, so it is replaced too. While the other field has
+	// text that was not picked, wait for that pick (as Plan does) and drop the
+	// stale plan instead.
+	function replanAfterLocationChange() {
+		if (!tripPlanAttempted && !loading) return;
+		if (isFromEdited || isToEdited) {
+			planRequestId++;
+			loading = false;
+			return;
+		}
+		planTrip();
+	}
+
 	async function selectLocation(suggestion, isFrom) {
 		const currentRequestId = isFrom ? ++fromRequestId : ++toRequestId;
 
@@ -202,10 +216,7 @@
 				toPlace = toQuery = suggestion.name;
 			}
 
-			// Like swap, re-plan only a trip the rider already asked for.
-			if (tripPlanAttempted || loading) {
-				planTrip();
-			}
+			replanAfterLocationChange();
 		} catch (error) {
 			console.error('Error selecting location:', error);
 		} finally {
@@ -293,11 +304,7 @@
 		fromMarker = result.fromMarker;
 		toMarker = result.toMarker;
 
-		// Re-plan only a trip the rider already asked for. A plan still in flight
-		// is for the pre-swap direction, so it is replaced too.
-		if (tripPlanAttempted || loading) {
-			planTrip();
-		}
+		replanAfterLocationChange();
 	}
 
 	// Always resolves to an OTP-response-shaped object ({ plan } or { error }),
@@ -447,11 +454,7 @@
 			toMarker = mapProvider.addPinMarker(coords, $t('trip-planner.to'));
 		}
 
-		// Like swap, re-plan only a trip the rider already asked for. A plan still
-		// in flight is for the replaced location, so it is replaced too.
-		if (tripPlanAttempted || loading) {
-			planTrip();
-		}
+		replanAfterLocationChange();
 	}
 
 	// Restore a shared trip from the URL: hydrate the form, drop the pins, and run

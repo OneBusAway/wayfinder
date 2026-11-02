@@ -853,6 +853,23 @@ describe('TripPlan pending location selection', () => {
 		unmount();
 	});
 
+	it('waits to re-plan while the other field has text that was not picked', async () => {
+		const { unmount } = render(TripPlan, { props: { ...props, tripPlanAttempted: true } });
+		await selectFromAndTo(mapProvider);
+		// Setting the locations on the map already re-planned the trip.
+		global.fetch.mockClear();
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		window.dispatchEvent(
+			new CustomEvent('setTripPlanLocation', { detail: { type: 'to', lat: 47.8, lng: -122.5 } })
+		);
+		await tick();
+
+		expect(global.fetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/otp/plan'));
+		unmount();
+	});
+
 	it('does not plan when a location is picked on the map before the trip was planned', async () => {
 		const { unmount } = render(TripPlan, { props });
 
