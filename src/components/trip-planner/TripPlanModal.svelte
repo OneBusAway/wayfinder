@@ -252,7 +252,8 @@
 
 	let headerTitle = $derived(showForm ? $t('tabs.plan_trip') : $t('trip-planner.trip_itineraries'));
 	let hasResults = $derived(itineraries.length > 0);
-	// "No itineraries" empty state only after a plan attempt, not while editing.
+	// "No itineraries" empty state only after a plan attempt. It stays while the
+	// rider edits the form and goes away when the trip is cleared.
 	let showEmptyState = $derived(!loading && !hasResults && (!showForm || tripPlanAttempted));
 </script>
 
