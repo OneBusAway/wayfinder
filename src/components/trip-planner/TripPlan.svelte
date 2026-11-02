@@ -26,7 +26,7 @@
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
-	let { handleTripPlan, mapProvider, clearTripItineraries, tripPlanAttempted = false } = $props();
+	let { handleTripPlan, mapProvider, clearTripItineraries, tripPlanAttempted } = $props();
 
 	let fromPlace = $state('');
 	let toPlace = $state('');
