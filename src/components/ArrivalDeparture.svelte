@@ -41,7 +41,7 @@
 
 		if (roundedDelay > 0) {
 			return 'text-violet-600 dark:text-violet-400';
-		} else if (roundedDelay < 0) {
+		} else if (roundedDelay < -1) {
 			return 'text-red-600 dark:text-red-400';
 		} else {
 			return 'text-green-600 dark:text-green-400';

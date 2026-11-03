@@ -457,9 +457,11 @@ describe('ArrivalDeparture', () => {
 
 	test.each([
 		['arrival late', 1, 60000, 'Arrived 1m late', 'text-violet-600'],
-		['arrival early', 1, -60000, 'Arrived 1m early', 'text-red-600'],
+		['arrival early', 1, -60000, 'Arrived 1m early', 'text-green-600'],
+		['arrival early', 1, -120000, 'Arrived 2m early', 'text-red-600'],
 		['departure late', 0, 60000, 'Departed 1m late', 'text-violet-600'],
-		['departure early', 0, -60000, 'Departed 1m early', 'text-red-600']
+		['departure early', 0, -60000, 'Departed 1m early', 'text-green-600'],
+		['departure early', 0, -120000, 'Departed 2m early', 'text-red-600']
 	])(
 		'preserves direction and color for a non-zero %s',
 		(_label, stopSequence, difference, expectedLabel, expectedColor) => {
