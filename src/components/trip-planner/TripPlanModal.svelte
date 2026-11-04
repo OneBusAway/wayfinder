@@ -31,14 +31,14 @@
 		error?: TripPlanError | null;
 		// Required when `showForm` is true
 		handleTripPlan?: (tripPlanData: { data: TripPlanResponse }) => void;
-		// True after the rider submits a plan (even if zero results)
-		hasPlanned?: boolean;
 		itineraries?: Itinerary[];
 		loading?: boolean;
 		mapProvider: MapProvider;
 		// When true (mobile plan sheet), embed From/To form in this sheet
 		showForm?: boolean;
 		snap?: 'peek' | 'half' | 'full';
+		// True after the rider submits a plan (even if zero results)
+		tripPlanAttempted?: boolean;
 	}
 
 	let {
@@ -46,12 +46,12 @@
 		closePane,
 		error = null,
 		handleTripPlan,
-		hasPlanned = false,
 		itineraries = [],
 		loading = false,
 		mapProvider,
 		showForm = false,
-		snap = $bindable('half')
+		snap = $bindable('half'),
+		tripPlanAttempted = false
 	}: Props = $props();
 
 	let expandedSteps: Record<number, boolean> = $state({});
@@ -252,8 +252,9 @@
 
 	let headerTitle = $derived(showForm ? $t('tabs.plan_trip') : $t('trip-planner.trip_itineraries'));
 	let hasResults = $derived(itineraries.length > 0);
-	// "No itineraries" empty state only after a plan attempt, not while editing.
-	let showEmptyState = $derived(!loading && !hasResults && (!showForm || hasPlanned));
+	// "No itineraries" empty state only after a plan attempt. It stays while the
+	// rider edits the form and goes away when the trip is cleared.
+	let showEmptyState = $derived(!loading && !hasResults && (!showForm || tripPlanAttempted));
 </script>
 
 <BottomSheet bind:snap bind:element={sheetElement}>
@@ -280,7 +281,7 @@
 				? 'border-b border-gray-200 pb-4 dark:border-gray-700'
 				: ''}
 		>
-			<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
+			<TripPlan {mapProvider} {handleTripPlan} {tripPlanAttempted} {clearTripItineraries} />
 		</div>
 	{/if}
 
