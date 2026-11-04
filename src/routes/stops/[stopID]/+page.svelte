@@ -13,12 +13,8 @@
 
 	let { data } = $props();
 	const stop = data.stopData.entry;
-	const routes = $derived(
-		data.stopData.references?.routes ??
-			arrivalsAndDeparturesResponse?.data?.references?.routes ??
-			[]
-	);
 	let arrivalsAndDeparturesResponse = $state(data.arrivalsAndDeparturesResponse ?? null);
+	const routes = $derived(data.stopData.references?.routes ?? []);
 
 	const currentUserLocation = $state($userLocation);
 

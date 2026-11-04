@@ -68,7 +68,9 @@
 		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	</div>
 
-	<div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+	<div
+		class="rounded-lg border border-gray-200 bg-surface p-4 dark:border-gray-700 dark:bg-surface-dark"
+	>
 		<div class="flex items-start justify-between gap-3">
 			<h1
 				class="min-w-0 text-2xl font-bold break-words text-surface-foreground dark:text-surface-foreground-dark"
@@ -95,7 +97,7 @@
 		{/if}
 
 		{#if stopRoutes.length}
-			<ul class="mt-3 flex flex-wrap gap-1.5" aria-label={$isLoading ? '' : $t('routes')}>
+			<ul class="mt-3 flex flex-wrap gap-1.5" aria-label={$isLoading ? undefined : $t('routes')}>
 				{#each stopRoutes as route (route.id)}
 					<li>
 						<RoutePill
@@ -108,20 +110,20 @@
 				{/each}
 			</ul>
 		{/if}
+	</div>
 
-		<div class="mt-4">
-			<TabContainer>
-				<TabLink
-					href="/stops/{encodeURIComponent(stopId)}"
-					current={$page.route.id === '/stops/[stopID]'}
-					>{$isLoading ? '' : $t('arrivals_and_departures_for_stop.title')}</TabLink
-				>
-				<TabLink
-					href="/stops/{encodeURIComponent(stopId)}/schedule"
-					current={$page.route.id === '/stops/[stopID]/schedule'}
-					>{$isLoading ? '' : $t('schedule_for_stop.route_schedules')}</TabLink
-				>
-			</TabContainer>
-		</div>
+	<div class="mt-4">
+		<TabContainer>
+			<TabLink
+				href="/stops/{encodeURIComponent(stopId)}"
+				current={$page.route.id === '/stops/[stopID]'}
+				>{$isLoading ? '' : $t('arrivals_and_departures_for_stop.title')}</TabLink
+			>
+			<TabLink
+				href="/stops/{encodeURIComponent(stopId)}/schedule"
+				current={$page.route.id === '/stops/[stopID]/schedule'}
+				>{$isLoading ? '' : $t('schedule_for_stop.route_schedules')}</TabLink
+			>
+		</TabContainer>
 	</div>
 </div>
