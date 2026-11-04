@@ -90,7 +90,9 @@
 		</div>
 
 		{#if subtitle}
-			<p class="mt-1 flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
+			<p
+				class="mt-1 flex items-center gap-1.5 text-sm text-surface-foreground dark:text-surface-foreground-dark"
+			>
 				<CompassArrow {stopDirection} />
 				<span>{subtitle}</span>
 			</p>
