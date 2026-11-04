@@ -19,6 +19,34 @@ export function resolveVehicleStopIndex(status, stopTimes) {
 }
 
 /**
+ * Decide whether status belongs to the trip selected by the rider.
+ *
+ * @param {{ status?: { activeTripId?: string, vehicleId?: string } | null } | null} details
+ * @param {string} tripId
+ * @param {string | null} [vehicleId]
+ * @returns {{ state: 'live' | 'previous-trip' | 'scheduled', isLive: boolean }}
+ */
+export function resolveLiveState(details, tripId, vehicleId = null) {
+	const status = details?.status;
+	if (!status) return { state: 'scheduled', isLive: false };
+
+	const activeTripMatches = status.activeTripId === tripId;
+	const selectedVehicleAvailable = vehicleId != null && vehicleId !== '';
+	const responseVehicleAvailable = Boolean(status.vehicleId);
+	const vehicleMismatch =
+		selectedVehicleAvailable && responseVehicleAvailable && status.vehicleId !== vehicleId;
+	if (activeTripMatches && responseVehicleAvailable && !vehicleMismatch) {
+		return { state: 'live', isLive: true };
+	}
+
+	if (!activeTripMatches || vehicleMismatch) {
+		return { state: 'previous-trip', isLive: false };
+	}
+
+	return { state: 'scheduled', isLive: false };
+}
+
+/**
  * Restrict a trip's stop list to the segment the rider cares about: from the
  * vehicle's current position through the rider's selected stop. Stops the bus
  * has already passed (before its current position) and stops beyond the rider's
