@@ -108,14 +108,12 @@
 		stopLat={stop.lat}
 		stopLon={stop.lon}
 		stopCode={stop.code}
+		routeIds={stop.routeIds ?? []}
+		routes={data.routes ?? []}
 	/>
 
 	<div class="flex flex-col">
 		<div class="flex flex-1 flex-col">
-			<h2 class="mb-4 text-2xl font-bold text-gray-800 dark:text-gray-100">
-				{$isLoading ? '' : $t('schedule_for_stop.route_schedules')}
-			</h2>
-
 			<div class="mb-4 flex justify-between gap-4">
 				<div class="min-w-32 md:w-[30%]">
 					<DatePicker

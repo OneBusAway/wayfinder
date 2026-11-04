@@ -1,14 +1,25 @@
 <script lang="ts">
-	import { ArrowLeft, Map, MapPin } from '@lucide/svelte';
+	import { ArrowLeft, Map } from '@lucide/svelte';
 	import CompassArrow from '$components/controls/CompassArrow.svelte';
 	import FavoriteToggle from '$components/favorites/FavoriteToggle.svelte';
+	import RoutePill from '$components/map/RoutePill.svelte';
 	import TabContainer from '$components/tabs/TabContainer.svelte';
 	import TabLink from '$components/tabs/TabLink.svelte';
 	import { page } from '$app/stores';
 	import { t, isLoading } from 'svelte-i18n';
-	import { removeAgencyPrefix, directionLabel } from '$lib/utils';
+	import { removeAgencyPrefix, stopSubtitle } from '$lib/utils';
+
+	interface RouteReference {
+		id: string;
+		shortName?: string;
+		color?: string;
+		textColor?: string;
+		type?: number;
+	}
 
 	interface Props {
+		routeIds?: string[];
+		routes?: RouteReference[];
 		stopCode?: string | null;
 		stopDirection?: string;
 		stopId: string;
@@ -17,7 +28,29 @@
 		stopName: string;
 	}
 
-	let { stopCode = null, stopDirection, stopId, stopLat, stopLon, stopName }: Props = $props();
+	let {
+		routeIds = [],
+		routes = [],
+		stopCode = null,
+		stopDirection,
+		stopId,
+		stopLat,
+		stopLon,
+		stopName
+	}: Props = $props();
+
+	// Only the routes that serve this stop, in natural order (2 before 10).
+	const stopRoutes = $derived(
+		routes
+			.filter((route) => routeIds.includes(route.id))
+			.sort((a, b) =>
+				(a.shortName || a.id).localeCompare(b.shortName || b.id, undefined, { numeric: true })
+			)
+	);
+
+	const subtitle = $derived(
+		$isLoading ? '' : stopSubtitle({ id: stopId, code: stopCode, direction: stopDirection }, $t)
+	);
 </script>
 
 <div class="my-4">
@@ -35,9 +68,13 @@
 		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	</div>
 
-	<div class="text-center">
-		<div class="flex items-center justify-center gap-2">
-			<h1 class="text-3xl font-bold text-brand-accent">
+	<div
+		class="rounded-lg border border-gray-200 bg-surface p-4 dark:border-gray-700 dark:bg-surface-dark"
+	>
+		<div class="flex items-start justify-between gap-3">
+			<h1
+				class="min-w-0 text-2xl font-bold break-words text-surface-foreground dark:text-surface-foreground-dark"
+			>
 				{stopName}
 			</h1>
 			<FavoriteToggle
@@ -48,27 +85,36 @@
 				direction={stopDirection}
 				lat={stopLat}
 				lon={stopLon}
-				class="h-9 w-9"
+				class="h-9 w-9 shrink-0"
 			/>
 		</div>
-		<div class="text-normal mt-2 flex items-center justify-center gap-x-4 text-gray-700">
-			<div class="flex items-center gap-x-1 rounded-full bg-gray-100 px-2.5 py-1">
-				<MapPin class="inline h-4 w-4" />
-				<strong>{$isLoading ? '' : $t('schedule_for_stop.stop_id')}:</strong>
-				{removeAgencyPrefix(stopId)}
-			</div>
-			<div class="flex items-center gap-x-1 rounded-full bg-gray-100 px-2.5 py-1">
+
+		{#if subtitle}
+			<p
+				class="mt-1 flex items-center gap-1.5 text-sm text-surface-foreground dark:text-surface-foreground-dark"
+			>
 				<CompassArrow {stopDirection} />
-				<strong>{$isLoading ? '' : $t('schedule_for_stop.direction')}:</strong>
-				{#if stopDirection}
-					{directionLabel(stopDirection, $t)}
-				{:else}
-					<span class="text-gray-600">
-						{$isLoading ? '' : $t('schedule_for_stop.no_direction')}
-					</span>
-				{/if}
-			</div>
-		</div>
+				<span>{subtitle}</span>
+			</p>
+		{/if}
+
+		{#if stopRoutes.length}
+			<ul class="mt-3 flex flex-wrap gap-1.5" aria-label={$isLoading ? undefined : $t('routes')}>
+				{#each stopRoutes as route (route.id)}
+					<li>
+						<RoutePill
+							shortName={route.shortName || removeAgencyPrefix(route.id)}
+							color={route.color}
+							textColor={route.textColor}
+							routeType={route.type}
+						/>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</div>
+
+	<div class="mt-4">
 		<TabContainer>
 			<TabLink
 				href="/stops/{encodeURIComponent(stopId)}"
