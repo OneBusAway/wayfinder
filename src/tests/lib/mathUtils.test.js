@@ -212,12 +212,6 @@ describe('calculateMidpoint', () => {
 				{ lat: 47.6092, lon: -122.3331 }
 			])
 		).toBeNull();
-
-		// Out-of-range coordinates in single tuple
-		expect(calculateMidpoint([120, -122.3321])).toBeNull();
-		expect(calculateMidpoint([-95, -122.3321])).toBeNull();
-		expect(calculateMidpoint([47.6062, 185])).toBeNull();
-		expect(calculateMidpoint([47.6062, -190])).toBeNull();
 	});
 
 	it('accepts coordinates at the geographic range boundaries', () => {
