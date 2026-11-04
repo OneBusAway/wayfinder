@@ -6,7 +6,8 @@
 	} from '$env/static/public';
 
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
+	import { t } from 'svelte-i18n';
 	import OverflowMenu from './OverflowMenu.svelte';
 	import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher.svelte';
 
@@ -65,7 +66,7 @@
 			const tempDiv = document.createElement('div');
 			tempDiv.style.cssText =
 				'position:absolute;visibility:hidden;padding:0.25rem 0.5rem;font-weight:600;';
-			tempDiv.textContent = key;
+			tempDiv.textContent = $t(key, { default: key });
 			document.body.appendChild(tempDiv);
 			// Add border width (1px each side) to the measurement
 			linkWidths.push({ key, value, width: tempDiv.offsetWidth + 2 });
@@ -162,6 +163,14 @@
 		visibleLinks = newVisibleLinks;
 		overflowLinks = newOverflowLinks;
 	}
+
+	$effect(() => {
+		void $t; // re-run when the language changes
+		untrack(() => {
+			measureLinkWidths();
+			checkOverflow();
+		});
+	});
 
 	onMount(() => {
 		measureLinkWidths();
@@ -273,7 +282,7 @@
 				<a
 					href={value}
 					class="block px-2 py-1 font-semibold text-surface-foreground dark:text-surface-foreground-dark"
-					>{key}</a
+					>{$t(key, { default: key })}</a
 				>
 				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</div>

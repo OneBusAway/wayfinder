@@ -10,7 +10,7 @@ vi.mock('$app/environment', () => ({
 vi.mock('$env/static/public', () => ({
 	PUBLIC_OBA_REGION_NAME: 'Test Region',
 	PUBLIC_OBA_LOGO_URL: '/test-logo.png',
-	PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}'
+	PUBLIC_NAV_BAR_LINKS: '{"header.home": "/", "header.about": "/about"}'
 }));
 
 // Set default value for the global define
@@ -44,6 +44,49 @@ vi.mock('$env/dynamic/public', () => ({
 	env: { PUBLIC_LANGUAGE_SWITCHER_ENABLED: 'true' }
 }));
 
+let currentLocale = 'en';
+const localeSubscribers = new Set();
+const messages = {
+	en: {
+		'header.home': 'Home',
+		'header.about': 'About',
+		'header.contact': 'Contact',
+		'header.fares_and_tolls': 'Fares & Tolls'
+	},
+	es: {
+		'header.home': 'Inicio',
+		'header.about': 'Acerca de',
+		'header.contact': 'Contacto',
+		'header.fares_and_tolls': 'Tarifas y peajes'
+	}
+};
+
+const notifyLocaleChange = () => {
+	localeSubscribers.forEach((fn) =>
+		fn((key, options) => messages[currentLocale]?.[key] ?? options?.default ?? key)
+	);
+};
+
+vi.mock('svelte-i18n', () => ({
+	locale: {
+		subscribe: (fn) => {
+			fn(currentLocale);
+			return () => {};
+		},
+		set: (newLoc) => {
+			currentLocale = newLoc;
+			notifyLocaleChange();
+		}
+	},
+	t: {
+		subscribe: (fn) => {
+			localeSubscribers.add(fn);
+			fn((key, options) => messages[currentLocale]?.[key] ?? options?.default ?? key);
+			return () => localeSubscribers.delete(fn);
+		}
+	}
+}));
+
 describe('Header', () => {
 	beforeEach(() => {
 		// Mock ResizeObserver
@@ -55,6 +98,7 @@ describe('Header', () => {
 	});
 
 	afterEach(() => {
+		currentLocale = 'en';
 		vi.restoreAllMocks();
 	});
 
@@ -86,6 +130,24 @@ describe('Header', () => {
 		expect(headerContent).toBeInTheDocument();
 	});
 
+	test('renders translated navigation links', () => {
+		render(Header);
+		const homeLink = screen.getByRole('link', { name: 'Home' });
+		expect(homeLink).toBeInTheDocument();
+		expect(homeLink).toHaveAttribute('href', '/');
+	});
+
+	test('updates navigation link labels when locale changes', async () => {
+		const { rerender } = render(Header);
+		expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
+
+		currentLocale = 'es';
+		notifyLocaleChange();
+		await rerender({});
+
+		expect(screen.getByRole('link', { name: 'Inicio' })).toBeInTheDocument();
+	});
+
 	test('renders without navigation links when PUBLIC_NAV_BAR_LINKS is empty', () => {
 		// This test will use the mocked empty value
 		vi.doMock('$env/static/public', () => ({
@@ -115,6 +177,7 @@ describe('Header with region name hidden', () => {
 
 	afterEach(() => {
 		globalThis.__SHOW_REGION_NAME_IN_NAV_BAR__ = true;
+		currentLocale = 'en';
 		vi.restoreAllMocks();
 	});
 
