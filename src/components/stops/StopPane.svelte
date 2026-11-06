@@ -26,6 +26,7 @@
 	 * @typedef {import('$lib/activeRoutes').RouteColors} RouteColors
 	 * @typedef {import('$lib/types').Stop} Stop
 	 *
+	 * @typedef {ArrivalAndDepartureListResponse['data']['entry'] & { stopId?: string }} ArrivalsAndDeparturesEntry
 	 * @typedef {ArrivalAndDepartureListResponse['data']['entry']['arrivalsAndDepartures'][number]} ArrivalsAndDeparture
 	 * @typedef {string | string[]} SurveyAnswer
 	 * @typedef {import('$stores/surveyStore').SurveyQuestion} SurveyQuestion
@@ -121,7 +122,7 @@
 	 * predicted time and falling back to the scheduled time. Comparing this
 	 * across window widenings is more robust than a raw count: an arrival
 	 * departing the front of the list no longer masks a genuinely later one.
-	 * @param {any[]} [arrivals]
+	 * @param {ArrivalsAndDeparture[]} [arrivals]
 	 * @returns {number}
 	 */
 	function furthestArrivalTime(arrivals) {
@@ -136,8 +137,9 @@
 	 * Copies a response entry with its arrival list reduced to the rows the
 	 * rider should see (see visibleArrivals). Returns null for a missing entry
 	 * so the first-load skeleton renders.
-	 * @param {any} [entry]
+	 * @param {ArrivalsAndDeparturesEntry | null} [entry]
 	 * @param {number} [now]
+	 * @returns {ArrivalsAndDeparturesEntry | null}
 	 */
 	function withVisibleArrivals(entry, now) {
 		if (!entry) return null;
@@ -147,7 +149,7 @@
 	/**
 	 * Returns true if the server-rendered seed response is empty for a stop with routes,
 	 * indicating the client should auto-extend upon mounting.
-	 * @param {any} response
+	 * @param {ArrivalAndDepartureListResponse | null | undefined} response
 	 * @param {Stop | null | undefined} currentStop
 	 */
 	function shouldAutoExtendOnSeed(response, currentStop) {
