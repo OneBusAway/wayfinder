@@ -7,6 +7,8 @@
 
 const MS_IN_MINS = 60000;
 
+/** @typedef {import('onebusaway-sdk/resources/arrival-and-departure').ArrivalAndDepartureListResponse['data']['entry']['arrivalsAndDepartures'][number]} ArrivalsAndDeparture */
+
 /**
  * Produces a stable composite key for an arrival, used to identify the same
  * trip visit across successive poll responses. stopSequence is required so a
@@ -33,9 +35,9 @@ export function makeKey(arrival) {
  * origin rows (stopSequence === 0) as departures (using departure times) from
  * intermediate/final stop rows (using arrival times).
  *
- * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
+ * @param {ArrivalsAndDeparture[]} arrivals - Arrival/departure rows from the OBA API
  * @param {number} now - Current time in milliseconds since epoch
- * @returns {Array<object>} Filtered array containing only non-departed arrivals (ETA >= 0)
+ * @returns {ArrivalsAndDeparture[]} Filtered array containing only non-departed arrivals (ETA >= 0)
  */
 export function filterDeparted(arrivals, now) {
 	if (!arrivals || arrivals.length === 0) return [];
@@ -104,8 +106,8 @@ function continuesTrip(arrival, departure) {
  * Matching is by vehicleId, so rows with no vehicle assigned (schedule-only
  * data, or a trip before AVL picks it up) are never collapsed.
  *
- * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
- * @returns {Array<object>} Arrivals with layover arrival rows removed
+ * @param {ArrivalsAndDeparture[]} arrivals - Arrival/departure rows from the OBA API
+ * @returns {ArrivalsAndDeparture[]} Arrivals with layover arrival rows removed
  */
 export function collapseLayovers(arrivals) {
 	if (!arrivals || arrivals.length === 0) return [];
@@ -133,8 +135,8 @@ function lastFixTime(arrival) {
  * often newer. Left in, the duplicate crashes keyed {#each} blocks with
  * each_key_duplicate.
  *
- * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
- * @returns {Array<object>} One row per trip visit, in first-seen order
+ * @param {ArrivalsAndDeparture[]} arrivals - Arrival/departure rows from the OBA API
+ * @returns {ArrivalsAndDeparture[]} One row per trip visit, in first-seen order
  */
 export function dedupeTripVisits(arrivals) {
 	if (!arrivals || arrivals.length === 0) return [];
@@ -165,11 +167,11 @@ export function dedupeTripVisits(arrivals) {
  * (StopPane, the map's active-route picker) goes through this so they cannot
  * disagree about which trips are boardable.
  *
- * @param {Array<object>} arrivals - Array of arrival/departure objects from OBA API
+ * @param {ArrivalsAndDeparture[]} arrivals - Arrival/departure rows from the OBA API
  * @param {number} [now] - Current time in ms since epoch; omit to skip the
  *   clock-dependent departed filter (e.g. a server-rendered seed that must
  *   hydrate identically on the client)
- * @returns {Array<object>} Boardable arrivals in their original order
+ * @returns {ArrivalsAndDeparture[]} Boardable arrivals in their original order
  */
 export function visibleArrivals(arrivals, now) {
 	const unique = dedupeTripVisits(arrivals);

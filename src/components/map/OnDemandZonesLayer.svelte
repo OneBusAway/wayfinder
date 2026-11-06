@@ -17,11 +17,13 @@
 	import { drawableAreas } from '$lib/onDemand/models.js';
 	import { openOnDemandService } from '$lib/onDemand/navigation.js';
 
+	/** @typedef {NonNullable<ReturnType<import('$lib/types').MapProvider['createPolygon']>>} PolygonHandle */
+
 	let { mapProvider = null, active = true, viewportTick = 0 } = $props();
 
 	let services = $state.raw([]);
 	let level = $state('hidden');
-	/** @type {Map<string, { handles: any[], level: string, areasKey: string }>} */
+	/** @type {Map<string, { handles: PolygonHandle[], level: string, areasKey: string }>} */
 	// bookkeeping, not read reactively
 	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const drawn = new Map();
