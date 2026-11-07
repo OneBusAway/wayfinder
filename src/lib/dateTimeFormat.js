@@ -117,8 +117,8 @@ export function msToTimeString(
  * @param {number} ms - Milliseconds since Unix epoch
  * @returns {string} Time in "HH:mm AM/PM" format
  */
-export function msToLocalArrivalDepartureTimeString(ms) {
-	return msToTimeString(ms, getLocalTimeZone(), fourDigitTimeFormat);
+export function msToLocalArrivalDepartureTimeString(ms, timeZone = getLocalTimeZone()) {
+	return msToTimeString(ms, timeZone || getLocalTimeZone(), fourDigitTimeFormat);
 }
 
 /**
