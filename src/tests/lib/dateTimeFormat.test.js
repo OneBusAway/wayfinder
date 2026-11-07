@@ -94,6 +94,12 @@ describe('msToLocalArrivalDepartureTimeString', () => {
 		expect(result).toBe('09:05 AM');
 	});
 
+	it('formats in specified timezone when provided', () => {
+		const ms = new Date('2024-01-16T17:15:00Z').valueOf();
+		expect(msToLocalArrivalDepartureTimeString(ms, 'America/Los_Angeles')).toBe('09:15 AM');
+		expect(msToLocalArrivalDepartureTimeString(ms, 'America/New_York')).toBe('12:15 PM');
+	});
+
 	it.each(INVALID_INPUTS)(`returns "N/A" when the input is %s`, (input) => {
 		expect(msToLocalArrivalDepartureTimeString(input)).toBe('N/A');
 	});
