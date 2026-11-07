@@ -339,7 +339,9 @@ describe('ArrivalDeparture', () => {
 			const time = new Date('2024-01-16T17:15:00Z').valueOf();
 			render(ArrivalDeparture, {
 				props: {
+					includeArrivalDepartureInStatusLabel: true,
 					arrivalDeparture: baseArrival({
+						stopSequence: 0,
 						predicted: false,
 						scheduledArrivalTime: time,
 						scheduledDepartureTime: time,
@@ -348,7 +350,7 @@ describe('ArrivalDeparture', () => {
 					})
 				}
 			});
-			expect(screen.getByText(/09:15 AM/)).toBeInTheDocument();
+			expect(screen.getByText(/Departed at 09:15 AM/)).toBeInTheDocument();
 		});
 	});
 });
