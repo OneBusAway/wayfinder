@@ -171,7 +171,8 @@
 			// calculateMidpoint a NaN it happily averages into a NaN flyTo.
 			const legs = itineraries[activeTab].legs;
 			const endpoints = [legs[0]?.from, legs.at(-1)?.to].filter(
-				(point) => Number.isFinite(point?.lat) && Number.isFinite(point?.lon)
+				(point): point is { lat: number; lon: number } =>
+					Number.isFinite(point?.lat) && Number.isFinite(point?.lon)
 			);
 			const midpoint = calculateMidpoint(endpoints);
 			if (midpoint) {
