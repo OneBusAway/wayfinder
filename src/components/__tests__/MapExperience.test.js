@@ -626,7 +626,7 @@ test('closing the mobile itinerary sheet keeps the plan form instead of returnin
 			}
 		});
 		await tick();
-		expect(capturedTripPlanModalProps.hasPlanned).toBe(true);
+		expect(capturedTripPlanModalProps.tripPlanAttempted).toBe(true);
 		expect(capturedTripPlanModalProps.itineraries).toHaveLength(1);
 
 		dispatch = vi.spyOn(window, 'dispatchEvent');
@@ -639,7 +639,7 @@ test('closing the mobile itinerary sheet keeps the plan form instead of returnin
 		// Sheet stays open on the Plan tab, so the form is not remounted empty in SearchPane.
 		expect(capturedSearchPaneProps.embedTripPlan).toBe(false);
 		expect(capturedTripPlanModalProps.itineraries).toEqual([]);
-		expect(capturedTripPlanModalProps.hasPlanned).toBe(false);
+		expect(capturedTripPlanModalProps.tripPlanAttempted).toBe(false);
 		expect(capturedTripPlanModalProps.error).toBeNull();
 		expect(capturedMapContainerProps.mapProvider.clearAllPolylines).toHaveBeenCalled();
 
@@ -670,7 +670,7 @@ test('closing the mobile sheet after an empty plan keeps the form', async () => 
 			data: { plan: { itineraries: [] } }
 		});
 		await tick();
-		expect(capturedTripPlanModalProps.hasPlanned).toBe(true);
+		expect(capturedTripPlanModalProps.tripPlanAttempted).toBe(true);
 		expect(capturedTripPlanModalProps.itineraries).toEqual([]);
 		expect(capturedTripPlanModalProps.error).toBeNull();
 
@@ -681,7 +681,7 @@ test('closing the mobile sheet after an empty plan keeps the form', async () => 
 		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'tripPlanModalClosed' }));
 		expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
 		expect(capturedSearchPaneProps.embedTripPlan).toBe(false);
-		expect(capturedTripPlanModalProps.hasPlanned).toBe(false);
+		expect(capturedTripPlanModalProps.tripPlanAttempted).toBe(false);
 	} finally {
 		dispatch?.mockRestore();
 		restoreViewport();

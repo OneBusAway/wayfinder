@@ -690,6 +690,7 @@
 					{handleViewAllRoutes}
 					{clearPolylines}
 					{handleTripPlan}
+					{tripPlanAttempted}
 					{handleStopMarkerSelect}
 					{handleMapStopMarkerSelect}
 					{clearTripItineraries}
@@ -741,7 +742,7 @@
 					<TripPlanModal
 						{mapProvider}
 						showForm={true}
-						hasPlanned={tripPlanAttempted}
+						{tripPlanAttempted}
 						{handleTripPlan}
 						{clearTripItineraries}
 						itineraries={tripItineraries}

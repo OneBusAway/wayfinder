@@ -1,58 +1,54 @@
-<script>
-	// @ts-check
+<script lang="ts">
 	import { MapPin, X } from '@lucide/svelte';
+	import type { FormEventHandler } from 'svelte/elements';
+	import type { PlaceSuggestion } from '$lib/types';
 	import { t } from 'svelte-i18n';
-	/**
-	 * @typedef {Object} Props
-	 * @property {string} [inputId]
-	 * @property {string} [place]
-	 * @property {import('$lib/types').PlaceSuggestion[]} [results]
-	 * @property {boolean} [isLoading]
-	 * @property {(value: string) => void} onInput
-	 * @property {() => void} onClear
-	 * @property {(suggestion: import('$lib/types').PlaceSuggestion) => void} onSelect
-	 * @property {() => void} [onDismiss]
-	 */
 
-	/** @type {Props} */
+	interface Props {
+		inputId?: string;
+		isLoading?: boolean;
+		results?: PlaceSuggestion[];
+		value?: string;
+		onInput: (value: string) => void;
+		onClear: () => void;
+		onSelect: (suggestion: PlaceSuggestion) => void;
+		onDismiss?: () => void;
+	}
+
 	let {
 		inputId = 'location-input',
-		place = $bindable(''),
-		results = [],
 		isLoading = false,
+		results = [],
+		value = $bindable(''),
 		onInput,
 		onClear,
 		onSelect,
 		onDismiss = () => {}
-	} = $props();
+	}: Props = $props();
 
 	let activeIndex = $state(-1);
 	let listboxId = $derived(`${inputId}-listbox`);
 	let hasResults = $derived(!isLoading && Array.isArray(results) && results.length > 0);
 
-	/** @param {Event & { currentTarget: HTMLInputElement }} event */
-	function handleInput(event) {
+	const handleInput: FormEventHandler<HTMLInputElement> = function handleInput(event) {
 		activeIndex = -1;
 		onInput(event.currentTarget.value);
-	}
+	};
 
 	function handleClear() {
 		onClear();
 	}
 
-	/** @param {import('$lib/types').PlaceSuggestion} result */
-	function handleSelect(result) {
+	function handleSelect(result: PlaceSuggestion) {
 		activeIndex = -1;
 		onSelect(result);
 	}
 
-	/** @param {number} index */
-	function optionId(index) {
+	function optionId(index: number) {
 		return `${listboxId}-option-${index}`;
 	}
 
-	/** @param {KeyboardEvent} event */
-	function handleKeydown(event) {
+	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
 			if (!hasResults && !isLoading) return;
 
@@ -84,9 +80,10 @@
 
 <div class="relative">
 	<input
+		autocomplete="off"
 		id={inputId}
 		type="text"
-		bind:value={place}
+		bind:value
 		oninput={handleInput}
 		onkeydown={handleKeydown}
 		role="combobox"
@@ -98,7 +95,7 @@
 		placeholder="{$t('trip-planner.search_for_a_place')}..."
 		class="block w-full rounded-md border-gray-300 pr-10 text-sm text-black shadow-xs focus:border-blue-500 focus:ring-blue-500"
 	/>
-	{#if place}
+	{#if value}
 		<button
 			type="button"
 			class="absolute inset-y-0 right-0 flex items-center pr-3"
@@ -121,9 +118,8 @@
 			role="listbox"
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg"
 		>
-			<!-- FIXME: each block has no key -->
-			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each results as result, index}
+			<!-- Geocoders do not provide unique identifiers so `index` is the only possible key. -->
+			{#each results as result, index (index)}
 				<li role="presentation">
 					<button
 						id={optionId(index)}
