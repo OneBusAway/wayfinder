@@ -1,3 +1,5 @@
+import { compareRoutes } from './routeUtils';
+
 export function debounce(func, wait) {
 	let timeout = null;
 
@@ -66,9 +68,9 @@ export function routeShortNamesForStop(arrivalsAndDeparturesResponse, stop) {
 	return (
 		routes
 			.filter((r) => stopRouteIds.has(r.id))
+			.sort(compareRoutes)
 			// the route id will always be present, so if the shortName is missing, fall back to the id without its agency prefix
 			.map((r) => r.shortName || removeAgencyPrefix(r.id))
-			.sort()
 	);
 }
 
