@@ -40,6 +40,9 @@
 	async function handleTogglePin(e, trip) {
 		e.stopPropagation();
 		const result = pinnedTrips.togglePin(trip);
+		if (result === 'invalid') {
+			return;
+		}
 		if (result === 'limit') {
 			pinLimitReached = true;
 			return;
