@@ -27,6 +27,7 @@ export async function load({ params }) {
 	}
 
 	return {
+		routes: scheduleForStop.references.routes ?? [],
 		schedules: getRouteSchedules(scheduleForStop, env.PUBLIC_OBA_TIMEZONE || undefined),
 		serviceDay,
 		stop,
