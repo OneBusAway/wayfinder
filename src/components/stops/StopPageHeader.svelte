@@ -8,6 +8,7 @@
 	import { page } from '$app/stores';
 	import { t, isLoading } from 'svelte-i18n';
 	import { removeAgencyPrefix, stopSubtitle } from '$lib/utils';
+	import { compareRoutes } from '$lib/routeUtils';
 
 	interface RouteReference {
 		id: string;
@@ -39,13 +40,9 @@
 		stopName
 	}: Props = $props();
 
-	// Only the routes that serve this stop, in natural order (2 before 10).
+	// Only the routes that serve this stop, in the same order as the rest of the app.
 	const stopRoutes = $derived(
-		routes
-			.filter((route) => routeIds.includes(route.id))
-			.sort((a, b) =>
-				(a.shortName || a.id).localeCompare(b.shortName || b.id, undefined, { numeric: true })
-			)
+		routes.filter((route) => routeIds.includes(route.id)).sort(compareRoutes)
 	);
 
 	const subtitle = $derived(
