@@ -1,47 +1,80 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import RecentTripsList from '../RecentTripsList.svelte';
+import ClearRecentSearchesDialog from '../ClearRecentSearchesDialog.svelte';
+import { closeClearRecentSearchesDialog } from '$stores/clearRecentSearchesDialogStore';
 
-// Mock svelte-i18n
+// Mock svelte-i18n (same pattern as TripPlanSearchField.test.js)
 vi.mock('svelte-i18n', () => {
 	const translations = {
 		'trip-planner.remove_recent_trip': 'Remove recent trip',
 		'trip-planner.recent_searches': 'Recent Searches',
 		'trip-planner.recent_trip': 'Recent trip from {from} to {to}',
 		'trip-planner.clear_all': 'Clear All',
+		'trip-planner.clear_recent_searches': 'Clear recent searches',
+		'trip-planner.clear_recent_searches_confirmation':
+			'Are you sure you want to clear all recent searches?',
+		'trip-planner.cancel': 'Cancel',
+		'search.clear': 'Clear',
 		'trip-planner.pinned_trips': 'Pinned Trips',
-		'trip-planner.pin_trip': 'Pin trip',
-		'trip-planner.remove_pinned_trip': 'Remove pinned trip'
+		'trip-planner.pin_trip': 'Pin trip from {from} to {to}',
+		'trip-planner.remove_pinned_trip': 'Remove pinned trip',
+		'trip-planner.pinned_trip': 'Use pinned trip from {from} to {to}',
+		'trip-planner.pin_limit_reached': 'You can only pin up to 20 trips. Please unpin a trip first.'
 	};
 	return {
 		t: {
 			subscribe: vi.fn((fn) => {
-				fn((key) => translations[key] || key);
+				fn((key, options) => {
+					let text = translations[key] || key;
+					if (options?.values) {
+						Object.entries(options.values).forEach(([k, v]) => {
+							text = text.replace(`{${k}}`, v);
+						});
+					}
+					return text;
+				});
 				return { unsubscribe: () => {} };
 			})
 		}
 	};
 });
 
-// Added mockOpenDialog to handle the incoming feature from the other branch
+// Use vi.hoisted so mock variables are available inside vi.mock factories
 const {
 	mockRemoveTrip,
 	mockClearAll,
 	mockStoreValue,
+	mockSubscribers,
 	mockTogglePin,
 	mockRemovePinnedTrip,
 	mockPinnedStoreValue,
-	mockOpenDialog
+	mockPinnedSubscribers
 } = vi.hoisted(() => {
+	const storeValue = { current: [] };
+	const subscribers = new Set();
+	const pinnedStoreValue = { current: [] };
+	const pinnedSubscribers = new Set();
 	return {
 		mockRemoveTrip: vi.fn(),
-		mockClearAll: vi.fn(),
-		mockStoreValue: { current: [] },
-		mockTogglePin: vi.fn(),
-		mockRemovePinnedTrip: vi.fn(),
-		mockPinnedStoreValue: { current: [] },
-		mockOpenDialog: vi.fn((opts) => opts.onConfirm()) // Auto-executes the clearAll callback for testing
+		mockClearAll: vi.fn(() => {
+			storeValue.current = [];
+			subscribers.forEach((subscriber) => subscriber([]));
+		}),
+		mockStoreValue: storeValue,
+		mockSubscribers: subscribers,
+		mockTogglePin: vi.fn((trip) => {
+			pinnedStoreValue.current = [trip, ...pinnedStoreValue.current];
+			pinnedSubscribers.forEach((subscriber) => subscriber(pinnedStoreValue.current));
+			return 'pinned';
+		}),
+		mockRemovePinnedTrip: vi.fn((tripId) => {
+			pinnedStoreValue.current = pinnedStoreValue.current.filter((t) => t.id !== tripId);
+			pinnedSubscribers.forEach((subscriber) => subscriber(pinnedStoreValue.current));
+		}),
+		mockPinnedStoreValue: pinnedStoreValue,
+		mockPinnedSubscribers: pinnedSubscribers
 	};
 });
 
@@ -49,7 +82,8 @@ vi.mock('$stores/recentTripsStore', () => ({
 	recentTrips: {
 		subscribe: vi.fn((fn) => {
 			fn(mockStoreValue.current);
-			return () => {};
+			mockSubscribers.add(fn);
+			return () => mockSubscribers.delete(fn);
 		}),
 		removeTrip: mockRemoveTrip,
 		clearAll: mockClearAll
@@ -60,16 +94,17 @@ vi.mock('$stores/pinnedTripsStore', () => ({
 	pinnedTrips: {
 		subscribe: vi.fn((fn) => {
 			fn(mockPinnedStoreValue.current);
-			return () => {};
+			mockPinnedSubscribers.add(fn);
+			return () => mockPinnedSubscribers.delete(fn);
 		}),
 		togglePin: mockTogglePin,
 		removeTrip: mockRemovePinnedTrip
 	},
-	isMatch: (t1, t2) => t1.id === t2.id
-}));
-
-vi.mock('$stores/clearRecentSearchesDialogStore', () => ({
-	openClearRecentSearchesDialog: mockOpenDialog
+	isMatch: (t1, t2) =>
+		t1?.fromCoords?.lat === t2?.fromCoords?.lat &&
+		t1?.fromCoords?.lng === t2?.fromCoords?.lng &&
+		t1?.toCoords?.lat === t2?.toCoords?.lat &&
+		t1?.toCoords?.lng === t2?.toCoords?.lng
 }));
 
 describe('RecentTripsList', () => {
@@ -96,8 +131,17 @@ describe('RecentTripsList', () => {
 		user = userEvent.setup();
 		mockStoreValue.current = [];
 		mockPinnedStoreValue.current = [];
+		mockSubscribers.clear();
+		mockPinnedSubscribers.clear();
 		vi.clearAllMocks();
+		closeClearRecentSearchesDialog();
 	});
+
+	function renderRecentTripsWithDialog(props) {
+		const list = render(RecentTripsList, { props });
+		render(ClearRecentSearchesDialog);
+		return list;
+	}
 
 	describe('Rendering', () => {
 		it('renders nothing when the store is empty', () => {
@@ -145,6 +189,7 @@ describe('RecentTripsList', () => {
 
 			const card = screen.getByText('Capitol Hill').closest('button');
 			expect(card.tagName).toBe('BUTTON');
+			// The delete control must be a sibling, not nested inside the card button.
 			expect(card.querySelector('button')).toBeNull();
 		});
 
@@ -154,6 +199,8 @@ describe('RecentTripsList', () => {
 			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
 			const clearAll = screen.getByText('Clear All');
+			// gray-600 was the AA fix in #531; pin the regression (gray-400) rather than
+			// the exact shade so an equal-or-better change (e.g. gray-700) still passes.
 			expect(clearAll).not.toHaveClass('text-gray-400');
 		});
 	});
@@ -206,15 +253,101 @@ describe('RecentTripsList', () => {
 			expect(mockOnSelect).not.toHaveBeenCalled();
 		});
 
-		it('opens the confirmation dialog and clears all when "Clear All" button is clicked', async () => {
+		it('opens a confirmation without clearing when "Clear All" is clicked', async () => {
 			mockStoreValue.current = sampleTrips;
 
-			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+			renderRecentTripsWithDialog({ onSelect: vi.fn() });
 
-			await user.click(screen.getByText('Clear All'));
+			await user.click(screen.getByRole('button', { name: 'Clear All' }));
 
-			expect(mockOpenDialog).toHaveBeenCalledTimes(1);
+			expect(
+				screen.getByRole('dialog', {
+					name: 'Clear recent searches'
+				})
+			).toHaveAccessibleDescription('Are you sure you want to clear all recent searches?');
+			const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+			const clearButton = screen.getByRole('button', { name: 'Clear' });
+			expect(cancelButton).toHaveFocus();
+			await user.tab();
+			expect(clearButton).toHaveFocus();
+			await user.tab();
+			expect(cancelButton).toHaveFocus();
+			expect(mockClearAll).not.toHaveBeenCalled();
+			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
+			expect(screen.getByText('Downtown')).toBeInTheDocument();
+		});
+
+		it('renders the confirmation outside the RecentTripsList DOM subtree', async () => {
+			mockStoreValue.current = sampleTrips;
+			const { container } = renderRecentTripsWithDialog({ onSelect: vi.fn() });
+
+			await user.click(screen.getByRole('button', { name: 'Clear All' }));
+
+			expect(container.contains(screen.getByRole('dialog'))).toBe(false);
+		});
+
+		it('closes on Cancel and keeps the recent searches', async () => {
+			mockStoreValue.current = sampleTrips;
+			renderRecentTripsWithDialog({ onSelect: vi.fn() });
+			const clearAllButton = screen.getByRole('button', { name: 'Clear All' });
+
+			await user.click(clearAllButton);
+			await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+			expect(mockClearAll).not.toHaveBeenCalled();
+			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
+			expect(screen.getByText('Downtown')).toBeInTheDocument();
+			expect(clearAllButton).toHaveFocus();
+		});
+
+		it('closes and clears the recent searches when Clear is confirmed', async () => {
+			mockStoreValue.current = sampleTrips;
+			const { container } = renderRecentTripsWithDialog({ onSelect: vi.fn() });
+			const nextFocusTarget = document.createElement('input');
+			nextFocusTarget.id = 'from-location-input';
+			container.append(nextFocusTarget);
+
+			await user.click(screen.getByRole('button', { name: 'Clear All' }));
+			await user.click(screen.getByRole('button', { name: 'Clear' }));
+
+			await waitFor(() => {
+				expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+				expect(screen.queryByText('Capitol Hill')).not.toBeInTheDocument();
+				expect(screen.queryByText('Downtown')).not.toBeInTheDocument();
+			});
 			expect(mockClearAll).toHaveBeenCalledTimes(1);
+			expect(nextFocusTarget).toHaveFocus();
+		});
+
+		it('closes on Escape and keeps the recent searches', async () => {
+			mockStoreValue.current = sampleTrips;
+			renderRecentTripsWithDialog({ onSelect: vi.fn() });
+			const clearAllButton = screen.getByRole('button', { name: 'Clear All' });
+
+			await user.click(clearAllButton);
+			await user.keyboard('{Escape}');
+
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+			expect(mockClearAll).not.toHaveBeenCalled();
+			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
+			expect(screen.getByText('Downtown')).toBeInTheDocument();
+			expect(clearAllButton).toHaveFocus();
+		});
+
+		it('closes on a backdrop click and keeps the recent searches', async () => {
+			mockStoreValue.current = sampleTrips;
+			renderRecentTripsWithDialog({ onSelect: vi.fn() });
+			const clearAllButton = screen.getByRole('button', { name: 'Clear All' });
+
+			await user.click(clearAllButton);
+			await user.click(screen.getByRole('dialog'));
+
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+			expect(mockClearAll).not.toHaveBeenCalled();
+			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
+			expect(screen.getByText('Downtown')).toBeInTheDocument();
+			expect(clearAllButton).toHaveFocus();
 		});
 	});
 
@@ -247,14 +380,46 @@ describe('RecentTripsList', () => {
 			expect(screen.queryByText('Recent Searches')).not.toBeInTheDocument();
 		});
 
-		it('calls togglePin when the pin button is clicked', async () => {
-			mockStoreValue.current = [sampleTrips[0]];
+		it('names each trip in the Pin button aria-label and moves focus to the pinned card after pinning', async () => {
+			mockStoreValue.current = sampleTrips;
 			render(RecentTripsList, { props: { onSelect: vi.fn() } });
 
-			const pinButton = screen.getByLabelText('Pin trip');
-			await user.click(pinButton);
+			const firstPinButton = screen.getByRole('button', {
+				name: 'Pin trip from Capitol Hill to University District'
+			});
+			const secondPinButton = screen.getByRole('button', {
+				name: 'Pin trip from Downtown to Ballard'
+			});
+			expect(firstPinButton).toBeInTheDocument();
+			expect(secondPinButton).toBeInTheDocument();
+
+			await user.click(firstPinButton);
 
 			expect(mockTogglePin).toHaveBeenCalledWith(sampleTrips[0]);
+			await waitFor(() => {
+				expect(
+					screen.getByRole('button', {
+						name: 'Use pinned trip from Capitol Hill to University District'
+					})
+				).toHaveFocus();
+			});
+		});
+
+		it('shows a localized limit alert when togglePin returns limit', async () => {
+			mockStoreValue.current = [sampleTrips[1]];
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			mockTogglePin.mockReturnValueOnce('limit');
+
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const pinButton = screen.getByRole('button', {
+				name: 'Pin trip from Downtown to Ballard'
+			});
+			await user.click(pinButton);
+
+			expect(screen.getByRole('alert')).toHaveTextContent(
+				'You can only pin up to 20 trips. Please unpin a trip first.'
+			);
 		});
 	});
 });

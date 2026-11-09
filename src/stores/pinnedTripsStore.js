@@ -1,12 +1,12 @@
 import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
 
-const MAX_PINNED = 20;
 const STORAGE_KEY = 'wayfinder_pinned_trips';
+const MAX_PINNED = 20;
 
-// Exported to avoid duplication in the UI component
+const hasStorage = () => typeof localStorage !== 'undefined';
+
 export const isMatch = (t1, t2) => {
-	if (!t1.fromCoords || !t1.toCoords || !t2.fromCoords || !t2.toCoords) return false;
+	if (!t1?.fromCoords || !t1?.toCoords || !t2?.fromCoords || !t2?.toCoords) return false;
 	return (
 		t1.fromCoords.lat === t2.fromCoords.lat &&
 		t1.fromCoords.lng === t2.fromCoords.lng &&
@@ -17,78 +17,85 @@ export const isMatch = (t1, t2) => {
 
 function createPinnedTripsStore() {
 	let initialTrips = [];
-	if (browser) {
+
+	if (hasStorage()) {
 		try {
 			const stored = localStorage.getItem(STORAGE_KEY);
 			if (stored) {
 				const parsed = JSON.parse(stored);
 				if (Array.isArray(parsed)) {
-					// Added fromPlace and toPlace to the validation
 					initialTrips = parsed.filter(
 						(t) => t && t.fromCoords && t.toCoords && t.fromPlace && t.toPlace
 					);
 				}
 			}
 		} catch (e) {
-			console.warn('Failed to load pinned trips:', e);
+			console.error('Failed to load pinned trips from localStorage:', e);
 		}
 	}
 
-	const { subscribe, update } = writable(initialTrips);
+	const { subscribe, set, update } = writable(initialTrips);
+
+	function saveToStorage(trips) {
+		if (hasStorage()) {
+			try {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
+			} catch (e) {
+				console.error('Failed to save pinned trips to localStorage:', e);
+			}
+		}
+	}
 
 	return {
 		subscribe,
 		togglePin: (trip) => {
+			if (!trip || !trip.fromCoords || !trip.toCoords || !trip.fromPlace || !trip.toPlace) {
+				return 'invalid';
+			}
+
+			let status = 'pinned';
+
 			update((trips) => {
-				const exists = trips.some((t) => isMatch(t, trip));
-				let updated;
-
-				if (exists) {
-					updated = trips.filter((t) => !isMatch(t, trip));
-				} else {
-					// Block silent dropping at 20 items
-					if (trips.length >= MAX_PINNED) {
-						alert('You can only pin up to 20 trips. Please unpin a trip first.');
-						return trips;
-					}
-
-					const fromCoords = trip.fromCoords || trip.selectedFrom;
-					const toCoords = trip.toCoords || trip.selectedTo;
-
-					if (!fromCoords || !toCoords) {
-						return trips;
-					}
-
-					const newTrip = {
-						id: crypto.randomUUID(),
-						timestamp: Date.now(),
-						fromPlace: trip.fromPlace,
-						toPlace: trip.toPlace,
-						fromCoords,
-						toCoords
-					};
-					updated = [newTrip, ...trips];
+				const existingIndex = trips.findIndex((t) => isMatch(t, trip));
+				if (existingIndex !== -1) {
+					status = 'unpinned';
+					const updated = trips.filter((_, i) => i !== existingIndex);
+					saveToStorage(updated);
+					return updated;
 				}
 
-				try {
-					if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-				} catch (e) {
-					console.warn('Failed to save pinned trips:', e);
+				if (trips.length >= MAX_PINNED) {
+					status = 'limit';
+					return trips;
 				}
 
+				const newTrip = {
+					...trip,
+					id: trip.id || crypto.randomUUID()
+				};
+				const updated = [newTrip, ...trips];
+				saveToStorage(updated);
+				return updated;
+			});
+
+			return status;
+		},
+		removeTrip: (tripId) => {
+			update((trips) => {
+				const updated = trips.filter((t) => t.id !== tripId);
+				saveToStorage(updated);
 				return updated;
 			});
 		},
-		removeTrip: (id) => {
-			update((trips) => {
-				const updated = trips.filter((t) => t.id !== id);
+		clearAll: () => {
+			set([]);
+			if (hasStorage()) {
 				try {
-					if (browser) localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+					localStorage.removeItem(STORAGE_KEY);
 				} catch (e) {
-					console.warn('Failed to remove pinned trip:', e);
+					console.error('Failed to clear pinned trips from localStorage:', e);
 				}
-				return updated;
-			});
+			}
 		}
 	};
 }

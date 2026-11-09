@@ -1,14 +1,16 @@
 <script>
+	import { tick } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import { recentTrips } from '$stores/recentTripsStore';
 	import { pinnedTrips, isMatch } from '$stores/pinnedTripsStore';
 	import { openClearRecentSearchesDialog } from '$stores/clearRecentSearchesDialogStore';
-	import { RotateCcwClock as History, X, Pin } from '@lucide/svelte';
+	import { History, X, Pin } from '@lucide/svelte';
 
 	let { onSelect } = $props();
 	let clearAllButton = $state();
+	let listContainer = $state();
+	let pinLimitReached = $state(false);
 
-	// Derived state to fix the empty section bug and variable shadowing
 	let unpinnedRecentTrips = $derived(
 		$recentTrips.filter((tripItem) => !$pinnedTrips.some((pt) => isMatch(pt, tripItem)))
 	);
@@ -32,17 +34,27 @@
 	function handleDeletePinned(e, tripId) {
 		e.stopPropagation();
 		pinnedTrips.removeTrip(tripId);
+		pinLimitReached = false;
 	}
 
-	function handleTogglePin(e, trip) {
+	async function handleTogglePin(e, trip) {
 		e.stopPropagation();
-		pinnedTrips.togglePin(trip);
+		const result = pinnedTrips.togglePin(trip);
+		if (result === 'limit') {
+			pinLimitReached = true;
+			return;
+		}
+		pinLimitReached = false;
+		await tick();
+		const target =
+			listContainer?.querySelector(`[data-pinned-id="${trip.id}"]`) ??
+			listContainer?.querySelector('[data-pinned-id]');
+		target?.focus();
 	}
 </script>
 
 {#if $pinnedTrips.length > 0 || unpinnedRecentTrips.length > 0}
-	<div class="mt-4 flex flex-col gap-6">
-		<!-- Pinned Trips Section -->
+	<div bind:this={listContainer} class="mt-4 flex flex-col gap-6">
 		{#if $pinnedTrips.length > 0}
 			<div>
 				<h2
@@ -51,13 +63,19 @@
 					<Pin class="h-3.5 w-3.5 fill-current" />
 					{$t('trip-planner.pinned_trips')}
 				</h2>
+				{#if pinLimitReached}
+					<p role="alert" class="mb-2 text-xs text-red-600 dark:text-red-400">
+						{$t('trip-planner.pin_limit_reached')}
+					</p>
+				{/if}
 				<div class="space-y-2">
 					{#each $pinnedTrips as trip (trip.id)}
 						<div
-							class="border-brand-primary/30 bg-brand-primary/5 dark:border-brand-primary/50 group relative rounded-lg border shadow-sm transition-all hover:shadow-md dark:bg-gray-800"
+							class="border-brand-primary/30 bg-brand-primary/5 shadow-xs dark:border-brand-primary/50 group relative rounded-lg border transition-all hover:shadow-md dark:bg-gray-800"
 						>
 							<button
 								type="button"
+								data-pinned-id={trip.id}
 								aria-label={$t('trip-planner.pinned_trip', {
 									values: { from: trip.fromPlace, to: trip.toPlace }
 								})}
@@ -90,7 +108,6 @@
 			</div>
 		{/if}
 
-		<!-- Recent Searches Section -->
 		{#if unpinnedRecentTrips.length > 0}
 			<div>
 				<div class="mb-2 flex items-center justify-between">
@@ -112,7 +129,7 @@
 				<div class="space-y-2">
 					{#each unpinnedRecentTrips as trip (trip.id)}
 						<div
-							class="group relative rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+							class="dark:hover:bg-gray-750 shadow-xs group relative rounded-lg border border-gray-200 bg-white transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
 						>
 							<button
 								type="button"
@@ -140,7 +157,9 @@
 							>
 								<button
 									type="button"
-									aria-label={$t('trip-planner.pin_trip')}
+									aria-label={$t('trip-planner.pin_trip', {
+										values: { from: trip.fromPlace, to: trip.toPlace }
+									})}
 									onclick={(e) => handleTogglePin(e, trip)}
 									class="rounded-full p-1.5 text-gray-400 hover:bg-gray-200 hover:text-brand-accent dark:hover:bg-gray-600"
 								>
