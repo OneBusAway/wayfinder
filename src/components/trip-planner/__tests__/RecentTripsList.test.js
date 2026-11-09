@@ -16,12 +16,25 @@ vi.mock('svelte-i18n', () => {
 		'trip-planner.clear_recent_searches_confirmation':
 			'Are you sure you want to clear all recent searches?',
 		'trip-planner.cancel': 'Cancel',
-		'search.clear': 'Clear'
+		'search.clear': 'Clear',
+		'trip-planner.pinned_trips': 'Pinned Trips',
+		'trip-planner.pin_trip': 'Pin trip from {from} to {to}',
+		'trip-planner.remove_pinned_trip': 'Remove pinned trip',
+		'trip-planner.pinned_trip': 'Use pinned trip from {from} to {to}',
+		'trip-planner.pin_limit_reached': 'You can only pin up to 20 trips. Please unpin a trip first.'
 	};
 	return {
 		t: {
 			subscribe: vi.fn((fn) => {
-				fn((key) => translations[key] || key);
+				fn((key, options) => {
+					let text = translations[key] || key;
+					if (options?.values) {
+						Object.entries(options.values).forEach(([k, v]) => {
+							text = text.replace(`{${k}}`, v);
+						});
+					}
+					return text;
+				});
 				return { unsubscribe: () => {} };
 			})
 		}
@@ -29,9 +42,20 @@ vi.mock('svelte-i18n', () => {
 });
 
 // Use vi.hoisted so mock variables are available inside vi.mock factories
-const { mockRemoveTrip, mockClearAll, mockStoreValue, mockSubscribers } = vi.hoisted(() => {
+const {
+	mockRemoveTrip,
+	mockClearAll,
+	mockStoreValue,
+	mockSubscribers,
+	mockTogglePin,
+	mockRemovePinnedTrip,
+	mockPinnedStoreValue,
+	mockPinnedSubscribers
+} = vi.hoisted(() => {
 	const storeValue = { current: [] };
 	const subscribers = new Set();
+	const pinnedStoreValue = { current: [] };
+	const pinnedSubscribers = new Set();
 	return {
 		mockRemoveTrip: vi.fn(),
 		mockClearAll: vi.fn(() => {
@@ -39,7 +63,18 @@ const { mockRemoveTrip, mockClearAll, mockStoreValue, mockSubscribers } = vi.hoi
 			subscribers.forEach((subscriber) => subscriber([]));
 		}),
 		mockStoreValue: storeValue,
-		mockSubscribers: subscribers
+		mockSubscribers: subscribers,
+		mockTogglePin: vi.fn((trip) => {
+			pinnedStoreValue.current = [trip, ...pinnedStoreValue.current];
+			pinnedSubscribers.forEach((subscriber) => subscriber(pinnedStoreValue.current));
+			return 'pinned';
+		}),
+		mockRemovePinnedTrip: vi.fn((tripId) => {
+			pinnedStoreValue.current = pinnedStoreValue.current.filter((t) => t.id !== tripId);
+			pinnedSubscribers.forEach((subscriber) => subscriber(pinnedStoreValue.current));
+		}),
+		mockPinnedStoreValue: pinnedStoreValue,
+		mockPinnedSubscribers: pinnedSubscribers
 	};
 });
 
@@ -53,6 +88,23 @@ vi.mock('$stores/recentTripsStore', () => ({
 		removeTrip: mockRemoveTrip,
 		clearAll: mockClearAll
 	}
+}));
+
+vi.mock('$stores/pinnedTripsStore', () => ({
+	pinnedTrips: {
+		subscribe: vi.fn((fn) => {
+			fn(mockPinnedStoreValue.current);
+			mockPinnedSubscribers.add(fn);
+			return () => mockPinnedSubscribers.delete(fn);
+		}),
+		togglePin: mockTogglePin,
+		removeTrip: mockRemovePinnedTrip
+	},
+	isMatch: (t1, t2) =>
+		t1?.fromCoords?.lat === t2?.fromCoords?.lat &&
+		t1?.fromCoords?.lng === t2?.fromCoords?.lng &&
+		t1?.toCoords?.lat === t2?.toCoords?.lat &&
+		t1?.toCoords?.lng === t2?.toCoords?.lng
 }));
 
 describe('RecentTripsList', () => {
@@ -78,7 +130,9 @@ describe('RecentTripsList', () => {
 	beforeEach(() => {
 		user = userEvent.setup();
 		mockStoreValue.current = [];
+		mockPinnedStoreValue.current = [];
 		mockSubscribers.clear();
+		mockPinnedSubscribers.clear();
 		vi.clearAllMocks();
 		closeClearRecentSearchesDialog();
 	});
@@ -294,6 +348,78 @@ describe('RecentTripsList', () => {
 			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
 			expect(screen.getByText('Downtown')).toBeInTheDocument();
 			expect(clearAllButton).toHaveFocus();
+		});
+	});
+
+	describe('Pinned Trips', () => {
+		it('renders pinned trips section when pinned trips exist', () => {
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
+			expect(screen.getByText('Capitol Hill')).toBeInTheDocument();
+		});
+
+		it('filters pinned trips out of the recent searches list', () => {
+			mockStoreValue.current = sampleTrips;
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
+			expect(screen.getByText('Recent Searches')).toBeInTheDocument();
+			expect(screen.getByText('Downtown')).toBeInTheDocument();
+			expect(screen.getAllByText('Capitol Hill')).toHaveLength(1);
+		});
+
+		it('hides the Recent Searches header if all recents are pinned', () => {
+			mockStoreValue.current = [sampleTrips[0]];
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			expect(screen.getByText('Pinned Trips')).toBeInTheDocument();
+			expect(screen.queryByText('Recent Searches')).not.toBeInTheDocument();
+		});
+
+		it('names each trip in the Pin button aria-label and moves focus to the pinned card after pinning', async () => {
+			mockStoreValue.current = sampleTrips;
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const firstPinButton = screen.getByRole('button', {
+				name: 'Pin trip from Capitol Hill to University District'
+			});
+			const secondPinButton = screen.getByRole('button', {
+				name: 'Pin trip from Downtown to Ballard'
+			});
+			expect(firstPinButton).toBeInTheDocument();
+			expect(secondPinButton).toBeInTheDocument();
+
+			await user.click(firstPinButton);
+
+			expect(mockTogglePin).toHaveBeenCalledWith(sampleTrips[0]);
+			await waitFor(() => {
+				expect(
+					screen.getByRole('button', {
+						name: 'Use pinned trip from Capitol Hill to University District'
+					})
+				).toHaveFocus();
+			});
+		});
+
+		it('shows a localized limit alert when togglePin returns limit', async () => {
+			mockStoreValue.current = [sampleTrips[1]];
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			mockTogglePin.mockReturnValueOnce('limit');
+
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const pinButton = screen.getByRole('button', {
+				name: 'Pin trip from Downtown to Ballard'
+			});
+			await user.click(pinButton);
+
+			expect(screen.getByRole('alert')).toHaveTextContent(
+				'You can only pin up to 20 trips. Please unpin a trip first.'
+			);
 		});
 	});
 });
