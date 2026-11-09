@@ -116,7 +116,11 @@
 		"dismiss": "Dismiss survey",
 		"submit": "Submit",
 		"next": "Next",
-		"submit_failed": "Couldn't send your answer. Please try again."
+		"submit_failed": "Couldn't send your answer. Please try again.",
+		"cancel": "Cancel",
+		"skip": "Skip",
+		"submitted": "Survey Submitted",
+		"thank_you": "Thank you for taking the survey!"
 	},
 	"header": {
 		"home": "Home",
@@ -149,7 +153,9 @@
 		"depart_early": "Departed {delay} min early",
 		"departed_ontime": "Departed on time",
 		"scheduled_arrival": "Scheduled arriving at",
-		"scheduled_departure": "Scheduled departure"
+		"scheduled_departure": "Scheduled departure",
+		"arrived_at_time": "Arrived at {time}",
+		"departed_at_time": "Departed at {time}"
 	},
 	"alert": {
 		"more_info": "More info",
@@ -161,7 +167,9 @@
 	"load_more_arrivals": "Load more arrivals",
 	"refresh": "Refresh",
 	"no_arrivals_found_in_next_minutes": "No arrivals found in the next {minutes} minutes",
+	"no_arrivals_found_in_next_hours": "No arrivals found in the next {hours, plural, one {# hour} other {# hours}}",
 	"no_more_arrivals_in_next_minutes": "No more arrivals in the next {minutes} minutes",
+	"no_more_arrivals_in_next_hours": "No more arrivals in the next {hours, plural, one {# hour} other {# hours}}",
 	"stop": "Stop",
 	"direction_bound": "{direction} bound",
 	"routes": "Routes",
@@ -190,15 +198,27 @@
 		"min_compact": "{n}m"
 	},
 	"vehicle": {
-		"number": "Vehicle #",
-		"data_updated": "Data updated",
 		"no_real_time_data": "We don't have real-time data for this vehicle now.",
-		"next_stop": "Next stop:",
+		"next_stop_label": "Next stop",
+		"towards": "Towards",
+		"live": "Live",
+		"on_time": "On time",
+		"min_late": "{n} min late",
+		"min_early": "{n} min early",
+		"last_seen": "Last seen {time}",
+		"scheduled": "Scheduled",
+		"arriving": "Now",
+		"id": "Vehicle {id}",
 		"label": "Vehicle",
 		"to_headsign": "Vehicle to {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Arrivals and Departures"
+	},
+	"date_picker": {
+		"choose_date": "Choose date",
+		"date": "Date",
+		"today": "Today"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "View Schedule",
@@ -281,6 +301,7 @@
 		"effect_no_effect": "No effect",
 		"effect_accessibility": "Accessibility issue"
 	},
+	"arrives_at": "Arrives {time}",
 	"view_stop_information": "View Stop Information",
 	"stop_details": {
 		"view_details": "View Details",

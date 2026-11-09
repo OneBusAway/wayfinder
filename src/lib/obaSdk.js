@@ -5,7 +5,9 @@ import { error, json } from '@sveltejs/kit';
 
 const oba = new onebusaway({
 	baseURL,
-	apiKey
+	apiKey,
+	// Some servers (e.g. MTA BusTime) default to the v1 response shape without this.
+	defaultQuery: { version: 2 }
 });
 
 export function handleOBAResponse(response, entityName) {

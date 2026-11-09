@@ -1,7 +1,7 @@
-<script>
-	// @ts-check
+<script lang="ts">
 	import { ChevronRight, CircleAlert, Info, TriangleAlert } from '@lucide/svelte';
 	import { t, locale } from 'svelte-i18n';
+	import type { ServiceAlert } from '$lib/types';
 	import { env } from '$env/dynamic/public';
 	import {
 		normalizeSeverity,
@@ -9,14 +9,12 @@
 		formatActiveWindowLabel
 	} from '$components/service-alerts/serviceAlertsHelper';
 
-	/**
-	 * @typedef {Object} Props
-	 * @property {import('$lib/types').ServiceAlert} [alert]
-	 * @property {(alert: import('$lib/types').ServiceAlert) => void} openModal
-	 */
+	interface Props {
+		alert: ServiceAlert;
+		openModal: (alert: ServiceAlert) => void;
+	}
 
-	/** @type {Props} */
-	let { alert = $bindable({}), openModal } = $props();
+	let { alert, openModal }: Props = $props();
 
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
@@ -43,7 +41,7 @@
 	let SeverityIcon = $derived(severityUi.icon);
 	let severityLabel = $derived($t(`service_alerts.severity_${severity}`));
 	let summaryText = $derived(
-		alert?.summary?.value || alert?.description?.value || $t('service_alerts.service_alert')
+		alert.summary?.value || alert.description?.value || $t('service_alerts.service_alert')
 	);
 	let activeLabel = $derived(
 		formatActiveWindowLabel(activeWindowRange(alert), $t, regionTz, $locale)
@@ -52,7 +50,7 @@
 
 <button
 	type="button"
-	class="flex w-full cursor-pointer items-start gap-3 rounded-lg p-1 text-left transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent dark:hover:bg-gray-700"
+	class="flex w-full cursor-pointer items-start gap-3 rounded-lg p-1 text-left transition-colors hover:bg-gray-50 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-accent dark:hover:bg-gray-700"
 	aria-label={$t('service_alerts.open_alert', {
 		values: {
 			severity: severityLabel,
@@ -67,7 +65,7 @@
 	<div class="min-w-0 flex-1">
 		<div class="flex flex-wrap items-center gap-2">
 			<span
-				class="inline-flex rounded px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide {severityUi.badgeClass}"
+				class="inline-flex rounded px-1.5 py-0.5 text-xs font-semibold tracking-wide uppercase {severityUi.badgeClass}"
 			>
 				{severityLabel}
 			</span>
@@ -75,7 +73,7 @@
 				{summaryText}
 			</h4>
 		</div>
-		{#if alert?.summary?.value && alert?.description?.value}
+		{#if alert.summary?.value && alert.description?.value}
 			<p class="mt-1 line-clamp-3 text-sm text-gray-500 dark:text-gray-300">
 				{alert.description.value}
 			</p>

@@ -221,6 +221,8 @@
 						{$t('ondemand.call', { values: { phone: contact.phoneNumber } })}
 					</a>
 				{:else if bookingUrl}
+					<!-- external URL -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -->
 					<a
 						href={bookingUrl}
 						target="_blank"
@@ -229,6 +231,7 @@
 					>
 						{$t('ondemand.book_online')}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{/if}
 			</section>
 
@@ -295,6 +298,8 @@
 					<span>{bookingLine}</span>
 				</p>
 				{#if serviceUrl}
+					<!-- external URL -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -->
 					<a
 						href={serviceUrl}
 						target="_blank"
@@ -304,8 +309,11 @@
 						<SquareArrowOutUpRight class="h-4 w-4" />
 						{$t('ondemand.open_agency_website')}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{/if}
 				{#if moreInfoUrl}
+					<!-- external URL -->
+					<!-- eslint-disable svelte/no-navigation-without-resolve -->
 					<a
 						href={moreInfoUrl}
 						target="_blank"
@@ -315,6 +323,7 @@
 						<Info class="h-4 w-4" />
 						{$t('ondemand.more_information')}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{/if}
 			</section>
 

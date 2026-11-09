@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import {
+	attachRoutesToStops,
 	debounce,
 	directionLabel,
 	removeAgencyPrefix,
@@ -174,6 +175,26 @@ describe('routeShortNamesForStop', () => {
 		expect(routeShortNamesForStop(response, stop)).toEqual(['44', 'E Line']);
 	});
 
+	it('sorts numeric short names by number', () => {
+		const response = {
+			data: {
+				references: {
+					routes: [
+						{ id: '1_10', shortName: '10' },
+						{ id: '1_2', shortName: '2' },
+						{ id: '1_44', shortName: '44' }
+					]
+				}
+			}
+		};
+
+		expect(routeShortNamesForStop(response, { routeIds: ['1_10', '1_2', '1_44'] })).toEqual([
+			'2',
+			'10',
+			'44'
+		]);
+	});
+
 	it('falls back to the route id suffix when shortName is missing', () => {
 		const response = {
 			data: {
@@ -251,5 +272,44 @@ describe('stopSubtitle', () => {
 
 	it('falls back to the id without its agency prefix when the stop has no code', () => {
 		expect(stopSubtitle({ id: '1_75403', direction: 'S' }, translate)).toBe('South · Code: 75403');
+	});
+});
+
+describe('attachRoutesToStops', () => {
+	const routes = [
+		{ id: 'r1', shortName: '36' },
+		{ id: 'r2', shortName: '106' }
+	];
+
+	it("resolves each stop's routeIds against the route references", () => {
+		const stops = [{ id: 's1', routeIds: ['r2', 'r1'] }];
+
+		attachRoutesToStops(stops, routes);
+
+		expect(stops[0].routes).toEqual([
+			{ id: 'r2', shortName: '106' },
+			{ id: 'r1', shortName: '36' }
+		]);
+	});
+
+	it('drops ids with no matching reference', () => {
+		const stops = [{ id: 's1', routeIds: ['r1', 'missing'] }];
+
+		attachRoutesToStops(stops, routes);
+
+		expect(stops[0].routes).toEqual([{ id: 'r1', shortName: '36' }]);
+	});
+
+	it.each([
+		['a stop with no routeIds', [{ id: 's1' }], undefined],
+		['no route references', [{ id: 's1', routeIds: ['r1'] }], undefined]
+	])('gives an empty routes array for %s', (_name, stops, refs) => {
+		attachRoutesToStops(stops, refs);
+
+		expect(stops[0].routes).toEqual([]);
+	});
+
+	it('tolerates missing stops', () => {
+		expect(attachRoutesToStops(undefined, routes)).toEqual([]);
 	});
 });

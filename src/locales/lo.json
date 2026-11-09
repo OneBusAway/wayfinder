@@ -109,7 +109,11 @@
 		"dismiss": "ປິດແບບສຳຫຼວດ",
 		"submit": "ສົ່ງ",
 		"next": "ຕໍ່ໄປ",
-		"submit_failed": "ບໍ່ສາມາດສົ່ງຄຳຕອບຂອງທ່ານໄດ້. ກະລຸນາລອງໃໝ່."
+		"submit_failed": "ບໍ່ສາມາດສົ່ງຄຳຕອບຂອງທ່ານໄດ້. ກະລຸນາລອງໃໝ່.",
+		"cancel": "ຍົກເລີກ",
+		"skip": "ຂ້າມ",
+		"submitted": "ສົ່ງແບບສຳຫຼວດແລ້ວ",
+		"thank_you": "ຂອບໃຈທີ່ຕອບແບບສຳຫຼວດ!"
 	},
 	"header": {
 		"home": "ໜ້າຫຼັກ",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "ໂຫຼດການມາຮອດເພີ່ມເຕີມ",
 	"refresh": "ໂຫຼດຄືນ",
 	"no_arrivals_found_in_next_minutes": "ບໍ່ພົບການມາຮອດໃນ {minutes} ນາທີຕໍ່ໄປ",
+	"no_arrivals_found_in_next_hours": "ບໍ່ພົບການມາຮອດໃນ {hours, plural, other {# ຊົ່ວໂມງ}}ຕໍ່ໄປ",
 	"no_more_arrivals_in_next_minutes": "ບໍ່ມີການມາຮອດເພີ່ມເຕີມໃນ {minutes} ນາທີຕໍ່ໄປ",
+	"no_more_arrivals_in_next_hours": "ບໍ່ມີການມາຮອດເພີ່ມເຕີມໃນ {hours, plural, other {# ຊົ່ວໂມງ}}ຕໍ່ໄປ",
 	"stop": "ປ້າຍ",
 	"direction_bound": "ມຸ່ງໜ້າໄປທາງ {direction}",
 	"routes": "ເສັ້ນທາງ",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} ນາທີ"
 	},
 	"vehicle": {
-		"number": "ລົດເລກ #",
-		"data_updated": "ຂໍ້ມູນອັບເດດແລ້ວ",
 		"no_real_time_data": "ພວກເຮົາບໍ່ມີຂໍ້ມູນເວລາຈິງສຳລັບລົດຄັນນີ້ໃນຕອນນີ້.",
-		"next_stop": "ປ້າຍຕໍ່ໄປ:",
 		"label": "ລົດ",
 		"to_headsign": "ລົດໄປ {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "ການມາຮອດ ແລະ ການອອກເດີນທາງ"
+	},
+	"date_picker": {
+		"today": "ມື້ນີ້"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "ເບິ່ງຕາຕະລາງ",

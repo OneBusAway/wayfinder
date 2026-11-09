@@ -96,7 +96,7 @@
 		aria-controls={hasResults ? listboxId : undefined}
 		aria-activedescendant={hasResults && activeIndex >= 0 ? optionId(activeIndex) : undefined}
 		placeholder="{$t('trip-planner.search_for_a_place')}..."
-		class="block w-full rounded-md border-gray-300 pr-10 text-sm text-black shadow-sm focus:border-blue-500 focus:ring-blue-500"
+		class="block w-full rounded-md border-gray-300 pr-10 text-sm text-black shadow-xs focus:border-blue-500 focus:ring-blue-500"
 	/>
 	{#if place}
 		<button
@@ -121,6 +121,8 @@
 			role="listbox"
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg"
 		>
+			<!-- FIXME: each block has no key -->
+			<!-- eslint-disable-next-line svelte/require-each-key -->
 			{#each results as result, index}
 				<li role="presentation">
 					<button

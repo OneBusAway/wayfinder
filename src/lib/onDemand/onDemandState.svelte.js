@@ -29,8 +29,14 @@ export const MAX_CACHE_ENTRIES = 50;
 // Which cached geometry levels can answer a request for each level.
 const SATISFIES = { none: ['none', 'simplified'], simplified: ['simplified'], full: ['full'] };
 
+// bookkeeping, not read reactively
+// eslint-disable-next-line svelte/prefer-svelte-reactivity
 const viewportCache = new Map();
+// bookkeeping, not read reactively
+// eslint-disable-next-line svelte/prefer-svelte-reactivity
 const serviceCache = new Map();
+// bookkeeping, not read reactively
+// eslint-disable-next-line svelte/prefer-svelte-reactivity
 const inFlight = new Map();
 
 function isExpired(entry) {
@@ -100,6 +106,8 @@ export async function fetchServicesForViewport({ lat, lon, latSpan, lonSpan }) {
 	const cached = readCache(viewportCache, key);
 	if (cached) return cached;
 
+	// local to this function
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const query = new URLSearchParams({
 		lat: String(lat),
 		lon: String(lon),

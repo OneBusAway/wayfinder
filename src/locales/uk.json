@@ -109,7 +109,11 @@
 		"dismiss": "Закрити опитування",
 		"submit": "Надіслати",
 		"next": "Далі",
-		"submit_failed": "Не вдалося надіслати відповідь. Спробуйте ще раз."
+		"submit_failed": "Не вдалося надіслати відповідь. Спробуйте ще раз.",
+		"cancel": "Скасувати",
+		"skip": "Пропустити",
+		"submitted": "Опитування надіслано",
+		"thank_you": "Дякуємо за участь в опитуванні!"
 	},
 	"header": {
 		"home": "Головна",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Завантажити більше прибуттів",
 	"refresh": "Оновити",
 	"no_arrivals_found_in_next_minutes": "Немає прибуттів протягом наступних {minutes} хвилин",
+	"no_arrivals_found_in_next_hours": "Немає прибуттів протягом {hours, plural, one {наступної # години} few {наступних # годин} many {наступних # годин} other {наступних # годин}}",
 	"no_more_arrivals_in_next_minutes": "Немає більше прибуттів протягом наступних {minutes} хвилин",
+	"no_more_arrivals_in_next_hours": "Немає більше прибуттів протягом {hours, plural, one {наступної # години} few {наступних # годин} many {наступних # годин} other {наступних # годин}}",
 	"stop": "Зупинка",
 	"direction_bound": "Напрямок: {direction}",
 	"routes": "Маршрути",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} хв"
 	},
 	"vehicle": {
-		"number": "Транспорт №",
-		"data_updated": "Дані оновлено",
 		"no_real_time_data": "Наразі немає даних у реальному часі для цього транспорту.",
-		"next_stop": "Наступна зупинка:",
 		"label": "Транспорт",
 		"to_headsign": "Транспорт у напрямку: {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Прибуття та відправлення"
+	},
+	"date_picker": {
+		"today": "Сьогодні"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Переглянути розклад",

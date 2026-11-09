@@ -79,6 +79,9 @@ function validateVariable(name, value, rule) {
 			if (isNaN(num)) {
 				errors.push(`${name}: not a valid number "${value}"`);
 			} else {
+				if (rule.integer && !Number.isInteger(num)) {
+					errors.push(`${name}: expected an integer, got "${value}"`);
+				}
 				if (rule.min !== undefined && num < rule.min) {
 					errors.push(`${name}: ${num} is below minimum ${rule.min}`);
 				}

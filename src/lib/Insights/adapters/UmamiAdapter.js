@@ -1,6 +1,5 @@
-import { insightsError, upstreamError } from '../upstreamError.js';
-
-const UPSTREAM_TIMEOUT_MS = 5000;
+import { insightsError } from '../upstreamError.js';
+import { BaseAdapter } from './BaseAdapter.js';
 
 const MAX_DATA_VALUE_LENGTH = 256;
 
@@ -71,39 +70,20 @@ export function isSuccessfulIngest(body) {
 	return 'cache' in parsed || 'sessionId' in parsed || 'visitId' in parsed;
 }
 
-export class UmamiAdapter {
+export class UmamiAdapter extends BaseAdapter {
 	constructor(env) {
-		this.env = env;
-		this.warnIfMisconfigured();
+		super(env, {
+			name: 'UmamiAdapter',
+			requiredEnvKeys: [
+				'PUBLIC_ANALYTICS_DOMAIN',
+				'PUBLIC_ANALYTICS_API_HOST',
+				'PUBLIC_ANALYTICS_WEBSITE_ID'
+			],
+			timeoutMs: 5000
+		});
 	}
 
-	warnIfMisconfigured() {
-		const missing = [];
-		if (!this.env.PUBLIC_ANALYTICS_DOMAIN) missing.push('PUBLIC_ANALYTICS_DOMAIN');
-		if (!this.env.PUBLIC_ANALYTICS_API_HOST) missing.push('PUBLIC_ANALYTICS_API_HOST');
-		if (!this.env.PUBLIC_ANALYTICS_WEBSITE_ID) missing.push('PUBLIC_ANALYTICS_WEBSITE_ID');
-		for (const key of missing) {
-			console.warn(`UmamiAdapter: missing ${key} — events will not be sent`);
-		}
-	}
-
-	isEnabled() {
-		return (
-			!!this.env.PUBLIC_ANALYTICS_DOMAIN &&
-			!!this.env.PUBLIC_ANALYTICS_API_HOST &&
-			!!this.env.PUBLIC_ANALYTICS_WEBSITE_ID
-		);
-	}
-
-	getEventUrl() {
-		return `${this.env.PUBLIC_ANALYTICS_API_HOST}/api/send`;
-	}
-
-	async forwardEvent(envelope, requestContext) {
-		if (!this.isEnabled()) {
-			return { status: 'analytics disabled' };
-		}
-
+	buildRequest(envelope, requestContext) {
 		const {
 			name,
 			url,
@@ -113,11 +93,7 @@ export class UmamiAdapter {
 			language = '',
 			screen = '',
 			props = {}
-		} = envelope ?? {};
-
-		if (!name || !url) {
-			throw insightsError('forwardEvent requires name and url', 400);
-		}
+		} = envelope;
 
 		const body = {
 			type: 'event',
@@ -143,32 +119,17 @@ export class UmamiAdapter {
 			headers['X-Forwarded-For'] = requestContext.clientIp;
 		}
 
-		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+		return {
+			url: `${this.env.PUBLIC_ANALYTICS_API_HOST}/api/send`,
+			body,
+			headers
+		};
+	}
 
-		try {
-			const res = await fetch(this.getEventUrl(), {
-				method: 'POST',
-				headers,
-				body: JSON.stringify(body),
-				signal: controller.signal
-			});
-
-			if (!res.ok) {
-				throw await upstreamError(res);
-			}
-
-			const text = await res.text();
-			if (!isSuccessfulIngest(text)) {
-				throw insightsError('Umami dropped event as bot-like (isbot rejected the User-Agent)', 502);
-			}
-			try {
-				return JSON.parse(text);
-			} catch {
-				return { status: text };
-			}
-		} finally {
-			clearTimeout(timeoutId);
+	parseResponse(text) {
+		if (!isSuccessfulIngest(text)) {
+			throw insightsError('Umami dropped event as bot-like (isbot rejected the User-Agent)', 502);
 		}
+		return super.parseResponse(text);
 	}
 }

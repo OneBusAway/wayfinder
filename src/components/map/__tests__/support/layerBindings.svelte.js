@@ -2,6 +2,8 @@
 // .svelte/.svelte.js module — a plain .test.js can't create the reactive proxy
 // a $bindable prop writes back into. Mirrors support/reactiveStop.svelte.js.
 export function createLayerBindings() {
+	// replaced wholesale, never mutated
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	let routeStopIds = $state(new Map());
 	return {
 		get routeStopIds() {

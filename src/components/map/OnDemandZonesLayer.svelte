@@ -22,6 +22,8 @@
 	let services = $state.raw([]);
 	let level = $state('hidden');
 	/** @type {Map<string, { handles: any[], level: string, areasKey: string }>} */
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const drawn = new Map();
 	let requestSeq = 0;
 

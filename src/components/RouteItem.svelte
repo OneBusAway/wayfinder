@@ -22,11 +22,11 @@
 
 <button
 	type="button"
-	class="route-item flex w-full items-center justify-between border-b border-gray-200 bg-[#f9f9f9] p-4 text-left hover:bg-[#e9e9e9] focus:outline-none dark:border-[#313135] dark:bg-[#1c1c1c] dark:text-white dark:hover:bg-[#363636]"
+	class="route-item flex w-full items-center justify-between border-b border-gray-200 bg-[#f9f9f9] p-4 text-left hover:bg-[#e9e9e9] focus:outline-hidden dark:border-[#313135] dark:bg-[#1c1c1c] dark:text-white dark:hover:bg-[#363636]"
 	onclick={() => handleModalRouteClick(route)}
 >
 	<div
-		class="text-lg font-semibold text-[var(--route-color-light)] dark:text-[var(--route-color-dark)]"
+		class="text-lg font-semibold text-(--route-color-light) dark:text-(--route-color-dark)"
 		style="--route-color-light: {lightModeColor}; --route-color-dark: {darkModeColor}"
 	>
 		{getDisplayRouteName(route)}

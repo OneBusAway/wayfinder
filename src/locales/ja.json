@@ -109,7 +109,11 @@
 		"dismiss": "アンケートを閉じる",
 		"submit": "送信",
 		"next": "次へ",
-		"submit_failed": "回答を送信できませんでした。もう一度お試しください。"
+		"submit_failed": "回答を送信できませんでした。もう一度お試しください。",
+		"cancel": "キャンセル",
+		"skip": "スキップ",
+		"submitted": "アンケートを送信しました",
+		"thank_you": "アンケートにご協力いただきありがとうございました！"
 	},
 	"header": {
 		"home": "ホーム",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "さらに到着を読み込む",
 	"refresh": "更新",
 	"no_arrivals_found_in_next_minutes": "今後{minutes}分以内に到着はありません",
+	"no_arrivals_found_in_next_hours": "今後{hours, plural, other {#時間}}以内に到着はありません",
 	"no_more_arrivals_in_next_minutes": "今後{minutes}分以内にこれ以上の到着はありません",
+	"no_more_arrivals_in_next_hours": "今後{hours, plural, other {#時間}}以内にこれ以上の到着はありません",
 	"stop": "停留所",
 	"direction_bound": "{direction}方面",
 	"routes": "路線",
@@ -183,15 +189,15 @@
 		"min_compact": "{n}分"
 	},
 	"vehicle": {
-		"number": "車両番号",
-		"data_updated": "データ更新日時",
 		"no_real_time_data": "この車両のリアルタイムデータは現在ありません。",
-		"next_stop": "次の停留所:",
 		"label": "車両",
 		"to_headsign": "{headsign}行きの車両"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "到着・出発"
+	},
+	"date_picker": {
+		"today": "今日"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "時刻表を見る",

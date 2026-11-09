@@ -109,7 +109,11 @@
 		"dismiss": "Fèmen sondaj la",
 		"submit": "Voye",
 		"next": "Pwochen",
-		"submit_failed": "Nou pa t ka voye repons ou an. Tanpri eseye ankò."
+		"submit_failed": "Nou pa t ka voye repons ou an. Tanpri eseye ankò.",
+		"cancel": "Anile",
+		"skip": "Sote",
+		"submitted": "Sondaj la voye",
+		"thank_you": "Mèsi paske w te reponn sondaj la!"
 	},
 	"header": {
 		"home": "Akèy",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Chaje plis arive",
 	"refresh": "Aktyalize",
 	"no_arrivals_found_in_next_minutes": "Pa gen arive nan {minutes} minit kap vini yo",
+	"no_arrivals_found_in_next_hours": "Pa gen arive nan {hours, plural, one {# lè} other {# lè}} kap vini yo",
 	"no_more_arrivals_in_next_minutes": "Pa gen plis arive nan {minutes} minit kap vini yo",
+	"no_more_arrivals_in_next_hours": "Pa gen plis arive nan {hours, plural, one {# lè} other {# lè}} kap vini yo",
 	"stop": "Arè",
 	"direction_bound": "Direksyon {direction}",
 	"routes": "Wout",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} min"
 	},
 	"vehicle": {
-		"number": "Machin #",
-		"data_updated": "Done mete ajou",
 		"no_real_time_data": "Nou pa gen done an tan reyèl pou machin sa a kounye a.",
-		"next_stop": "Pwochen arè:",
 		"label": "Machin",
 		"to_headsign": "Machin pou {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Arive ak Depa"
+	},
+	"date_picker": {
+		"today": "Jodi a"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Gade Orè",

@@ -36,11 +36,10 @@ function styleUrl(name) {
 }
 
 // activeTrip is always truthy here: the sole caller (vehicleUtils.js) guards on
-// it, and buildVehiclePopupData reads activeTrip.tripHeadsign without optional
-// chaining. Keep this contract consistent rather than implying null is expected.
+// it. The optional chaining here and in buildVehiclePopupData is belt-and-braces.
 function getVehicleLabel(activeTrip) {
 	const translate = get(t);
-	return activeTrip.tripHeadsign
+	return activeTrip?.tripHeadsign
 		? translate('vehicle.to_headsign', { values: { headsign: activeTrip.tripHeadsign } })
 		: translate('vehicle.label');
 }
@@ -76,11 +75,17 @@ export default class OpenStreetMapProvider {
 		this.L = null;
 		this.globalInfoWindow = null;
 		this.popupContentComponent = null;
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.pinMarkers = new Set();
 		this.maplibreLayer = env.PUBLIC_MAPLIBRE_STYLE || LIGHT_STYLE;
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.markersMap = new Map();
 		this.polylines = []; // Track all polylines for easy cleanup
 		this.polygons = []; // On-demand zones, kept apart from polylines
@@ -175,6 +180,7 @@ export default class OpenStreetMapProvider {
 			icon: icon,
 			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false,
+			isInteractive: options.isInteractive,
 			showRoutesLabel: this.map.getZoom() >= this.showStopsRoutesAtZoom,
 			emphasis: options.emphasis ?? 'full',
 			dotColor: options.dotColor ?? null
@@ -408,7 +414,7 @@ export default class OpenStreetMapProvider {
 		this.popupContentComponent = mount(PopupContent, {
 			target: popupContainer,
 			props: {
-				stopName: stop.name,
+				stop,
 				arrivalTime: stopTime ? stopTime.arrivalTime : null,
 				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 			}
@@ -429,7 +435,7 @@ export default class OpenStreetMapProvider {
 			this.popupContentComponent = mount(PopupContent, {
 				target: popupContainer,
 				props: {
-					stopName: stop.name,
+					stop,
 					arrivalTime: arrivalTime,
 					handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 				}

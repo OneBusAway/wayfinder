@@ -109,7 +109,11 @@
 		"dismiss": "關閉問卷",
 		"submit": "送出",
 		"next": "下一題",
-		"submit_failed": "無法送出您的回答。請再試一次。"
+		"submit_failed": "無法送出您的回答。請再試一次。",
+		"cancel": "取消",
+		"skip": "略過",
+		"submitted": "問卷已提交",
+		"thank_you": "感謝您參與問卷調查！"
 	},
 	"header": {
 		"home": "首頁",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "載入更多到站班次",
 	"refresh": "重新整理",
 	"no_arrivals_found_in_next_minutes": "未來 {minutes} 分鐘內沒有到站班次",
+	"no_arrivals_found_in_next_hours": "未來 {hours, plural, other {# 小時}}內沒有到站班次",
 	"no_more_arrivals_in_next_minutes": "未來{minutes}分鐘內沒有更多到站班次",
+	"no_more_arrivals_in_next_hours": "未來{hours, plural, other {#小時}}內沒有更多到站班次",
 	"stop": "站牌",
 	"direction_bound": "往 {direction}",
 	"routes": "路線",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} 分"
 	},
 	"vehicle": {
-		"number": "車輛編號",
-		"data_updated": "資料更新時間",
 		"no_real_time_data": "目前沒有此車輛的即時資料。",
-		"next_stop": "下一站：",
 		"label": "車輛",
 		"to_headsign": "開往 {headsign} 的車輛"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "到站與發車"
+	},
+	"date_picker": {
+		"today": "今天"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "查看時刻表",

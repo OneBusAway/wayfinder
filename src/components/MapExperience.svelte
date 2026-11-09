@@ -161,6 +161,8 @@
 		// $state.snapshot: the marker's stopData is a reactive proxy, and pushState
 		// structured-clones its state argument (DataCloneError on a proxy). Snapshot
 		// yields a plain, clone-safe copy.
+		// FIXME: navigation path not built with resolve()
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		pushState(mapStopPath(stopData.id), { stopData: $state.snapshot(stopData) });
 	}
 
@@ -184,7 +186,8 @@
 		mapProvider.addMarker({
 			stop: favorite,
 			position: { lat: favorite.lat, lng: favorite.lon },
-			onClick: () => handleMapStopMarkerSelect(favorite)
+			onClick: () => handleMapStopMarkerSelect(favorite),
+			isInteractive: () => !selectedStopId || favorite.id === selectedStopId
 		});
 		handleStopMarkerSelect(favorite);
 	}
@@ -371,6 +374,8 @@
 
 	function closePane() {
 		if (stopSheetOpen || onDemandSheetOpen) {
+			// FIXME: navigation path not built with resolve()
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
 			pushState('/', {}); // selection effect runs the map/stop teardown
 			return;
 		}
@@ -448,6 +453,8 @@
 	 * @param {number} routeData.currentIntervalId - The current interval ID.
 	 */
 	function handleRouteSelected(routeData) {
+		// FIXME: navigation path not built with resolve()
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		if (stopSheetOpen || onDemandSheetOpen) pushState('/', {});
 		selectedRoute = routeData.route;
 		polylines = routeData.polylines;
@@ -472,9 +479,15 @@
 		selectedRoute = null;
 	}
 
+	/** True while itinerary results, a plan error, or the planner modal are on screen. */
+	function hasTripPlanResults() {
+		return (
+			tripItineraries.length > 0 || tripPlanError != null || currentModal === Modal.TRIP_PLANNER
+		);
+	}
+
 	function clearTripItineraries() {
-		const hadTripUi =
-			tripItineraries.length > 0 || tripPlanError != null || currentModal === Modal.TRIP_PLANNER;
+		const hadTripUi = hasTripPlanResults();
 		tripItineraries = [];
 		tripPlanError = null;
 		tripPlanAttempted = false;
@@ -494,8 +507,18 @@
 		clearTripItineraries();
 	}
 
-	/** Exit mobile plan sheet and return to Stops. */
+	/**
+	 * Close the mobile plan sheet.
+	 * After a plan, match desktop: drop pins and itineraries, keep the Plan tab
+	 * and the From/To fields (the form lives in this sheet on a narrow viewport).
+	 * With nothing planned, leave trip planning and return to Stops.
+	 */
 	function closeMobilePlanSheet() {
+		if (hasTripPlanResults()) {
+			closeTripPlanModal();
+			return;
+		}
+
 		if (browser) {
 			window.dispatchEvent(new CustomEvent('tripPlanModalClosed'));
 			window.dispatchEvent(new CustomEvent('openStopsTab'));
@@ -639,15 +662,15 @@
 	<meta name="apple-mobile-web-app-title" content={PUBLIC_OBA_REGION_NAME} />
 </svelte:head>
 
-{#if showAlertModal}
-	<AlertsModal {alert} />
+{#if alert}
+	<AlertsModal bind:open={showAlertModal} {alert} />
 {/if}
 
 {#if $isLoading}
 	<p>Loading...</p>
 {:else}
 	<h1 class="sr-only">{PUBLIC_OBA_REGION_NAME}</h1>
-	<div class="pointer-events-none absolute bottom-0 left-0 right-0 top-0 z-40">
+	<div class="pointer-events-none absolute top-0 right-0 bottom-0 left-0 z-40">
 		<!-- Top spacing is padding (not margin) so h-full keeps the column's bottom
 		     edge — where the sheet anchors — exactly at the viewport bottom. Below md,
 		     horizontal margins live on the search wrapper and on each pane (not the
@@ -659,6 +682,7 @@
 				{/if}
 				<SearchPane
 					{mapProvider}
+					isStopInteractive={(stop) => !selectedStopId || stop.id === selectedStopId}
 					cssClasses="pointer-events-auto"
 					collapsed={showCollapsedSearch || hideSearchForMobilePlan}
 					embedTripPlan={!mobilePlanSheetOpen}
@@ -682,7 +706,7 @@
 			     Wrapper stays pointer-events transparent (and shrink-wrapped) so it
 			     cannot steal map pans; the control itself opts back in. -->
 			<div
-				class="relative z-30 mx-2 mt-2 w-fit self-end md:absolute md:right-4 md:top-4 md:mx-0 md:mt-0"
+				class="relative z-30 mx-2 mt-2 w-fit self-end md:absolute md:top-4 md:right-4 md:mx-0 md:mt-0"
 			>
 				<FavoritesFloatingControl
 					onStopClick={handleFavoriteStopClick}
@@ -740,9 +764,7 @@
 		</div>
 	</div>
 
-	{#if $showSurveyModal}
-		<SurveyModal />
-	{/if}
+	<SurveyModal bind:open={$showSurveyModal} />
 
 	{#if $showTripOptionsModal}
 		<TripOptionsModal
@@ -763,6 +785,7 @@
 		{startInTripPlanMode}
 		{activeRoutes}
 		{routeColors}
+		{stopSheetOpen}
 		bind:mapProvider
 	/>
 {/if}

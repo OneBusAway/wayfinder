@@ -109,7 +109,11 @@
 		"dismiss": "I-dismiss ang survey",
 		"submit": "Isumite",
 		"next": "Susunod",
-		"submit_failed": "Hindi naipadala ang iyong sagot. Pakisubukang muli."
+		"submit_failed": "Hindi naipadala ang iyong sagot. Pakisubukang muli.",
+		"cancel": "Kanselahin",
+		"skip": "Laktawan",
+		"submitted": "Naisumite ang survey",
+		"thank_you": "Salamat sa pagsagot sa survey!"
 	},
 	"header": {
 		"home": "Home",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Mag-load pa ng mga pagdating",
 	"refresh": "I-refresh",
 	"no_arrivals_found_in_next_minutes": "Walang nahanap na pagdating sa susunod na {minutes} minuto",
+	"no_arrivals_found_in_next_hours": "Walang nahanap na pagdating sa susunod na {hours, plural, one {# oras} other {# oras}}",
 	"no_more_arrivals_in_next_minutes": "Wala nang karagdagang pagdating sa susunod na {minutes} minuto",
+	"no_more_arrivals_in_next_hours": "Wala nang karagdagang pagdating sa susunod na {hours, plural, one {# oras} other {# oras}}",
 	"stop": "Hintuan",
 	"direction_bound": "Papuntang {direction}",
 	"routes": "Mga ruta",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} min"
 	},
 	"vehicle": {
-		"number": "Sasakyan #",
-		"data_updated": "Na-update ang data",
 		"no_real_time_data": "Wala kaming real-time na data para sa sasakyang ito ngayon.",
-		"next_stop": "Susunod na hintuan:",
 		"label": "Sasakyan",
 		"to_headsign": "Sasakyang papuntang {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Mga Pagdating at Pag-alis"
+	},
+	"date_picker": {
+		"today": "Ngayon"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Tingnan ang iskedyul",

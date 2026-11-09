@@ -22,10 +22,10 @@ const ERROR_RETRY_DELAY = 30_000;
 let lastErrorTime = null;
 
 async function detectOtpVersion() {
-	const ac = new AbortController();
-	const timer = setTimeout(() => ac.abort(), DETECT_TIMEOUT);
+	const controller = new AbortController();
+	const timer = setTimeout(() => controller.abort(), DETECT_TIMEOUT);
 	try {
-		const response = await fetch(env.PUBLIC_OTP_SERVER_URL, { signal: ac.signal });
+		const response = await fetch(env.PUBLIC_OTP_SERVER_URL, { signal: controller.signal });
 
 		if (!response.ok) {
 			throw new Error(`OTP server returned HTTP ${response.status}`);

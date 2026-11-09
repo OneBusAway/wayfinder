@@ -1,9 +1,22 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { tick } from 'svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import { createMockStore } from '../../../tests/helpers/test-utils.js';
+import * as navigation from '$app/navigation';
 import SearchPane from '../SearchPane.svelte';
+
+vi.mock('$app/environment', () => ({
+	browser: true,
+	dev: false,
+	building: false,
+	version: '1.0.0'
+}));
+
+vi.mock('$app/navigation', () => ({
+	replaceState: vi.fn(),
+	pushState: vi.fn(),
+	goto: vi.fn()
+}));
 
 // Mock dependencies
 vi.mock('$lib/Insights', () => ({
@@ -185,25 +198,32 @@ describe('SearchPane', () => {
 			const stopsTab = screen.getByRole('tab', { name: 'Stops & Stations' });
 			const tripTab = screen.getByRole('tab', { name: 'Plan Trip' });
 
-			await user.click(stopsTab);
-			expect(global.dispatchEvent).toHaveBeenCalledWith(
-				expect.objectContaining({ type: 'tabSwitched' })
-			);
-
 			await user.click(tripTab);
 			expect(global.dispatchEvent).toHaveBeenCalledWith(
 				expect.objectContaining({ type: 'planTripTabClicked' })
 			);
+
+			await user.click(stopsTab);
+			expect(global.dispatchEvent).toHaveBeenCalledWith(
+				expect.objectContaining({ type: 'tabSwitched' })
+			);
 		});
 
-		test('clears trip plan map state when leaving the plan tab', async () => {
+		test('clears real trip params (?from/?to/?fromName/?toName) from URL when leaving the plan tab', async () => {
 			const user = userEvent.setup();
+
+			// Simulate active trip params in the URL from planning a trip (per issue #674)
+			const tripUrl =
+				'/?from=47.6145%2C-122.15012&to=47.60937%2C-122.3251&fromName=47.61450%2C+-122.15012&toName=First+Hill';
+			window.history.pushState({}, '', tripUrl);
+			mockPageUrl = new URL(`https://example.com${tripUrl}`);
 
 			render(SearchPane, { props: mockProps });
 
 			await user.click(screen.getByRole('tab', { name: 'Plan Trip' }));
 			vi.mocked(global.dispatchEvent).mockClear();
 			mockProps.clearTripItineraries.mockClear();
+			vi.mocked(navigation.replaceState).mockClear();
 
 			await user.click(screen.getByRole('tab', { name: 'Stops & Stations' }));
 
@@ -211,9 +231,67 @@ describe('SearchPane', () => {
 				expect.objectContaining({ type: 'tripPlanModalClosed' })
 			);
 			expect(mockProps.clearTripItineraries).toHaveBeenCalled();
+			expect(navigation.replaceState).toHaveBeenCalled();
+			const url = navigation.replaceState.mock.calls.at(-1)[0];
+			expect(url.searchParams.has('from')).toBe(false);
+			expect(url.searchParams.has('to')).toBe(false);
+			expect(url.searchParams.has('fromName')).toBe(false);
+			expect(url.searchParams.has('toName')).toBe(false);
 			expect(global.dispatchEvent).toHaveBeenCalledWith(
 				expect.objectContaining({ type: 'tabSwitched' })
 			);
+		});
+
+		test('openStopsTab event switches to Stops tab and clears trip params', async () => {
+			const user = userEvent.setup();
+			const tripUrl =
+				'/?from=47.6145%2C-122.15012&to=47.60937%2C-122.3251&fromName=FromPlace&toName=ToPlace';
+			window.history.pushState({}, '', tripUrl);
+			mockPageUrl = new URL(`https://example.com${tripUrl}`);
+
+			render(SearchPane, { props: mockProps });
+			await user.click(screen.getByRole('tab', { name: 'Plan Trip' }));
+			vi.mocked(navigation.replaceState).mockClear();
+
+			const openStopsHandler = vi
+				.mocked(global.addEventListener)
+				.mock.calls.find(([type]) => type === 'openStopsTab')?.[1];
+			expect(openStopsHandler).toBeDefined();
+			openStopsHandler();
+
+			expect(mockProps.clearTripItineraries).toHaveBeenCalled();
+			expect(navigation.replaceState).toHaveBeenCalled();
+			const url = navigation.replaceState.mock.calls.at(-1)[0];
+			expect(url.searchParams.has('from')).toBe(false);
+			expect(url.searchParams.has('to')).toBe(false);
+		});
+
+		test('openStopsTab event is ignored while right-click context menu is triggering', async () => {
+			render(SearchPane, { props: mockProps });
+			mockProps.clearTripItineraries.mockClear();
+
+			const contextMenuHandler = vi
+				.mocked(global.addEventListener)
+				.mock.calls.find(([type]) => type === 'contextMenuTripPlan')?.[1];
+			const openStopsHandler = vi
+				.mocked(global.addEventListener)
+				.mock.calls.find(([type]) => type === 'openStopsTab')?.[1];
+
+			expect(contextMenuHandler).toBeDefined();
+			expect(openStopsHandler).toBeDefined();
+
+			// Start contextMenuTripPlan (async). It sets isContextMenuTrigger = true
+			const contextMenuPromise = contextMenuHandler({
+				detail: { type: 'from', lat: 47.6, lng: -122.3 }
+			});
+
+			// While contextMenuTripPlan is mid-flight (isContextMenuTrigger is true), openStopsTab fires
+			openStopsHandler();
+
+			// Since isContextMenuTrigger is true, openStopsTab must not cancel the trip-plan mode
+			expect(mockProps.clearTripItineraries).not.toHaveBeenCalled();
+
+			await contextMenuPromise;
 		});
 
 		test('handles view all routes link', async () => {
@@ -336,7 +414,11 @@ describe('SearchPane', () => {
 			await user.click(screen.getByRole('button', { name: /search/i }));
 			await user.click((await screen.findByText('Stop 1')).closest('button'));
 
-			const { onClick } = mockMapProvider.addMarker.mock.calls[0][0];
+			const { onClick, isInteractive } = mockMapProvider.addMarker.mock.calls[0][0];
+
+			expect(isInteractive).toEqual(expect.any(Function));
+			expect(isInteractive()).toBe(true);
+
 			onClick();
 
 			expect(handleMapStopMarkerSelect).toHaveBeenCalledWith(
@@ -517,27 +599,46 @@ describe('SearchPane', () => {
 			return registration[1];
 		}
 
-		test('waits for the mobile plan sheet to mount before setting the location', async () => {
+		test('opens the Plan tab and hands it the clicked location', async () => {
 			render(SearchPane, { props: mockProps });
 			const handler = getContextMenuTripPlanHandler();
 			const detail = { type: 'from', lat: 47.6, lng: -122.3 };
 
-			const pending = handler({ detail });
+			vi.mocked(global.dispatchEvent).mockImplementation(() => {});
 
-			await tick();
-			expect(global.dispatchEvent).toHaveBeenCalledWith(
-				expect.objectContaining({ type: 'planTripTabClicked' })
-			);
-			expect(global.dispatchEvent).not.toHaveBeenCalledWith(
-				expect.objectContaining({ type: 'setTripPlanLocation' })
-			);
+			await handler({ detail });
 
-			await tick();
-			await pending;
-
-			expect(global.dispatchEvent).toHaveBeenCalledWith(
+			const types = vi.mocked(global.dispatchEvent).mock.calls.map(([e]) => e.type);
+			expect(types).toEqual(['planTripTabClicked', 'setTripPlanLocation']);
+			expect(global.dispatchEvent).toHaveBeenLastCalledWith(
 				expect.objectContaining({ type: 'setTripPlanLocation', detail })
 			);
+		});
+
+		test('resets isContextMenuTrigger flag even if a dispatched event throws', async () => {
+			render(SearchPane, { props: mockProps });
+			const handler = getContextMenuTripPlanHandler();
+			const detail = { type: 'from', lat: 47.6, lng: -122.3 };
+
+			vi.mocked(global.dispatchEvent).mockImplementation((event) => {
+				if (event.type === 'planTripTabClicked') {
+					throw new Error('Listener error');
+				}
+			});
+
+			await expect(handler({ detail })).rejects.toThrow('Listener error');
+
+			// Verify openStopsTab handler is not permanently blocked
+			const openStopsRegistration = vi
+				.mocked(global.addEventListener)
+				.mock.calls.find(([type]) => type === 'openStopsTab');
+			expect(openStopsRegistration).toBeDefined();
+			const openStopsHandler = openStopsRegistration[1];
+
+			vi.mocked(global.dispatchEvent).mockImplementation(() => {});
+			mockProps.clearTripItineraries.mockClear();
+			openStopsHandler();
+			expect(mockProps.clearTripItineraries).toHaveBeenCalledOnce();
 		});
 	});
 });

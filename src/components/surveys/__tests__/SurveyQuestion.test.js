@@ -29,7 +29,6 @@ describe('SurveyQuestion', () => {
 		render(SurveyQuestion, {
 			props: {
 				question: radioQuestion,
-				index: 0,
 				required: true,
 				value: '',
 				onInputChange: vi.fn(),
@@ -49,7 +48,6 @@ describe('SurveyQuestion', () => {
 		render(SurveyQuestion, {
 			props: {
 				question: radioQuestion,
-				index: 0,
 				required: true,
 				value: '',
 				onInputChange: vi.fn(),
@@ -60,14 +58,13 @@ describe('SurveyQuestion', () => {
 		expect(screen.getByText('survey.required_answer')).toBeInTheDocument();
 	});
 
-	test('forwards the change event to onInputChange with the question and index', async () => {
+	test('reports the selected option to onInputChange', async () => {
 		const user = userEvent.setup();
 		const onInputChange = vi.fn();
 
 		render(SurveyQuestion, {
 			props: {
 				question: radioQuestion,
-				index: 0,
 				required: true,
 				value: '',
 				onInputChange,
@@ -77,6 +74,33 @@ describe('SurveyQuestion', () => {
 
 		await user.click(screen.getByLabelText('Very Easy'));
 
-		expect(onInputChange).toHaveBeenCalledWith(expect.anything(), radioQuestion, 0);
+		expect(onInputChange).toHaveBeenCalledWith('Very Easy');
+	});
+
+	test('reports every selected checkbox option to onInputChange', async () => {
+		const user = userEvent.setup();
+		const onInputChange = vi.fn();
+
+		render(SurveyQuestion, {
+			props: {
+				question: {
+					id: 2,
+					content: {
+						type: 'checkbox',
+						label_text: 'Which did you ride?',
+						options: ['Bus', 'Ferry']
+					}
+				},
+				value: ['Bus'],
+				onInputChange,
+				error: false
+			}
+		});
+
+		await user.click(screen.getByLabelText('Ferry'));
+		expect(onInputChange).toHaveBeenLastCalledWith(['Bus', 'Ferry']);
+
+		await user.click(screen.getByLabelText('Bus'));
+		expect(onInputChange).toHaveBeenLastCalledWith([]);
 	});
 });

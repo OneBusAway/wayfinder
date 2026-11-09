@@ -109,7 +109,11 @@
 		"dismiss": "Tapuni le suʻesuʻega",
 		"submit": "Lafo",
 		"next": "Sosoo",
-		"submit_failed": "E leʻi mafai ona lafo lau tali. Faʻamolemole toe taumafai."
+		"submit_failed": "E leʻi mafai ona lafo lau tali. Faʻamolemole toe taumafai.",
+		"cancel": "Faaleaogā",
+		"skip": "Pasi",
+		"submitted": "Ua lafo le suʻesuʻega",
+		"thank_you": "Faafetai mo le auai i le suʻesuʻega!"
 	},
 	"header": {
 		"home": "Aiga",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Utaina atili taunuʻuga",
 	"refresh": "Faʻafou",
 	"no_arrivals_found_in_next_minutes": "E leai ni taunuʻuga na maua i le {minutes} minute o loʻo sosoo",
+	"no_arrivals_found_in_next_hours": "E leai ni taunuʻuga na maua i le {hours, plural, one {# itulā} other {# itulā}} o loʻo sosoo",
 	"no_more_arrivals_in_next_minutes": "Leai ni taunuʻuga faaopoopo i le {minutes} minute o loʻo sosoo",
+	"no_more_arrivals_in_next_hours": "Leai ni taunuʻuga faaopoopo i le {hours, plural, one {# itulā} other {# itulā}} o loʻo sosoo",
 	"stop": "Nofoaga Taofi",
 	"direction_bound": "Agaʻi i {direction}",
 	"routes": "Auala",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} min"
 	},
 	"vehicle": {
-		"number": "Taʻavale #",
-		"data_updated": "Faʻamatalaga faʻafouina",
 		"no_real_time_data": "E leai ni faʻamatalaga taimi moni mo lenei taʻavale i le taimi nei.",
-		"next_stop": "Nofoaga taofi e sosoo ai:",
 		"label": "Taʻavale",
 		"to_headsign": "Taʻavale i {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Taunuʻuga ma Alu Atu"
+	},
+	"date_picker": {
+		"today": "I le asō"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Vaʻai Fuataga",

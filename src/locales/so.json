@@ -109,7 +109,11 @@
 		"dismiss": "Iska dhaaf sahanka",
 		"submit": "Gudbi",
 		"next": "Xiga",
-		"submit_failed": "Jawaabtaada lama diri karin. Fadlan mar kale isku day."
+		"submit_failed": "Jawaabtaada lama diri karin. Fadlan mar kale isku day.",
+		"cancel": "Jooji",
+		"skip": "Ka gudub",
+		"submitted": "Sahanka waa la diray",
+		"thank_you": "Waad ku mahadsan tahay ka qaybgalka sahanka!"
 	},
 	"header": {
 		"home": "Bogga Hore",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Soo rar imaatinno dheeraad ah",
 	"refresh": "Cusbooneysii",
 	"no_arrivals_found_in_next_minutes": "Lama helin soo gaadhis {minutes} daqiiqo ee soo socda",
+	"no_arrivals_found_in_next_hours": "Lama helin soo gaadhis {hours, plural, one {# saacad} other {# saacadood}} ee soo socda",
 	"no_more_arrivals_in_next_minutes": "Ma jiraan soo gaadhis dheeraad ah {minutes} daqiiqo ee soo socda",
+	"no_more_arrivals_in_next_hours": "Ma jiraan soo gaadhis dheeraad ah {hours, plural, one {# saacad} other {# saacadood}} ee soo socda",
 	"stop": "Joogsi",
 	"direction_bound": "Jihada {direction}",
 	"routes": "Jidadka",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} daq"
 	},
 	"vehicle": {
-		"number": "Gaari #",
-		"data_updated": "Xogta waa la cusbooneysiiyay",
 		"no_real_time_data": "Ma hayno xog ku saabsan wakhtiga dhabta ah ee gaarigan hadda.",
-		"next_stop": "Joogsiga xiga:",
 		"label": "Gaari",
 		"to_headsign": "Gaariga u socda {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Imaanshaha iyo Bixitaanka"
+	},
+	"date_picker": {
+		"today": "Maanta"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Eeg jadwalka",

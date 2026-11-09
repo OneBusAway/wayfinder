@@ -1,12 +1,16 @@
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, fireEvent } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import Header from '../Header.svelte';
+
+vi.mock('$app/environment', () => ({
+	browser: true
+}));
 
 // Mock environment variables
 vi.mock('$env/static/public', () => ({
 	PUBLIC_OBA_REGION_NAME: 'Test Region',
 	PUBLIC_OBA_LOGO_URL: '/test-logo.png',
-	PUBLIC_NAV_BAR_LINKS: '{"Home": "/", "About": "/about"}'
+	PUBLIC_NAV_BAR_LINKS: '{"header.home": "/", "header.about": "/about"}'
 }));
 
 // Set default value for the global define
@@ -40,6 +44,49 @@ vi.mock('$env/dynamic/public', () => ({
 	env: { PUBLIC_LANGUAGE_SWITCHER_ENABLED: 'true' }
 }));
 
+let currentLocale = 'en';
+const localeSubscribers = new Set();
+const messages = {
+	en: {
+		'header.home': 'Home',
+		'header.about': 'About',
+		'header.contact': 'Contact',
+		'header.fares_and_tolls': 'Fares & Tolls'
+	},
+	es: {
+		'header.home': 'Inicio',
+		'header.about': 'Acerca de',
+		'header.contact': 'Contacto',
+		'header.fares_and_tolls': 'Tarifas y peajes'
+	}
+};
+
+const notifyLocaleChange = () => {
+	localeSubscribers.forEach((fn) =>
+		fn((key, options) => messages[currentLocale]?.[key] ?? options?.default ?? key)
+	);
+};
+
+vi.mock('svelte-i18n', () => ({
+	locale: {
+		subscribe: (fn) => {
+			fn(currentLocale);
+			return () => {};
+		},
+		set: (newLoc) => {
+			currentLocale = newLoc;
+			notifyLocaleChange();
+		}
+	},
+	t: {
+		subscribe: (fn) => {
+			localeSubscribers.add(fn);
+			fn((key, options) => messages[currentLocale]?.[key] ?? options?.default ?? key);
+			return () => localeSubscribers.delete(fn);
+		}
+	}
+}));
+
 describe('Header', () => {
 	beforeEach(() => {
 		// Mock ResizeObserver
@@ -51,6 +98,7 @@ describe('Header', () => {
 	});
 
 	afterEach(() => {
+		currentLocale = 'en';
 		vi.restoreAllMocks();
 	});
 
@@ -58,7 +106,7 @@ describe('Header', () => {
 		render(Header);
 
 		// Check for logo
-		const logo = screen.getByAltText('Test Region');
+		const logo = screen.getByRole('presentation');
 		expect(logo).toBeInTheDocument();
 		expect(logo).toHaveAttribute('src', '/test-logo.png');
 
@@ -66,16 +114,12 @@ describe('Header', () => {
 		expect(screen.getByText('Test Region')).toBeInTheDocument();
 	});
 
-	test('logo and region name are clickable links', () => {
+	test('logo and region name share a single home link', () => {
 		render(Header);
 
-		const links = screen.getAllByRole('link', { name: /test region/i });
-		expect(links).toHaveLength(2); // One for logo, one for text
-
-		// Both should link to home
-		links.forEach((link) => {
-			expect(link).toHaveAttribute('href', '/');
-		});
+		const link = screen.getByRole('link', { name: 'Test Region' });
+		expect(link).toHaveAttribute('href', '/');
+		expect(link).toContainElement(screen.getByRole('presentation'));
 	});
 
 	test('has proper semantic structure', () => {
@@ -84,6 +128,24 @@ describe('Header', () => {
 		// Should have main header content
 		const headerContent = screen.getByText('Test Region');
 		expect(headerContent).toBeInTheDocument();
+	});
+
+	test('renders translated navigation links', () => {
+		render(Header);
+		const homeLink = screen.getByRole('link', { name: 'Home' });
+		expect(homeLink).toBeInTheDocument();
+		expect(homeLink).toHaveAttribute('href', '/');
+	});
+
+	test('updates navigation link labels when locale changes', async () => {
+		const { rerender } = render(Header);
+		expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
+
+		currentLocale = 'es';
+		notifyLocaleChange();
+		await rerender({});
+
+		expect(screen.getByRole('link', { name: 'Inicio' })).toBeInTheDocument();
 	});
 
 	test('renders without navigation links when PUBLIC_NAV_BAR_LINKS is empty', () => {
@@ -98,47 +160,6 @@ describe('Header', () => {
 
 		// Should still render logo and region name
 		expect(screen.getByText('Test Region')).toBeInTheDocument();
-	});
-
-	test('has accessible logo with proper alt text', () => {
-		render(Header);
-
-		const logo = screen.getByRole('img');
-		expect(logo).toHaveAttribute('alt', 'Test Region');
-		expect(logo).toBeVisible();
-	});
-
-	test('logo container has proper styling classes', () => {
-		render(Header);
-
-		const logoContainer = screen.getByText('Test Region').closest('div');
-		expect(logoContainer).toHaveClass('flex', 'items-center', 'justify-center', 'gap-x-2');
-	});
-
-	test('header has proper CSS classes for styling', () => {
-		const { container } = render(Header);
-
-		const header = container.querySelector('header');
-		expect(header).toHaveClass(
-			'flex',
-			'items-center',
-			'justify-between',
-			'border-b',
-			'border-gray-500',
-			'bg-brand-accent/80',
-			'text-brand-foreground',
-			'backdrop-blur-md',
-			'dark:bg-surface-dark',
-			'dark:text-surface-foreground-dark'
-		);
-	});
-
-	test('region name link has proper styling', () => {
-		render(Header);
-
-		const regionLinks = screen.getAllByRole('link', { name: /test region/i });
-		const textLink = regionLinks.find((link) => link.textContent === 'Test Region');
-		expect(textLink).toHaveClass('block', 'text-xl', 'font-extrabold');
 	});
 });
 
@@ -156,29 +177,60 @@ describe('Header with region name hidden', () => {
 
 	afterEach(() => {
 		globalThis.__SHOW_REGION_NAME_IN_NAV_BAR__ = true;
+		currentLocale = 'en';
 		vi.restoreAllMocks();
 	});
 
-	test('hides region name text when config is false', () => {
+	test('visually hides region name text when config is false', () => {
 		render(Header);
 
-		// Region name text should not be present
-		expect(screen.queryByText('Test Region')).not.toBeInTheDocument();
+		const regionName = screen.getByText('Test Region');
+		expect(regionName).toHaveClass('sr-only');
+		expect(regionName).not.toHaveClass('region-name');
 	});
 
-	test('logo alt text still uses region name for accessibility', () => {
+	test('logo stays decorative and the link is still named for screen readers', () => {
 		render(Header);
 
-		// Logo should still have the region name as alt text
-		const logo = screen.getByRole('img');
-		expect(logo).toHaveAttribute('alt', 'Test Region');
+		expect(screen.getByRole('presentation')).toHaveAttribute('alt', '');
+		expect(screen.getByRole('link', { name: 'Test Region' })).toBeInTheDocument();
 	});
 
-	test('only logo link exists when region name is hidden', () => {
+	test('dispatches openStopsTab event when logo is clicked', async () => {
+		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
 		render(Header);
 
-		// Should only have one link for the logo
-		const links = screen.getAllByRole('link', { name: /test region/i });
-		expect(links).toHaveLength(1);
+		const logoLink = screen.getByRole('link', { name: 'Test Region' });
+		await fireEvent.click(logoLink);
+
+		expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+	});
+
+	test('does not dispatch openStopsTab on modified or non-primary clicks', async () => {
+		const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+		render(Header);
+
+		const logoLink = screen.getByRole('link', { name: 'Test Region' });
+		dispatchSpy.mockClear();
+
+		// Ctrl-click
+		await fireEvent.click(logoLink, { ctrlKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Meta-click (Cmd-click on macOS)
+		await fireEvent.click(logoLink, { metaKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Shift-click
+		await fireEvent.click(logoLink, { shiftKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Alt-click
+		await fireEvent.click(logoLink, { altKey: true });
+		expect(dispatchSpy).not.toHaveBeenCalled();
+
+		// Non-primary click
+		await fireEvent.click(logoLink, { button: 1 });
+		expect(dispatchSpy).not.toHaveBeenCalled();
 	});
 });

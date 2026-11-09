@@ -23,7 +23,8 @@ export default [
 		rules: {
 			// No-op default callbacks are common in component props.
 			'@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
-			'@typescript-eslint/no-unused-expressions': ['error', { allowTernary: true }]
+			'@typescript-eslint/no-unused-expressions': ['error', { allowTernary: true }],
+			'svelte/valid-compile': 'error'
 		}
 	},
 	{

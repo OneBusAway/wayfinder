@@ -109,7 +109,11 @@
 		"dismiss": "Zamknij ankietę",
 		"submit": "Wyślij",
 		"next": "Dalej",
-		"submit_failed": "Nie udało się wysłać odpowiedzi. Spróbuj ponownie."
+		"submit_failed": "Nie udało się wysłać odpowiedzi. Spróbuj ponownie.",
+		"cancel": "Anuluj",
+		"skip": "Pomiń",
+		"submitted": "Ankieta wysłana",
+		"thank_you": "Dziękujemy za wypełnienie ankiety!"
 	},
 	"header": {
 		"home": "Strona główna",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Załaduj więcej przyjazdów",
 	"refresh": "Odśwież",
 	"no_arrivals_found_in_next_minutes": "Brak przyjazdów w ciągu najbliższych {minutes} minut",
+	"no_arrivals_found_in_next_hours": "Brak przyjazdów w ciągu {hours, plural, one {najbliższej godziny} few {najbliższych # godzin} many {najbliższych # godzin} other {najbliższych # godzin}}",
 	"no_more_arrivals_in_next_minutes": "Brak dalszych przyjazdów w ciągu najbliższych {minutes} minut",
+	"no_more_arrivals_in_next_hours": "Brak dalszych przyjazdów w ciągu {hours, plural, one {najbliższej godziny} few {najbliższych # godzin} many {najbliższych # godzin} other {najbliższych # godzin}}",
 	"stop": "Przystanek",
 	"direction_bound": "Kierunek {direction}",
 	"routes": "Trasy",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} min"
 	},
 	"vehicle": {
-		"number": "Pojazd #",
-		"data_updated": "Dane zaktualizowane",
 		"no_real_time_data": "Obecnie nie mamy danych w czasie rzeczywistym dla tego pojazdu.",
-		"next_stop": "Następny przystanek:",
 		"label": "Pojazd",
 		"to_headsign": "Pojazd, kierunek: {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Przyjazdy i Odjazdy"
+	},
+	"date_picker": {
+		"today": "Dzisiaj"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Zobacz rozkład",

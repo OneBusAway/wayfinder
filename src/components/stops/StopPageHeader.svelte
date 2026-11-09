@@ -22,14 +22,17 @@
 
 <div class="my-4">
 	<div class="mb-4 flex justify-start">
+		<!-- FIXME: navigation path not built with resolve() -->
+		<!-- eslint-disable svelte/no-navigation-without-resolve -->
 		<a
 			href="/"
-			class="inline-flex items-center gap-2 rounded-md bg-brand-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-brand-accent-dark focus:outline-none focus:ring-2 focus:ring-brand-accent focus:ring-offset-2"
+			class="inline-flex items-center gap-2 rounded-md bg-brand-accent px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-brand-accent-dark focus:ring-2 focus:ring-brand-accent focus:ring-offset-2 focus:outline-hidden"
 		>
 			<ArrowLeft class="rotate-rtl h-4 w-4" />
 			<Map class="h-4 w-4" />
 			{$isLoading ? '' : $t('navigation.back_to_map')}
 		</a>
+		<!-- eslint-enable svelte/no-navigation-without-resolve -->
 	</div>
 
 	<div class="text-center">

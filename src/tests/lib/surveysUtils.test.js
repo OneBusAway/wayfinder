@@ -9,6 +9,8 @@ import {
 	getPrioritySurvey,
 	skipSurvey
 } from '../../lib/Surveys/surveyUtils';
+import { surveyStore } from '$stores/surveyStore';
+import { get } from 'svelte/store';
 
 beforeEach(() => {
 	let store = {};
@@ -253,6 +255,24 @@ describe('updateSurveyResponse', () => {
 			'Failed to update survey response'
 		);
 	});
+
+	it('should leave unanswered questions out of the posted responses', async () => {
+		global.fetch.mockResolvedValue({ ok: true });
+
+		// Responses are indexed by question, so a follow-up that skips the hero
+		// question (index 0) and one optional question leaves holes.
+		const responses = [];
+		responses[1] = { question_id: 2, answer: 'Bus' };
+		responses[3] = { question_id: 4, answer: 'Often' };
+
+		await updateSurveyResponse('abc123', { id: 1, responses });
+
+		const body = JSON.parse(global.fetch.mock.calls[0][1].body);
+		expect(JSON.parse(body.responses)).toEqual([
+			{ question_id: 2, answer: 'Bus' },
+			{ question_id: 4, answer: 'Often' }
+		]);
+	});
 });
 
 describe('Survey Visibility and Multiple Responses', () => {
@@ -349,6 +369,24 @@ describe('skipSurvey', () => {
 
 		expect(localStorage.getItem('survey_2_skipped')).toBe('true');
 		expect(localStorage.getItem('survey_2_skipped_timestamp')).toBeNull();
+	});
+
+	it('should clear the skipped survey from the store', () => {
+		const survey = { id: 4, allows_multiple_responses: false, always_visible: false };
+		surveyStore.set(survey);
+
+		skipSurvey(survey);
+
+		expect(get(surveyStore)).toBeNull();
+	});
+
+	it('should leave a different survey in the store', () => {
+		const current = { id: 5, allows_multiple_responses: false, always_visible: false };
+		surveyStore.set(current);
+
+		skipSurvey({ id: 6, allows_multiple_responses: false, always_visible: false });
+
+		expect(get(surveyStore)).toBe(current);
 	});
 
 	it('should clear a stale permanent flag when skipping a recurring survey', () => {

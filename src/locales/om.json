@@ -109,7 +109,11 @@
 		"dismiss": "Qorannoo cufi",
 		"submit": "Ergi",
 		"next": "Itti Aanu",
-		"submit_failed": "Deebii kee erguun hin danda'amne. Maaloo irra deebi'ii yaali."
+		"submit_failed": "Deebii kee erguun hin danda'amne. Maaloo irra deebi'ii yaali.",
+		"cancel": "Haqi",
+		"skip": "Darbi",
+		"submitted": "Qorannoon ergameera",
+		"thank_you": "Qorannoo kana irratti hirmaachuu keessaniif galatoomaa!"
 	},
 	"header": {
 		"home": "Mana",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Dhufaatii dabalataa fe'i",
 	"refresh": "Haaromsi",
 	"no_arrivals_found_in_next_minutes": "Daqiiqaa {minutes} itti aanu keessatti dhufaatiin hin argamne",
+	"no_arrivals_found_in_next_hours": "Sa'aatii {hours, plural, one {#} other {#}} itti aanu keessatti dhufaatiin hin argamne",
 	"no_more_arrivals_in_next_minutes": "Daqiiqaa {minutes} itti aanu keessatti dhufaataa dabalataa hin jiru",
+	"no_more_arrivals_in_next_hours": "Sa'aatii {hours, plural, one {#} other {#}} itti aanu keessatti dhufaataa dabalataa hin jiru",
 	"stop": "Dhaabbii",
 	"direction_bound": "gara {direction}",
 	"routes": "Sararawwan",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} daq"
 	},
 	"vehicle": {
-		"number": "Konkolaataa #",
-		"data_updated": "Odeeffannoon haaromfame",
 		"no_real_time_data": "Amma odeeffannoo yeroo qabatamaa konkolaataa kanaaf hin qabnu.",
-		"next_stop": "Dhaabbii itti aanu:",
 		"label": "Konkolaataa",
 		"to_headsign": "Konkolaataa gara {headsign} deemu"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Dhufaatii fi Ka'umsa"
+	},
+	"date_picker": {
+		"today": "Har'a"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Sagantaa Ilaali",

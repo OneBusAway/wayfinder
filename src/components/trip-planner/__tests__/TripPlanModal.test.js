@@ -159,6 +159,40 @@ describe('TripPlanModal map fit', () => {
 		unmount();
 	});
 
+	it('drops an in-flight route when results are cleared without unmounting', async () => {
+		let releaseDraw;
+		const pendingDraw = new Promise((resolve) => {
+			releaseDraw = resolve;
+		});
+		mapProvider.createPolyline = vi.fn(() => pendingDraw.then(() => ({ id: 'late-line' })));
+
+		const { rerender, unmount } = render(TripPlanModal, {
+			props: {
+				mapProvider,
+				itineraries: [makeItinerary([makeLeg()])],
+				closePane: vi.fn()
+			}
+		});
+
+		await vi.waitFor(() => expect(mapProvider.createPolyline).toHaveBeenCalledTimes(1));
+
+		await rerender({
+			mapProvider,
+			itineraries: [],
+			closePane: vi.fn()
+		});
+		await tick();
+
+		releaseDraw();
+		await vi.waitFor(() =>
+			expect(mapProvider.removePolyline).toHaveBeenCalledWith({ id: 'late-line' })
+		);
+		expect(mapProvider.fitToPolylines).not.toHaveBeenCalled();
+		expect(screen.getByRole('button', { name: 'sheet.close' })).toBeInTheDocument();
+
+		unmount();
+	});
+
 	it('falls back to flyTo when fitToPolylines returns false', async () => {
 		mapProvider.fitToPolylines = vi.fn().mockResolvedValue(false);
 		mapProvider.createPolyline = vi.fn().mockResolvedValue(null);

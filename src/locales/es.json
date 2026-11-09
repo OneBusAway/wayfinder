@@ -109,7 +109,11 @@
 		"dismiss": "Descartar encuesta",
 		"submit": "Enviar",
 		"next": "Siguiente",
-		"submit_failed": "No se pudo enviar tu respuesta. Inténtalo de nuevo."
+		"submit_failed": "No se pudo enviar tu respuesta. Inténtalo de nuevo.",
+		"cancel": "Cancelar",
+		"skip": "Omitir",
+		"submitted": "Encuesta enviada",
+		"thank_you": "¡Gracias por responder la encuesta!"
 	},
 	"header": {
 		"home": "Inicio",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Cargar más llegadas",
 	"refresh": "Actualizar",
 	"no_arrivals_found_in_next_minutes": "No se encontraron llegadas en los próximos {minutes} minutos",
+	"no_arrivals_found_in_next_hours": "No se encontraron llegadas en {hours, plural, one {la próxima hora} other {las próximas # horas}}",
 	"no_more_arrivals_in_next_minutes": "No hay más llegadas en los próximos {minutes} minutos",
+	"no_more_arrivals_in_next_hours": "No hay más llegadas en {hours, plural, one {la próxima hora} other {las próximas # horas}}",
 	"stop": "Parada",
 	"direction_bound": "Dirección {direction}",
 	"routes": "Rutas",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} min"
 	},
 	"vehicle": {
-		"number": "Vehículo #",
-		"data_updated": "Datos actualizados",
 		"no_real_time_data": "Actualmente no tenemos datos en tiempo real para este vehículo.",
-		"next_stop": "Próxima parada:",
 		"label": "Vehículo",
 		"to_headsign": "Vehículo hacia {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Llegadas y Salidas"
+	},
+	"date_picker": {
+		"today": "Hoy"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Ver horario",

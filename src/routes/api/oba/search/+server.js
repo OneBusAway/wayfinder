@@ -1,28 +1,18 @@
-import { OnebusawaySDK } from 'onebusaway-sdk';
-
+import oba from '$lib/obaSdk.js';
 import { bingGeocode, googleGeocode } from '$lib/geocoder';
 import { getBoundsCache } from '$lib/serverCache.js';
 import { getAgencyFilter, filterRoutes, filterStops } from '$lib/agencyFilter.js';
 
 import {
-	PUBLIC_OBA_SERVER_URL as baseUrl,
 	PUBLIC_OBA_REGION_CENTER_LAT as centerLat,
 	PUBLIC_OBA_REGION_CENTER_LNG as centerLng
 } from '$env/static/public';
 
-import {
-	PRIVATE_OBA_API_KEY as apiKey,
-	PRIVATE_OBA_GEOCODER_PROVIDER as geocoderProvider
-} from '$env/static/private';
+import { PRIVATE_OBA_GEOCODER_PROVIDER as geocoderProvider } from '$env/static/private';
 
 import { env } from '$env/dynamic/private';
 
 let geocoderApiKey = env.PRIVATE_OBA_GEOCODER_API_KEY;
-
-const oba = new OnebusawaySDK({
-	apiKey: apiKey,
-	baseURL: baseUrl
-});
 
 async function routeSearch(query) {
 	const params = {

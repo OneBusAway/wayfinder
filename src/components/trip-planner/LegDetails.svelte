@@ -110,7 +110,7 @@
 				iconColor: routeTextColorHex,
 				iconColorClass: '',
 				badgeClass:
-					'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold shadow-sm',
+					'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold shadow-xs',
 				badgeStyle: `background-color: ${routeColorHex}; color: ${routeTextColorHex}`
 			};
 		}
@@ -124,7 +124,7 @@
 			iconColor: '',
 			iconColorClass: modeConfig.iconColor,
 			badgeClass:
-				'inline-flex items-center rounded-full bg-brand-accent px-2.5 py-0.5 text-xs font-bold text-white shadow-sm',
+				'inline-flex items-center rounded-full bg-brand-accent px-2.5 py-0.5 text-xs font-bold text-white shadow-xs',
 			badgeStyle: ''
 		};
 	});
@@ -134,7 +134,7 @@
 	<!-- Timeline line -->
 	{#if !isLast}
 		<div
-			class="absolute left-[23px] top-12 h-[calc(100%-40px)] w-0.5 {colorStyles.timelineClass}"
+			class="absolute top-12 left-[23px] h-[calc(100%-40px)] w-0.5 {colorStyles.timelineClass}"
 			style={colorStyles.timelineStyle}
 		></div>
 	{/if}
@@ -238,6 +238,8 @@
 					class="mt-3 space-y-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50"
 					transition:slide={{ duration: 200 }}
 				>
+					<!-- FIXME: each block has no key -->
+					<!-- eslint-disable-next-line svelte/require-each-key -->
 					{#each leg.steps as step}
 						<div class="text-sm">
 							<div class="font-medium text-gray-800 dark:text-gray-200">

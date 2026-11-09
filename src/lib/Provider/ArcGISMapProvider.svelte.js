@@ -61,7 +61,11 @@ export default class ArcGISMapProvider {
 		this.map = null;
 		this.view = null;
 		this.overlayContainer = null;
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.markersMap = new Map();
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.stopsMap = new Map();
 		this.stopMarkers = [];
 		this.vehicleMarkers = [];
@@ -80,7 +84,11 @@ export default class ArcGISMapProvider {
 		this._positionFrame = null;
 		this._destroyed = false;
 		this._activeFit = null;
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.handles = new Set();
+		// bookkeeping, not read reactively
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this._basemapLayerOpacities = new Map();
 	}
 
@@ -309,6 +317,7 @@ export default class ArcGISMapProvider {
 			icon: chooseStopIcon(options.stop, options.icon),
 			onClick: options.onClick,
 			isHighlighted: options.isHighlighted ?? false,
+			isInteractive: options.isInteractive,
 			showRoutesLabel: this.getZoom() >= this.showStopsRoutesAtZoom,
 			emphasis: options.emphasis ?? 'full',
 			dotColor: options.dotColor ?? null
@@ -466,7 +475,7 @@ export default class ArcGISMapProvider {
 		this.popupContentComponent = mount(PopupContent, {
 			target: container,
 			props: {
-				stopName: stop.name,
+				stop,
 				arrivalTime: stopTime?.arrivalTime ?? null,
 				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 			}
@@ -486,7 +495,7 @@ export default class ArcGISMapProvider {
 		this.popupContentComponent = mount(PopupContent, {
 			target: container,
 			props: {
-				stopName: stop.name,
+				stop,
 				arrivalTime,
 				handleStopMarkerSelect: () => this.handleStopMarkerSelect(stop)
 			}
@@ -972,6 +981,8 @@ export default class ArcGISMapProvider {
 
 	addListener(event, callback) {
 		if (!this.view) return null;
+		// local to this function
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const watchable = new Set(['zoom', 'center', 'extent', 'stationary', 'updating']);
 		return this._trackHandle(
 			watchable.has(event)

@@ -109,7 +109,11 @@
 		"dismiss": "بستن نظرسنجی",
 		"submit": "ارسال",
 		"next": "بعدی",
-		"submit_failed": "ارسال پاسخ شما ممکن نشد. لطفاً دوباره تلاش کنید."
+		"submit_failed": "ارسال پاسخ شما ممکن نشد. لطفاً دوباره تلاش کنید.",
+		"cancel": "لغو",
+		"skip": "رد شدن",
+		"submitted": "نظرسنجی ارسال شد",
+		"thank_you": "از شرکت شما در نظرسنجی سپاسگزاریم!"
 	},
 	"header": {
 		"home": "خانه",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "بارگذاری ورودی‌های بیشتر",
 	"refresh": "به‌روزرسانی",
 	"no_arrivals_found_in_next_minutes": "هیچ ورودی در {minutes} دقیقه آینده یافت نشد",
+	"no_arrivals_found_in_next_hours": "هیچ ورودی در {hours, plural, one {# ساعت} other {# ساعت}} آینده یافت نشد",
 	"no_more_arrivals_in_next_minutes": "هیچ ورودی بیشتری در {minutes} دقیقه آینده وجود ندارد",
+	"no_more_arrivals_in_next_hours": "هیچ ورودی بیشتری در {hours, plural, one {# ساعت} other {# ساعت}} آینده وجود ندارد",
 	"stop": "ایستگاه",
 	"direction_bound": "به سمت {direction}",
 	"routes": "خطوط",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} دقیقه"
 	},
 	"vehicle": {
-		"number": "شماره وسیله نقلیه",
-		"data_updated": "آخرین به‌روزرسانی",
 		"no_real_time_data": "اطلاعات لحظه‌ای برای این وسیله نقلیه در دسترس نیست.",
-		"next_stop": "ایستگاه بعدی:",
 		"label": "وسیله نقلیه",
 		"to_headsign": "وسیله نقلیه به مقصد {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "ورود و خروج"
+	},
+	"date_picker": {
+		"today": "امروز"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "مشاهده برنامه زمانی",

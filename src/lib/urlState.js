@@ -1,3 +1,6 @@
+import { browser } from '$app/environment';
+import { replaceState } from '$app/navigation';
+
 /**
  * Centralized serialization and parsing of shareable URL state.
  *
@@ -134,6 +137,26 @@ export function removeTripParams(url) {
 	url.searchParams.delete('fromName');
 	url.searchParams.delete('toName');
 	return url;
+}
+
+/**
+ * Clears shareable trip parameters from the current URL in place via replaceState.
+ *
+ * @param {URL | string} [url] - Optional URL to clear. Defaults to window.location.href
+ */
+export function clearTripUrl(url) {
+	if (!browser) return;
+	try {
+		const base = url || window?.location?.href;
+		if (!base) return;
+		const parsedUrl = new URL(base);
+		removeTripParams(parsedUrl);
+		// using `resolve` would drop trip params
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
+		replaceState(parsedUrl, {});
+	} catch (e) {
+		console.warn('Failed to clear shareable trip URL:', e);
+	}
 }
 
 function round(value) {

@@ -8,10 +8,11 @@
 	import ServiceAlerts from '$components/service-alerts/ServiceAlerts.svelte';
 	import OnDemandStopCard from '$components/stops/OnDemandStopCard.svelte';
 	import { onDestroy, tick, untrack } from 'svelte';
+	import { env } from '$env/dynamic/public';
 	import '$lib/i18n.js';
 	import { isLoading, t } from 'svelte-i18n';
 	import { submitHeroQuestion, skipSurvey } from '$lib/Surveys/surveyUtils';
-	import { surveyStore, showSurveyModal, markSurveyAnswered } from '$stores/surveyStore';
+	import { surveyStore, markSurveyAnswered } from '$stores/surveyStore';
 	import { getUserId } from '$lib/utils/user';
 	import SurveyBanner from '$components/surveys/SurveyBanner.svelte';
 	import analytics from '$lib/Insights';
@@ -27,8 +28,8 @@
 	 *
 	 * @typedef {ArrivalAndDepartureListResponse['data']['entry']['arrivalsAndDepartures'][number]} ArrivalsAndDeparture
 	 * @typedef {string | string[]} SurveyAnswer
-	 * @typedef {{ id: string | number, content: { type: string, label_text: string } }} SurveyQuestion
-	 * @typedef {{ id: string | number, questions: SurveyQuestion[], allows_multiple_responses?: boolean, always_visible?: boolean }} StopSurvey
+	 * @typedef {import('$stores/surveyStore').SurveyQuestion} SurveyQuestion
+	 * @typedef {import('$stores/surveyStore').Survey} StopSurvey
 	 * @typedef {{ question_id: SurveyQuestion['id'], question_label: string, question_type: string, answer: SurveyAnswer }} SurveyAnswerResponse
 	 *
 	 * @typedef {Object} Props
@@ -61,6 +62,14 @@
 	// app's incrementMinutesAfter() behavior.
 	const DEFAULT_MINUTES_AFTER = 35;
 	const MINUTES_AFTER_INCREMENT = 30;
+	const DEFAULT_AUTO_EXTEND_MAX_MINUTES = 720;
+
+	function getMaxAutoExtendMinutes() {
+		const parsed = Number(env.PUBLIC_OBA_AUTO_EXTEND_MAX_MINUTES);
+		return Number.isInteger(parsed) && parsed > 0
+			? Math.min(parsed, DEFAULT_AUTO_EXTEND_MAX_MINUTES)
+			: DEFAULT_AUTO_EXTEND_MAX_MINUTES;
+	}
 
 	// Seed from any server-rendered response so the standalone page shows arrivals
 	// immediately instead of flashing the first-load skeleton. No clock is passed
@@ -70,6 +79,7 @@
 		withVisibleArrivals(arrivalsAndDeparturesResponse?.data?.entry)
 	);
 	let error = $state();
+	let autoExtending = $state(shouldAutoExtendOnSeed(arrivalsAndDeparturesResponse, stop));
 	// Seed alerts from the same server-rendered response so they show on first
 	// render instead of waiting for the initial client fetch to complete.
 	/** @type {import('$lib/types').ServiceAlert[]} */
@@ -92,6 +102,9 @@
 	/** @type {NodeJS.Timeout | null} */
 	let interval = null;
 	/** @type {StopSurvey | null} */
+	// FIXME: $state synced by $effect, use writable $derived
+	/** @type {StopSurvey | null} */
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let currentStopSurvey = $state(null);
 	/** @type {SurveyQuestion[]} */
 	let remainingSurveyQuestions = $state([]);
@@ -132,12 +145,60 @@
 	}
 
 	/**
+	 * Returns true if the server-rendered seed response is empty for a stop with routes,
+	 * indicating the client should auto-extend upon mounting.
+	 * @param {any} response
+	 * @param {Stop | null | undefined} currentStop
+	 */
+	function shouldAutoExtendOnSeed(response, currentStop) {
+		return Boolean(
+			response?.data?.entry &&
+				(response?.data?.entry?.arrivalsAndDepartures?.length ?? 0) === 0 &&
+				(currentStop?.routeIds?.length ?? 0) > 0
+		);
+	}
+
+	/**
+	 * Formats a localized time-window message in whole hours or minutes.
+	 * @param {string} hoursKey
+	 * @param {string} minutesKey
+	 * @param {number} minutes
+	 */
+	function formatTimeWindowMessage(hoursKey, minutesKey, minutes) {
+		return minutes >= 60 && minutes % 60 === 0
+			? $t(hoursKey, { values: { hours: minutes / 60 } })
+			: $t(minutesKey, { values: { minutes } });
+	}
+
+	/**
+	 * Returns the next time-window increment for empty-result auto-extension,
+	 * or null if the window has reached the cap. Mimics the mobile app behavior.
+	 * @param {number} minutes
+	 * @returns {number | null}
+	 */
+	function getAutoExtensionIncrement(minutes) {
+		const maxMinutes = getMaxAutoExtendMinutes();
+		if (minutes >= maxMinutes) return null;
+		const increment = minutes < 240 ? 60 : 120;
+		return Math.min(increment, maxMinutes - minutes);
+	}
+
+	/**
 	 * Fetches arrivals for the stop within the current `minutesAfter` window.
+	 * When `allowAutoExtend` is true and the fetch returns no arrivals, it automatically
+	 * widens `minutesAfter` and re-fetches (up to the configured maximum window) before
+	 * concluding that no arrivals are available.
 	 * @param {string} stopID
+	 * @param {{ allowAutoExtend?: boolean, preserveWindow?: boolean }} [options]
 	 * @returns {Promise<number|null>} the number of arrivals fetched, or `null`
 	 *     when the request was aborted or failed (count is then unknown).
 	 */
-	async function loadData(stopID) {
+	async function loadData(stopID, { allowAutoExtend = false, preserveWindow = false } = {}) {
+		// Do not let routine background polling abort an in-flight auto-extension loop
+		if (autoExtending && !allowAutoExtend) {
+			return null;
+		}
+
 		// Cancel the previous request if it exists
 		if (abortController) {
 			abortController.abort();
@@ -147,27 +208,64 @@
 
 		loading = true;
 		try {
-			const response = await fetch(
-				`/api/oba/arrivals-and-departures-for-stop/${stopID}?minutesAfter=${minutesAfter}`,
-				{
-					signal: controller.signal
-				}
-			);
+			const isExhaustedEmpty =
+				!allowAutoExtend &&
+				!preserveWindow &&
+				noMoreArrivals &&
+				(arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0) === 0;
+			let currentMinutes = isExhaustedEmpty ? DEFAULT_MINUTES_AFTER : minutesAfter;
+			let data;
+			let entry;
+			let count = 0;
 
-			if (!response.ok) {
-				throw new Error('Unable to fetch arrival/departure data');
+			while (true) {
+				const response = await fetch(
+					`/api/oba/arrivals-and-departures-for-stop/${stopID}?minutesAfter=${currentMinutes}`,
+					{
+						signal: controller.signal
+					}
+				);
+
+				if (!response.ok) {
+					throw new Error('Unable to fetch arrival/departure data');
+				}
+
+				data = await response.json();
+				entry = withVisibleArrivals(data?.data?.entry, Date.now());
+				count = entry?.arrivalsAndDepartures?.length ?? 0;
+
+				// Immediately commit the response for this stop so alerts, hero,
+				// and stop info reflect the current stop, and previous stop arrivals
+				// are cleared before widening.
+				arrivalsAndDeparturesResponse = data;
+				arrivalsAndDepartures = entry;
+				serviceAlerts = filterActiveAlerts(data?.data?.references?.situations || []);
+
+				const nextIncrement =
+					allowAutoExtend && stop?.routeIds?.length > 0
+						? getAutoExtensionIncrement(currentMinutes)
+						: null;
+
+				if (count > 0 || nextIncrement === null) {
+					if (!isExhaustedEmpty || count > 0) {
+						minutesAfter = currentMinutes;
+					}
+					error = null;
+					if (count === 0 && currentMinutes >= getMaxAutoExtendMinutes()) {
+						noMoreArrivals = true;
+						noMoreArrivalsBoundary = 0;
+					}
+					break;
+				}
+
+				autoExtending = true;
+				currentMinutes += nextIncrement;
 			}
 
-			const data = await response.json();
-			arrivalsAndDeparturesResponse = data;
-			arrivalsAndDepartures = withVisibleArrivals(data.data.entry, Date.now());
-			serviceAlerts = filterActiveAlerts(data.data.references.situations || []);
-			error = null; // Clear previous errors if successful
 			if (isFirstLoad) {
 				await tick();
 				isFirstLoad = false;
 			}
-			const count = arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0;
 			// Clear a stale "no more arrivals" hint only when a refresh actually
 			// surfaces an arrival further out than the window we'd exhausted — a
 			// poll returning the same (or nearer) arrivals must leave the hint up.
@@ -185,31 +283,54 @@
 			}
 			return null;
 		} finally {
-			// Only the most recent request should control the loading flag.
+			// Only the most recent request should control the loading and autoExtending flags.
 			if (abortController === controller) {
 				loading = false;
+				autoExtending = false;
 			}
 		}
 	}
 
+	let fetchGeneration = 0;
+	let isDestroyed = false;
+
 	/**
 	 * @param {string} stopID
+	 * @param {{ allowAutoExtend?: boolean, preserveWindow?: boolean }} [options]
 	 */
-	function resetDataFetchInterval(stopID) {
-		if (interval) clearInterval(interval);
+	function resetDataFetchInterval(
+		stopID,
+		{ allowAutoExtend = false, preserveWindow = false } = {}
+	) {
+		if (interval) {
+			clearInterval(interval);
+			interval = null;
+		}
 
-		const promise = loadData(stopID);
+		const currentGen = ++fetchGeneration;
+		const promise = loadData(stopID, { allowAutoExtend, preserveWindow });
 
-		interval = setInterval(() => {
-			loadData(stopID);
-		}, 30000);
+		// Once the fetch settles, schedule the 30s timer so subsequent polls
+		// are timed from the completion of the request
+		promise.finally(() => {
+			if (!isDestroyed && currentGen === fetchGeneration && stop?.id === stopID) {
+				if (interval) clearInterval(interval);
+				interval = setInterval(() => {
+					const shouldAutoExtend =
+						!noMoreArrivals &&
+						(arrivalsAndDepartures?.arrivalsAndDepartures?.length ?? 0) === 0 &&
+						(stop?.routeIds?.length ?? 0) > 0;
+					loadData(stopID, { allowAutoExtend: shouldAutoExtend });
+				}, 30000);
+			}
+		});
 
 		return promise;
 	}
 
 	// Manual refresh for the toolbar button: fetch now and restart the poll timer.
 	export function refresh() {
-		if (stop?.id) resetDataFetchInterval(stop.id);
+		if (stop?.id) resetDataFetchInterval(stop.id, { allowAutoExtend: true, preserveWindow: true });
 	}
 
 	// Widen the arrivals window and refetch. If the count doesn't grow, surface a
@@ -223,7 +344,10 @@
 
 		// Reset the poll timer so a background refresh doesn't abort this request
 		// mid-flight (which would make us wrongly report "no more arrivals").
-		const count = await resetDataFetchInterval(stop.id);
+		const count = await resetDataFetchInterval(stop.id, {
+			allowAutoExtend: false,
+			preserveWindow: true
+		});
 
 		loadingMore = false;
 		// Only conclude "no more arrivals" from a request that actually completed.
@@ -244,9 +368,16 @@
 		untrack(() => {
 			minutesAfter = DEFAULT_MINUTES_AFTER;
 			noMoreArrivals = false;
+			noMoreArrivalsBoundary = 0;
 			isFirstLoad = true;
+			if (arrivalsAndDepartures && arrivalsAndDepartures.stopId !== stopID) {
+				arrivalsAndDepartures = null;
+				arrivalsAndDeparturesResponse = null;
+				serviceAlerts = [];
+			}
+			autoExtending = shouldAutoExtendOnSeed(arrivalsAndDeparturesResponse, stop);
 			if (interval != null) clearInterval(interval);
-			resetDataFetchInterval(stopID);
+			resetDataFetchInterval(stopID, { allowAutoExtend: true });
 
 			// StopPane is not remounted when the user selects a different stop
 			// (see the {#key stop.id} around SurveyBanner below), so the survey
@@ -254,12 +385,13 @@
 			// returns after the first submit/dismiss of the session.
 			showHeroQuestion = true;
 			heroAnswer = '';
-			nextSurveyQuestion = false;
+			surveyModalOpen = false;
 			surveyPublicIdentifier = null;
 		});
 	});
 
 	onDestroy(() => {
+		isDestroyed = true;
 		if (interval) clearInterval(interval);
 		// Abort any in-flight request so it can't mutate state after unmount.
 		if (abortController) abortController.abort();
@@ -290,7 +422,7 @@
 
 	/** @type {SurveyAnswer} */
 	let heroAnswer = '';
-	let nextSurveyQuestion = $state(false);
+	let surveyModalOpen = $state(false);
 	let surveyPublicIdentifier = $state(null);
 	let showHeroQuestion = $state(true);
 
@@ -299,8 +431,10 @@
 		return !heroAnswer || heroAnswer.trim() === '';
 	}
 
-	/** @param {StopSurvey} survey */
-	async function handleSurveyButtonClick(survey) {
+	async function handleSurveyButtonClick() {
+		const survey = currentStopSurvey;
+		if (!survey) return;
+
 		let heroQuestion = survey.questions[0];
 		remainingSurveyQuestions = survey.questions.slice(1);
 
@@ -335,10 +469,7 @@
 		}
 
 		// Only advance the flow once the hero answer is actually recorded.
-		if (remainingSurveyQuestions.length > 0) {
-			showSurveyModal.set(true);
-		}
-		nextSurveyQuestion = true;
+		surveyModalOpen = remainingSurveyQuestions.length > 0;
 
 		showHeroQuestion = false;
 		markSurveyAnswered(survey.id);
@@ -404,6 +535,8 @@
 
 							{#if tripSelected}
 								<div class="mt-auto flex justify-end gap-2">
+									<!-- FIXME: navigation path not built with resolve() -->
+									<!-- eslint-disable svelte/no-navigation-without-resolve -->
 									<a
 										href={`/stops/${stop.id}`}
 										class="inline-block rounded-lg border border-brand-accent bg-brand-accent px-3 py-1 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand-accent-dark"
@@ -416,6 +549,7 @@
 									>
 										{$isLoading ? '' : $t('schedule_for_stop.view_schedule')}
 									</a>
+									<!-- eslint-enable svelte/no-navigation-without-resolve -->
 								</div>
 							{/if}
 						</div>
@@ -424,7 +558,7 @@
 
 				{#if serviceAlerts?.length}
 					<div class="mb-4">
-						<ServiceAlerts bind:serviceAlerts stopId={stop.id} routeIds={stop.routeIds ?? []} />
+						<ServiceAlerts {serviceAlerts} stopId={stop.id} routeIds={stop.routeIds ?? []} />
 					</div>
 				{/if}
 
@@ -440,38 +574,50 @@
 					     stop's expanded/answer state would carry over. -->
 					{#key stop.id}
 						<SurveyBanner
-							{currentStopSurvey}
-							{handleSkip}
-							{handleSurveyButtonClick}
-							{handleHeroQuestionChange}
-							remainingQuestionsLength={(currentStopSurvey?.questions?.length ?? 1) - 1}
+							onHeroQuestionChange={handleHeroQuestionChange}
+							onSkip={handleSkip}
+							onSubmit={handleSurveyButtonClick}
+							stopSurvey={currentStopSurvey}
 						/>
 					{/key}
 				{/if}
-				{#if nextSurveyQuestion}
-					<SurveyModal {stop} skipHeroQuestion={true} surveyPublicId={surveyPublicIdentifier} />
-				{/if}
+				<SurveyModal
+					bind:open={surveyModalOpen}
+					{stop}
+					skipHeroQuestion={true}
+					surveyPublicId={surveyPublicIdentifier}
+				/>
 
 				{#snippet loadMoreButton(emptyResults = false)}
 					<div class="flex flex-col items-center gap-2">
 						{#if emptyResults}
-							<p class="text-sm text-gray-600 dark:text-gray-400">
-								{isFlexOnlyStop
-									? $t('ondemand.flex_only_empty_arrivals')
-									: $t('no_arrivals_found_in_next_minutes', { values: { minutes: minutesAfter } })}
-							</p>
+							{#if !autoExtending}
+								<p class="text-sm text-gray-600 dark:text-gray-400">
+									{isFlexOnlyStop
+										? $t('ondemand.flex_only_empty_arrivals')
+										: formatTimeWindowMessage(
+												'no_arrivals_found_in_next_hours',
+												'no_arrivals_found_in_next_minutes',
+												minutesAfter
+											)}
+								</p>
+							{/if}
 						{:else if noMoreArrivals}
 							<p class="text-sm text-gray-600 dark:text-gray-400">
-								{$t('no_more_arrivals_in_next_minutes', { values: { minutes: minutesAfter } })}
+								{formatTimeWindowMessage(
+									'no_more_arrivals_in_next_hours',
+									'no_more_arrivals_in_next_minutes',
+									minutesAfter
+								)}
 							</p>
 						{/if}
 						<button
 							type="button"
 							onclick={loadMoreArrivals}
-							disabled={loadingMore}
+							disabled={loadingMore || autoExtending}
 							class="inline-flex items-center gap-2 rounded-lg border border-brand-accent bg-brand-accent px-4 py-2 text-sm font-medium text-white shadow-md transition duration-200 ease-in-out hover:bg-brand disabled:cursor-not-allowed disabled:opacity-60"
 						>
-							{loadingMore ? $t('loading') : $t('load_more_arrivals')}
+							{loadingMore || autoExtending ? $t('loading') : $t('load_more_arrivals')}
 						</button>
 					</div>
 				{/snippet}

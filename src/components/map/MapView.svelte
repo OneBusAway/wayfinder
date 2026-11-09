@@ -101,7 +101,11 @@
 	let allStops = $state([]);
 	// O(1) lookup for existing stops
 	/** @type {Map<string, import('$lib/types').Stop>} */
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	let allStopsMap = new Map();
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	let stopsCache = new Map();
 
 	const Modes = {
@@ -213,8 +217,11 @@
 	 * @returns {Promise<import('onebusaway-sdk/resources/stops-for-location').StopsForLocationListResponse | null>}
 	 */
 	async function loadStopsForLocation(lat, lng, zoomLevel, firstCall = false) {
+		const normalizedLng = (((lng % 360) + 540) % 360) - 180;
 		if (firstCall) {
-			const response = await fetch(`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&radius=2500`);
+			const response = await fetch(
+				`/api/oba/stops-for-location?lat=${lat}&lng=${normalizedLng}&radius=2500`
+			);
 			if (!response.ok) {
 				throw new Error('Failed to fetch locations');
 			}
@@ -227,6 +234,11 @@
 			// tearing down. Never turn that into a Null Island stop request.
 			return null;
 		}
+		const latSpan = boundingBox.north - boundingBox.south;
+		const lngSpan =
+			boundingBox.east < boundingBox.west
+				? 360 + boundingBox.east - boundingBox.west
+				: boundingBox.east - boundingBox.west;
 		const key = cacheKey(zoomLevel, boundingBox);
 
 		if (stopsCache.has(key)) {
@@ -237,7 +249,7 @@
 		}
 
 		const response = await fetch(
-			`/api/oba/stops-for-location?lat=${lat}&lng=${lng}&latSpan=${boundingBox.north - boundingBox.south}&lngSpan=${boundingBox.east - boundingBox.west}&radius=1500`
+			`/api/oba/stops-for-location?lat=${lat}&lng=${normalizedLng}&latSpan=${latSpan}&lngSpan=${lngSpan}&radius=1500`
 		);
 
 		if (!response.ok) {
@@ -389,6 +401,7 @@
 
 		// Check if this marker should be highlighted (if it's the currently selected stop)
 		const shouldHighlight = stop && s.id === stop.id;
+		const isInteractive = () => !stop || stop.id === s.id;
 
 		// Seeded here rather than patched after batchAddMarkers, which defers creation
 		// into a rAF — a later setStopEmphasis() would iterate a markersMap that doesn't
@@ -401,6 +414,7 @@
 			position: { lat: s.lat, lng: s.lon },
 			stop: s,
 			isHighlighted: shouldHighlight,
+			isInteractive,
 			emphasis: shouldHighlight ? 'full' : (tier?.emphasis ?? 'full'),
 			// Gated the same way as emphasis: a selected stop always renders as a full
 			// pin, so a leftover ring color here would be dead data — but leaving it

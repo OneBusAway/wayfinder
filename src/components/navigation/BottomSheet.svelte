@@ -97,7 +97,7 @@
 	>
 		<div
 			role="presentation"
-			class="flex-none cursor-grab touch-none px-3.5 pb-1.5 pt-2"
+			class="flex-none cursor-grab touch-none px-3.5 pt-2 pb-1.5"
 			onpointerdown={handlePointerDown}
 			onpointermove={handlePointerMove}
 			onpointerup={handlePointerUp}
@@ -123,7 +123,7 @@
 		     `-mx-4` (1rem), line up exactly with this padding instead of spilling 4px
 		     past it. overflow-x-hidden guards against any other incidental overflow. -->
 		<div
-			class="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4"
+			class="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-4"
 			style:padding-bottom="calc(1rem + env(safe-area-inset-bottom))"
 		>
 			{@render children?.()}

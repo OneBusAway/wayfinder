@@ -1,3 +1,5 @@
+import { compareRoutes } from './routeUtils';
+
 export function debounce(func, wait) {
 	let timeout = null;
 
@@ -66,9 +68,9 @@ export function routeShortNamesForStop(arrivalsAndDeparturesResponse, stop) {
 	return (
 		routes
 			.filter((r) => stopRouteIds.has(r.id))
+			.sort(compareRoutes)
 			// the route id will always be present, so if the shortName is missing, fall back to the id without its agency prefix
 			.map((r) => r.shortName || removeAgencyPrefix(r.id))
-			.sort()
 	);
 }
 
@@ -106,4 +108,26 @@ export function stopSubtitle(stop, translate) {
 	]
 		.filter(Boolean)
 		.join(' · ');
+}
+
+/**
+ * Joins each stop's `routeIds` against a response's route references and attaches
+ * the resolved objects as `stop.routes`, which is what marker and popup code reads.
+ * OneBusAway returns the two side by side but never pre-joined, so every caller
+ * that draws stops has to do this itself.
+ *
+ * Mutates the stops in place, the same way MapView does for stops-for-location.
+ *
+ * @param {Array<Object>} stops - Stop references, each with a `routeIds` array
+ * @param {Array<Object>} routes - The same response's `references.routes`
+ * @returns {Array<Object>} The same stops, each with a `routes` array
+ */
+export function attachRoutesToStops(stops, routes) {
+	const lookup = new Map((routes ?? []).map((route) => [route.id, route]));
+
+	for (const stop of stops ?? []) {
+		stop.routes = stop.routeIds?.map((id) => lookup.get(id)).filter(Boolean) ?? [];
+	}
+
+	return stops ?? [];
 }

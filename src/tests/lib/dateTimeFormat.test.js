@@ -94,6 +94,12 @@ describe('msToLocalArrivalDepartureTimeString', () => {
 		expect(result).toBe('09:05 AM');
 	});
 
+	it('formats in specified timezone when provided', () => {
+		const ms = new Date('2024-01-16T17:15:00Z').valueOf();
+		expect(msToLocalArrivalDepartureTimeString(ms, 'America/Los_Angeles')).toBe('09:15 AM');
+		expect(msToLocalArrivalDepartureTimeString(ms, 'America/New_York')).toBe('12:15 PM');
+	});
+
 	it.each(INVALID_INPUTS)(`returns "N/A" when the input is %s`, (input) => {
 		expect(msToLocalArrivalDepartureTimeString(input)).toBe('N/A');
 	});
@@ -529,6 +535,12 @@ describe('formatLastUpdated', () => {
 		expect(result).toBe('1 sec ago');
 	});
 
+	it('shows 0 secs for a timestamp ahead of the device clock', () => {
+		const timestamp = new Date('2024-01-16T12:00:05Z').valueOf();
+		const result = formatLastUpdated(timestamp, translations);
+		expect(result).toBe('0 secs ago');
+	});
+
 	it('works with different translation objects', () => {
 		const spanishTranslations = {
 			min: 'min',
@@ -612,6 +624,17 @@ describe('convertToISO8601', () => {
 
 	it('returns null for an invalid date format', () => {
 		expect(convertToISO8601('011-14-2026', '09:00 AM')).toBeNull();
+	});
+
+	it.each([
+		['02-31-2026', '09:00 AM'],
+		['13-01-2026', '09:00 AM'],
+		['01-14-2026', '13:00 AM'],
+		['01-14-2026', '13:00 PM'],
+		['01-14-2026', '0:30 PM'],
+		['01-14-2026', '09:75 AM']
+	])('returns null for the out of range value %s %s', (date, time) => {
+		expect(convertToISO8601(date, time)).toBeNull();
 	});
 
 	it('returns null when date is null', () => {

@@ -109,7 +109,11 @@
 		"dismiss": "Закрыть опрос",
 		"submit": "Отправить",
 		"next": "Далее",
-		"submit_failed": "Не удалось отправить ответ. Пожалуйста, попробуйте ещё раз."
+		"submit_failed": "Не удалось отправить ответ. Пожалуйста, попробуйте ещё раз.",
+		"cancel": "Отмена",
+		"skip": "Пропустить",
+		"submitted": "Опрос отправлен",
+		"thank_you": "Спасибо за участие в опросе!"
 	},
 	"header": {
 		"home": "Главная",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Загрузить больше прибытий",
 	"refresh": "Обновить",
 	"no_arrivals_found_in_next_minutes": "Нет прибытий в ближайшие {minutes} минут",
+	"no_arrivals_found_in_next_hours": "Нет прибытий в {hours, plural, one {ближайший # час} few {ближайшие # часа} many {ближайшие # часов} other {ближайшие # часа}}",
 	"no_more_arrivals_in_next_minutes": "Нет больше прибытий в ближайшие {minutes} минут",
+	"no_more_arrivals_in_next_hours": "Нет больше прибытий в {hours, plural, one {ближайший # час} few {ближайшие # часа} many {ближайшие # часов} other {ближайшие # часа}}",
 	"stop": "Остановка",
 	"direction_bound": "Направление {direction}",
 	"routes": "Маршруты",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} мин"
 	},
 	"vehicle": {
-		"number": "Транспорт №",
-		"data_updated": "Данные обновлены",
 		"no_real_time_data": "Данные в реальном времени для этого транспорта сейчас недоступны.",
-		"next_stop": "Следующая остановка:",
 		"label": "Транспорт",
 		"to_headsign": "Транспорт до «{headsign}»"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Прибытие и отправление"
+	},
+	"date_picker": {
+		"today": "Сегодня"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Посмотреть расписание",

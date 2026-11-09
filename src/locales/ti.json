@@ -109,7 +109,11 @@
 		"dismiss": "መጽናዕቲ ዕጸው",
 		"submit": "ስደድ",
 		"next": "ቀጽል",
-		"submit_failed": "መልስኻ ክስደድ ኣይከኣለን። በጃኻ ደጊምካ ፈትን።"
+		"submit_failed": "መልስኻ ክስደድ ኣይከኣለን። በጃኻ ደጊምካ ፈትን።",
+		"cancel": "ሰርዝ",
+		"skip": "ሕለፍ",
+		"submitted": "መጽናዕቲ ተሰዲዱ",
+		"thank_you": "ኣብቲ መጽናዕቲ ስለ ዝተሳተፍኩም የቐንየልና!"
 	},
 	"header": {
 		"home": "መበገሲ",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "ተወሳኺ ምብጻሓት ጽዓን",
 	"refresh": "ኣሓድስ",
 	"no_arrivals_found_in_next_minutes": "ኣብ ዝመጽእ {minutes} ደቓይቕ ዝኾነ ምብጻሕ ኣይተረኽበን",
+	"no_arrivals_found_in_next_hours": "ኣብ ዝመጽእ {hours, plural, one {# ሰዓት} other {# ሰዓታት}} ዝኾነ ምብጻሕ ኣይተረኽበን",
 	"no_more_arrivals_in_next_minutes": "ኣብ ዝመጽእ {minutes} ደቓይቕ ዝኾነ ተወሳኺ ምብጻሕ የለን",
+	"no_more_arrivals_in_next_hours": "ኣብ ዝመጽእ {hours, plural, one {# ሰዓት} other {# ሰዓታት}} ዝኾነ ተወሳኺ ምብጻሕ የለን",
 	"stop": "መዕረፊ",
 	"direction_bound": "ናብ {direction} ዝኸይድ",
 	"routes": "መስመራት",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} ደቂቕ"
 	},
 	"vehicle": {
-		"number": "ተሽከርካሪ #",
-		"data_updated": "ሓበሬታ ተሓዲሱ",
 		"no_real_time_data": "ብቐጥታ ዝኾነ ሓበሬታ ናይዚ ተሽከርካሪ ሕጂ የብልናን።",
-		"next_stop": "ዝስዕብ መዕረፊ:",
 		"label": "ተሽከርካሪ",
 		"to_headsign": "ናብ {headsign} ዝኸይድ ተሽከርካሪ"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "ምብጻሕን ምብጋስን"
+	},
+	"date_picker": {
+		"today": "ሎምዓንቲ"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "መደብ ርአ",

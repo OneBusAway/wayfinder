@@ -46,6 +46,7 @@ function makeProvider() {
 		addMarker: vi.fn(),
 		clearAllStopMarkers: vi.fn(),
 		setStopEmphasis: vi.fn(),
+		setStopInteractivity: vi.fn(),
 		resetStopEmphasis: vi.fn(),
 		setBasemapDimmed: vi.fn(),
 		setTheme: vi.fn()
@@ -62,6 +63,36 @@ function flushRaf() {
 const ROUTE_C = { id: 'r_c', shortName: 'C Line', type: 3, tripId: 't_c', gtfsColor: 'b02a37' };
 const ROUTE_COLORS = new Map([['r_c', { line: '#b02a37', badgeBg: 'b02a37', badgeFg: 'ffffff' }]]);
 
+describe('stop loading', () => {
+	test('wraps an out-of-range center longitude before requesting stops', async () => {
+		const mapProvider = makeProvider();
+
+		global.fetch = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => ({ data: { list: [], references: { routes: [] } } })
+		});
+
+		render(MapView, {
+			props: {
+				handleStopMarkerSelect: vi.fn(),
+				mapProvider
+			}
+		});
+
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+
+		mapProvider.getCenter.mockReturnValue({ lat: 47.6, lng: 200 });
+
+		const debouncedLoadMarkers = mapProvider.eventListeners.mock.calls[0][1];
+		debouncedLoadMarkers();
+
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+
+		const requestUrl = new URL(fetch.mock.calls[1][0], 'http://localhost');
+		expect(requestUrl.searchParams.get('lng')).toBe('-160');
+	});
+});
+
 describe('MapView map mode', () => {
 	beforeEach(() => {
 		capturedStopRoutesLayerProps = null;
@@ -69,6 +100,55 @@ describe('MapView map mode', () => {
 			ok: true,
 			json: async () => ({ data: { list: [], references: { routes: [] } } })
 		});
+	});
+
+	test.each([
+		['zero latSpan', { north: 1, south: 1, east: 1, west: 0 }],
+		['zero lngSpan', { north: 1, south: 0, east: 1, west: 1 }],
+		['antimeridian viewport (east < west)', { north: 1, south: 0, west: 170, east: -170 }]
+	])('still fetches stops for a %s', async (_description, boundingBox) => {
+		const mapProvider = makeProvider();
+		const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+		render(MapView, {
+			props: { handleStopMarkerSelect: vi.fn(), mapProvider }
+		});
+
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+		await vi.waitFor(() => expect(mapProvider.eventListeners).toHaveBeenCalledOnce());
+		mapProvider.getBoundingBox.mockReturnValue(boundingBox);
+
+		const onViewportChange = mapProvider.eventListeners.mock.calls[0][1];
+		onViewportChange();
+		await new Promise((resolve) => setTimeout(resolve, 350));
+
+		expect(fetch).toHaveBeenCalledTimes(2);
+		expect(consoleError).not.toHaveBeenCalled();
+		consoleError.mockRestore();
+	});
+
+	test('uses a positive lngSpan for an antimeridian viewport', async () => {
+		const mapProvider = makeProvider();
+		render(MapView, {
+			props: { handleStopMarkerSelect: vi.fn(), mapProvider }
+		});
+
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+		await vi.waitFor(() => expect(mapProvider.eventListeners).toHaveBeenCalledOnce());
+
+		mapProvider.getBoundingBox.mockReturnValue({
+			north: 1,
+			south: 0,
+			west: 170,
+			east: -170
+		});
+
+		const onViewportChange = mapProvider.eventListeners.mock.calls[0][1];
+		onViewportChange();
+
+		await new Promise((resolve) => setTimeout(resolve, 350));
+
+		const requestUrl = new URL(fetch.mock.calls[1][0], 'http://localhost');
+		expect(requestUrl.searchParams.get('lngSpan')).toBe('20');
 	});
 
 	test('does not clear stop markers when a trip is expanded inside a stop selection', async () => {

@@ -49,7 +49,7 @@ This project uses Svelte 5 with runes (`$state`, `$derived`, `$effect`, `$props`
 
 - `src/components/` - Svelte components organized by feature
 - `src/lib/` - Utilities and services
-- `src/stores/` - Svelte stores for global state (mapStore, modalOpen, userLocationStore, surveyStore)
+- `src/stores/` - Svelte stores for global state (mapStore, userLocationStore, surveyStore)
 - `src/routes/` - SvelteKit routes (pages and API endpoints)
 - `src/routes/api/` - Server-side API proxies to OBA and OTP servers
 - `src/config/` - Configuration files
@@ -87,7 +87,7 @@ Configured via `PUBLIC_OBA_MAP_PROVIDER` env var ("osm", "google", or "arcgis").
 
 - Component state: Svelte 5 runes (`$state`, `$derived`)
 - Global state: Svelte stores in `src/stores/`
-- Modal state: Centralized via `modalOpen` store
+- Modal state: Local `$state` in the component that owns the dialog, so it resets on unmount
 
 ### Internationalization
 
@@ -104,7 +104,7 @@ When writing tests, the setup file already mocks `$env/static/public`, `$env/sta
 
 ## Styling
 
-- Tailwind CSS with Flowbite components
+- Tailwind CSS with Shadcn components
 - Lucide icons via `@lucide/svelte`, except transit-mode icons (bus, train, ferry, etc.), which use Font Awesome solid icons for legibility on the map (#643). `$components/icons/AppIcon.svelte` renders either kind where a slot can hold both.
 - Brand colors configurable via `COLOR_*` env vars (processed at build time)
 - Dark mode support via theme system

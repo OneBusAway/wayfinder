@@ -1,11 +1,13 @@
-<script>
+<script lang="ts">
 	import {
 		PUBLIC_OBA_REGION_NAME,
 		PUBLIC_OBA_LOGO_URL,
 		PUBLIC_NAV_BAR_LINKS
 	} from '$env/static/public';
 
-	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import { onMount, untrack } from 'svelte';
+	import { t } from 'svelte-i18n';
 	import OverflowMenu from './OverflowMenu.svelte';
 	import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher.svelte';
 
@@ -16,7 +18,7 @@
 	$effect(() => {
 		isDarkMode = document.documentElement.classList.contains('dark');
 
-		const handleThemeChange = (e) => {
+		const handleThemeChange = (e: CustomEvent<{ darkMode: boolean }>) => {
 			isDarkMode = e.detail.darkMode;
 		};
 		window.addEventListener('themeChange', handleThemeChange);
@@ -28,8 +30,15 @@
 		isDarkMode && __OBA_LOGO_URL_DARK__ ? __OBA_LOGO_URL_DARK__ : PUBLIC_OBA_LOGO_URL
 	);
 
-	let navContainer;
-	let logoElement;
+	interface MeasuredLink {
+		key: string;
+		value: string;
+		width: number;
+	}
+
+	let languageSwitcherEl: HTMLDivElement | undefined;
+	let logoEl = $state<HTMLImageElement>();
+	let navContainerEl: HTMLElement | undefined;
 
 	const EXTRA_PADDING = 32;
 	const GAP_WIDTH = 16; // 1rem = 16px (gap-x-4)
@@ -37,14 +46,13 @@
 	const DEFAULT_LOGO_HEIGHT = 40; // h-10
 	const MIN_LOGO_HEIGHT = 24; // h-6
 
-	let headerLinks = $state(null);
-	let linkWidths = $state([]);
-	let visibleLinks = $state([]);
-	let overflowLinks = $state([]);
+	let headerLinks = $state<Record<string, string> | null>(null);
+	let linkWidths = $state<MeasuredLink[]>([]);
+	let visibleLinks = $state<MeasuredLink[]>([]);
+	let overflowLinks = $state<MeasuredLink[]>([]);
 	let logoHeight = $state(DEFAULT_LOGO_HEIGHT);
 	let baseLogoWidth = 0; // Logo width at default height
 	let languageSwitcherWidth = $state(0);
-	let languageSwitcherElement;
 
 	if (PUBLIC_NAV_BAR_LINKS) {
 		headerLinks = JSON.parse(PUBLIC_NAV_BAR_LINKS);
@@ -58,7 +66,7 @@
 			const tempDiv = document.createElement('div');
 			tempDiv.style.cssText =
 				'position:absolute;visibility:hidden;padding:0.25rem 0.5rem;font-weight:600;';
-			tempDiv.textContent = key;
+			tempDiv.textContent = $t(key, { default: key });
 			document.body.appendChild(tempDiv);
 			// Add border width (1px each side) to the measurement
 			linkWidths.push({ key, value, width: tempDiv.offsetWidth + 2 });
@@ -67,14 +75,14 @@
 	}
 
 	function checkOverflow() {
-		if (!navContainer || linkWidths.length === 0) return;
+		if (!navContainerEl || linkWidths.length === 0) return;
 
-		const navWidth = navContainer.clientWidth;
-		const logoContainer = navContainer.querySelector('.logo-container');
+		const navWidth = navContainerEl.clientWidth;
+		const logoContainer = navContainerEl.querySelector('.logo-container');
 		const logoContainerPadding = 16; // px-2 py-2 = 8px each side horizontal
 
 		// Calculate logo container width (logo + region name if shown + gaps + padding)
-		const regionNameEl = logoContainer?.querySelector('.region-name');
+		const regionNameEl = logoContainer?.querySelector<HTMLElement>('.region-name');
 		const regionNameWidth = regionNameEl?.offsetWidth || 0;
 		const logoContainerGap = showRegionName && regionNameWidth > 0 ? 8 : 0; // gap-x-2
 
@@ -90,8 +98,8 @@
 		let availableWidth =
 			navWidth - logoContainerWidth - EXTRA_PADDING - languageSwitcherWidth - languageSwitcherGap;
 
-		const newVisibleLinks = [];
-		const newOverflowLinks = [];
+		const newVisibleLinks: MeasuredLink[] = [];
+		const newOverflowLinks: MeasuredLink[] = [];
 		let usedWidth = 0;
 
 		// First link must always be visible - shrink logo if needed
@@ -156,24 +164,32 @@
 		overflowLinks = newOverflowLinks;
 	}
 
+	$effect(() => {
+		void $t; // re-run when the language changes
+		untrack(() => {
+			measureLinkWidths();
+			checkOverflow();
+		});
+	});
+
 	onMount(() => {
 		measureLinkWidths();
 
 		// Measure base logo width after image loads
-		if (logoElement) {
-			if (logoElement.complete) {
-				baseLogoWidth = logoElement.offsetWidth;
+		if (logoEl) {
+			if (logoEl.complete) {
+				baseLogoWidth = logoEl.offsetWidth;
 			} else {
-				logoElement.onload = () => {
-					baseLogoWidth = logoElement.offsetWidth;
+				logoEl.onload = () => {
+					baseLogoWidth = logoEl?.offsetWidth ?? 0;
 					checkOverflow();
 				};
 			}
 		}
 
 		// Measure language switcher width
-		if (languageSwitcherElement) {
-			languageSwitcherWidth = languageSwitcherElement.offsetWidth || 0;
+		if (languageSwitcherEl) {
+			languageSwitcherWidth = languageSwitcherEl.offsetWidth || 0;
 		}
 
 		// Initial overflow check (after all measurements)
@@ -181,25 +197,27 @@
 
 		const headerResizeObserver = new ResizeObserver(() => {
 			// Re-measure language switcher on resize
-			if (languageSwitcherElement) {
-				languageSwitcherWidth = languageSwitcherElement.offsetWidth || 0;
+			if (languageSwitcherEl) {
+				languageSwitcherWidth = languageSwitcherEl.offsetWidth || 0;
 			}
 			checkOverflow();
 		});
 
-		headerResizeObserver.observe(navContainer);
+		if (navContainerEl) {
+			headerResizeObserver.observe(navContainerEl);
+		}
 
 		// Also observe language switcher element directly to catch width changes
 		// (e.g., when locale changes and button text changes)
 		const languageSwitcherResizeObserver = new ResizeObserver(() => {
-			if (languageSwitcherElement) {
-				languageSwitcherWidth = languageSwitcherElement.offsetWidth || 0;
+			if (languageSwitcherEl) {
+				languageSwitcherWidth = languageSwitcherEl.offsetWidth || 0;
 				checkOverflow();
 			}
 		});
 
-		if (languageSwitcherElement) {
-			languageSwitcherResizeObserver.observe(languageSwitcherElement);
+		if (languageSwitcherEl) {
+			languageSwitcherResizeObserver.observe(languageSwitcherEl);
 		}
 
 		return () => {
@@ -207,30 +225,49 @@
 			languageSwitcherResizeObserver.disconnect();
 		};
 	});
+
+	function handleHomeClick(e: MouseEvent) {
+		if (!browser) return;
+		if (
+			e &&
+			(e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+		) {
+			return;
+		}
+		window.dispatchEvent(new CustomEvent('openStopsTab'));
+	}
 </script>
 
 <header
-	class="relative z-[9999] flex items-center justify-between border-b border-gray-500 bg-brand-accent/80 text-brand-foreground backdrop-blur-md dark:bg-surface-dark dark:text-surface-foreground-dark md:flex-row md:px-8"
-	bind:this={navContainer}
+	class="relative z-9999 flex items-center justify-between border-b border-gray-500 bg-brand-accent/80 text-brand-foreground backdrop-blur-md md:flex-row md:px-8 dark:bg-surface-dark dark:text-surface-foreground-dark"
+	bind:this={navContainerEl}
 >
-	<div class="logo-container flex items-center gap-2 px-1 py-1 md:gap-4 md:px-2 md:py-2">
-		<div class="flex items-center justify-center gap-x-2">
-			<a href="/" class="block">
-				<img
-					bind:this={logoElement}
-					src={logoUrl}
-					alt={PUBLIC_OBA_REGION_NAME}
-					class="rounded-sm"
-					style="height: {logoHeight}px"
-				/>
+	{#if logoUrl || PUBLIC_OBA_REGION_NAME}
+		<div class="logo-container flex items-center gap-2 px-1 py-1 md:gap-4 md:px-2 md:py-2">
+			<!-- FIXME: navigation path not built with resolve() -->
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+			<a href="/" onclick={handleHomeClick} class="flex items-center justify-center gap-x-2">
+				{#if logoUrl}
+					<img
+						bind:this={logoEl}
+						alt=""
+						class="rounded-xs"
+						src={logoUrl}
+						style="height: {logoHeight}px"
+					/>
+				{/if}
+				{#if PUBLIC_OBA_REGION_NAME}
+					<span
+						class={showRegionName
+							? 'region-name block text-xl font-extrabold text-brand-foreground'
+							: 'sr-only'}
+					>
+						{PUBLIC_OBA_REGION_NAME}
+					</span>
+				{/if}
 			</a>
-			{#if showRegionName}
-				<a href="/" class="region-name block text-xl font-extrabold text-brand-foreground">
-					{PUBLIC_OBA_REGION_NAME}
-				</a>
-			{/if}
 		</div>
-	</div>
+	{/if}
 
 	<div class="flex-1"></div>
 
@@ -238,13 +275,16 @@
 		aria-label="Main navigation"
 		class="flex items-center gap-x-2 px-1 py-1 md:gap-x-4 md:px-2 md:py-2"
 	>
-		{#each visibleLinks as { key, value }}
+		{#each visibleLinks as { key, value } (key)}
 			<div class="flex-shrink-0 rounded-md border bg-surface/80 dark:bg-surface-dark">
+				<!-- external URL -->
+				<!-- eslint-disable svelte/no-navigation-without-resolve -->
 				<a
 					href={value}
 					class="block px-2 py-1 font-semibold text-surface-foreground dark:text-surface-foreground-dark"
-					>{key}</a
+					>{$t(key, { default: key })}</a
 				>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</div>
 		{/each}
 
@@ -252,7 +292,7 @@
 			<OverflowMenu links={overflowLinks} />
 		{/if}
 
-		<div class="language-switcher-container flex-shrink-0" bind:this={languageSwitcherElement}>
+		<div class="language-switcher-container flex-shrink-0" bind:this={languageSwitcherEl}>
 			<LanguageSwitcher />
 		</div>
 	</nav>

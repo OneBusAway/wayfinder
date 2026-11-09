@@ -109,7 +109,11 @@
 		"dismiss": "ਸਰਵੇਖਣ ਖਾਰਜ ਕਰੋ",
 		"submit": "ਜਮ੍ਹਾਂ ਕਰੋ",
 		"next": "ਅੱਗੇ",
-		"submit_failed": "ਤੁਹਾਡਾ ਜਵਾਬ ਨਹੀਂ ਭੇਜਿਆ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+		"submit_failed": "ਤੁਹਾਡਾ ਜਵਾਬ ਨਹੀਂ ਭੇਜਿਆ ਜਾ ਸਕਿਆ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+		"cancel": "ਰੱਦ ਕਰੋ",
+		"skip": "ਛੱਡੋ",
+		"submitted": "ਸਰਵੇਖਣ ਜਮ੍ਹਾਂ ਹੋ ਗਿਆ",
+		"thank_you": "ਸਰਵੇਖਣ ਵਿੱਚ ਹਿੱਸਾ ਲੈਣ ਲਈ ਧੰਨਵਾਦ!"
 	},
 	"header": {
 		"home": "ਮੁੱਖ ਪੰਨਾ",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "ਹੋਰ ਆਗਮਨ ਲੋਡ ਕਰੋ",
 	"refresh": "ਤਾਜ਼ਾ ਕਰੋ",
 	"no_arrivals_found_in_next_minutes": "ਅਗਲੇ {minutes} ਮਿੰਟਾਂ ਵਿੱਚ ਕੋਈ ਆਗਮਨ ਨਹੀਂ ਮਿਲਿਆ",
+	"no_arrivals_found_in_next_hours": "ਅਗਲੇ {hours, plural, one {# ਘੰਟੇ} other {# ਘੰਟਿਆਂ}} ਵਿੱਚ ਕੋਈ ਆਗਮਨ ਨਹੀਂ ਮਿਲਿਆ",
 	"no_more_arrivals_in_next_minutes": "ਅਗਲੇ {minutes} ਮਿੰਟਾਂ ਵਿੱਚ ਹੋਰ ਕੋਈ ਆਗਮਨ ਨਹੀਂ",
+	"no_more_arrivals_in_next_hours": "ਅਗਲੇ {hours, plural, one {# ਘੰਟੇ} other {# ਘੰਟਿਆਂ}} ਵਿੱਚ ਹੋਰ ਕੋਈ ਆਗਮਨ ਨਹੀਂ",
 	"stop": "ਸਟਾਪ",
 	"direction_bound": "{direction} ਵੱਲ",
 	"routes": "ਰੂਟ",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} ਮਿੰਟ"
 	},
 	"vehicle": {
-		"number": "ਵਾਹਨ #",
-		"data_updated": "ਡਾਟਾ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ",
 		"no_real_time_data": "ਸਾਡੇ ਕੋਲ ਇਸ ਸਮੇਂ ਇਸ ਵਾਹਨ ਲਈ ਅਸਲ-ਸਮੇਂ ਦਾ ਡਾਟਾ ਨਹੀਂ ਹੈ।",
-		"next_stop": "ਅਗਲਾ ਸਟਾਪ:",
 		"label": "ਵਾਹਨ",
 		"to_headsign": "{headsign} ਵੱਲ ਜਾਣ ਵਾਲਾ ਵਾਹਨ"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "ਆਗਮਨ ਅਤੇ ਰਵਾਨਗੀਆਂ"
+	},
+	"date_picker": {
+		"today": "ਅੱਜ"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "ਸਮਾਂ-ਸਾਰਣੀ ਦੇਖੋ",

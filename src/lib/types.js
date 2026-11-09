@@ -30,6 +30,27 @@
  */
 
 /**
+ * A single geocoder match returned by the search endpoint, normalized across
+ * providers.
+ *
+ * @typedef {Object} GeocodingResult
+ * @property {string} formatted_address
+ * @property {{ location: { lat: number, lng: number } }} geometry
+ * @property {string} name
+ * @property {string[]} [types]
+ */
+
+/**
+ * The `/api/oba/search` response: matching routes, stops and geocoded place.
+ *
+ * @typedef {Object} SearchResults
+ * @property {GeocodingResult | null} location
+ * @property {string} query
+ * @property {import('onebusaway-sdk/resources/routes-for-location').RoutesForLocationListResponse.Data.List[]} routes
+ * @property {Stop[]} stops
+ */
+
+/**
  * A provider result shown by the trip planner's place autocomplete. Bing does
  * not return a stable place identifier, so selection must also work by name.
  *
@@ -145,6 +166,33 @@
  * @property {(id: string) => AccordionRegistration} registerItem
  * @property {(animate?: boolean) => void} [openAll]
  * @property {(animate?: boolean) => void} [closeAll]
+ */
+
+/**
+ * Favorites as stored by favoritesStore: a denormalized snapshot so the list
+ * renders without an API call. Ids are full agency-prefixed OBA ids.
+ *
+ * @typedef {Object} StopFavorite
+ * @property {string | null} code
+ * @property {string | null} direction
+ * @property {string} id
+ * @property {number} lat
+ * @property {number} lon
+ * @property {string} name
+ * @property {number} savedAt - Epoch milliseconds
+ * @property {number} schemaVersion
+ * @property {'stop'} type
+ *
+ * @typedef {Object} RouteFavorite
+ * @property {string | null} description
+ * @property {string} id
+ * @property {number | null} routeType - GTFS route_type
+ * @property {number} savedAt - Epoch milliseconds
+ * @property {number} schemaVersion
+ * @property {string | null} shortName
+ * @property {'route'} type
+ *
+ * @typedef {StopFavorite | RouteFavorite} Favorite
  */
 
 export {};

@@ -154,6 +154,73 @@ describe('calculateMidpoint', () => {
 		const result = calculateMidpoint(null);
 		expect(result).toBeNull();
 	});
+
+	it('returns null when any stop has NaN coordinates', () => {
+		const stops = [
+			{ lat: NaN, lon: -122.3321 },
+			{ lat: 47.6092, lon: -122.3331 }
+		];
+		expect(calculateMidpoint(stops)).toBeNull();
+	});
+
+	it('returns null when any stop has undefined coordinates', () => {
+		const stops = [
+			{ lat: 47.6062, lon: -122.3321 },
+			{ lat: undefined, lon: -122.3331 }
+		];
+		expect(calculateMidpoint(stops)).toBeNull();
+	});
+
+	it('returns null when any stop has non-finite coordinates', () => {
+		const stops = [
+			{ lat: Infinity, lon: -122.3321 },
+			{ lat: 47.6092, lon: -122.3331 }
+		];
+		expect(calculateMidpoint(stops)).toBeNull();
+	});
+
+	it('returns null when a stop element is null or malformed', () => {
+		const stops = [{ lat: 47.6062, lon: -122.3321 }, null, {}];
+		expect(calculateMidpoint(stops)).toBeNull();
+	});
+
+	it('returns null when latitude or longitude is out of geographic range', () => {
+		// Out-of-range latitude in stop objects
+		expect(
+			calculateMidpoint([
+				{ lat: 120, lon: -122.3321 },
+				{ lat: 47.6092, lon: -122.3331 }
+			])
+		).toBeNull();
+		expect(
+			calculateMidpoint([
+				{ lat: -95, lon: -122.3321 },
+				{ lat: 47.6092, lon: -122.3331 }
+			])
+		).toBeNull();
+
+		// Out-of-range longitude in stop objects
+		expect(
+			calculateMidpoint([
+				{ lat: 47.6062, lon: 185 },
+				{ lat: 47.6092, lon: -122.3331 }
+			])
+		).toBeNull();
+		expect(
+			calculateMidpoint([
+				{ lat: 47.6062, lon: -190 },
+				{ lat: 47.6092, lon: -122.3331 }
+			])
+		).toBeNull();
+	});
+
+	it('accepts coordinates at the geographic range boundaries', () => {
+		const result = calculateMidpoint([
+			{ lat: 90, lon: 180 },
+			{ lat: -90, lon: -180 }
+		]);
+		expect(result).toEqual({ lat: 0, lon: 0 });
+	});
 });
 
 describe('calculateBoundsFromAgencies', () => {
@@ -271,6 +338,77 @@ describe('calculateBoundsFromAgencies', () => {
 			south: 45.5, // min(47.5 - 1.0, 46.0 - 0.5) = 45.5
 			east: -120.5, // max(-122.0 + 1.5, -123.0 + 0.5) = -120.5
 			west: -123.5 // min(-122.0 - 1.5, -123.0 - 0.5) = -123.5
+		});
+	});
+
+	it('includes an agency on the equator', () => {
+		const result = calculateBoundsFromAgencies([{ lat: 0, lon: 36.8, latSpan: 1, lonSpan: 1 }]);
+
+		expect(result).toEqual({
+			north: 0.5,
+			south: -0.5,
+			east: 37.3,
+			west: 36.3
+		});
+	});
+
+	it('includes an agency on the prime meridian', () => {
+		const result = calculateBoundsFromAgencies([{ lat: 51.5, lon: 0, latSpan: 1, lonSpan: 2 }]);
+
+		expect(result).toEqual({
+			north: 52,
+			south: 51,
+			east: 1,
+			west: -1
+		});
+	});
+
+	it('includes an agency at the origin', () => {
+		const result = calculateBoundsFromAgencies([{ lat: 0, lon: 0, latSpan: 1, lonSpan: 1 }]);
+
+		expect(result).toEqual({
+			north: 0.5,
+			south: -0.5,
+			east: 0.5,
+			west: -0.5
+		});
+	});
+
+	it('includes a zero coverage span as a point', () => {
+		const result = calculateBoundsFromAgencies([{ lat: 0, lon: 0, latSpan: 0, lonSpan: 0 }]);
+
+		expect(result).toEqual({
+			north: 0,
+			south: 0,
+			east: 0,
+			west: 0
+		});
+	});
+
+	it('returns null when no agency has finite coordinates', () => {
+		const result = calculateBoundsFromAgencies([
+			{ lat: NaN, lon: 1, latSpan: 1, lonSpan: 1 },
+			{ lat: 1, lon: Infinity, latSpan: 1, lonSpan: 1 },
+			{ lat: '0', lon: 1, latSpan: 1, lonSpan: 1 },
+			{ lat: 1, lon: 1, latSpan: 1 },
+			null
+		]);
+
+		expect(result).toBeNull();
+	});
+
+	it('skips non-finite agencies and keeps valid ones, including zero coordinates', () => {
+		const result = calculateBoundsFromAgencies([
+			{ lat: Infinity, lon: 10, latSpan: 1, lonSpan: 1 },
+			{ lat: 0, lon: 0, latSpan: 2, lonSpan: 4 },
+			null
+		]);
+
+		expect(result).toEqual({
+			north: 1,
+			south: -1,
+			east: 2,
+			west: -2
 		});
 	});
 

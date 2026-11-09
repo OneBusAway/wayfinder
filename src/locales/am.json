@@ -109,7 +109,11 @@
 		"dismiss": "የዳሰሳ ጥናቱን ዝጋ",
 		"submit": "አስገባ",
 		"next": "ቀጣይ",
-		"submit_failed": "መልስዎን መላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
+		"submit_failed": "መልስዎን መላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ።",
+		"cancel": "ሰርዝ",
+		"skip": "ዝለል",
+		"submitted": "ዳሰሳው ተልኳል",
+		"thank_you": "በዳሰሳው ስለተሳተፉ እናመሰግናለን!"
 	},
 	"header": {
 		"home": "ቤት",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "ተጨማሪ መድረሻዎችን ጫን",
 	"refresh": "አድስ",
 	"no_arrivals_found_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም መድረሻ አልተገኘም",
+	"no_arrivals_found_in_next_hours": "በሚቀጥሉት {hours, plural, one {# ሰዓት} other {# ሰዓታት}} ውስጥ ምንም መድረሻ አልተገኘም",
 	"no_more_arrivals_in_next_minutes": "በሚቀጥሉት {minutes} ደቂቃዎች ውስጥ ምንም ተጨማሪ መድረሻ የለም",
+	"no_more_arrivals_in_next_hours": "በሚቀጥሉት {hours, plural, one {# ሰዓት} other {# ሰዓታት}} ውስጥ ምንም ተጨማሪ መድረሻ የለም",
 	"stop": "ማቆሚያ",
 	"direction_bound": "ወደ {direction} አቅጣጫ",
 	"routes": "መንገዶች",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} ደቂቃ"
 	},
 	"vehicle": {
-		"number": "ተሽከርካሪ #",
-		"data_updated": "የተሻሻለ ውሂብ",
 		"no_real_time_data": "ለዚህ ተሽከርካሪ በእሁድኛ ጊዜ ውሂብ አናስተውላም።",
-		"next_stop": "ቀጣይ ማቆሚያ:",
 		"label": "ተሽከርካሪ",
 		"to_headsign": "ወደ {headsign} የሚሄድ ተሽከርካሪ"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "መድረሻዎች እና ማቆሚያዎች"
+	},
+	"date_picker": {
+		"today": "ዛሬ"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "ጊዜ ሰንጠረዥን ይመልከቱ",

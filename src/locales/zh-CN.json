@@ -109,7 +109,11 @@
 		"dismiss": "关闭问卷",
 		"submit": "提交",
 		"next": "下一题",
-		"submit_failed": "无法提交您的回答，请重试。"
+		"submit_failed": "无法提交您的回答，请重试。",
+		"cancel": "取消",
+		"skip": "跳过",
+		"submitted": "问卷已提交",
+		"thank_you": "感谢您参与问卷调查！"
 	},
 	"header": {
 		"home": "首页",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "加载更多到站信息",
 	"refresh": "刷新",
 	"no_arrivals_found_in_next_minutes": "未来{minutes}分钟内无到站信息",
+	"no_arrivals_found_in_next_hours": "未来{hours, plural, other {#小时}}内无到站信息",
 	"no_more_arrivals_in_next_minutes": "未来{minutes}分钟内无更多到站信息",
+	"no_more_arrivals_in_next_hours": "未来{hours, plural, other {#小时}}内无更多到站信息",
 	"stop": "站点",
 	"direction_bound": "{direction} 方向",
 	"routes": "线路",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} 分钟"
 	},
 	"vehicle": {
-		"number": "车辆编号",
-		"data_updated": "数据更新于",
 		"no_real_time_data": "暂无该车辆的实时数据。",
-		"next_stop": "下一站：",
 		"label": "车辆",
 		"to_headsign": "开往 {headsign} 的车辆"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "到站与发车"
+	},
+	"date_picker": {
+		"today": "今天"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "查看时刻表",

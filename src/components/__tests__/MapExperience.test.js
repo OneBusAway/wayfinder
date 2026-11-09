@@ -27,6 +27,7 @@ vi.mock('$components/MapContainer.svelte', () => ({
 		return {};
 	}
 }));
+
 // Captures the props MapExperience passes down (incl. handleRouteSelected) so the
 // route-flag-reset regression test below can invoke it the way the app does.
 let capturedSearchPaneProps = null;
@@ -36,17 +37,33 @@ vi.mock('$components/search/SearchPane.svelte', () => ({
 		return {};
 	}
 }));
+
 vi.mock('$components/search/CollapsedSearchField.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/routes/RouteModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/routes/ViewAllRoutesModal.svelte', () => ({ default: () => ({}) }));
-vi.mock('$components/trip-planner/TripPlanModal.svelte', () => ({ default: () => ({}) }));
+let capturedTripPlanModalProps = null;
+vi.mock('$components/trip-planner/TripPlanModal.svelte', () => ({
+	default: function TripPlanModal(anchor, props) {
+		capturedTripPlanModalProps = props;
+		return {};
+	}
+}));
 vi.mock('$components/trip-planner/TripOptionsModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/trip-planner/ClearRecentSearchesDialog.svelte', () => ({
 	default: () => ({})
 }));
 vi.mock('$components/surveys/SurveyModal.svelte', () => ({ default: () => ({}) }));
 vi.mock('$components/surveys/SurveyLauncher.svelte', () => ({ default: () => ({}) }));
-vi.mock('$components/navigation/AlertsModal.svelte', () => ({ default: () => ({}) }));
+
+// Captures the props MapExperience passes down so the null-alert regression
+// tests below can tell whether the modal was rendered at all.
+let capturedAlertsModalProps = null;
+vi.mock('$components/navigation/AlertsModal.svelte', () => ({
+	default: function AlertsModal(anchor, props) {
+		capturedAlertsModalProps = props;
+		return {};
+	}
+}));
 
 // The one child whose presence we assert on.
 let capturedSheetProps = null;
@@ -180,6 +197,39 @@ function arrivalsPayload(stopId, routes) {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	capturedTripPlanModalProps = null;
+	capturedAlertsModalProps = null;
+});
+
+test('does not render AlertsModal before an alert loads (null-alert SSR crash regression)', async () => {
+	setPage({
+		url: new URL('https://example.com/'),
+		params: {},
+		route: { id: '/(map)' },
+		state: {},
+		data: {}
+	});
+	render(MapExperience);
+	await tick();
+
+	expect(capturedAlertsModalProps).toBeNull();
+});
+
+test('renders AlertsModal open once an alert loads', async () => {
+	const ALERT = { headerText: { translation: [{ language: 'en', text: 'Detour' }] } };
+	global.fetch.mockResolvedValueOnce({ ok: true, status: 200, json: async () => ALERT });
+	setPage({
+		url: new URL('https://example.com/'),
+		params: {},
+		route: { id: '/(map)' },
+		state: {},
+		data: {}
+	});
+	render(MapExperience);
+
+	await vi.waitFor(() => expect(capturedAlertsModalProps).not.toBeNull());
+	expect(capturedAlertsModalProps.alert).toEqual(ALERT);
+	expect(capturedAlertsModalProps.open).toBe(true);
 });
 
 test('renders the stop sheet when the URL is a /map/stops path', () => {
@@ -536,4 +586,128 @@ test('picking a route while the on-demand sheet is open closes it and keeps the 
 	setPage(pageWithoutStop());
 	await tick();
 	expect(capturedMapContainerProps.selectedRoute).toEqual(route);
+});
+
+const NARROW_VIEWPORT_MQ = '(max-width: 767px)';
+
+function useNarrowViewport() {
+	const original = window.matchMedia;
+	window.matchMedia = vi.fn().mockImplementation((query) => ({
+		matches: query === NARROW_VIEWPORT_MQ,
+		media: query,
+		onchange: null,
+		addListener: vi.fn(),
+		removeListener: vi.fn(),
+		addEventListener: vi.fn(),
+		removeEventListener: vi.fn(),
+		dispatchEvent: vi.fn()
+	}));
+	return () => {
+		window.matchMedia = original;
+	};
+}
+
+test('closing the mobile itinerary sheet keeps the plan form instead of returning to Stops', async () => {
+	const restoreViewport = useNarrowViewport();
+	let dispatch;
+	try {
+		setPage(pageWithoutStop());
+		render(MapExperience);
+		await tick();
+
+		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+		await tick();
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(false);
+
+		capturedSearchPaneProps.handleTripPlan({
+			data: {
+				plan: { itineraries: [{ duration: 600 }] },
+				error: null
+			}
+		});
+		await tick();
+		expect(capturedTripPlanModalProps.hasPlanned).toBe(true);
+		expect(capturedTripPlanModalProps.itineraries).toHaveLength(1);
+
+		dispatch = vi.spyOn(window, 'dispatchEvent');
+		capturedMapContainerProps.mapProvider.clearAllPolylines.mockClear();
+		capturedTripPlanModalProps.closePane();
+		await tick();
+
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'tripPlanModalClosed' }));
+		expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+		// Sheet stays open on the Plan tab, so the form is not remounted empty in SearchPane.
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(false);
+		expect(capturedTripPlanModalProps.itineraries).toEqual([]);
+		expect(capturedTripPlanModalProps.hasPlanned).toBe(false);
+		expect(capturedTripPlanModalProps.error).toBeNull();
+		expect(capturedMapContainerProps.mapProvider.clearAllPolylines).toHaveBeenCalled();
+
+		dispatch.mockClear();
+		capturedTripPlanModalProps.closePane();
+		await tick();
+
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(true);
+	} finally {
+		dispatch?.mockRestore();
+		restoreViewport();
+	}
+});
+
+test('closing the mobile sheet after an empty plan keeps the form', async () => {
+	const restoreViewport = useNarrowViewport();
+	let dispatch;
+	try {
+		setPage(pageWithoutStop());
+		render(MapExperience);
+		await tick();
+
+		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+		await tick();
+
+		capturedSearchPaneProps.handleTripPlan({
+			data: { plan: { itineraries: [] } }
+		});
+		await tick();
+		expect(capturedTripPlanModalProps.hasPlanned).toBe(true);
+		expect(capturedTripPlanModalProps.itineraries).toEqual([]);
+		expect(capturedTripPlanModalProps.error).toBeNull();
+
+		dispatch = vi.spyOn(window, 'dispatchEvent');
+		capturedTripPlanModalProps.closePane();
+		await tick();
+
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'tripPlanModalClosed' }));
+		expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(false);
+		expect(capturedTripPlanModalProps.hasPlanned).toBe(false);
+	} finally {
+		dispatch?.mockRestore();
+		restoreViewport();
+	}
+});
+
+test('closing the mobile plan sheet with nothing planned still returns to Stops', async () => {
+	const restoreViewport = useNarrowViewport();
+	let dispatch;
+	try {
+		setPage(pageWithoutStop());
+		render(MapExperience);
+		await tick();
+
+		window.dispatchEvent(new CustomEvent('planTripTabClicked'));
+		await tick();
+
+		dispatch = vi.spyOn(window, 'dispatchEvent');
+		capturedTripPlanModalProps.closePane();
+		await tick();
+
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'openStopsTab' }));
+		expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'tripPlanModalClosed' }));
+		expect(capturedSearchPaneProps.embedTripPlan).toBe(true);
+	} finally {
+		dispatch?.mockRestore();
+		restoreViewport();
+	}
 });

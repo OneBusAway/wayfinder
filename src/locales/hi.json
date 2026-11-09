@@ -109,7 +109,11 @@
 		"dismiss": "सर्वेक्षण खारिज करें",
 		"submit": "सबमिट करें",
 		"next": "आगे",
-		"submit_failed": "आपका उत्तर नहीं भेजा जा सका। कृपया पुनः प्रयास करें।"
+		"submit_failed": "आपका उत्तर नहीं भेजा जा सका। कृपया पुनः प्रयास करें।",
+		"cancel": "रद्द करें",
+		"skip": "छोड़ें",
+		"submitted": "सर्वेक्षण सबमिट हो गया",
+		"thank_you": "सर्वेक्षण में भाग लेने के लिए धन्यवाद!"
 	},
 	"header": {
 		"home": "होम",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "और आगमन लोड करें",
 	"refresh": "रीफ़्रेश करें",
 	"no_arrivals_found_in_next_minutes": "अगले {minutes} मिनट में कोई आगमन नहीं मिला",
+	"no_arrivals_found_in_next_hours": "अगले {hours, plural, one {# घंटे} other {# घंटों}} में कोई आगमन नहीं मिला",
 	"no_more_arrivals_in_next_minutes": "अगले {minutes} मिनट में कोई और आगमन नहीं",
+	"no_more_arrivals_in_next_hours": "अगले {hours, plural, one {# घंटे} other {# घंटों}} में कोई और आगमन नहीं",
 	"stop": "स्टॉप",
 	"direction_bound": "{direction} की ओर",
 	"routes": "मार्ग",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} मिनट"
 	},
 	"vehicle": {
-		"number": "वाहन #",
-		"data_updated": "डेटा अपडेट किया गया",
 		"no_real_time_data": "इस वाहन के लिए वास्तविक समय डेटा उपलब्ध नहीं है।",
-		"next_stop": "अगला स्टॉप:",
 		"label": "वाहन",
 		"to_headsign": "{headsign} की ओर जाने वाला वाहन"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "आगमन और प्रस्थान"
+	},
+	"date_picker": {
+		"today": "आज"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "समय सारणी देखें",

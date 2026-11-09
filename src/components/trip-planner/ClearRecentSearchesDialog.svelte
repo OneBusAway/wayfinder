@@ -84,7 +84,7 @@
 		onkeydown={handleDialogKeydown}
 	>
 		<div
-			class="w-full max-w-sm rounded-t-2xl bg-white p-5 dark:bg-gray-900 sm:rounded-2xl"
+			class="w-full max-w-sm rounded-t-2xl bg-white p-5 sm:rounded-2xl dark:bg-gray-900"
 			role="document"
 		>
 			<h2
@@ -103,14 +103,14 @@
 				<button
 					bind:this={cancelButton}
 					type="button"
-					class="min-h-11 rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-accent dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+					class="min-h-11 rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-brand-accent focus:outline-hidden dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
 					onclick={closeDialog}
 				>
 					{$t('trip-planner.cancel')}
 				</button>
 				<button
 					type="button"
-					class="min-h-11 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+					class="min-h-11 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-hidden dark:focus:ring-offset-gray-900"
 					onclick={confirmClearAll}
 				>
 					{$t('search.clear')}

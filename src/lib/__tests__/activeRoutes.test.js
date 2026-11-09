@@ -203,6 +203,76 @@ describe('activeRoutesFromArrivals', () => {
 		expect(result.map((route) => route.id)).toEqual(['r_boardable']);
 	});
 
+	test('uses departure time for first-stop layovers when ordering trips', () => {
+		const minute = 60_000;
+		const now = 10 * minute;
+		const result = activeRoutesFromArrivals(
+			makeResponse(
+				[
+					{
+						routeId: 'r_c',
+						tripId: 't_layover',
+						stopSequence: 0,
+						predicted: false,
+						predictedArrivalTime: 0,
+						scheduledArrivalTime: 5 * minute,
+						predictedDepartureTime: 0,
+						scheduledDepartureTime: 15 * minute
+					},
+					{
+						routeId: 'r_c',
+						tripId: 't_soon',
+						stopSequence: 3,
+						predicted: true,
+						predictedArrivalTime: 12 * minute,
+						scheduledArrivalTime: 12 * minute
+					}
+				],
+				[{ id: 'r_c', shortName: 'C Line', type: 3, color: 'b02a37' }]
+			),
+			{ now }
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].tripId).toBe('t_soon');
+		expect(result[0].tripCandidates).toEqual([{ id: 't_soon' }, { id: 't_layover' }]);
+	});
+
+	test('prefers scheduled departure over past predicted arrival for first-stop layovers when predicted departure is 0', () => {
+		const minute = 60_000;
+		const now = 10 * minute;
+		const result = activeRoutesFromArrivals(
+			makeResponse(
+				[
+					{
+						routeId: 'r_c',
+						tripId: 't_layover',
+						stopSequence: 0,
+						predicted: true,
+						predictedArrivalTime: 5 * minute,
+						scheduledArrivalTime: 5 * minute,
+						predictedDepartureTime: 0,
+						scheduledDepartureTime: 15 * minute
+					},
+					{
+						routeId: 'r_c',
+						tripId: 't_soon',
+						stopSequence: 3,
+						predicted: true,
+						predictedArrivalTime: 12 * minute,
+						scheduledArrivalTime: 12 * minute
+					}
+				],
+				[{ id: 'r_c', shortName: 'C Line', type: 3, color: 'b02a37' }]
+			),
+			{ now }
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].tripId).toBe('t_soon');
+		expect(result[0].tripCandidates).toEqual([{ id: 't_soon' }, { id: 't_layover' }]);
+	});
+
 	// OBA sends predictedArrivalTime: 0 (not null) when there is no real-time
 	// prediction. A naive `predictedArrivalTime ?? scheduledArrivalTime` reads
 	// that as "arriving at epoch" and sorts it first. This test is the point.

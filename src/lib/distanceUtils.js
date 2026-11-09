@@ -84,9 +84,10 @@ export function formatDistance(meters, unit, translator) {
 		}
 	} else {
 		// Metric
-		if (meters < 1000) {
+		const roundedMeters = Math.round(meters);
+		if (roundedMeters < 1000) {
 			// Show meters, rounded
-			return `${Math.round(meters)} ${translator('units.meters')}`;
+			return `${roundedMeters} ${translator('units.meters')}`;
 		} else {
 			// Show km with 1 decimal
 			const km = Math.round((meters / 1000) * 10) / 10;
@@ -186,8 +187,9 @@ export function formatWalkDistanceLabel(meters, unit) {
 		const miles = Math.round((meters / METERS_PER_MILE) * 10) / 10;
 		return miles === 1 ? '1 mile' : `${miles} miles`;
 	} else {
-		if (meters < 1000) {
-			return `${Math.round(meters)} m`;
+		const roundedMeters = Math.round(meters);
+		if (roundedMeters < 1000) {
+			return `${roundedMeters} m`;
 		}
 		const km = Math.round((meters / 1000) * 10) / 10;
 		return `${km} km`;

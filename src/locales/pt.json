@@ -109,7 +109,11 @@
 		"dismiss": "Dispensar pesquisa",
 		"submit": "Enviar",
 		"next": "Avançar",
-		"submit_failed": "Não foi possível enviar sua resposta. Tente novamente."
+		"submit_failed": "Não foi possível enviar sua resposta. Tente novamente.",
+		"cancel": "Cancelar",
+		"skip": "Pular",
+		"submitted": "Pesquisa enviada",
+		"thank_you": "Obrigado por responder à pesquisa!"
 	},
 	"header": {
 		"home": "Início",
@@ -154,7 +158,9 @@
 	"load_more_arrivals": "Carregar mais chegadas",
 	"refresh": "Atualizar",
 	"no_arrivals_found_in_next_minutes": "Nenhuma chegada encontrada nos próximos {minutes} minutos",
+	"no_arrivals_found_in_next_hours": "Nenhuma chegada encontrada {hours, plural, one {na próxima hora} other {nas próximas # horas}}",
 	"no_more_arrivals_in_next_minutes": "Nenhuma chegada adicional nos próximos {minutes} minutos",
+	"no_more_arrivals_in_next_hours": "Nenhuma chegada adicional {hours, plural, one {na próxima hora} other {nas próximas # horas}}",
 	"stop": "Parada",
 	"direction_bound": "Sentido {direction}",
 	"routes": "Linhas",
@@ -183,15 +189,15 @@
 		"min_compact": "{n} min"
 	},
 	"vehicle": {
-		"number": "Veículo nº",
-		"data_updated": "Dados atualizados",
 		"no_real_time_data": "Não temos dados em tempo real para este veículo no momento.",
-		"next_stop": "Próxima parada:",
 		"label": "Veículo",
 		"to_headsign": "Veículo com destino a {headsign}"
 	},
 	"arrivals_and_departures_for_stop": {
 		"title": "Chegadas e Partidas"
+	},
+	"date_picker": {
+		"today": "Hoje"
 	},
 	"schedule_for_stop": {
 		"view_schedule": "Ver Horários",

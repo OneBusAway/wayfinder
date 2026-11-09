@@ -49,6 +49,8 @@
 				skipAnimation,
 				activate: () => {
 					activeItems.update((items) => {
+						// local to this function
+						// eslint-disable-next-line svelte/prefer-svelte-reactivity
 						const newItems = new Set(items);
 						if (newItems.has(id)) {
 							newItems.delete(id);

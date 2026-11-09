@@ -7,5 +7,7 @@ import { onDemandServicePath } from '$lib/urls';
  * @param {string} serviceId Combined on-demand service id.
  */
 export function openOnDemandService(serviceId) {
+	// FIXME: navigation path not built with resolve()
+	// eslint-disable-next-line svelte/no-navigation-without-resolve
 	pushState(onDemandServicePath(serviceId), { onDemandServiceId: serviceId });
 }

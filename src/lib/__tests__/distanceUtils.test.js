@@ -126,6 +126,7 @@ describe('distanceUtils', () => {
 
 			it('formats distances 1000m+ in kilometers', () => {
 				expect(formatDistance(1000, UNIT_METRIC, mockTranslator)).toBe('1 km');
+				expect(formatDistance(999.5, UNIT_METRIC, mockTranslator)).toBe('1 km');
 				expect(formatDistance(1500, UNIT_METRIC, mockTranslator)).toBe('1.5 km');
 				expect(formatDistance(2340, UNIT_METRIC, mockTranslator)).toBe('2.3 km');
 				expect(formatDistance(5000, UNIT_METRIC, mockTranslator)).toBe('5 km');
@@ -294,6 +295,7 @@ describe('distanceUtils', () => {
 			// Unknown metric value
 			expect(formatWalkDistanceLabel(1609, UNIT_METRIC)).toBe('1.6 km');
 			expect(formatWalkDistanceLabel(750, UNIT_METRIC)).toBe('750 m');
+			expect(formatWalkDistanceLabel(999.5, UNIT_METRIC)).toBe('1 km');
 		});
 	});
 });

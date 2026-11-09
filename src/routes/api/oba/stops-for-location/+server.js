@@ -1,23 +1,20 @@
+import { json } from '@sveltejs/kit';
 import oba, { handleOBAResponse } from '$lib/obaSdk';
 import { getAgencyFilter, filterStops } from '$lib/agencyFilter.js';
+import { parseLocationQuery } from '$lib/onDemand/params.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url }) {
-	const lat = +url.searchParams.get('lat');
-	const lng = +url.searchParams.get('lng');
-	const latSpan = +url.searchParams.get('latSpan');
-	const lngSpan = +url.searchParams.get('lngSpan');
-	const radius = +url.searchParams.get('radius');
+	const parsed = parseLocationQuery(url.searchParams, {
+		lonParam: 'lng',
+		lonSpanParam: 'lngSpan',
+		supportsGeometryDetail: false
+	});
+	if ('error' in parsed) {
+		return json({ error: parsed.error }, { status: 400 });
+	}
 
-	const queryParams = {
-		lat: lat,
-		lon: lng,
-		latSpan: latSpan,
-		lonSpan: lngSpan,
-		radius: radius
-	};
-
-	const response = await oba.stopsForLocation.list(queryParams);
+	const response = await oba.stopsForLocation.list(parsed.params);
 
 	if (response.data?.list) {
 		response.data.list = filterStops(response.data.list, getAgencyFilter());

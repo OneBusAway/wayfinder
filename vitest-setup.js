@@ -87,7 +87,9 @@ vi.mock('svelte-i18n', () => ({
 }));
 
 // Mock i18n.js file
-vi.mock('$lib/i18n', () => ({}));
+vi.mock('$lib/i18n', () => ({
+	isRTL: vi.fn(() => false)
+}));
 
 // Mock SvelteKit app stores
 vi.mock('$app/stores', () => ({

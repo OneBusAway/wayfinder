@@ -1,5 +1,6 @@
 <script>
 	import { t } from 'svelte-i18n';
+	import { env } from '$env/dynamic/public';
 	import { msToLocalArrivalDepartureTimeString } from '$lib/dateTimeFormat';
 	import RouteBadge from '$components/RouteBadge.svelte';
 	import { Clock, Rss } from '@lucide/svelte';
@@ -16,6 +17,7 @@
 	} = $props();
 
 	const MS_IN_MINS = 60000;
+	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
 	let routeShortName = $derived(arrivalDeparture.routeShortName);
 	let tripHeadsign = $derived(arrivalDeparture.tripHeadsign);
@@ -25,7 +27,7 @@
 	let predictedDepartureTime = $derived(arrivalDeparture.predictedDepartureTime);
 	let tripStatus = $derived(arrivalDeparture.tripStatus);
 	let frequency = $derived(arrivalDeparture.frequency);
-	let stopSequence = $derived(arrivalDeparture.stopSequence || 1); // Default to 1 if not provided
+	let stopSequence = $derived(arrivalDeparture.stopSequence ?? 1); // Default to 1 if not provided
 
 	function computeColor(scheduledMins, predictedMins, isPredicted) {
 		// Each colored branch returns the 600 shade for light mode (passes WCAG AA
@@ -60,9 +62,16 @@
 			predicted = predictedArrivalTime;
 			isArrival = true;
 		} else {
-			scheduled = scheduledDepartureTime;
-			predicted = predictedDepartureTime;
 			isArrival = false;
+			const hasDepartureTime =
+				(arrivalDeparture.predicted && predictedDepartureTime > 0) || scheduledDepartureTime > 0;
+			if (hasDepartureTime) {
+				scheduled = scheduledDepartureTime;
+				predicted = predictedDepartureTime;
+			} else {
+				scheduled = scheduledArrivalTime;
+				predicted = predictedArrivalTime;
+			}
 		}
 
 		const scheduledMins = scheduled ? Math.floor(scheduled / MS_IN_MINS) : 0;
@@ -85,16 +94,19 @@
 			displayTime = scheduled;
 		}
 
+		const isCanceled = tripStatus && tripStatus.status === 'CANCELED';
+		const isScheduledPast = !isPredicted && eta < 0 && !frequency && scheduled > 0;
 		const color = computeColor(scheduledMins, predictedMins, isPredicted);
 		const statusText = computeStatusLabel(
 			now,
-			predicted,
+			isPredicted,
 			scheduledMins,
 			predictedMins,
 			isArrival,
-			eta
+			eta,
+			scheduled
 		);
-		const timeText = computeTimeLabel(eta, isPredicted, displayTime, scheduledMins, predictedMins);
+		const timeText = computeTimeLabel(eta);
 
 		return {
 			eta,
@@ -103,11 +115,23 @@
 			color,
 			statusText,
 			timeText,
-			isArrival
+			isArrival,
+			hideTimePrefix:
+				(!isCanceled && isScheduledPast && includeArrivalDepartureInStatusLabel) ||
+				!displayTime ||
+				displayTime <= 0
 		};
 	}
 
-	function computeStatusLabel(now, predictedTime, scheduledMins, predictedMins, isArrival, eta) {
+	function computeStatusLabel(
+		now,
+		isPredicted,
+		scheduledMins,
+		predictedMins,
+		isArrival,
+		eta,
+		scheduledTime
+	) {
 		// CANCELED trips
 		if (tripStatus && tripStatus.status === 'CANCELED') {
 			if (!includeArrivalDepartureInStatusLabel) {
@@ -127,19 +151,23 @@
 			if (now < frequency.startTime) {
 				const label = formatter.format(new Date(frequency.startTime));
 				return $t('status.frequency_from', {
-					headway: headwayAsMinutes,
-					time: label
+					values: {
+						headway: headwayAsMinutes,
+						time: label
+					}
 				});
 			} else {
 				const label = formatter.format(new Date(frequency.endTime));
 				return $t('status.frequency_until', {
-					headway: headwayAsMinutes,
-					time: label
+					values: {
+						headway: headwayAsMinutes,
+						time: label
+					}
 				});
 			}
 		}
 
-		if (predictedTime && predictedTime > 0) {
+		if (isPredicted) {
 			const delay = predictedMins - scheduledMins;
 
 			if (eta >= 0) {
@@ -183,6 +211,16 @@
 			}
 		} else {
 			// Scheduled times
+			if (eta < 0) {
+				if (!includeArrivalDepartureInStatusLabel || !scheduledTime || scheduledTime === 0) {
+					return $t('status.scheduled');
+				}
+				const formattedTime = msToLocalArrivalDepartureTimeString(scheduledTime, regionTz);
+				return isArrival
+					? $t('status.arrived_at_time', { values: { time: formattedTime } })
+					: $t('status.departed_at_time', { values: { time: formattedTime } });
+			}
+
 			if (!includeArrivalDepartureInStatusLabel) {
 				return $t('status.scheduled');
 			}
@@ -205,10 +243,13 @@
 	}
 
 	function computeTimeLabel(eta) {
+		if (eta < 0) {
+			return '';
+		}
 		if (eta === 0) {
 			return $t('time.now');
 		}
-		// Compact minute form (e.g. "19m", "1m", "-3m"). Unit is localizable.
+		// Compact minute form (e.g. "19m", "1m"). Unit is localizable.
 		return $t('time.min_compact', { values: { n: eta } });
 	}
 
@@ -237,22 +278,30 @@
 			{tripHeadsign}
 		</p>
 		<p class="truncate text-sm">
-			<span class="text-gray-500 dark:text-gray-400"
-				>{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime)} ·</span
-			>
+			{#if !arrivalInfo.hideTimePrefix && arrivalInfo.displayTime > 0}
+				<span class="text-gray-500 dark:text-gray-400"
+					>{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime, regionTz)} ·</span
+				>
+			{/if}
 			<span class={arrivalInfo.color}>{arrivalInfo.statusText}</span>
 		</p>
 	</div>
 
 	<div class="flex shrink-0 flex-col items-center gap-1">
-		<div class="flex items-start gap-0.5">
-			<span class="text-xl font-bold leading-none {arrivalInfo.color}">{arrivalInfo.timeText}</span>
-			{#if arrivalInfo.isPredicted}
-				<Rss class="h-3 w-3 {arrivalInfo.color}" />
-			{:else}
-				<Clock class="h-3 w-3 {arrivalInfo.color}" />
-			{/if}
-		</div>
+		{#if arrivalInfo.timeText || arrivalInfo.isPredicted}
+			<div class="flex items-start gap-0.5">
+				{#if arrivalInfo.timeText}
+					<span class="text-xl leading-none font-bold {arrivalInfo.color}"
+						>{arrivalInfo.timeText}</span
+					>
+				{/if}
+				{#if arrivalInfo.isPredicted}
+					<Rss class="h-3 w-3 {arrivalInfo.color}" />
+				{:else if arrivalInfo.timeText}
+					<Clock class="h-3 w-3 {arrivalInfo.color}" />
+				{/if}
+			</div>
+		{/if}
 		<!-- Expand/collapse chevron, stacked under the ETA (AccordionItem's own
 		     chevron is hidden via hideChevron). -->
 		<svg

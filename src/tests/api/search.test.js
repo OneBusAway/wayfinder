@@ -26,11 +26,11 @@ vi.mock('$env/static/private', () => ({
 	PRIVATE_OBA_GEOCODER_PROVIDER: 'google'
 }));
 
-vi.mock('onebusaway-sdk', () => ({
-	OnebusawaySDK: vi.fn().mockImplementation(() => ({
+vi.mock('$lib/obaSdk.js', () => ({
+	default: {
 		routesForLocation: { list: (...args) => mockRoutesForLocation(...args) },
 		stopsForLocation: { list: (...args) => mockStopsForLocation(...args) }
-	}))
+	}
 }));
 
 vi.mock('$lib/serverCache.js', () => ({

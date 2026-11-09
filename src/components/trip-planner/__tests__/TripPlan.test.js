@@ -92,6 +92,18 @@ describe('TripPlan pin cleanup', () => {
 		expect(mapProvider.removePinMarker).toHaveBeenCalledWith(fromMarker);
 		expect(mapProvider.removePinMarker).toHaveBeenCalledWith(toMarker);
 	});
+
+	it('preserves trip URL query parameters when unmounted (e.g. responsive viewport switch)', async () => {
+		const tripUrl = '/?from=47.6%2C-122.3&to=47.7%2C-122.4&fromName=FromPlace&toName=ToPlace';
+		window.history.pushState({}, '', tripUrl);
+		vi.mocked(navigation.replaceState).mockClear();
+
+		const { unmount } = render(TripPlan, { props });
+		unmount();
+		await tick();
+
+		expect(navigation.replaceState).not.toHaveBeenCalled();
+	});
 });
 
 describe('TripPlan autocomplete dismissal', () => {

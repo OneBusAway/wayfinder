@@ -1,12 +1,13 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 export default defineConfig({
-	plugins: [sveltekit(), svelteTesting()],
+	plugins: [tailwindcss(), sveltekit(), svelteTesting()],
 	define: {
 		__SHOW_REGION_NAME_IN_NAV_BAR__: JSON.stringify(
 			process.env.SHOW_REGION_NAME_IN_NAV_BAR !== 'false'

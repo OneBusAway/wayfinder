@@ -79,7 +79,7 @@
 				{@const title = itemTitle(item)}
 				{@const icon = itemIcon(item)}
 				<div
-					class="group relative flex items-stretch rounded-lg border border-gray-200 bg-white shadow-sm transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+					class="group relative flex items-stretch rounded-lg border border-gray-200 bg-white shadow-xs transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
 				>
 					<button
 						type="button"
@@ -104,7 +104,7 @@
 
 					<button
 						type="button"
-						class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-100 transition-opacity hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 dark:hover:bg-gray-600 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+						class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-100 transition-opacity hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 dark:hover:bg-gray-600 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
 						onclick={() => handleRemove(item)}
 						aria-label={$t('favorites.remove_item', { values: { name: title } })}
 					>

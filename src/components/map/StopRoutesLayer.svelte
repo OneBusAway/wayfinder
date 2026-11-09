@@ -59,6 +59,8 @@
 	// Kept separately from polylinesByRouteId because vehicle polling starts for
 	// every active route, including a route whose shape ultimately cannot draw.
 	// Teardown must still remove that route's vehicle markers.
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	let polledRouteIds = new Set();
 	// Forces an immediate vehicle refresh (see fetchAndUpdateVehiclesForRoutes)
 	// rather than waiting up to 30s for the next scheduled poll. Set once the
@@ -79,6 +81,8 @@
 	// below, which tracks something else (resolution order, for
 	// bringToFront). Populated as each route's shape resolves in drawRoutes;
 	// cleared in teardown().
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	let polylinesByRouteId = new Map();
 	// routeId -> the index it drew at (see weightFor), so the promotion
 	// effect below can restore LINE-pane paint order after a demote without
@@ -87,8 +91,14 @@
 	// signature-dedup comment below, and so would no longer match the order
 	// the polylines were actually drawn/weighted in. Populated alongside
 	// polylinesByRouteId in drawRoutes; cleared in teardown().
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	let routeDrawIndex = new Map();
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const tripShapeCache = new Map();
+	// bookkeeping, not read reactively
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	const routeShapeCache = new Map();
 	// The route currently sitting in ROUTE_PANE.PROMOTED, so the promotion
 	// effect can demote it before promoting a new one. Reset in teardown()
@@ -118,6 +128,8 @@
 			// includeStatus=false: the endpoint defaults it to true, and we need only
 			// the shape id and the stop times. serviceDate disambiguates trips on OBA
 			// deployments that reuse a trip id across service days.
+			// local to this function
+			// eslint-disable-next-line svelte/prefer-svelte-reactivity
 			const query = new URLSearchParams({ includeStatus: 'false' });
 			if (candidate.serviceDate != null) query.set('serviceDate', String(candidate.serviceDate));
 			const tripResponse = await fetch(
@@ -161,6 +173,8 @@
 			}
 			const data = await response.json();
 			const stopIds = (data?.data?.references?.stops ?? []).map((stop) => stop.id).filter(Boolean);
+			// local to this function
+			// eslint-disable-next-line svelte/prefer-svelte-reactivity
 			const seenPoints = new Set();
 			const shapes = (data?.data?.entry?.polylines ?? [])
 				.map((polyline) => polyline?.points)
@@ -245,10 +259,14 @@
 		// Accumulated outside the map closure so concurrent resolutions merge
 		// into one shared map instead of each mapper invocation racing to publish
 		// its own partial snapshot over the others.
+		// local to this function
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const nextStopIds = new Map();
 		// Which route index currently claims each stop, so a shared stop is
 		// decided by index priority (soonest-arrival-first) rather than by
 		// whichever shape happens to resolve first over the network.
+		// local to this function
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const stopClaimIndex = new Map();
 		// Polylines drawn so far this call, so paint order can be restored to
 		// index order after every resolution — Leaflet/Google paint in the

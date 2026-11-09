@@ -1,11 +1,3 @@
-import { plainTimeToDate } from '$lib/dateTimeFormat';
-
-const fourDigit24HourTimeFormat = new Intl.DateTimeFormat(undefined, {
-	hour: '2-digit',
-	minute: '2-digit',
-	hour12: false
-});
-
 /**
  * Get today's date in YYYY-MM-DD format for date input
  *
@@ -44,5 +36,7 @@ export function getCurrentTimeForInput(timeZone?: string): string {
 			throw err;
 		}
 	}
-	return fourDigit24HourTimeFormat.format(plainTimeToDate(now));
+	const hours = String(now.hour).padStart(2, '0');
+	const minutes = String(now.minute).padStart(2, '0');
+	return `${hours}:${minutes}`;
 }

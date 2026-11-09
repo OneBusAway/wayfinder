@@ -26,6 +26,9 @@ vi.mock('$env/static/private', () => ({
 	PRIVATE_OBA_API_KEY: 'test-api-key'
 }));
 
+// Captured before beforeEach's clearAllMocks wipes the module-load call.
+const moduleConstructorArgs = vi.mocked(onebusaway).mock.calls[0]?.[0];
+
 describe('OneBusAway Client', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -33,14 +36,10 @@ describe('OneBusAway Client', () => {
 
 	describe('OBA Client Initialization', () => {
 		it('should initialize with correct configuration', () => {
-			new onebusaway({
+			expect(moduleConstructorArgs).toEqual({
 				baseURL: 'https://test-api.example.com',
-				apiKey: 'test-api-key'
-			});
-
-			expect(onebusaway).toHaveBeenCalledWith({
-				baseURL: 'https://test-api.example.com',
-				apiKey: 'test-api-key'
+				apiKey: 'test-api-key',
+				defaultQuery: { version: 2 }
 			});
 		});
 	});
