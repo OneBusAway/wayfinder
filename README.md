@@ -1,3 +1,5 @@
+<img width="2172" height="724" alt="OneBusAway Wayfinder Fox Bus Logo" src="https://github.com/user-attachments/assets/36fc088b-c207-4e21-93fc-934c807c426f" />
+
 # Wayfinder
 
 [![Coverage Status](https://coveralls.io/repos/github/OneBusAway/wayfinder/badge.svg)](https://coveralls.io/github/OneBusAway/wayfinder)
