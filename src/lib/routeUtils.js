@@ -1,22 +1,56 @@
 /**
- * Extracts numeric value from route short name for sorting purposes.
+ * Removes the agency prefix from an ID string, returning only the numeric/identifier part.
+ * Handles IDs in the format "AGENCY_ID" or "AGENCY_NUMBER" where the separator is an underscore.
+ *
+ * @param {string} idString - The full ID string (e.g., "MTS_41242", "1_41242")
+ * @returns {string} The ID without the agency prefix (e.g., "41242")
+ */
+export function removeAgencyPrefix(idString) {
+	if (!idString || typeof idString !== 'string') {
+		return idString;
+	}
+
+	const underscoreIndex = idString.indexOf('_');
+	if (underscoreIndex === -1) {
+		return idString;
+	}
+
+	// Return everything after the first underscore
+	return idString.substring(underscoreIndex + 1);
+}
+
+/**
+ * Returns the displayed name for a route, falling back to id without agency prefix.
+ *
+ * @param {Object} [route]
+ * @returns {string}
+ */
+export function getRouteDisplayName(route) {
+	return route?.shortName || (route?.id ? removeAgencyPrefix(route.id) : '');
+}
+
+/**
+ * Extracts numeric value from route short name (or id fallback) for sorting purposes.
  * Routes without numeric values are placed at the end.
  *
  * @param {Object} route - Route object
  * @param {string} [route.shortName] - Route short name (e.g., "44", "B Line", "Route 7")
+ * @param {string} [route.id] - Route id (e.g., "1_44")
  * @returns {number} Numeric value for sorting, or MAX_SAFE_INTEGER if no numeric value found
  *
  * @example
  * extractNumericValue({ shortName: "44" }) // returns 44
  * extractNumericValue({ shortName: "Route 7" }) // returns 7
+ * extractNumericValue({ id: "1_44" }) // returns 44
  * extractNumericValue({ shortName: "B Line" }) // returns Number.MAX_SAFE_INTEGER -> no numeric value so placed at the end
  */
 export function extractNumericValue(route) {
-	if (!route?.shortName) {
+	const name = getRouteDisplayName(route);
+	if (!name) {
 		return Number.MAX_SAFE_INTEGER;
 	}
 
-	const matches = route.shortName.match(/(\d+)/);
+	const matches = name.match(/(\d+)/);
 	return matches ? parseInt(matches[1], 10) : Number.MAX_SAFE_INTEGER;
 }
 
@@ -33,7 +67,9 @@ export function compareRoutes(a, b) {
 		return aNumeric - bNumeric;
 	}
 
-	return (a.shortName || '').localeCompare(b.shortName || '');
+	const aName = getRouteDisplayName(a);
+	const bName = getRouteDisplayName(b);
+	return aName.localeCompare(bName);
 }
 
 /**

@@ -1,5 +1,15 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
+const mockPrivateEnv = vi.hoisted(() => ({
+	PRIVATE_OBA_AGENCY_FILTER: ''
+}));
+
+vi.mock('$env/dynamic/private', () => ({
+	get env() {
+		return mockPrivateEnv;
+	}
+}));
+
 const getScheduleForStop = vi.hoisted(() => vi.fn());
 vi.mock('$lib/server/obaScheduleForStop', () => ({ getScheduleForStop }));
 
@@ -23,6 +33,7 @@ function scheduleResponse(stopRouteSchedules = []) {
 
 describe('/stops/[stopID]/schedule load', () => {
 	afterEach(() => {
+		mockPrivateEnv.PRIVATE_OBA_AGENCY_FILTER = '';
 		vi.useRealTimers();
 		vi.resetAllMocks();
 	});
@@ -36,7 +47,13 @@ describe('/stops/[stopID]/schedule load', () => {
 		const result = await load({ params: { stopID: stop.id } });
 
 		expect(getScheduleForStop).toHaveBeenCalledWith(stop.id, '2026-10-02');
-		expect(result).toEqual({ schedules: [], serviceDay: '2026-10-02', stop, stopId: stop.id });
+		expect(result).toEqual({
+			routes: [{ id: '1_100', shortName: '8' }],
+			schedules: [],
+			serviceDay: '2026-10-02',
+			stop,
+			stopId: stop.id
+		});
 	});
 
 	test("sends the schedules grouped in the region's timezone, ready to render", async () => {
@@ -129,5 +146,33 @@ describe('/stops/[stopID]/schedule load', () => {
 		await expect(load({ params: { stopID: '1_99999999' } })).rejects.toMatchObject({
 			status: 404
 		});
+	});
+
+	test('filters references.routes and stop.routeIds when agency filter is configured', async () => {
+		mockPrivateEnv.PRIVATE_OBA_AGENCY_FILTER = '1';
+		const multiAgencyStop = {
+			id: '1_75403',
+			name: 'Pine St & 3rd Ave',
+			routeIds: ['1_100', '40_550']
+		};
+		const response = {
+			code: 200,
+			data: {
+				entry: { stopId: multiAgencyStop.id, stopRouteSchedules: [] },
+				references: {
+					routes: [
+						{ id: '1_100', shortName: '8' },
+						{ id: '40_550', shortName: '550' }
+					],
+					stops: [multiAgencyStop]
+				}
+			}
+		};
+		getScheduleForStop.mockResolvedValue(response);
+
+		const result = await load({ params: { stopID: multiAgencyStop.id } });
+
+		expect(result.routes).toEqual([{ id: '1_100', shortName: '8' }]);
+		expect(result.stop.routeIds).toEqual(['1_100']);
 	});
 });

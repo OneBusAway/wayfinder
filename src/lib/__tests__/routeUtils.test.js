@@ -26,7 +26,14 @@ describe('routeUtils', () => {
 			expect(extractNumericValue({ shortName: 'Express' })).toBe(Number.MAX_SAFE_INTEGER);
 		});
 
-		it('should return MAX_SAFE_INTEGER for missing shortName', () => {
+		it('should extract numeric value from route id when shortName is missing', () => {
+			expect(extractNumericValue({ id: '1_44' })).toBe(44);
+			expect(extractNumericValue({ id: 'MTS_7' })).toBe(7);
+			expect(extractNumericValue({ id: '1_Route_100' })).toBe(100);
+			expect(extractNumericValue({ id: '40_B_Line' })).toBe(Number.MAX_SAFE_INTEGER);
+		});
+
+		it('should return MAX_SAFE_INTEGER for missing shortName and id', () => {
 			expect(extractNumericValue({ shortName: null })).toBe(Number.MAX_SAFE_INTEGER);
 			expect(extractNumericValue({ shortName: undefined })).toBe(Number.MAX_SAFE_INTEGER);
 			expect(extractNumericValue({ shortName: '' })).toBe(Number.MAX_SAFE_INTEGER);
@@ -63,12 +70,17 @@ describe('routeUtils', () => {
 			expect(compareRoutes(routeB, route7)).toBeGreaterThan(0);
 		});
 
-		it('should handle routes without shortName', () => {
+		it('should handle routes without shortName falling back to id', () => {
 			const route7 = { shortName: '7' };
+			const route44NoShortName = { id: '1_44' };
+			const route100NoShortName = { id: '40_100' };
 			const routeNoName = {};
 
-			expect(compareRoutes(route7, routeNoName)).toBeLessThan(0);
-			expect(compareRoutes(routeNoName, route7)).toBeGreaterThan(0);
+			expect(compareRoutes(route7, route44NoShortName)).toBeLessThan(0);
+			expect(compareRoutes(route44NoShortName, route7)).toBeGreaterThan(0);
+			expect(compareRoutes(route44NoShortName, route100NoShortName)).toBeLessThan(0);
+			expect(compareRoutes(route44NoShortName, routeNoName)).toBeLessThan(0);
+			expect(compareRoutes(routeNoName, route44NoShortName)).toBeGreaterThan(0);
 		});
 
 		it('should return 0 for identical routes', () => {
