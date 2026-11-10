@@ -14,6 +14,7 @@ import {
 	getAgencyFilter,
 	routeBelongsToAgency,
 	filterRoutes,
+	filterRouteIds,
 	filterStops,
 	filterByRouteId,
 	alertBelongsToAgency
@@ -116,12 +117,48 @@ describe('agencyFilter', () => {
 			expect(result).toEqual([]);
 		});
 
+		it('filters by route id prefix when agencyId is missing', () => {
+			const routesWithIds = [
+				{ id: '19_100', shortName: '1' },
+				{ id: '29_200', shortName: '2' },
+				{ id: '19_300', shortName: '3' }
+			];
+			const result = filterRoutes(routesWithIds, new Set(['19']));
+			expect(result).toHaveLength(2);
+			expect(result.map((r) => r.id)).toEqual(['19_100', '19_300']);
+		});
+
 		it('handles empty routes array', () => {
 			expect(filterRoutes([], new Set(['19']))).toEqual([]);
 		});
 
 		it('handles null routes array', () => {
 			expect(filterRoutes(null, new Set(['19']))).toEqual([]);
+		});
+	});
+
+	describe('filterRouteIds', () => {
+		const routeIds = ['19_100', '29_200', '19_300'];
+
+		it('filters route IDs by target agency prefix', () => {
+			const result = filterRouteIds(routeIds, new Set(['19']));
+			expect(result).toEqual(['19_100', '19_300']);
+		});
+
+		it('returns all route IDs when agencyIds is null (passthrough)', () => {
+			expect(filterRouteIds(routeIds, null)).toEqual(routeIds);
+		});
+
+		it('returns empty array when no route IDs match', () => {
+			expect(filterRouteIds(routeIds, new Set(['99']))).toEqual([]);
+		});
+
+		it('handles empty routeIds array', () => {
+			expect(filterRouteIds([], new Set(['19']))).toEqual([]);
+		});
+
+		it('handles null routeIds array', () => {
+			expect(filterRouteIds(null, new Set(['19']))).toEqual([]);
 		});
 	});
 

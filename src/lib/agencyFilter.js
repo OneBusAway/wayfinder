@@ -30,15 +30,30 @@ export function routeBelongsToAgency(routeId, agencyIds) {
 }
 
 /**
- * Filters routes by agencyId field.
- * @param {Array<{agencyId: string}> | null} routes
+ * Filters routes by agencyId field or route id prefix.
+ * @param {Array<{agencyId?: string, id?: string}> | null} routes
  * @param {Set<string> | null} agencyIds
  * @returns {Array}
  */
 export function filterRoutes(routes, agencyIds) {
 	if (!routes) return [];
 	if (!agencyIds) return routes;
-	return routes.filter((route) => agencyIds.has(route.agencyId));
+	return routes.filter(
+		(route) =>
+			(route.agencyId && agencyIds.has(route.agencyId)) || routeBelongsToAgency(route.id, agencyIds)
+	);
+}
+
+/**
+ * Filters route IDs by agency prefix.
+ * @param {string[] | null} routeIds
+ * @param {Set<string> | null} agencyIds
+ * @returns {string[]}
+ */
+export function filterRouteIds(routeIds, agencyIds) {
+	if (!routeIds) return [];
+	if (!agencyIds) return routeIds;
+	return routeIds.filter((id) => routeBelongsToAgency(id, agencyIds));
 }
 
 /**
