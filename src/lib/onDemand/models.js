@@ -15,14 +15,61 @@ const MATCH_REASONS = new Set([
 ]);
 
 /**
+ * @typedef {Object} OnDemandAgency
+ * @property {string} id
+ * @property {string} [name]
+ * @property {string} [url]
+ * @property {string} [timezone]
+ *
+ * @typedef {Object} OnDemandRoute
+ * @property {string} id
+ * @property {string} [shortName]
+ * @property {string} [longName]
+ * @property {string} [agencyId]
+ * @property {string} [color]
+ * @property {string} [textColor]
+ *
+ * @typedef {Object} OnDemandServiceArea
+ * @property {string} id
+ * @property {string | null} name
+ * @property {string | null} description
+ * @property {number[] | null} bbox
+ * @property {import('$lib/MapHelpers/zoneGeometry').ZoneGeometry | null} geometry
+ * @property {number | null} distanceToArea
+ * @property {any | null} nearestPointOnBoundary
+ *
+ * @typedef {Object} OnDemandLocationGroup
+ * @property {string} id
+ * @property {string | null} name
+ * @property {string[]} stopIds
+ *
+ * @typedef {Object} OnDemandBookingRule
+ * @property {string} id
+ * @property {number | null} bookingType
+ * @property {string | null} message
+ * @property {string | null} pickupMessage
+ * @property {string | null} dropOffMessage
+ * @property {string | null} phoneNumber
+ * @property {string | null} infoUrl
+ * @property {string | null} bookingUrl
+ *
+ * @typedef {Object} OnDemandCalendar
+ * @property {string} id
+ * @property {string[]} days
+ * @property {string | null} startDate
+ * @property {string | null} endDate
+ * @property {string[]} exceptedDates
+ */
+
+/**
  * @typedef {Object} OnDemandRefs
- * @property {Map<string, any>} agencies
- * @property {Map<string, any>} routes
- * @property {Map<string, any>} stops
- * @property {Map<string, any>} serviceAreas
- * @property {Map<string, any>} locationGroups
- * @property {Map<string, any>} bookingRules
- * @property {Map<string, any>} calendars
+ * @property {Map<string, OnDemandAgency>} agencies
+ * @property {Map<string, OnDemandRoute>} routes
+ * @property {Map<string, import('$lib/types').Stop>} stops
+ * @property {Map<string, OnDemandServiceArea>} serviceAreas
+ * @property {Map<string, OnDemandLocationGroup>} locationGroups
+ * @property {Map<string, OnDemandBookingRule>} bookingRules
+ * @property {Map<string, OnDemandCalendar>} calendars
  */
 
 /**
@@ -52,8 +99,8 @@ const MATCH_REASONS = new Set([
  * @property {string} serviceKind
  * @property {string | null} matchReason
  * @property {AvailabilityRule[]} rules
- * @property {any | null} agency
- * @property {any | null} route
+ * @property {OnDemandAgency | null} agency
+ * @property {OnDemandRoute | null} route
  * @property {OnDemandRefs} refs
  */
 

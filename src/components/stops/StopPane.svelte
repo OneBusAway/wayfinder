@@ -27,6 +27,7 @@
 	 * @typedef {import('$lib/types').Stop} Stop
 	 *
 	 * @typedef {ArrivalAndDepartureListResponse['data']['entry']['arrivalsAndDepartures'][number]} ArrivalsAndDeparture
+	 * @typedef {ArrivalAndDepartureListResponse['data']['entry'] & { stopId?: string }} ArrivalsEntry
 	 * @typedef {string | string[]} SurveyAnswer
 	 * @typedef {import('$stores/surveyStore').SurveyQuestion} SurveyQuestion
 	 * @typedef {import('$stores/surveyStore').Survey} StopSurvey
@@ -75,6 +76,7 @@
 	// immediately instead of flashing the first-load skeleton. No clock is passed
 	// so server and client render the same seed; departed rows fall away on the
 	// first client poll.
+	/** @type {ArrivalsEntry | null} */
 	let arrivalsAndDepartures = $state(
 		withVisibleArrivals(arrivalsAndDeparturesResponse?.data?.entry)
 	);
@@ -121,7 +123,7 @@
 	 * predicted time and falling back to the scheduled time. Comparing this
 	 * across window widenings is more robust than a raw count: an arrival
 	 * departing the front of the list no longer masks a genuinely later one.
-	 * @param {any[]} [arrivals]
+	 * @param {ArrivalsAndDeparture[] | null} [arrivals]
 	 * @returns {number}
 	 */
 	function furthestArrivalTime(arrivals) {
@@ -136,18 +138,24 @@
 	 * Copies a response entry with its arrival list reduced to the rows the
 	 * rider should see (see visibleArrivals). Returns null for a missing entry
 	 * so the first-load skeleton renders.
-	 * @param {any} [entry]
+	 * @param {ArrivalsEntry | null} [entry]
 	 * @param {number} [now]
+	 * @returns {ArrivalsEntry | null}
 	 */
 	function withVisibleArrivals(entry, now) {
 		if (!entry) return null;
-		return { ...entry, arrivalsAndDepartures: visibleArrivals(entry.arrivalsAndDepartures, now) };
+		return {
+			...entry,
+			arrivalsAndDepartures: /** @type {ArrivalsAndDeparture[]} */ (
+				visibleArrivals(entry.arrivalsAndDepartures, now)
+			)
+		};
 	}
 
 	/**
 	 * Returns true if the server-rendered seed response is empty for a stop with routes,
 	 * indicating the client should auto-extend upon mounting.
-	 * @param {any} response
+	 * @param {ArrivalAndDepartureListResponse | null} response
 	 * @param {Stop | null | undefined} currentStop
 	 */
 	function shouldAutoExtendOnSeed(response, currentStop) {
