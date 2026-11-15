@@ -15,6 +15,7 @@ vi.mock('svelte-i18n', () => {
 		'status.departed_at_time': 'Departed at {time}',
 		'status.arrived_ontime': 'Arrived on time',
 		'status.canceled_arrival': 'Canceled',
+		'status.frequency_from': 'Every {headway} min from {time}',
 		'status.frequency_until': 'Every {headway} min until {time}',
 		'status.scheduled': 'Scheduled'
 	};
@@ -351,6 +352,42 @@ describe('ArrivalDeparture', () => {
 				}
 			});
 			expect(screen.getByText(/Departed at 09:15 AM/)).toBeInTheDocument();
+		});
+
+		test('formats the frequency end time in PUBLIC_OBA_TIMEZONE', () => {
+			env.PUBLIC_OBA_TIMEZONE = 'America/Los_Angeles';
+			// 19:00 UTC = 12:00 PM in America/Los_Angeles (PDT)
+			render(ArrivalDeparture, {
+				props: {
+					arrivalDeparture: baseArrival({
+						frequency: {
+							startTime: Date.now() - 60 * MIN,
+							endTime: new Date('2026-07-22T19:00:00Z').valueOf(),
+							headway: 600,
+							exactTimes: false
+						}
+					})
+				}
+			});
+			expect(screen.getByText(/Every 10 min until 12:00 PM/)).toBeInTheDocument();
+		});
+
+		test('formats the frequency start time in PUBLIC_OBA_TIMEZONE', () => {
+			env.PUBLIC_OBA_TIMEZONE = 'America/Los_Angeles';
+			// 15:30 UTC = 08:30 AM in America/Los_Angeles (PDT)
+			render(ArrivalDeparture, {
+				props: {
+					arrivalDeparture: baseArrival({
+						frequency: {
+							startTime: new Date('2026-07-22T15:30:00Z').valueOf(),
+							endTime: new Date('2026-07-22T19:00:00Z').valueOf(),
+							headway: 600,
+							exactTimes: false
+						}
+					})
+				}
+			});
+			expect(screen.getByText(/Every 10 min from 08:30 AM/)).toBeInTheDocument();
 		});
 	});
 });

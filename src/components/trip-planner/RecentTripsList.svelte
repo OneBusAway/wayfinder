@@ -74,7 +74,7 @@
 				<div class="space-y-2">
 					{#each $pinnedTrips as trip (trip.id)}
 						<div
-							class="border-brand-primary/30 bg-brand-primary/5 shadow-xs dark:border-brand-primary/50 group relative rounded-lg border transition-all hover:shadow-md dark:bg-gray-800"
+							class="border-brand-primary/30 bg-brand-primary/5 dark:border-brand-primary/50 group relative rounded-lg border shadow-xs transition-all hover:shadow-md dark:bg-gray-800"
 						>
 							<button
 								type="button"
@@ -100,7 +100,7 @@
 							<button
 								type="button"
 								aria-label={$t('trip-planner.remove_pinned_trip')}
-								class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 group-hover:opacity-100 dark:hover:bg-gray-600"
+								class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 dark:hover:bg-gray-600"
 								onclick={(e) => handleDeletePinned(e, trip.id)}
 							>
 								<X class="h-3.5 w-3.5" />
@@ -132,7 +132,7 @@
 				<div class="space-y-2">
 					{#each unpinnedRecentTrips as trip (trip.id)}
 						<div
-							class="dark:hover:bg-gray-750 shadow-xs group relative rounded-lg border border-gray-200 bg-white transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+							class="dark:hover:bg-gray-750 group relative rounded-lg border border-gray-200 bg-white shadow-xs transition-all hover:bg-gray-50 hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
 						>
 							<button
 								type="button"
@@ -156,7 +156,7 @@
 							</button>
 
 							<div
-								class="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+								class="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
 							>
 								<button
 									type="button"
