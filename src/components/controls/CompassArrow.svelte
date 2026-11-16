@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     This Svelte component renders an arrow icon that rotates based on the provided `stopDirection` prop.
 

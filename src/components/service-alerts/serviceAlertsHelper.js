@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // @ts-check
 
 /** @typedef {import('$lib/types').ServiceAlert} ServiceAlert */

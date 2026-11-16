@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, expect, test, describe, vi } from 'vitest';

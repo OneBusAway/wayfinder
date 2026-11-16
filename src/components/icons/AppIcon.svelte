@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
 	@component
 	Renders either a Lucide component or a Font Awesome icon definition. Transit

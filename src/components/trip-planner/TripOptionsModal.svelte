@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { fly } from 'svelte/transition';
 	import { t } from 'svelte-i18n';

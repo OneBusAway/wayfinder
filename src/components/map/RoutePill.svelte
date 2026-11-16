@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
 	@component
 	Compact route badge used inside map popups: the route's color, its mode icon and

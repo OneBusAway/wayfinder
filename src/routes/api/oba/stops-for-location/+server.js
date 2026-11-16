@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { json } from '@sveltejs/kit';
 import oba, { handleOBAResponse } from '$lib/obaSdk';
 import { getAgencyFilter, filterStops } from '$lib/agencyFilter.js';

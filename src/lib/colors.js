@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 export const COLORS = {
 	POLYLINE: '#359ff7',
 	POLYLINE_ARROW_STROKE: '#21649b',

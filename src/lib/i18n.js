@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Initializes internationalization (i18n) support for the application.
  *

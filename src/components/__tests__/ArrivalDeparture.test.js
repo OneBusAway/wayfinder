@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { env } from '$env/dynamic/public';
 import { render, screen } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';

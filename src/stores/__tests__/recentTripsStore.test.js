@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Override the global vitest-setup mock: store tests need browser = true

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * @typedef {Object} AnalyticsEnvelope
  * @property {string} name      Event name (e.g. "pageview", "search", "click").

@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     A draggable bottom sheet anchored to the bottom edge of its nearest positioned

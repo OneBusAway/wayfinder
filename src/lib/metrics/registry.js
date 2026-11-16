@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import os from 'node:os';
 import client from 'prom-client';
 

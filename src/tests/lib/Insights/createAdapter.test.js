@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createAdapter } from '$lib/Insights/createAdapter.js';
 import { NoopAdapter } from '$lib/Insights/adapters/NoopAdapter.js';

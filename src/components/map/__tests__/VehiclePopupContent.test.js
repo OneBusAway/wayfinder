@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render, screen } from '@testing-library/svelte';
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import VehiclePopupContent from '../VehiclePopupContent.svelte';

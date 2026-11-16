@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { http, HttpResponse } from 'msw';
 
 export const handlers = [

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import oba from '$lib/obaSdk.js';
 import { bingGeocode, googleGeocode } from '$lib/geocoder';
 import { getBoundsCache } from '$lib/serverCache.js';

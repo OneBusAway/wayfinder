@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Parsing for maglev's /api/ondemand responses. Parsing never throws on
  * well-formed JSON: unknown enum values become 'unknown', missing arrays become

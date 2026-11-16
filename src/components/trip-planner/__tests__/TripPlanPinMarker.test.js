@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/svelte';
 import TripPlanPinMarker from '../tripPlanPinMarker.svelte';

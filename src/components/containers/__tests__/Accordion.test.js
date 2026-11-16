@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import AccordionFixture from './AccordionFixture.svelte';

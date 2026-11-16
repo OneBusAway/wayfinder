@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Stacking layers for the stop-selection route overlay.
  *

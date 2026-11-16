@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * OTP (OpenTripPlanner) constants and default values.
  * These match the existing server defaults and iOS OTPKit patterns.

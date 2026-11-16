@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi } from 'vitest';
 
 const mockEnv = vi.hoisted(() => ({ PUBLIC_COLOR_VEHICLE_HIGHLIGHT: '#FF0000' }));

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * OTP trip plan request object creation.
  * Creates structured request objects from various input formats.

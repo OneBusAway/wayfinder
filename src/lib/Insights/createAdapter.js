@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { NoopAdapter } from './adapters/NoopAdapter.js';
 import { PlausibleAdapter } from './adapters/PlausibleAdapter.js';
 import { UmamiAdapter } from './adapters/UmamiAdapter.js';

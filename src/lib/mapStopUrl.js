@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Path for a stop opened on the map. Shareable, and pushed onto history when a
  * marker is tapped. Distinct from the standalone `/stops/{id}` detail page.

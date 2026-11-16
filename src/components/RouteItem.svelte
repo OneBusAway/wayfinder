@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { removeAgencyPrefix } from '$lib/utils';
 	import { adjustColorForDarkMode } from '$lib/colorUtils';

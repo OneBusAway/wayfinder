@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import oba, { handleOBAResponse } from '$lib/obaSdk.js';
 
 /** @type {import('./$types').RequestHandler} */

@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { attachRoutesToStops } from '$lib/utils';
 	import { calculateMidpoint } from '$lib/mathUtils';

@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { t } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';

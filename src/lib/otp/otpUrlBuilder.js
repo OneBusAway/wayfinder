@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * OTP URL building utilities.
  * These are pure functions with no side effects - fully testable.

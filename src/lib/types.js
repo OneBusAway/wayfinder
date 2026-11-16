@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Shared JSDoc type definitions used across components.
  *

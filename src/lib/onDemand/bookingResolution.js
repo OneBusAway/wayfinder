@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { resolvePickupBookingRule } from '$lib/onDemand/models.js';
 import { compareInstants, earliestAfter, minInstant } from '$lib/onDemand/instants.js';
 

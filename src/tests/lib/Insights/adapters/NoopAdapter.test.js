@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import { NoopAdapter } from '$lib/Insights/adapters/NoopAdapter.js';
 

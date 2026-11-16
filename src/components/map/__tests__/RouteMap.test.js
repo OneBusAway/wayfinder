@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render } from '@testing-library/svelte';
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import RouteMap from '../RouteMap.svelte';
