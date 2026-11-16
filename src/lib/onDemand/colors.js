@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 export const ZONE_BRAND_COLOR = '#78aa36';
 export const ZONE_FALLBACK_PALETTE = [
 	'#3b82f6',

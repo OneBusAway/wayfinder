@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Default duration (ms) used to glide a vehicle marker between two real-time
  * position updates.

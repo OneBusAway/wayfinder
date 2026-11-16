@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import Header from '$components/navigation/Header.svelte';
 	import 'temporal-polyfill/global';

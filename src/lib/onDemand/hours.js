@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { parseGtfsTime } from '$lib/onDemand/bookingDeadline.js';
 
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];

@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     Shows a selected route's description and its list of stops inside a draggable

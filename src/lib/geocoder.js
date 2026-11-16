@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 export async function googleGeocode({ apiKey, query, bounds = null }) {
 	let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`;
 

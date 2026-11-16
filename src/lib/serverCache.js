@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import oba from '$lib/obaSdk.js';
 import { calculateBoundsFromAgencies } from '$lib/mathUtils.js';
 import { getAgencyFilter } from '$lib/agencyFilter.js';

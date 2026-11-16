@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	// @ts-check
 	import { t } from 'svelte-i18n';

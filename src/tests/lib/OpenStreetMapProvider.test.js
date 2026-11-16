@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { mount, unmount } from 'svelte';
 import OpenStreetMapProvider, {

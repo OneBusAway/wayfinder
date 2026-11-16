@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!-- src/routes/(map)/map/stops/[stopID]/+page.svelte -->
 <!--
     "/map/stops/{id}" — the map with this stop's sheet open. The map and sheet are

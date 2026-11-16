@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, test, expect } from 'vitest';
 import { activeRoutesFromArrivals } from '$lib/activeRoutes.js';
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { parseServiceEntry, parseServiceList } from '$lib/onDemand/models.js';
 
 let highlightedService = $state.raw(null);

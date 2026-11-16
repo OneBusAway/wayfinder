@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { referencedLocationIds } from '$lib/onDemand/models.js';
 
 /**

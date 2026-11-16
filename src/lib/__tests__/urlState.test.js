@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi } from 'vitest';
 import * as navigation from '$app/navigation';
 import * as environment from '$app/environment';

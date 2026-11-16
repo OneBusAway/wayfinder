@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // Integration coverage for layover collapsing in StopPane's arrival list.
 // StopPane.test.js mocks the accordion wrappers, so it can never observe how
 // many rows the list renders. Here the REAL SingleSelectAccordion and

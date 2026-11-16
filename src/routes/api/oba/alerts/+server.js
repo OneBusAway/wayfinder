@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import { buildURL } from '$lib/urls';
 import { getAgencyFilter, alertBelongsToAgency } from '$lib/agencyFilter.js';

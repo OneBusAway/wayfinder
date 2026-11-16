@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 export const ZONE_STREET_MAX_KM = 4;
 export const ZONE_REGION_MAX_KM = 65;
 const KM_PER_DEGREE_LATITUDE = 111.32;

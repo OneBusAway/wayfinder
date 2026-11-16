@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import TabLink from '../../components/tabs/TabLink.svelte';
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Converts from OBA orientation to direction.
  *

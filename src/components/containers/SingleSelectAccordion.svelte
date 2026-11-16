@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script generics="Data, Item">
 	// @ts-check
 	import { setContext } from 'svelte';

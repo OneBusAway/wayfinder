@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
 const getScheduleForStop = vi.hoisted(() => vi.fn());

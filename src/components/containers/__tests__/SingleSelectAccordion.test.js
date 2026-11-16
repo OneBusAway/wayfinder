@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';

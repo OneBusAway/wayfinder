@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render, screen, fireEvent } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
 import Header from '../Header.svelte';

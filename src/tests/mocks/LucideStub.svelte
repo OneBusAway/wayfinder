@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	let { class: className = '', size = 24, ...rest } = $props();
 </script>

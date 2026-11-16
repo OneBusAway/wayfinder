@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 export function getLocalTimeZone() {
 	return new Intl.DateTimeFormat().resolvedOptions().timeZone;
 }

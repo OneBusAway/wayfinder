@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { compareRoutes } from './routeUtils';
 
 export function debounce(func, wait) {

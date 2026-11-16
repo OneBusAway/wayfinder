@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { pushState, replaceState, afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';

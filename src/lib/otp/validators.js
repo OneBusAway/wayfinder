@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Validation functions for OTP trip planning parameters.
  * All validators return { valid: boolean, error?: string }

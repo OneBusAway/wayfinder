@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { BaseAdapter } from './BaseAdapter.js';
 
 export class PlausibleAdapter extends BaseAdapter {

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { setupServer } from 'msw/node';
 import { beforeAll, afterAll, afterEach } from 'vitest';
 import { handlers } from '../mocks/handlers.js';

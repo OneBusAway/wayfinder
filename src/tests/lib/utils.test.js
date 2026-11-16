@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import {
 	attachRoutesToStops,

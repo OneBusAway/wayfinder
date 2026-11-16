@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 const loadServiceEntry = vi.hoisted(() => vi.fn());

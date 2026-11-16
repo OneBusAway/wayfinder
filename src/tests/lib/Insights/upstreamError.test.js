@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import { insightsError, upstreamError } from '$lib/Insights/upstreamError.js';
 

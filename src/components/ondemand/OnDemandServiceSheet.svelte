@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     Detail for one on-demand service in a bottom sheet over the map: status and

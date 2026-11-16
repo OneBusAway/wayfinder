@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { browser } from '$app/environment';
 import { replaceState } from '$app/navigation';
 
