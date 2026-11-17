@@ -71,7 +71,7 @@
 		mapProvider: MapProvider;
 		isStopInteractive?: (stop: Stop) => boolean;
 		onCollapse?: (() => void) | null;
-		tripPlanAttempted: boolean;
+		tripPlanAttempted?: boolean;
 	}
 
 	let {
