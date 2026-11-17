@@ -7,6 +7,10 @@ import {
 	filterRouteIds
 } from '$lib/agencyFilter.js';
 
+/**
+ * Loads stop details and arrivals/departures for a stop,
+ * applying agency filtering if configured.
+ */
 export async function load({ params }) {
 	const stopID = params.stopID;
 

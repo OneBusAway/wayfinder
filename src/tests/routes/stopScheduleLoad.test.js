@@ -149,7 +149,7 @@ describe('/stops/[stopID]/schedule load', () => {
 		});
 	});
 
-	test('filters references.routes and stop.routeIds when agency filter is configured', async () => {
+	test('filters references.routes, entry.stopRouteSchedules, and stop.routeIds when agency filter is configured', async () => {
 		mockPrivateEnv.PRIVATE_OBA_AGENCY_FILTER = '1';
 		const multiAgencyStop = {
 			id: '1_75403',
@@ -159,7 +159,33 @@ describe('/stops/[stopID]/schedule load', () => {
 		const response = {
 			code: 200,
 			data: {
-				entry: { stopId: multiAgencyStop.id, stopRouteSchedules: [] },
+				entry: {
+					stopId: multiAgencyStop.id,
+					stopRouteSchedules: [
+						{
+							routeId: '1_100',
+							stopRouteDirectionSchedules: [
+								{
+									scheduleStopTimes: [
+										{ arrivalTime: new Date('2026-10-02T15:05:00Z').getTime(), tripId: '1_trip' }
+									],
+									tripHeadsign: 'Capitol Hill'
+								}
+							]
+						},
+						{
+							routeId: '40_550',
+							stopRouteDirectionSchedules: [
+								{
+									scheduleStopTimes: [
+										{ arrivalTime: new Date('2026-10-02T15:10:00Z').getTime(), tripId: '40_trip' }
+									],
+									tripHeadsign: 'Bellevue'
+								}
+							]
+						}
+					]
+				},
 				references: {
 					routes: [
 						{ id: '1_100', shortName: '8' },
@@ -175,5 +201,8 @@ describe('/stops/[stopID]/schedule load', () => {
 
 		expect(result.routes).toEqual([{ id: '1_100', shortName: '8' }]);
 		expect(result.stop.routeIds).toEqual(['1_100']);
+		// Filtered-out agency 40 schedule is removed, and kept route 1_100 displays its short name ("8")
+		expect(result.schedules).toHaveLength(1);
+		expect(result.schedules[0].tripHeadsign).toBe('8 - Capitol Hill');
 	});
 });

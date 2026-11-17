@@ -59,6 +59,10 @@ export function extractNumericValue(route) {
  * Compares two routes for sorting purposes.
  * Sorts numerically when both routes have numeric values,
  * otherwise falls back to alphabetical comparison.
+ *
+ * @param {Object} a - First route object
+ * @param {Object} b - Second route object
+ * @returns {number} Comparison result (-1, 0, 1)
  */
 export function compareRoutes(a, b) {
 	const aNumeric = extractNumericValue(a);

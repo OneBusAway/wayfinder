@@ -3,8 +3,12 @@ import { env } from '$env/dynamic/public';
 import { getTodayDateForInput } from '$lib/dateTimeInput';
 import { getRouteSchedules } from '$lib/scheduleForStop';
 import { getScheduleForStop } from '$lib/server/obaScheduleForStop';
-import { getAgencyFilter, filterRoutes, filterRouteIds } from '$lib/agencyFilter';
+import { getAgencyFilter, filterRoutes, filterRouteIds, filterByRouteId } from '$lib/agencyFilter';
 
+/**
+ * Loads schedule and route data for a stop on a given service day,
+ * applying agency filtering if configured.
+ */
 export async function load({ params }) {
 	const serviceDay = getTodayDateForInput(env.PUBLIC_OBA_TIMEZONE);
 	const response = await getScheduleForStop(params.stopID, serviceDay);
@@ -32,6 +36,12 @@ export async function load({ params }) {
 		if (scheduleForStop.references?.routes) {
 			scheduleForStop.references.routes = filterRoutes(
 				scheduleForStop.references.routes,
+				agencyFilter
+			);
+		}
+		if (scheduleForStop.entry?.stopRouteSchedules) {
+			scheduleForStop.entry.stopRouteSchedules = filterByRouteId(
+				scheduleForStop.entry.stopRouteSchedules,
 				agencyFilter
 			);
 		}
