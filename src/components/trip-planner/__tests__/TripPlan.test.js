@@ -828,6 +828,22 @@ describe('TripPlan pending location selection', () => {
 		unmount();
 	});
 
+	it('shows a selection hint after autocomplete results are dismissed', async () => {
+		vi.useFakeTimers();
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.keyDown(fromInput, { key: 'Escape' });
+
+		expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+		expect(screen.getByText('trip-planner.select_location_from_results')).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' })).toBeDisabled();
+		unmount();
+	});
+
 	it('clears the location when a field is erased, like the clear button', async () => {
 		const { unmount } = render(TripPlan, { props });
 		const { fromMarker } = await selectFromAndTo(mapProvider);
@@ -855,6 +871,7 @@ describe('TripPlan pending location selection', () => {
 	});
 
 	it('waits to re-plan while the other field has text that was not picked', async () => {
+		vi.useFakeTimers();
 		const { unmount } = render(TripPlan, { props: { ...props, tripPlanAttempted: true } });
 		await selectFromAndTo(mapProvider);
 		// Setting the locations on the map already re-planned the trip.
@@ -868,6 +885,113 @@ describe('TripPlan pending location selection', () => {
 		await tick();
 
 		expect(global.fetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/otp/plan'));
+		expect(props.clearTripItineraries).toHaveBeenCalledOnce();
+
+		await vi.advanceTimersByTimeAsync(500);
+		await tick();
+		await fireEvent.click(screen.getByRole('option', { name: 'Capitol Hill' }));
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+		expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/otp/plan'));
+		unmount();
+	});
+
+	it('clears the stale itinerary and ignores an in-flight plan after a deferred re-plan', async () => {
+		vi.useFakeTimers();
+		let resolvePlan;
+		global.fetch = vi.fn((url) => {
+			if (url.startsWith('/api/otp/plan?')) {
+				return new Promise((resolve) => {
+					resolvePlan = () =>
+						resolve({
+							ok: true,
+							json: () => Promise.resolve({ plan: { itineraries: [{ id: 'stale-itinerary' }] } })
+						});
+				});
+			}
+			return Promise.resolve({
+				ok: true,
+				json: () => Promise.resolve({ suggestions: [] })
+			});
+		});
+		props.clearTripItineraries = vi.fn(() => mapProvider.clearAllPolylines());
+		const { unmount } = render(TripPlan, { props: { ...props, tripPlanAttempted: true } });
+		await selectFromAndTo(mapProvider);
+		expect(resolvePlan).toBeTypeOf('function');
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Unpicked location' } });
+		await vi.advanceTimersByTimeAsync(500);
+		window.dispatchEvent(
+			new CustomEvent('setTripPlanLocation', { detail: { type: 'to', lat: 47.8, lng: -122.5 } })
+		);
+		await tick();
+
+		expect(props.clearTripItineraries).toHaveBeenCalledOnce();
+		expect(mapProvider.clearAllPolylines).toHaveBeenCalledTimes(2);
+
+		resolvePlan();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+		expect(props.handleTripPlan).not.toHaveBeenCalled();
+		unmount();
+	});
+
+	it('reports geocode failure and invalidates a plan as soon as selection starts', async () => {
+		vi.useFakeTimers();
+		let resolvePlan;
+		let resolveGeocode;
+		global.fetch = vi.fn((url) => {
+			if (url.startsWith('/api/otp/plan?')) {
+				return new Promise((resolve) => {
+					resolvePlan = () =>
+						resolve({
+							ok: true,
+							json: () => Promise.resolve({ plan: { itineraries: [{ id: 'stale-itinerary' }] } })
+						});
+				});
+			}
+			if (url.startsWith('/api/oba/place-suggestions?')) {
+				return Promise.resolve({
+					ok: true,
+					json: () =>
+						Promise.resolve({
+							suggestions: [{ displayText: 'Capitol Hill', name: 'Capitol Hill' }]
+						})
+				});
+			}
+			if (url.startsWith('/api/oba/geocode-location?')) {
+				return new Promise((resolve) => {
+					resolveGeocode = () => resolve({ ok: false, statusText: 'Not found' });
+				});
+			}
+			throw new Error(`Unexpected request: ${url}`);
+		});
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+		const { unmount } = render(TripPlan, { props: { ...props, tripPlanAttempted: true } });
+		await selectFromAndTo(mapProvider);
+		expect(resolvePlan).toBeTypeOf('function');
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		await vi.advanceTimersByTimeAsync(500);
+		await fireEvent.click(await screen.findByRole('option', { name: 'Capitol Hill' }));
+		expect(screen.getByRole('button', { name: 'trip-planner.plan_your_trip' })).toBeDisabled();
+
+		resolvePlan();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+		expect(props.handleTripPlan).not.toHaveBeenCalled();
+
+		resolveGeocode();
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+		expect(screen.getByRole('alert')).toHaveTextContent('trip-planner.location_selection_failed');
+		expect(fromInput).toHaveValue('Capitol');
+		expect(props.handleTripPlan).not.toHaveBeenCalled();
+
+		consoleSpy.mockRestore();
 		unmount();
 	});
 

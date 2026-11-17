@@ -46,6 +46,8 @@
 	let isGeocodingFrom = $state(false);
 	let isGeocodingTo = $state(false);
 	let isGeocoding = $derived(isGeocodingFrom || isGeocodingTo);
+	let fromLocationError = $state('');
+	let toLocationError = $state('');
 
 	// The field was typed in without picking a new location. Plan waits for a pick
 	// so the fields always show the locations being planned.
@@ -60,6 +62,7 @@
 	let planRequestId = 0;
 	let fromAutocompleteRequestId = 0;
 	let toAutocompleteRequestId = 0;
+	let deferredReplanPending = false;
 	// Recent trips stay behind a compact control so the plan form doesn't grow
 	// a tall history list under From/To (see #577).
 	let showRecentTrips = $state(false);
@@ -150,6 +153,11 @@
 		}
 
 		// Typing only searches. The current route stays until a suggestion is picked.
+		if (isFrom) {
+			fromLocationError = '';
+		} else {
+			toLocationError = '';
+		}
 		const requestId = invalidateAutocompleteRequest(isFrom);
 		if (query.trim() === '') {
 			if (isFrom) {
@@ -170,24 +178,30 @@
 	// text that was not picked, wait for that pick (as Plan does) and drop the
 	// stale plan instead.
 	function replanAfterLocationChange() {
-		if (!tripPlanAttempted && !loading) return;
+		if (!tripPlanAttempted && !loading && !deferredReplanPending) return;
 		if (isFromEdited || isToEdited) {
 			planRequestId++;
 			loading = false;
+			clearTripItineraries();
+			deferredReplanPending = true;
 			return;
 		}
 		planTrip();
 	}
 
 	async function selectLocation(suggestion, isFrom) {
+		planRequestId++;
+		loading = false;
 		const currentRequestId = isFrom ? ++fromRequestId : ++toRequestId;
 
 		if (isFrom) {
 			fromResults = [];
 			isGeocodingFrom = true;
+			fromLocationError = '';
 		} else {
 			toResults = [];
 			isGeocodingTo = true;
+			toLocationError = '';
 		}
 
 		try {
@@ -220,6 +234,16 @@
 			replanAfterLocationChange();
 		} catch (error) {
 			console.error('Error selecting location:', error);
+			const isStale = isFrom
+				? currentRequestId !== fromRequestId
+				: currentRequestId !== toRequestId;
+			if (!isStale) {
+				if (isFrom) {
+					fromLocationError = $t('trip-planner.location_selection_failed');
+				} else {
+					toLocationError = $t('trip-planner.location_selection_failed');
+				}
+			}
 		} finally {
 			if (isFrom && currentRequestId === fromRequestId) {
 				isGeocodingFrom = false;
@@ -240,6 +264,7 @@
 			fromPlace = fromQuery = '';
 			fromResults = [];
 			isLoadingFrom = false;
+			fromLocationError = '';
 			selectedFrom = null;
 			if (fromMarker) {
 				mapProvider.removePinMarker(fromMarker);
@@ -251,6 +276,7 @@
 			toPlace = toQuery = '';
 			toResults = [];
 			isLoadingTo = false;
+			toLocationError = '';
 			selectedTo = null;
 			if (toMarker) {
 				mapProvider.removePinMarker(toMarker);
@@ -304,6 +330,8 @@
 		selectedTo = result.selectedTo;
 		fromMarker = result.fromMarker;
 		toMarker = result.toMarker;
+		fromLocationError = '';
+		toLocationError = '';
 
 		replanAfterLocationChange();
 	}
@@ -369,6 +397,7 @@
 			return;
 		}
 
+		deferredReplanPending = false;
 		// Swap and recent-trip selection can start a plan while another is still in
 		// flight, and responses may arrive out of order.
 		const requestId = ++planRequestId;
@@ -444,6 +473,7 @@
 			selectedFrom = coords;
 			fromPlace = fromQuery = label;
 			fromMarker = mapProvider.addPinMarker(coords, $t('trip-planner.from'));
+			fromLocationError = '';
 		} else if (type === 'to') {
 			toRequestId++;
 			isGeocodingTo = false;
@@ -453,6 +483,7 @@
 			selectedTo = coords;
 			toPlace = toQuery = label;
 			toMarker = mapProvider.addPinMarker(coords, $t('trip-planner.to'));
+			toLocationError = '';
 		}
 
 		replanAfterLocationChange();
@@ -575,6 +606,15 @@
 						onSelect={(location) => selectLocation(location, true)}
 						onDismiss={() => dismissSearchResults(true)}
 					/>
+					{#if fromLocationError}
+						<p role="alert" class="mt-1 text-xs text-red-600 dark:text-red-400">
+							{fromLocationError}
+						</p>
+					{:else if isFromEdited}
+						<p class="mt-1 text-xs text-gray-600 dark:text-gray-300">
+							{$t('trip-planner.select_location_from_results')}
+						</p>
+					{/if}
 				</div>
 				<div>
 					<TripPlanSearchField
@@ -587,6 +627,15 @@
 						onInput={(query) => handleSearchInput(query, false)}
 						onSelect={(location) => selectLocation(location, false)}
 					/>
+					{#if toLocationError}
+						<p role="alert" class="mt-1 text-xs text-red-600 dark:text-red-400">
+							{toLocationError}
+						</p>
+					{:else if isToEdited}
+						<p class="mt-1 text-xs text-gray-600 dark:text-gray-300">
+							{$t('trip-planner.select_location_from_results')}
+						</p>
+					{/if}
 				</div>
 			</div>
 		</div>
