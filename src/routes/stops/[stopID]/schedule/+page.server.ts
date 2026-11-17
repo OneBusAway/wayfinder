@@ -3,6 +3,7 @@ import { env } from '$env/dynamic/public';
 import { getTodayDateForInput } from '$lib/dateTimeInput';
 import { getRouteSchedules } from '$lib/scheduleForStop';
 import { getScheduleForStop } from '$lib/server/obaScheduleForStop';
+import { getAgencyFilter, filterRoutes, filterRouteIds } from '$lib/agencyFilter';
 
 export async function load({ params }) {
 	const serviceDay = getTodayDateForInput(env.PUBLIC_OBA_TIMEZONE);
@@ -26,7 +27,21 @@ export async function load({ params }) {
 		error(500, 'Unable to fetch stop.');
 	}
 
+	const agencyFilter = getAgencyFilter();
+	if (agencyFilter) {
+		if (scheduleForStop.references?.routes) {
+			scheduleForStop.references.routes = filterRoutes(
+				scheduleForStop.references.routes,
+				agencyFilter
+			);
+		}
+		if (stop.routeIds) {
+			stop.routeIds = filterRouteIds(stop.routeIds, agencyFilter);
+		}
+	}
+
 	return {
+		routes: scheduleForStop.references?.routes ?? [],
 		schedules: getRouteSchedules(scheduleForStop, env.PUBLIC_OBA_TIMEZONE || undefined),
 		serviceDay,
 		stop,
