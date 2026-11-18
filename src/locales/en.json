@@ -336,6 +336,7 @@
 		"no_stops": "No stop times available for this trip.",
 		"loading": "Loading trip details...",
 		"live_vehicle": "Live · vehicle {vehicleId}",
+		"previous_trip": "Vehicle is finishing a previous trip",
 		"collapsed_stops": "{count, plural, one {# stop} other {# stops}}"
 	},
 	"ondemand": {
