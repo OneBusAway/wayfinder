@@ -41,6 +41,7 @@
 	} = $props();
 	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 	let isWalking = $derived(leg.mode === 'WALK');
+	let intermediateStops = $derived(isWalking ? [] : (leg.intermediateStops ?? []));
 
 	// Route color properties (from OTP API)
 	let hasRouteColor = $derived(!isWalking && !!leg.routeColor);
@@ -253,6 +254,41 @@
 						</div>
 					{/each}
 				</div>
+			{/if}
+		{/if}
+
+		<!-- Intermediate stops toggle -->
+		{#if intermediateStops.length > 0}
+			<button
+				class="mt-3 flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-medium text-brand-accent transition-colors hover:bg-gray-100 dark:text-brand dark:hover:bg-gray-800"
+				aria-expanded={!!expandedSteps[index]}
+				onclick={() => toggleSteps(index)}
+			>
+				{#if expandedSteps[index]}
+					<ChevronUp class="h-3 w-3 transition-transform duration-200" />
+				{:else}
+					<ChevronDown class="h-3 w-3 transition-transform duration-200" />
+				{/if}
+				{$t('trip_details.collapsed_stops', { values: { count: intermediateStops.length } })}
+			</button>
+
+			{#if expandedSteps[index]}
+				<ol
+					class="mt-3 space-y-2 rounded-lg bg-gray-50 p-3 text-sm dark:bg-gray-800/50"
+					transition:slide={{ duration: 200 }}
+				>
+					{#each intermediateStops as stop, stopIndex (stopIndex)}
+						{@const stopTime = stop.departure ?? stop.arrival}
+						<li class="flex items-baseline justify-between gap-3">
+							<span class="text-gray-800 dark:text-gray-200">{stop.name ?? '—'}</span>
+							{#if stopTime != null}
+								<span class="shrink-0 text-gray-500 tabular-nums dark:text-gray-400">
+									{msToTimeString(stopTime, regionTz)}
+								</span>
+							{/if}
+						</li>
+					{/each}
+				</ol>
 			{/if}
 		{/if}
 	</div>

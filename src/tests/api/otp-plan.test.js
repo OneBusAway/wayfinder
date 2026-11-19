@@ -849,6 +849,75 @@ describe('GET /api/otp/plan', () => {
 		expect(data.error.msg).toBe('Unknown GraphQL error');
 	});
 
+	it('maps intermediatePlaces to intermediateStops with times in unix milliseconds', async () => {
+		const gqlResponse = makeGraphQLResponse();
+		const [walkLeg, busLeg] = gqlResponse.data.planConnection.edges[0].node.legs;
+		walkLeg.intermediatePlaces = null;
+		busLeg.intermediatePlaces = [
+			{
+				name: 'Broadway & E Roy St',
+				lat: 47.6252,
+				lon: -122.3208,
+				arrival: {
+					scheduledTime: '2026-02-19T17:26:00-08:00',
+					estimated: { time: '2026-02-19T17:27:00-08:00' }
+				},
+				departure: {
+					scheduledTime: '2026-02-19T17:26:00-08:00',
+					estimated: { time: '2026-02-19T17:27:30-08:00' }
+				}
+			},
+			{
+				name: '10th Ave E & E Miller St',
+				lat: 47.6412,
+				lon: -122.3197,
+				arrival: { scheduledTime: '2026-02-19T17:33:00-08:00', estimated: null },
+				departure: { scheduledTime: '2026-02-19T17:33:00-08:00', estimated: null }
+			}
+		];
+
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => gqlResponse
+		});
+
+		const response = await GET({ url: makeURL() });
+		const data = await response.json();
+		const [mappedWalkLeg, mappedBusLeg] = data.plan.itineraries[0].legs;
+
+		expect(mappedBusLeg.intermediateStops).toEqual([
+			{
+				name: 'Broadway & E Roy St',
+				lat: 47.6252,
+				lon: -122.3208,
+				arrival: new Date('2026-02-19T17:27:00-08:00').getTime(),
+				departure: new Date('2026-02-19T17:27:30-08:00').getTime()
+			},
+			{
+				name: '10th Ave E & E Miller St',
+				lat: 47.6412,
+				lon: -122.3197,
+				arrival: new Date('2026-02-19T17:33:00-08:00').getTime(),
+				departure: new Date('2026-02-19T17:33:00-08:00').getTime()
+			}
+		]);
+		expect(mappedWalkLeg).not.toHaveProperty('intermediateStops');
+	});
+
+	it('requests intermediatePlaces in the GraphQL query', async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: true,
+			status: 200,
+			json: async () => makeGraphQLResponse()
+		});
+
+		await GET({ url: makeURL() });
+
+		const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+		expect(body.query).toContain('intermediatePlaces');
+	});
+
 	it('defaults legGeometry and steps when missing from GraphQL response', async () => {
 		const gqlResponse = makeGraphQLResponse();
 		const leg = gqlResponse.data.planConnection.edges[0].node.legs[0];
