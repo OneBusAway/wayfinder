@@ -170,6 +170,7 @@
 		"route_load_failed": "No se pudo cargar esta ruta.",
 		"route_shape_failed": "No se pudo dibujar esta ruta en el mapa.",
 		"route_shape_partial": "No se pudo dibujar una parte de esta ruta. Es posible que falte un tramo en el mapa.",
+		"search_failed": "No se pudo completar la búsqueda.",
 		"favorite_saved": "Se guardó en favoritos.",
 		"favorite_removed": "Se quitó de favoritos.",
 		"tap_to_retry": "Toca para reintentar.",

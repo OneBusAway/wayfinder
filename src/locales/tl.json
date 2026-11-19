@@ -170,6 +170,7 @@
 		"route_load_failed": "Hindi ma-load ang rutang ito.",
 		"route_shape_failed": "Hindi maiguhit ang rutang ito sa mapa.",
 		"route_shape_partial": "May bahagi ng rutang ito na hindi naiguhit. Maaaring may kulang na segment sa mapa.",
+		"search_failed": "Hindi makumpleto ang paghahanap.",
 		"favorite_saved": "Na-save sa mga paborito.",
 		"favorite_removed": "Inalis sa mga paborito.",
 		"tap_to_retry": "I-tap para subukang muli.",
