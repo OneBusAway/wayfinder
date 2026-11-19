@@ -170,6 +170,7 @@
 		"route_load_failed": "Không thể tải tuyến đường này.",
 		"route_shape_failed": "Không thể vẽ tuyến đường này trên bản đồ.",
 		"route_shape_partial": "Không thể vẽ một phần của tuyến đường này. Bản đồ có thể bị thiếu một đoạn.",
+		"search_failed": "Không thể hoàn tất tìm kiếm.",
 		"favorite_saved": "Đã lưu vào yêu thích.",
 		"favorite_removed": "Đã xóa khỏi yêu thích.",
 		"tap_to_retry": "Nhấn để thử lại.",

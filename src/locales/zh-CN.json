@@ -170,6 +170,7 @@
 		"route_load_failed": "无法加载该线路。",
 		"route_shape_failed": "无法在地图上绘制该线路。",
 		"route_shape_partial": "该线路部分路段无法绘制，地图上可能缺少一段。",
+		"search_failed": "无法完成搜索。",
 		"favorite_saved": "已添加到收藏。",
 		"favorite_removed": "已从收藏中移除。",
 		"tap_to_retry": "点击重试。",

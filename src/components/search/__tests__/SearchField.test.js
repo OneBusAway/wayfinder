@@ -2,7 +2,9 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
+import { get } from 'svelte/store';
 import SearchField from '../SearchField.svelte';
+import { notifications } from '$stores/notificationStore';
 
 // Mock analytics
 vi.mock('$lib/Insights', () => ({
@@ -10,6 +12,9 @@ vi.mock('$lib/Insights', () => ({
 		reportSearchQuery: vi.fn()
 	}
 }));
+
+// The notification store only shows toasts in the browser
+vi.mock('$app/environment', () => ({ browser: true }));
 
 // Mock svelte-i18n
 vi.mock('svelte-i18n', () => {
@@ -56,6 +61,7 @@ describe('SearchField', () => {
 	});
 
 	afterEach(() => {
+		notifications.dismiss();
 		vi.restoreAllMocks();
 	});
 
@@ -634,15 +640,14 @@ describe('SearchField', () => {
 			consoleSpy.mockRestore();
 		});
 
-		test('handles HTTP error responses', async () => {
+		test('does not pass an HTTP error body on as search results', async () => {
 			const user = userEvent.setup();
 			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-			// Mock HTTP error
 			global.fetch = vi.fn().mockResolvedValue({
 				ok: false,
 				status: 500,
-				json: vi.fn().mockResolvedValue({ error: 'Server error' })
+				json: vi.fn().mockResolvedValue({ error: 'Search failed', message: 'boom' })
 			});
 
 			render(SearchField, {
@@ -652,15 +657,97 @@ describe('SearchField', () => {
 				}
 			});
 
-			const button = screen.getByRole('button');
-			await user.click(button);
+			await user.click(screen.getByRole('button'));
 
-			// Should call handleSearchResults with error response
 			await waitFor(() => {
-				expect(mockHandleSearchResults).toHaveBeenCalledWith({ error: 'Server error' });
+				expect(consoleSpy).toHaveBeenCalledWith(
+					'Error fetching search results:',
+					expect.any(Error)
+				);
+			});
+			expect(mockHandleSearchResults).not.toHaveBeenCalled();
+			expect(analytics.reportSearchQuery).not.toHaveBeenCalled();
+
+			consoleSpy.mockRestore();
+		});
+
+		test.each([
+			[
+				'an HTTP error',
+				() => Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) })
+			],
+			['a network error', () => Promise.reject(new Error('Network error'))]
+		])('tells the user when the search fails with %s', async (_, failingFetch) => {
+			const user = userEvent.setup();
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+			global.fetch = vi.fn().mockImplementation(failingFetch);
+
+			render(SearchField, {
+				props: {
+					value: 'test query',
+					handleSearchResults: mockHandleSearchResults
+				}
+			});
+
+			await user.click(screen.getByRole('button'));
+
+			await waitFor(() => {
+				expect(get(notifications)).toMatchObject({
+					message: 'notifications.search_failed',
+					variant: 'error'
+				});
 			});
 
 			consoleSpy.mockRestore();
+		});
+
+		test('retries the search from the failure notification and clears it on success', async () => {
+			const user = userEvent.setup();
+			const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+			const results = { routes: [], stops: [], location: null, query: 'test query' };
+			global.fetch = vi
+				.fn()
+				.mockResolvedValueOnce({ ok: false, status: 500, json: () => Promise.resolve({}) })
+				.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(results) });
+
+			render(SearchField, {
+				props: {
+					value: 'test query',
+					handleSearchResults: mockHandleSearchResults
+				}
+			});
+
+			await user.click(screen.getByRole('button'));
+			await waitFor(() => expect(get(notifications)?.onRetry).toBeTypeOf('function'));
+
+			get(notifications).onRetry();
+
+			await waitFor(() => expect(mockHandleSearchResults).toHaveBeenCalledWith(results));
+			expect(global.fetch).toHaveBeenCalledTimes(2);
+			expect(get(notifications)).toBeNull();
+
+			consoleSpy.mockRestore();
+		});
+
+		test('leaves a notification raised elsewhere alone when a search succeeds', async () => {
+			const user = userEvent.setup();
+			global.fetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () => Promise.resolve({ routes: [], stops: [], location: null, query: 'q' })
+			});
+			const otherId = notifications.show({ message: 'Saved to favorites.', variant: 'success' });
+
+			render(SearchField, {
+				props: {
+					value: 'test query',
+					handleSearchResults: mockHandleSearchResults
+				}
+			});
+
+			await user.click(screen.getByRole('button'));
+
+			await waitFor(() => expect(mockHandleSearchResults).toHaveBeenCalled());
+			expect(get(notifications)?.id).toBe(otherId);
 		});
 	});
 

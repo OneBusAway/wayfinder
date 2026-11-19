@@ -170,6 +170,7 @@
 		"route_load_failed": "ይህን መንገድ መጫን አልተቻለም።",
 		"route_shape_failed": "ይህን መንገድ በካርታው ላይ መሳል አልተቻለም።",
 		"route_shape_partial": "የዚህ መንገድ ከፊሉ ሊሳል አልቻለም። ካርታው አንድ ክፍል ሊጎድለው ይችላል።",
+		"search_failed": "ፍለጋውን ማጠናቀቅ አልተቻለም።",
 		"favorite_saved": "ወደ ተወዳጆች ተቀምጧል።",
 		"favorite_removed": "ከተወዳጆች ተወግዷል።",
 		"tap_to_retry": "እንደገና ለመሞከር መታ ያድርጉ።",
