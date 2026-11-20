@@ -152,7 +152,9 @@
 						inert={loading}
 					>
 						<Accordion bind:this={accordionComponent}>
-							{#each schedules as schedule (schedule.tripHeadsign)}
+							<!-- FIXME: each block has no key -->
+							<!-- eslint-disable-next-line svelte/require-each-key -->
+							{#each schedules as schedule}
 								<AccordionItem>
 									{#snippet header()}
 										<span>{schedule.tripHeadsign}</span>
