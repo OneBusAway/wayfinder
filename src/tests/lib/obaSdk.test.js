@@ -60,9 +60,19 @@ describe('OneBusAway Client', () => {
 			expect(result.body).toEqual(mockResponse);
 		});
 
-		it('should throw error when status code is not 200', () => {
+		it('should throw error with upstream status code when status code is not 200', () => {
 			const mockResponse = {
 				code: 404,
+				data: null
+			};
+
+			expect(() => handleOBAResponse(mockResponse, 'stops')).toThrow(/Unable to fetch stops/);
+			expect(error).toHaveBeenCalledWith(404, 'Unable to fetch stops.');
+		});
+
+		it('should fall back to 500 when status code is invalid or outside 400-599', () => {
+			const mockResponse = {
+				code: 999,
 				data: null
 			};
 
