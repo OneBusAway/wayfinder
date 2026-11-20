@@ -24,10 +24,15 @@
 
 	// Today's schedules come from the server, already grouped. Other dates
 	// replace them here in the browser only, so a refresh always starts from today.
-	let selectedDate: Date = $derived(serviceDayToDate(data.serviceDay));
+	// We track user overrides in state and derive the active date and schedules.
+	let userDate = $state<Date | null>(null);
+	let selectedDate: Date = $derived(userDate ?? serviceDayToDate(data.serviceDay));
 
 	// Null when a request for another date fails.
-	let schedules: RouteSchedule[] | null = $derived(data.schedules);
+	let userSchedules = $state<RouteSchedule[] | null | undefined>(undefined);
+	let schedules: RouteSchedule[] | null = $derived(
+		userSchedules !== undefined ? userSchedules : data.schedules
+	);
 	let loading = $state(false);
 	let accordionComponent: Accordion | null = $state(null);
 	let allRoutesExpanded = $state(false);
@@ -40,6 +45,8 @@
 	// still loading for the old data is stale. Leaving the page cancels it too.
 	$effect(() => {
 		void data;
+		userDate = null;
+		userSchedules = undefined;
 		return () => {
 			scheduleRequestController?.abort();
 			loading = false;
@@ -52,7 +59,7 @@
 	const stopId = $derived(data.stopId);
 
 	function selectDate(date: Date) {
-		selectedDate = date;
+		userDate = date;
 		loadSchedule(dateToServiceDay(date));
 	}
 
@@ -65,12 +72,12 @@
 			const result = await fetchScheduleForStop(fetch, stopId, serviceDay, {
 				signal: requestController.signal
 			});
-			if (!requestController.signal.aborted) schedules = getRouteSchedules(result, regionTz);
+			if (!requestController.signal.aborted) userSchedules = getRouteSchedules(result, regionTz);
 		} catch (error) {
 			if (requestController.signal.aborted) return;
 			console.error('Error fetching schedules:', error);
 			// Don't leave the previous date's schedules looking current.
-			schedules = null;
+			userSchedules = null;
 		} finally {
 			if (scheduleRequestController === requestController) {
 				loading = false;
