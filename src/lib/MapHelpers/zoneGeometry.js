@@ -16,7 +16,7 @@
 const MIN_RING_POSITIONS = 4;
 
 /**
- * @param {ZoneGeometry | null | undefined} geometry
+ * @param {{ type?: string, coordinates?: unknown } | null | undefined} geometry
  * @returns {Array<Array<Array<[number, number]>>>} polygons → rings → positions
  */
 export function polygonsOf(geometry) {

@@ -46,6 +46,13 @@ const MATCH_REASONS = new Set([
  * @typedef {Object} OnDemandBookingRule
  * @property {string} id
  * @property {number | null} bookingType
+ * @property {number | null} priorNoticeDurationMin
+ * @property {number | null} priorNoticeDurationMax
+ * @property {number | null} priorNoticeLastDay
+ * @property {string | null} priorNoticeLastTime
+ * @property {number | null} priorNoticeStartDay
+ * @property {string | null} priorNoticeStartTime
+ * @property {string | null} priorNoticeCalendarId
  * @property {string | null} message
  * @property {string | null} pickupMessage
  * @property {string | null} dropOffMessage
@@ -256,7 +263,7 @@ export function onDemandServiceIds(entity) {
  * rule for is dangling, which the booking logic treats as unknown.
  * @param {OnDemandService} service
  * @param {AvailabilityRule} rule
- * @returns {{ bookingRule: any | null, dangling: boolean }}
+ * @returns {{ bookingRule: OnDemandBookingRule | null, dangling: boolean }}
  */
 export function resolvePickupBookingRule(service, rule) {
 	if (rule.pickupBookingRuleId == null) return { bookingRule: null, dangling: false };
@@ -268,6 +275,7 @@ export function resolvePickupBookingRule(service, rule) {
  * The booking rule whose phone, URLs and messages the UI shows: the pickup rule
  * of the first availability rule that has one, else the first in references.
  * @param {OnDemandService} service
+ * @returns {OnDemandBookingRule | null}
  */
 export function contactBookingRule(service) {
 	for (const rule of service.rules) {
