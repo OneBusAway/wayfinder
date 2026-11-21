@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	let { icon = '', label = '' } = $props();
 </script>

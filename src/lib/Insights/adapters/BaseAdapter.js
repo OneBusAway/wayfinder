@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { insightsError, upstreamError } from '../upstreamError.js';
 
 export class BaseAdapter {

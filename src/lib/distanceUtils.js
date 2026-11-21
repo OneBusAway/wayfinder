@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { PUBLIC_DISTANCE_UNIT } from '$env/static/public';
 import { browser } from '$app/environment';
 

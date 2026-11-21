@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import StopPane from '$components/stops/StopPane.svelte';
 	import StopPageHeader from '$components/stops/StopPageHeader.svelte';

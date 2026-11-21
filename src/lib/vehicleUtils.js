@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * @type {Map<activeTripId, trip>}
  * for faster lookup

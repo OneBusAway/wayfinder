@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { env } from '$env/dynamic/public';
 import { getTodayDateForInput } from '$lib/dateTimeInput';
 import { handleOBAResponse } from '$lib/obaSdk';

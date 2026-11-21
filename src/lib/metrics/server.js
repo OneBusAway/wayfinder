@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import http from 'node:http';
 import { metricsContentType, renderMetrics } from './registry.js';
 

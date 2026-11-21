@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
 	@component
 	Lists favorited stops and routes. Item select and delete are sibling buttons

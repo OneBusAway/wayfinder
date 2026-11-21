@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { json } from '@sveltejs/kit';
 import { parseLocationQuery } from '$lib/onDemand/params.js';
 import { loadServicesForLocation, onDemandResponse } from '$lib/onDemand/upstream.server.js';

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
 	buildVehiclePopupData,

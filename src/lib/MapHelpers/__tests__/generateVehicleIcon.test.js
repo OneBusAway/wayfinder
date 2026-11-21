@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('$env/dynamic/public', () => ({

@@ -42,6 +42,25 @@ export default [
 		}
 	},
 	{
+		files: ['src/**/*.{js,cjs,mjs}'],
+		rules: {
+			'no-restricted-syntax': [
+				'error',
+				{
+					selector: 'Program',
+					message: 'Use TypeScript (.ts) for new files. JavaScript (.js) files are not allowed.'
+				}
+			]
+		}
+	},
+	{
+		files: ['src/**/*.svelte'],
+		rules: {
+			// `style` defaults to requiring no lang attribute, so allow the existing PostCSS usage.
+			'svelte/block-lang': ['error', { script: 'ts', style: [null, 'postcss'] }]
+		}
+	},
+	{
 		ignores: ['build/', '.svelte-kit/', 'dist/', 'src/lib/googleMaps.js', 'coverage']
 	}
 ];

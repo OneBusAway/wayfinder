@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * GeoJSON Polygon/MultiPolygon helpers for drawing on-demand zones. Positions
  * are GeoJSON [lon, lat]. Providers disagree on hole winding (Google fills by

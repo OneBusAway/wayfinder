@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Extracts numeric value from route short name for sorting purposes.
  * Routes without numeric values are placed at the end.

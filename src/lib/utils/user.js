@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 /*
 @param {string} name

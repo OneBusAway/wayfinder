@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock getOtpApiType at the module level — controls which path +server.js takes

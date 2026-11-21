@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { startMetricsServer, stopMetricsServer } from '$lib/metrics/server.js';
 import { metricsContentType } from '$lib/metrics/registry.js';

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render } from '@testing-library/svelte';
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import Layout from '$src/routes/+layout.svelte';

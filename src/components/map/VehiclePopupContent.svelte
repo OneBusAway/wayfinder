@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { CalendarClock, Clock, MapPin } from '@lucide/svelte';
 	import RoutePill from '$components/map/RoutePill.svelte';

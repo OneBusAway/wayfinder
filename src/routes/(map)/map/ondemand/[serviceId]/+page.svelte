@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     "/map/ondemand/{id}" — the map with this on-demand service's sheet open. The
     map and sheet are rendered by the (map) layout (MapExperience); this page

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import { polygonsOf, isClockwise, orientRing } from '$lib/MapHelpers/zoneGeometry.js';
 import { square } from '../../fixtures/onDemand.js';

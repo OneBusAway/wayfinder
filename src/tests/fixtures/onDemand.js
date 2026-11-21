@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { parseServiceEntry } from '$lib/onDemand/models.js';
 
 export const envelope = (data, code = 200) => ({

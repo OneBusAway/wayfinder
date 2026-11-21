@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	// @ts-check
 	import ArrivalDeparture from '$components/ArrivalDeparture.svelte';

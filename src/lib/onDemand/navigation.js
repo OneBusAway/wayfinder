@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { pushState } from '$app/navigation';
 import { onDemandServicePath } from '$lib/urls';
 

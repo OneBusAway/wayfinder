@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import oba from '$lib/obaSdk';
 
 // Per-process cache: keep only headsigns, not the multi-megabyte route schedules.

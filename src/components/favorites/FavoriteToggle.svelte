@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
 	@component
 	Star button that toggles a stop or route in the favorites store.

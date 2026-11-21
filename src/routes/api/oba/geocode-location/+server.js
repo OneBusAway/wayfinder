@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { bingGeocode, googleGeocode } from '$lib/geocoder';
 import { getBoundsCache } from '$lib/serverCache.js';
 

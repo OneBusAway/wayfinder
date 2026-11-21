@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     Owns the map experience. Because `/` and `/map/stops/[stopID]` share this

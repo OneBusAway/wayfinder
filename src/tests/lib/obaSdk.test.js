@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import onebusaway from 'onebusaway-sdk';
 import { handleOBAResponse } from '$lib/obaSdk';

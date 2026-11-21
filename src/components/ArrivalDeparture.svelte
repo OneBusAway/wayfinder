@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { t } from 'svelte-i18n';
 	import { env } from '$env/dynamic/public';
@@ -143,13 +144,9 @@
 		// Frequency (exact_times=0) trips
 		if (frequency) {
 			const headwayAsMinutes = Math.floor(frequency.headway / 60);
-			const formatter = new Intl.DateTimeFormat([], {
-				hour: '2-digit',
-				minute: '2-digit'
-			});
 
 			if (now < frequency.startTime) {
-				const label = formatter.format(new Date(frequency.startTime));
+				const label = msToLocalArrivalDepartureTimeString(frequency.startTime, regionTz);
 				return $t('status.frequency_from', {
 					values: {
 						headway: headwayAsMinutes,
@@ -157,7 +154,7 @@
 					}
 				});
 			} else {
-				const label = formatter.format(new Date(frequency.endTime));
+				const label = msToLocalArrivalDepartureTimeString(frequency.endTime, regionTz);
 				return $t('status.frequency_until', {
 					values: {
 						headway: headwayAsMinutes,

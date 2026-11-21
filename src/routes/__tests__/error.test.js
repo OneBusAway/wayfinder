@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest';
 import ErrorPage from '$src/routes/+error.svelte';

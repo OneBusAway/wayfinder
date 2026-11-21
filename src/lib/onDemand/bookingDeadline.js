@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Booking-deadline evaluation, normative per wiki "GTFS-Flex Support" §2.5 as
  * refined by maglev docs/superpowers/specs/2026-09-24-gtfs-flex-implementation-design.md §6.

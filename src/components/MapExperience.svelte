@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { pushState, replaceState, afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -690,6 +691,7 @@
 					{handleViewAllRoutes}
 					{clearPolylines}
 					{handleTripPlan}
+					{tripPlanAttempted}
 					{handleStopMarkerSelect}
 					{handleMapStopMarkerSelect}
 					{clearTripItineraries}
@@ -741,7 +743,7 @@
 					<TripPlanModal
 						{mapProvider}
 						showForm={true}
-						hasPlanned={tripPlanAttempted}
+						{tripPlanAttempted}
 						{handleTripPlan}
 						{clearTripItineraries}
 						itineraries={tripItineraries}

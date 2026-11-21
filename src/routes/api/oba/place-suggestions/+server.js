@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // @ts-check
 import { json } from '@sveltejs/kit';
 import { fetchAutocompleteResults } from '$lib/geocoder';

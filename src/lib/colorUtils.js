@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Color utility functions for generating Tailwind color palettes
  * Used by tailwind.config.js to dynamically generate the primary color palette

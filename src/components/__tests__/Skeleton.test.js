@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render } from '@testing-library/svelte';
 import { expect, test, describe } from 'vitest';
 import Skeleton from '../Skeleton.svelte';

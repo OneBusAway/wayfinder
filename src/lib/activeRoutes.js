@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { visibleArrivals } from '$lib/arrivalFiltering.js';
 import { mapContrastColor, contrastRatio } from '$lib/colorUtils.js';
 import { ROUTE_FALLBACK_PALETTE } from '$lib/colors.js';

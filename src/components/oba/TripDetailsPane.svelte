@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { _ } from 'svelte-i18n';
 	import { onMount, onDestroy } from 'svelte';

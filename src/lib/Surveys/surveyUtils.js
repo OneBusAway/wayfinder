@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { markSurveyAnswered, surveyStore } from '$stores/surveyStore.js';
 
 export async function loadSurveys(stop = null, userId = null) {
