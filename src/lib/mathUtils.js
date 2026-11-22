@@ -21,7 +21,7 @@ export function toDirection(orientation) {
 	return Math.abs(direction);
 }
 
-function isValidCoordinate(lat, lon) {
+export function isValidCoordinate(lat, lon) {
 	return (
 		Number.isFinite(lat) &&
 		Number.isFinite(lon) &&
@@ -71,9 +71,13 @@ export function calculateMidpoint(stops) {
  * @param {number} lon1 - Longitude of the first location in degrees.
  * @param {number} lat2 - Latitude of the second location in degrees.
  * @param {number} lon2 - Longitude of the second location in degrees.
- * @returns {number} The distance between the two points in kilometers.
+ * @returns {number | null} The distance between the two points in kilometers, or null if any coordinate is invalid.
  */
 export function calcDistanceBetweenTwoPoints(lat1, lon1, lat2, lon2) {
+	if (!isValidCoordinate(lat1, lon1) || !isValidCoordinate(lat2, lon2)) {
+		return null;
+	}
+
 	const earthRadiusKm = 6371; // Earth's radius in kilometers
 	const deltaLat = toRadians(lat2 - lat1);
 	const deltaLon = toRadians(lon2 - lon1);
