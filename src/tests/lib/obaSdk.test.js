@@ -80,6 +80,16 @@ describe('OneBusAway Client', () => {
 			expect(error).toHaveBeenCalledWith(500, 'Unable to fetch stops.');
 		});
 
+		it('should fall back to 500 when status code is fractional', () => {
+			const mockResponse = {
+				code: 404.5,
+				data: null
+			};
+
+			expect(() => handleOBAResponse(mockResponse, 'stops')).toThrow(/Unable to fetch stops/);
+			expect(error).toHaveBeenCalledWith(500, 'Unable to fetch stops.');
+		});
+
 		it('should handle undefined response gracefully', () => {
 			expect(() => handleOBAResponse(undefined, 'stops')).toThrow(/Unable to fetch stops/);
 			expect(error).toHaveBeenCalledWith(500, 'Unable to fetch stops.');

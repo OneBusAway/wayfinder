@@ -22,7 +22,7 @@ export function handleOBAResponse(response, entityName) {
 
 	if (response.code !== 200) {
 		const status =
-			typeof response.code === 'number' && response.code >= 400 && response.code < 600
+			Number.isInteger(response.code) && response.code >= 400 && response.code <= 599
 				? response.code
 				: 500;
 		throw error(status, `Unable to fetch ${entityName}.`);
