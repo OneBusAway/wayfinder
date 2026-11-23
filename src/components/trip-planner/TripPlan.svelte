@@ -20,6 +20,7 @@
 	import { createRequestFromTripOptions, buildOTPParams, validateCoordinates } from '$lib/otp';
 	import { swapTripLocations, clearTripPlanPins } from '$lib/tripPlanUtils';
 	import { recentTrips } from '$stores/recentTripsStore';
+	import { pinnedTrips, isMatch } from '$stores/pinnedTripsStore';
 	import RecentTripsList from './RecentTripsList.svelte';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -397,12 +398,18 @@
 				syncTripUrl();
 
 				try {
-					recentTrips.addTrip({
-						fromPlace,
-						toPlace,
-						selectedFrom,
-						selectedTo
-					});
+					if (
+						!$pinnedTrips.some((pt) =>
+							isMatch(pt, { fromCoords: selectedFrom, toCoords: selectedTo })
+						)
+					) {
+						recentTrips.addTrip({
+							fromPlace,
+							toPlace,
+							selectedFrom,
+							selectedTo
+						});
+					}
 				} catch (e) {
 					console.warn('Failed to save trip to recent history:', e);
 				}
@@ -628,7 +635,7 @@
 		<Button variant="outline" onclick={() => showTripOptionsModal.set(true)}>
 			{$t('trip-planner.options')}
 		</Button>
-		{#if $recentTrips.length > 0}
+		{#if $recentTrips.length > 0 || $pinnedTrips.length > 0}
 			<Button
 				aria-expanded={showRecentTrips}
 				aria-controls="trip-plan-recent-trips"
@@ -670,7 +677,7 @@
 		</Button>
 	</div>
 
-	{#if showRecentTrips && $recentTrips.length > 0}
+	{#if showRecentTrips && ($recentTrips.length > 0 || $pinnedTrips.length > 0)}
 		<div id="trip-plan-recent-trips">
 			<RecentTripsList onSelect={handleRecentTripSelect} />
 		</div>
