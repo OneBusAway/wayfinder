@@ -860,9 +860,9 @@ describe('TripPlan pending location selection', () => {
 		await tick();
 
 		expect(resolvePlans).toHaveLength(2);
-		expect(global.fetch.mock.calls.filter(([url]) => url.startsWith('/api/otp/plan?'))).toHaveLength(
-			2
-		);
+		expect(
+			global.fetch.mock.calls.filter(([url]) => url.startsWith('/api/otp/plan?'))
+		).toHaveLength(2);
 		expect(global.fetch.mock.lastCall[0]).toMatch(/fromPlace=47\.620*%2C-122\.320*/);
 		unmount();
 	});

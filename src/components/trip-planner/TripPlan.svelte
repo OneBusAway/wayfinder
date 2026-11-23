@@ -258,11 +258,7 @@
 				} else {
 					toLocationError = $t('trip-planner.location_selection_failed');
 				}
-				if (
-					wasLoading &&
-					selectedFrom === fromAtSelection &&
-					selectedTo === toAtSelection
-				) {
+				if (wasLoading && selectedFrom === fromAtSelection && selectedTo === toAtSelection) {
 					planTrip();
 				}
 			}
