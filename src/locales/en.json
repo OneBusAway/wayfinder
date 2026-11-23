@@ -63,6 +63,8 @@
 		"recents": "Recents",
 		"clear_all": "Clear All",
 		"request_failed": "We couldn't reach the trip planning service. Please try again.",
+		"select_location_from_results": "Choose a location from the search results before planning your trip.",
+		"location_selection_failed": "We couldn't confirm that location. Please choose a different search result.",
 		"invalid_shared_link": "This shared trip link looks broken. Try planning the trip again."
 	},
 	"tabs": {
