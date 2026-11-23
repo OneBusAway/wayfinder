@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import onebusaway, { APIError, OnebusawaySDKError } from 'onebusaway-sdk';
+import onebusaway, { APIError, APIConnectionError, OnebusawaySDKError } from 'onebusaway-sdk';
 import { PUBLIC_OBA_SERVER_URL as baseURL } from '$env/static/public';
 import { PRIVATE_OBA_API_KEY as apiKey } from '$env/static/private';
 import { error, isHttpError, json } from '@sveltejs/kit';
@@ -77,6 +77,10 @@ export async function callOBA(apiCall, entityName) {
 	} catch (err) {
 		if (isHttpError(err)) {
 			throw err;
+		}
+
+		if (err instanceof APIConnectionError) {
+			throw error(502, `Unable to fetch ${entityName}.`);
 		}
 
 		if (err instanceof APIError || (err && typeof err.status === 'number')) {

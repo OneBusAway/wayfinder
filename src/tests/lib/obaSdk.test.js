@@ -4,35 +4,55 @@ import onebusaway from 'onebusaway-sdk';
 import { handleOBAResponse, callOBA, mapErrorStatus } from '$lib/obaSdk';
 import { error, json } from '@sveltejs/kit';
 
-const { MockOnebusawaySDKError, MockAPIError, MockNotFoundError, HTTP_ERROR_SYMBOL } = vi.hoisted(
-	() => {
-		class MockOnebusawaySDKError extends Error {
-			constructor(message) {
-				super(message);
-				this.name = 'OnebusawaySDKError';
-			}
+const {
+	MockOnebusawaySDKError,
+	MockAPIError,
+	MockNotFoundError,
+	MockAPIConnectionError,
+	MockAPIConnectionTimeoutError,
+	HTTP_ERROR_SYMBOL
+} = vi.hoisted(() => {
+	class MockOnebusawaySDKError extends Error {
+		constructor(message) {
+			super(message);
+			this.name = 'OnebusawaySDKError';
 		}
-		class MockAPIError extends MockOnebusawaySDKError {
-			constructor(status, errorData, message) {
-				super(message || `${status}`);
-				this.name = 'APIError';
-				this.status = status;
-			}
-		}
-		class MockNotFoundError extends MockAPIError {
-			constructor(status = 404, errorData, message) {
-				super(status, errorData, message || 'Not found');
-				this.name = 'NotFoundError';
-			}
-		}
-		return {
-			MockOnebusawaySDKError,
-			MockAPIError,
-			MockNotFoundError,
-			HTTP_ERROR_SYMBOL: Symbol('sveltekit.http-error')
-		};
 	}
-);
+	class MockAPIError extends MockOnebusawaySDKError {
+		constructor(status, errorData, message) {
+			super(message || `${status}`);
+			this.name = 'APIError';
+			this.status = status;
+		}
+	}
+	class MockNotFoundError extends MockAPIError {
+		constructor(status = 404, errorData, message) {
+			super(status, errorData, message || 'Not found');
+			this.name = 'NotFoundError';
+		}
+	}
+	class MockAPIConnectionError extends MockAPIError {
+		constructor(message) {
+			super(undefined, undefined, message || 'Connection error');
+			this.name = 'APIConnectionError';
+			this.status = undefined;
+		}
+	}
+	class MockAPIConnectionTimeoutError extends MockAPIConnectionError {
+		constructor(message) {
+			super(message || 'Connection timeout');
+			this.name = 'APIConnectionTimeoutError';
+		}
+	}
+	return {
+		MockOnebusawaySDKError,
+		MockAPIError,
+		MockNotFoundError,
+		MockAPIConnectionError,
+		MockAPIConnectionTimeoutError,
+		HTTP_ERROR_SYMBOL: Symbol('sveltekit.http-error')
+	};
+});
 
 // Mock onebusaway-sdk
 vi.mock('onebusaway-sdk', () => {
@@ -40,11 +60,15 @@ vi.mock('onebusaway-sdk', () => {
 	MockOneBusAway.OnebusawaySDKError = MockOnebusawaySDKError;
 	MockOneBusAway.APIError = MockAPIError;
 	MockOneBusAway.NotFoundError = MockNotFoundError;
+	MockOneBusAway.APIConnectionError = MockAPIConnectionError;
+	MockOneBusAway.APIConnectionTimeoutError = MockAPIConnectionTimeoutError;
 	return {
 		default: MockOneBusAway,
 		OnebusawaySDKError: MockOnebusawaySDKError,
 		APIError: MockAPIError,
-		NotFoundError: MockNotFoundError
+		NotFoundError: MockNotFoundError,
+		APIConnectionError: MockAPIConnectionError,
+		APIConnectionTimeoutError: MockAPIConnectionTimeoutError
 	};
 });
 
@@ -201,6 +225,20 @@ describe('OneBusAway Client', () => {
 
 			const rateLimitErr = new MockAPIError(429, {}, 'Too many requests', {});
 			await expect(callOBA(() => Promise.reject(rateLimitErr), 'trip')).rejects.toMatchObject({
+				status: 502,
+				message: 'Unable to fetch trip.'
+			});
+		});
+
+		it('catches APIConnectionError and APIConnectionTimeoutError and maps to 502', async () => {
+			const connErr = new MockAPIConnectionError('Connection refused');
+			await expect(callOBA(() => Promise.reject(connErr), 'trip')).rejects.toMatchObject({
+				status: 502,
+				message: 'Unable to fetch trip.'
+			});
+
+			const timeoutErr = new MockAPIConnectionTimeoutError('Connection timeout');
+			await expect(callOBA(() => Promise.reject(timeoutErr), 'trip')).rejects.toMatchObject({
 				status: 502,
 				message: 'Unable to fetch trip.'
 			});
