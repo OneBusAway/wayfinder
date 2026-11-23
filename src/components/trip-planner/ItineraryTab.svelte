@@ -2,9 +2,8 @@
 <script>
 	// @ts-check
 	import { t } from 'svelte-i18n';
-	import { Footprints } from '@lucide/svelte';
-	import { faBus, faFerry, faTrain, faTrainSubway } from '@fortawesome/free-solid-svg-icons';
 	import AppIcon from '$components/icons/AppIcon.svelte';
+	import { getLegModeIcon } from './legModeIcon';
 
 	/**
 	 * @typedef {Object} Props
@@ -34,28 +33,13 @@
 		return modes;
 	}
 
-	/** @param {string} mode */
-	function getModeIcon(mode) {
-		switch (mode) {
-			case 'WALK':
-				return Footprints;
-			case 'BUS':
-				return faBus;
-			case 'TRAIN':
-			case 'RAIL':
-				return faTrain;
-			case 'FERRY':
-				return faFerry;
-			case 'LIGHT_RAIL':
-				return faTrainSubway;
-			case 'TRAM':
-				return faTrainSubway;
-			default:
-				return null;
-		}
-	}
-
-	let transportModes = $derived(getTransportModes(itinerary?.legs));
+	// Modes without an icon are left out here, not in the template, so the
+	// arrows only ever sit between two icons.
+	let modeIcons = $derived(
+		getTransportModes(itinerary?.legs)
+			.map(getLegModeIcon)
+			.filter((icon) => icon !== null)
+	);
 	let durationMinutes = $derived(itinerary ? Math.round(itinerary.duration / 60) : 0);
 </script>
 
@@ -65,18 +49,15 @@
 	onclick={() => setActiveTab(index)}
 >
 	<span class="font-semibold">{durationMinutes} {$t('time.min')}</span>
-	{#if transportModes.length > 0}
+	{#if modeIcons.length > 0}
 		<span class="flex items-center gap-1 text-xs opacity-80">
 			<!-- FIXME: each block has no key -->
 			<!-- eslint-disable-next-line svelte/require-each-key -->
-			{#each transportModes as mode, i}
-				{@const icon = getModeIcon(mode)}
-				{#if icon}
-					{#if i > 0}
-						<span class="text-[10px]">&rarr;</span>
-					{/if}
-					<AppIcon {icon} class="h-3 w-3" />
+			{#each modeIcons as icon, i}
+				{#if i > 0}
+					<span class="text-[10px]">&rarr;</span>
 				{/if}
+				<AppIcon {icon} class="h-3 w-3" />
 			{/each}
 		</span>
 	{/if}

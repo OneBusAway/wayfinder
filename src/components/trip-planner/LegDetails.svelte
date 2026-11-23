@@ -11,14 +11,13 @@
 		ChevronUp,
 		CircleArrowRight,
 		Clock,
-		Footprints,
 		Ruler
 	} from '@lucide/svelte';
-	import { faBus, faFerry, faTrain, faTrainSubway } from '@fortawesome/free-solid-svg-icons';
 	import AppIcon from '$components/icons/AppIcon.svelte';
 	import { t } from 'svelte-i18n';
 	import { formatDistance } from '$lib/distanceUtils';
 	import { effectiveDistanceUnit } from '$stores/tripOptionsStore';
+	import { getLegModeIcon } from './legModeIcon';
 
 	/**
 	 * @typedef {Object} Props
@@ -48,50 +47,44 @@
 	let routeColorHex = $derived(hasRouteColor ? `#${leg.routeColor}` : null);
 	let routeTextColorHex = $derived(leg.routeTextColor ? `#${leg.routeTextColor}` : '#ffffff');
 
-	// Get icon and colors based on transport mode
+	// Get colors based on transport mode; the icon comes from getLegModeIcon
 	/** @param {string} mode */
 	function getModeConfig(mode) {
 		switch (mode) {
 			case 'WALK':
 				return {
-					icon: Footprints,
 					iconColor: 'text-blue-600',
 					bgColor: 'bg-blue-100 dark:bg-blue-900/50'
 				};
 			case 'BUS':
 				return {
-					icon: faBus,
 					iconColor: 'text-brand-accent',
 					bgColor: 'bg-green-100 dark:bg-green-900/50'
 				};
 			case 'TRAIN':
 			case 'RAIL':
 				return {
-					icon: faTrain,
 					iconColor: 'text-red-600',
 					bgColor: 'bg-red-100 dark:bg-red-900/50'
 				};
 			case 'FERRY':
 				return {
-					icon: faFerry,
 					iconColor: 'text-cyan-600',
 					bgColor: 'bg-cyan-100 dark:bg-cyan-900/50'
 				};
 			case 'LIGHT_RAIL':
+			case 'SUBWAY':
 				return {
-					icon: faTrainSubway,
 					iconColor: 'text-purple-600',
 					bgColor: 'bg-purple-100 dark:bg-purple-900/50'
 				};
 			case 'TRAM':
 				return {
-					icon: faTrainSubway,
 					iconColor: 'text-orange-600',
 					bgColor: 'bg-orange-100 dark:bg-orange-900/50'
 				};
 			default:
 				return {
-					icon: null,
 					iconColor: 'text-gray-600',
 					bgColor: 'bg-gray-100 dark:bg-gray-800'
 				};
@@ -99,6 +92,7 @@
 	}
 
 	let modeConfig = $derived(getModeConfig(leg.mode));
+	let modeIcon = $derived(getLegModeIcon(leg.mode));
 
 	// Computed style/class pairs to avoid template duplication
 	let colorStyles = $derived.by(() => {
@@ -145,10 +139,10 @@
 		class="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full shadow-md ring-4 ring-white dark:ring-gray-900 {colorStyles.iconClass}"
 		style={colorStyles.iconStyle}
 	>
-		{#if modeConfig.icon}
+		{#if modeIcon}
 			<!-- Lucide walking icon sizes by box; FA transit glyphs size by font-size. -->
 			<AppIcon
-				icon={modeConfig.icon}
+				icon={modeIcon}
 				class="{colorStyles.iconColorClass} {isWalking ? 'h-5 w-5' : 'text-lg'}"
 				style={colorStyles.iconColor ? `color: ${colorStyles.iconColor}` : ''}
 			/>
