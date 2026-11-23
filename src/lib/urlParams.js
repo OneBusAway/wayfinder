@@ -47,7 +47,7 @@ export function parseInitialCoordinates(searchParams, regionCenterLat, regionCen
 	// Check distance from region center
 	const distanceKm = calcDistanceBetweenTwoPoints(lat, lng, regionCenterLat, regionCenterLng);
 
-	if (distanceKm > MAX_DISTANCE_FROM_REGION_KM) {
+	if (distanceKm === null || distanceKm > MAX_DISTANCE_FROM_REGION_KM) {
 		return null;
 	}
 

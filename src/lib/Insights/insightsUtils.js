@@ -85,10 +85,6 @@ export function getDistanceCategory(distanceKm) {
  * @returns {string | undefined} - The analytics distance category, or undefined if unavailable.
  */
 export function analyticsDistanceToStop(userLat, userLng, stopLat, stopLng) {
-	if (userLat == null || userLng == null || stopLat == null || stopLng == null) {
-		return undefined;
-	}
-
 	const distanceKm = calcDistanceBetweenTwoPoints(userLat, userLng, stopLat, stopLng);
 	if (distanceKm === null) {
 		return undefined;
