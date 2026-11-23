@@ -803,8 +803,8 @@ describe('TripPlan pending location selection', () => {
 		await tick();
 
 		await vi.waitFor(() => {
-			expect(global.fetch.mock.lastCall[0]).toMatch(
-				/^\/api\/otp\/plan\?.*fromPlace=47\.620*%2C-122\.320*/
+			expect(global.fetch).toHaveBeenCalledWith(
+				expect.stringMatching(/^\/api\/otp\/plan\?.*fromPlace=47\.620*%2C-122\.320*/)
 			);
 		});
 		unmount();
