@@ -170,6 +170,7 @@
 		"route_load_failed": "Nie udało się wczytać tej trasy.",
 		"route_shape_failed": "Nie udało się narysować tej trasy na mapie.",
 		"route_shape_partial": "Nie udało się narysować części tej trasy. Na mapie może brakować odcinka.",
+		"search_failed": "Nie udało się wykonać wyszukiwania.",
 		"favorite_saved": "Zapisano w ulubionych.",
 		"favorite_removed": "Usunięto z ulubionych.",
 		"tap_to_retry": "Dotknij, aby spróbować ponownie.",

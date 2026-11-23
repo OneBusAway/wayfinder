@@ -170,6 +170,7 @@
 		"route_load_failed": "Impossible de charger cette ligne.",
 		"route_shape_failed": "Impossible de tracer cette ligne sur la carte.",
 		"route_shape_partial": "Une partie de cette ligne n'a pas pu être tracée. Il manque peut-être un segment sur la carte.",
+		"search_failed": "Impossible d'effectuer la recherche.",
 		"favorite_saved": "Ajouté aux favoris.",
 		"favorite_removed": "Retiré des favoris.",
 		"tap_to_retry": "Appuyez pour réessayer.",
