@@ -154,8 +154,12 @@
 		// Typing only searches. The current route stays until a suggestion is picked.
 		if (isFrom) {
 			fromLocationError = '';
+			fromRequestId++;
+			isGeocodingFrom = false;
 		} else {
 			toLocationError = '';
+			toRequestId++;
+			isGeocodingTo = false;
 		}
 		const requestId = invalidateAutocompleteRequest(isFrom);
 		if (query.trim() === '') {
@@ -167,6 +171,11 @@
 				isLoadingTo = false;
 			}
 			return;
+		}
+		if (isFrom) {
+			isLoadingFrom = true;
+		} else {
+			isLoadingTo = true;
 		}
 		const fetchResults = isFrom ? fetchFromLocationResults : fetchToLocationResults;
 		fetchResults(query, requestId);
@@ -182,6 +191,7 @@
 			planRequestId++;
 			loading = false;
 			clearTripItineraries();
+			clearTripUrl();
 			deferredReplanPending = true;
 			return;
 		}
@@ -189,8 +199,14 @@
 	}
 
 	async function selectLocation(suggestion, isFrom) {
+		const wasLoading = loading;
+		const fromAtSelection = selectedFrom;
+		const toAtSelection = selectedTo;
 		planRequestId++;
 		loading = false;
+		if (wasLoading) {
+			deferredReplanPending = true;
+		}
 		const currentRequestId = isFrom ? ++fromRequestId : ++toRequestId;
 
 		if (isFrom) {
@@ -242,6 +258,13 @@
 				} else {
 					toLocationError = $t('trip-planner.location_selection_failed');
 				}
+				if (
+					wasLoading &&
+					selectedFrom === fromAtSelection &&
+					selectedTo === toAtSelection
+				) {
+					planTrip();
+				}
 			}
 		} finally {
 			if (isFrom && currentRequestId === fromRequestId) {
@@ -257,6 +280,7 @@
 		// A plan in flight is for the trip being cleared, so drop its result.
 		planRequestId++;
 		loading = false;
+		deferredReplanPending = false;
 		if (isFrom) {
 			fromRequestId++;
 			isGeocodingFrom = false;
@@ -306,10 +330,13 @@
 		toRequestId++;
 		isGeocodingFrom = false;
 		isGeocodingTo = false;
+		deferredReplanPending = false;
 	}
 
 	function swapLocations() {
+		const wasDeferredReplanPending = deferredReplanPending;
 		cancelPendingLookups();
+		deferredReplanPending = wasDeferredReplanPending;
 
 		const result = swapTripLocations({
 			fromPlace,
@@ -501,6 +528,8 @@
 			toPlace = toQuery = tp;
 			selectedFrom = from;
 			selectedTo = to;
+			fromLocationError = '';
+			toLocationError = '';
 			await planTrip();
 		} catch (error) {
 			console.error('Failed to restore shared trip:', error);
@@ -570,6 +599,8 @@
 		toPlace = toQuery = trip.toPlace;
 		selectedFrom = trip.fromCoords;
 		selectedTo = trip.toCoords;
+		fromLocationError = '';
+		toLocationError = '';
 
 		// Auto-run the search
 		planTrip();
@@ -609,7 +640,7 @@
 						<p role="alert" class="mt-1 text-xs text-red-600 dark:text-red-400">
 							{fromLocationError}
 						</p>
-					{:else if isFromEdited}
+					{:else if isFromEdited && !isLoadingFrom && fromResults.length === 0 && !isGeocodingFrom}
 						<p class="mt-1 text-xs text-gray-600 dark:text-gray-300">
 							{$t('trip-planner.select_location_from_results')}
 						</p>
@@ -630,7 +661,7 @@
 						<p role="alert" class="mt-1 text-xs text-red-600 dark:text-red-400">
 							{toLocationError}
 						</p>
-					{:else if isToEdited}
+					{:else if isToEdited && !isLoadingTo && toResults.length === 0 && !isGeocodingTo}
 						<p class="mt-1 text-xs text-gray-600 dark:text-gray-300">
 							{$t('trip-planner.select_location_from_results')}
 						</p>

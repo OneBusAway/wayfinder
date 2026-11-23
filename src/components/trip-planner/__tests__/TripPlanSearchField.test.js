@@ -107,6 +107,17 @@ describe('TripPlanSearchField', () => {
 			expect(screen.getByText('Capitol Hill, Seattle, WA, USA')).toBeInTheDocument();
 			expect(screen.getByText('University District, Seattle, WA, USA')).toBeInTheDocument();
 		});
+
+		it('renders results with duplicate place IDs using unique keys', () => {
+			const results = [
+				{ placeId: 'duplicate', displayText: 'First result', name: 'First' },
+				{ placeId: 'duplicate', displayText: 'Second result', name: 'Second' }
+			];
+			const props = { ...defaultProps, results };
+			render(TripPlanSearchField, { props });
+
+			expect(screen.getAllByRole('option')).toHaveLength(2);
+		});
 	});
 
 	describe('User Interactions', () => {

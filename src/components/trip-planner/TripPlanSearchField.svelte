@@ -118,7 +118,7 @@
 			role="listbox"
 			class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white shadow-lg"
 		>
-			{#each results as result, index (result.placeId ?? index)}
+			{#each results as result, index (`${result.placeId ?? ''}-${index}`)}
 				<li role="presentation">
 					<button
 						id={optionId(index)}
