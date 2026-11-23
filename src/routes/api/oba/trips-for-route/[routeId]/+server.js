@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import oba, { handleOBAResponse } from '$lib/obaSdk';
+import oba, { callOBA, handleOBAResponse } from '$lib/obaSdk';
 
 export async function GET({ params, url }) {
 	const { routeId } = params;
@@ -12,7 +12,10 @@ export async function GET({ params, url }) {
 		includeSchedule
 	};
 
-	const response = await oba.tripsForRoute.list(routeId, queryParams);
+	const response = await callOBA(
+		() => oba.tripsForRoute.list(routeId, queryParams),
+		'trips-for-route'
+	);
 
 	return handleOBAResponse(response, 'trips-for-route');
 }

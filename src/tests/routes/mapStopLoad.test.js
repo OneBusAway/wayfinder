@@ -4,6 +4,7 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 const retrieve = vi.fn();
 vi.mock('$lib/obaSdk.js', () => ({
 	default: { stop: { retrieve: (...a) => retrieve(...a) } },
+	callOBA: async (call) => (typeof call === 'function' ? call() : call),
 	handleOBAResponse: (res) => res // pass-through; res already has .json()
 }));
 

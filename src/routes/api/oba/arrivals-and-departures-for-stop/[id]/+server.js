@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import oba, { handleOBAResponse } from '$lib/obaSdk.js';
+import oba, { callOBA, handleOBAResponse } from '$lib/obaSdk.js';
 import { getAgencyFilter, filterByRouteId } from '$lib/agencyFilter.js';
 
 /** @type {import('./$types').RequestHandler} */
@@ -19,7 +19,10 @@ export async function GET({ params, url }) {
 		query.minutesBefore = minutesBefore;
 	}
 
-	const response = await oba.arrivalAndDeparture.list(stopID, query);
+	const response = await callOBA(
+		() => oba.arrivalAndDeparture.list(stopID, query),
+		'arrivals-and-departures-for-stop'
+	);
 
 	if (response.data?.entry?.arrivalsAndDepartures) {
 		response.data.entry.arrivalsAndDepartures = filterByRouteId(

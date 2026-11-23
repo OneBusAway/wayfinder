@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import oba, { handleOBAResponse } from '$lib/obaSdk.js';
+import oba, { callOBA, handleOBAResponse } from '$lib/obaSdk.js';
 
 export async function GET({ params, url }) {
 	const { tripId } = params;
@@ -23,7 +23,11 @@ export async function GET({ params, url }) {
 	if (serviceDate) {
 		queryParams.serviceDate = serviceDate;
 	}
-	const response = await oba.tripDetails.retrieve(tripId, queryParams);
+
+	const response = await callOBA(
+		() => oba.tripDetails.retrieve(tripId, queryParams),
+		'trip-details'
+	);
 
 	return handleOBAResponse(response, 'trip-details');
 }

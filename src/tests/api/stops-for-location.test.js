@@ -5,6 +5,7 @@ const listMock = vi.hoisted(() => vi.fn());
 
 vi.mock('$lib/obaSdk', () => ({
 	default: { stopsForLocation: { list: listMock } },
+	callOBA: async (call) => (typeof call === 'function' ? call() : call),
 	handleOBAResponse: (response) => new Response(JSON.stringify(response))
 }));
 

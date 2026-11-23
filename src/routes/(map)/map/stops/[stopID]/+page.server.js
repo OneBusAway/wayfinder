@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import oba, { handleOBAResponse } from '$lib/obaSdk.js';
+import oba, { callOBA, handleOBAResponse } from '$lib/obaSdk.js';
 
 /**
  * Cold-load / share path for a stop opened on the map. Returns the stop entry in
@@ -7,7 +7,7 @@ import oba, { handleOBAResponse } from '$lib/obaSdk.js';
  * direct-link stops identically. Arrivals are still fetched client-side by StopPane.
  */
 export async function load({ params }) {
-	const response = await oba.stop.retrieve(params.stopID);
-	const body = await handleOBAResponse(response, 'stop').json();
+	const response = await callOBA(() => oba.stop.retrieve(params.stopID), 'stop');
+	const body = response?.data ? response : await handleOBAResponse(response, 'stop').json();
 	return { stopData: body.data.entry };
 }

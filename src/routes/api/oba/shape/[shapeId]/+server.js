@@ -1,10 +1,8 @@
 /* eslint-disable no-restricted-syntax */
-import oba, { handleOBAResponse } from '$lib/obaSdk.js';
+import oba, { callOBA, handleOBAResponse } from '$lib/obaSdk.js';
 
-/** @type {import('./$types').RequestHandler} */
 export async function GET({ params }) {
-	const shapeId = params.shapeId;
-	const response = await oba.shape.retrieve(shapeId);
-
+	const { shapeId } = params;
+	const response = await callOBA(() => oba.shape.retrieve(shapeId), 'shape');
 	return handleOBAResponse(response, 'shape');
 }
