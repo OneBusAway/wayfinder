@@ -5,6 +5,8 @@ const {
 	MockOnebusawaySDKError,
 	MockAPIError,
 	MockNotFoundError,
+	MockAPIConnectionError,
+	MockAPIConnectionTimeoutError,
 	mockStopRetrieve,
 	mockArrivalAndDepartureList,
 	mockTripRetrieve
@@ -28,10 +30,25 @@ const {
 			this.name = 'NotFoundError';
 		}
 	}
+	class MockAPIConnectionError extends MockAPIError {
+		constructor(message) {
+			super(undefined, undefined, message || 'Connection error');
+			this.name = 'APIConnectionError';
+			this.status = undefined;
+		}
+	}
+	class MockAPIConnectionTimeoutError extends MockAPIConnectionError {
+		constructor(message) {
+			super(message || 'Connection timeout');
+			this.name = 'APIConnectionTimeoutError';
+		}
+	}
 	return {
 		MockOnebusawaySDKError,
 		MockAPIError,
 		MockNotFoundError,
+		MockAPIConnectionError,
+		MockAPIConnectionTimeoutError,
 		mockStopRetrieve: vi.fn(),
 		mockArrivalAndDepartureList: vi.fn(),
 		mockTripRetrieve: vi.fn()
@@ -47,11 +64,15 @@ vi.mock('onebusaway-sdk', () => {
 	MockOneBusAway.OnebusawaySDKError = MockOnebusawaySDKError;
 	MockOneBusAway.APIError = MockAPIError;
 	MockOneBusAway.NotFoundError = MockNotFoundError;
+	MockOneBusAway.APIConnectionError = MockAPIConnectionError;
+	MockOneBusAway.APIConnectionTimeoutError = MockAPIConnectionTimeoutError;
 	return {
 		default: MockOneBusAway,
 		OnebusawaySDKError: MockOnebusawaySDKError,
 		APIError: MockAPIError,
-		NotFoundError: MockNotFoundError
+		NotFoundError: MockNotFoundError,
+		APIConnectionError: MockAPIConnectionError,
+		APIConnectionTimeoutError: MockAPIConnectionTimeoutError
 	};
 });
 
