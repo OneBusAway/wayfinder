@@ -147,9 +147,7 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 		});
 
 		it('throws 502 when upstream rate limit is hit (429)', async () => {
-			mockArrivalAndDepartureList.mockRejectedValue(
-				new MockAPIError(429, {}, 'Too Many Requests')
-			);
+			mockArrivalAndDepartureList.mockRejectedValue(new MockAPIError(429, {}, 'Too Many Requests'));
 
 			await expect(
 				getArrivals({
@@ -194,4 +192,3 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 		});
 	});
 });
-
