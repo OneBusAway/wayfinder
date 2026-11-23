@@ -802,9 +802,11 @@ describe('TripPlan pending location selection', () => {
 		await vi.advanceTimersByTimeAsync(0);
 		await tick();
 
-		expect(global.fetch.mock.lastCall[0]).toMatch(
-			/^\/api\/otp\/plan\?.*fromPlace=47\.620*%2C-122\.320*/
-		);
+		await vi.waitFor(() => {
+			expect(global.fetch.mock.lastCall[0]).toMatch(
+				/^\/api\/otp\/plan\?.*fromPlace=47\.620*%2C-122\.320*/
+			);
+		});
 		unmount();
 	});
 
