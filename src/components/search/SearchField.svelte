@@ -2,6 +2,8 @@
 	import type { SearchResults } from '$lib/types';
 	import analytics from '$lib/Insights';
 	import { t } from 'svelte-i18n';
+	import { onDestroy } from 'svelte';
+	import { notifications } from '$stores/notificationStore';
 
 	interface Props {
 		handleSearchResults: (results: SearchResults) => void;
@@ -10,18 +12,37 @@
 
 	let { handleSearchResults, value = $bindable('') }: Props = $props();
 
+	// Id of the toast this field raised, so it only ever clears its own.
+	let notificationId: number | null = null;
+
 	async function handleSearch() {
+		const trimmedValue = (value || '').trim();
+		notifications.dismiss(notificationId);
+		notificationId = null;
+
 		try {
-			const trimmedValue = (value || '').trim();
 			const response = await fetch(`/api/oba/search?query=${encodeURIComponent(trimmedValue)}`);
+			// A failed search answers with an error body, not results.
+			if (!response.ok) {
+				throw new Error(`Search request failed with status ${response.status}`);
+			}
 			const results = await response.json();
 
 			handleSearchResults(results);
 			analytics.reportSearchQuery(trimmedValue);
 		} catch (error) {
 			console.error('Error fetching search results:', error);
+			notificationId = notifications.show({
+				message: $t('notifications.search_failed'),
+				variant: 'error',
+				onRetry: handleSearch
+			});
 		}
 	}
+
+	onDestroy(() => {
+		notifications.dismiss(notificationId);
+	});
 
 	const onHandleSearch = (event: KeyboardEvent | MouseEvent) => {
 		const trimmedValue = (value || '').trim();
@@ -36,7 +57,7 @@
 
 <div>
 	<label for="search" class="sr-only">{$t('search.search')}</label>
-	<div class="mt-2 flex rounded-md shadow-xs">
+	<div class="flex pt-1">
 		<div class="relative flex grow items-stretch focus-within:z-10">
 			<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 				<svg

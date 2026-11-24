@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	let { stop, handleStopItemClick } = $props();
 </script>

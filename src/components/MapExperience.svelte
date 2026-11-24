@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { pushState, replaceState, afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -86,8 +87,6 @@
 	// on a prior run — used to decide animate (cold load snaps; in-app taps animate).
 	let appliedStopId = null;
 	let mapWasReady = false;
-
-	let currentUserLocation = $state($userLocation);
 
 	const Modal = {
 		ROUTE: 'route',
@@ -256,12 +255,7 @@
 			loadSurveys(data, getUserId());
 			analytics.reportStopViewed(
 				id,
-				analyticsDistanceToStop(
-					currentUserLocation.lat,
-					currentUserLocation.lng,
-					data.lat,
-					data.lon
-				)
+				analyticsDistanceToStop($userLocation.lat, $userLocation.lng, data.lat, data.lon)
 			);
 		} else {
 			// Closed (back button or close): tear down the stop overlay.
@@ -690,6 +684,7 @@
 					{handleViewAllRoutes}
 					{clearPolylines}
 					{handleTripPlan}
+					{tripPlanAttempted}
 					{handleStopMarkerSelect}
 					{handleMapStopMarkerSelect}
 					{clearTripItineraries}
@@ -741,7 +736,7 @@
 					<TripPlanModal
 						{mapProvider}
 						showForm={true}
-						hasPlanned={tripPlanAttempted}
+						{tripPlanAttempted}
 						{handleTripPlan}
 						{clearTripItineraries}
 						itineraries={tripItineraries}

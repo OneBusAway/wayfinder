@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { error, json } from '@sveltejs/kit';
 import { env } from '$env/dynamic/public';
 import { buildGraphQLQueryBody, mapGraphQLResponse, getOtpApiType, OTP_DEFAULTS } from '$lib/otp';

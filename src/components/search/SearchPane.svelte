@@ -71,6 +71,7 @@
 		mapProvider: MapProvider;
 		isStopInteractive?: (stop: Stop) => boolean;
 		onCollapse?: (() => void) | null;
+		tripPlanAttempted: boolean;
 	}
 
 	let {
@@ -81,6 +82,7 @@
 		// result, a map tap must not replace an already-open stop.
 		handleMapStopMarkerSelect = null,
 		handleTripPlan,
+		tripPlanAttempted = false,
 		clearTripItineraries,
 		cssClasses = '',
 		mapProvider,
@@ -553,7 +555,7 @@
 				<!-- Mount TripPlan only while its tab is open: it registers window
 				     listeners on mount, and shared-trip restore waits for that. -->
 				{#if embedTripPlan && activeTab === 'plan'}
-					<TripPlan {mapProvider} {handleTripPlan} {clearTripItineraries} />
+					<TripPlan {mapProvider} {handleTripPlan} {tripPlanAttempted} {clearTripItineraries} />
 				{/if}
 			</Tabs.Content>
 		{/if}

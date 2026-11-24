@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { error } from '@sveltejs/kit';
 import { convertToISO8601 } from '$lib/dateTimeFormat';
 

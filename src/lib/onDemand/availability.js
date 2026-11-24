@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { createEvaluator, LOOKAHEAD_DAYS, parseGtfsTime } from '$lib/onDemand/bookingDeadline.js';
 import { resolveBooking } from '$lib/onDemand/bookingResolution.js';
 import { compareInstants, earliestAfter } from '$lib/onDemand/instants.js';

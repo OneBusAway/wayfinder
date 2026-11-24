@@ -170,6 +170,7 @@
 		"route_load_failed": "この路線を読み込めませんでした。",
 		"route_shape_failed": "この路線を地図上に表示できませんでした。",
 		"route_shape_partial": "この路線の一部を地図上に表示できませんでした。表示されていない区間がある可能性があります。",
+		"search_failed": "検索を完了できませんでした。",
 		"favorite_saved": "お気に入りに保存しました。",
 		"favorite_removed": "お気に入りから削除しました。",
 		"tap_to_retry": "タップして再試行してください。",

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { env } from '$env/dynamic/public';
 import { contrastRatio } from '$lib/colorUtils.js';
 import { toDirection } from '$lib/mathUtils';

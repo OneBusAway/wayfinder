@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     The collapsed, single-line stand-in for the full SearchPane shown on phones

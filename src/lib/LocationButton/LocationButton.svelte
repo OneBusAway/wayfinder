@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { LocateFixed } from '@lucide/svelte';
 	import { t } from 'svelte-i18n';

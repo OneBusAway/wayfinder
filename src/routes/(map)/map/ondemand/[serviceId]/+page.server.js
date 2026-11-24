@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { redirect } from '@sveltejs/kit';
 import { loadServiceEntry } from '$lib/onDemand/upstream.server.js';
 

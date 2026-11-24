@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 import {

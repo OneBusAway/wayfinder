@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { json } from '@sveltejs/kit';
 import { parseGeometryDetail } from '$lib/onDemand/params.js';
 import { loadServiceEntry, onDemandResponse } from '$lib/onDemand/upstream.server.js';

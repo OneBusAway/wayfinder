@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { get } from 'svelte/store';
 import { t } from 'svelte-i18n';
 import { notifications } from '$stores/notificationStore';

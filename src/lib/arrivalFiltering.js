@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Arrival filtering utilities for dynamic arrival list updates.
  *

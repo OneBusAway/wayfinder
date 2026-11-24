@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import LoadingSpinner from '../LoadingSpinner.svelte';

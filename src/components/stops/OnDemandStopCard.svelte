@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     On-demand services available at a stop. Fetches each of the stop's

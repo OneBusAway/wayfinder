@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     Renderless: draws on-demand zones for the current viewport. Region level

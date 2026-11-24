@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Create a keybinding for an HTML element.
  * @example

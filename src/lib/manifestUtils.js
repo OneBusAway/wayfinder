@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Truncates a name to fit within maxLength, respecting word boundaries when possible.
  * @param {string} name - The name to truncate

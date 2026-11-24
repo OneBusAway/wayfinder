@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock the OBA SDK

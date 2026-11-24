@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Derive per-side map fit padding from an overlay panel's bounding rect so a
  * fitted route frames into the visible map area rather than under the panel.

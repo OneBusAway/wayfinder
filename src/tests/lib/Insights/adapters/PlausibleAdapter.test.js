@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { PlausibleAdapter } from '$lib/Insights/adapters/PlausibleAdapter.js';
 

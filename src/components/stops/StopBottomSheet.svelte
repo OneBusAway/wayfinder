@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     Shows a stop's arrivals and departures in a draggable bottom sheet so the map

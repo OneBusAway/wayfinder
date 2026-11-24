@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render, screen, within } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach } from 'vitest';
 import StopPageHeader from '../StopPageHeader.svelte';

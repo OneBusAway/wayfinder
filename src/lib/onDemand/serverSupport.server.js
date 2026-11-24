@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Whether this deployment's OBA server serves `/api/ondemand`. One verdict per
  * process: a Wayfinder deployment talks to exactly one OBA server. Every

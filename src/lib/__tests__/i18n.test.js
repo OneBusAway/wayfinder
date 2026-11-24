@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Unmock $lib/i18n first (it's mocked in vitest-setup.js)

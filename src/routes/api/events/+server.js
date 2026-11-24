@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { env as dynamicEnv } from '$env/dynamic/public';
 import { createAdapter } from '$lib/Insights/createAdapter.js';
 

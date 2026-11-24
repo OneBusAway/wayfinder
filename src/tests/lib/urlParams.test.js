@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { parseInitialCoordinates, cleanUrlParams } from '$lib/urlParams';
 
@@ -251,6 +252,15 @@ describe('parseInitialCoordinates', () => {
 			const result = parseInitialCoordinates(params, regionCenterLat, regionCenterLng);
 
 			expect(result).toEqual({ lat: 47.6101, lng: -122.2015 });
+		});
+
+		it('returns null when region center coordinates are invalid or missing', () => {
+			const params = new URLSearchParams('lat=47.6062&lng=-122.3321');
+			expect(parseInitialCoordinates(params, null, -122.3321)).toBeNull();
+			expect(parseInitialCoordinates(params, 47.6062, null)).toBeNull();
+			expect(parseInitialCoordinates(params, undefined, -122.3321)).toBeNull();
+			expect(parseInitialCoordinates(params, NaN, -122.3321)).toBeNull();
+			expect(parseInitialCoordinates(params, 95, -122.3321)).toBeNull();
 		});
 	});
 

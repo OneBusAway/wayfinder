@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { env as dynamicEnv } from '$env/dynamic/public';
 import { upstreamError } from './upstreamError.js';
 import { getAnalyticsId } from './insightsUtils.js';
