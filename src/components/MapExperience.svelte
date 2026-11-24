@@ -88,8 +88,6 @@
 	let appliedStopId = null;
 	let mapWasReady = false;
 
-	let currentUserLocation = $state($userLocation);
-
 	const Modal = {
 		ROUTE: 'route',
 		ALL_ROUTES: 'allRoutes',
@@ -257,12 +255,7 @@
 			loadSurveys(data, getUserId());
 			analytics.reportStopViewed(
 				id,
-				analyticsDistanceToStop(
-					currentUserLocation.lat,
-					currentUserLocation.lng,
-					data.lat,
-					data.lon
-				)
+				analyticsDistanceToStop($userLocation.lat, $userLocation.lng, data.lat, data.lon)
 			);
 		} else {
 			// Closed (back button or close): tear down the stop overlay.

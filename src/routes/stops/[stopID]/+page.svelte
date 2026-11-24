@@ -6,6 +6,7 @@
 	import '$lib/i18n.js';
 	import { t, isLoading } from 'svelte-i18n';
 	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
 	import { loadSurveys } from '$lib/Surveys/surveyUtils.js';
 	import { getUserId } from '$lib/utils/user.js';
 	import analytics from '$lib/Insights';
@@ -16,9 +17,8 @@
 	const stop = data.stopData.entry;
 	let arrivalsAndDeparturesResponse = $state(data.arrivalsAndDeparturesResponse ?? null);
 
-	const currentUserLocation = $state($userLocation);
-
 	onMount(() => {
+		const currentUserLocation = get(userLocation);
 		const distanceCategory = analyticsDistanceToStop(
 			currentUserLocation.lat,
 			currentUserLocation.lng,

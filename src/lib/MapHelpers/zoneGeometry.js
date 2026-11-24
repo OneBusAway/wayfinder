@@ -6,10 +6,18 @@
  * explicitly rather than trusting the feed.
  */
 
+/**
+ * @typedef {[number, number]} Position - GeoJSON [lon, lat]
+ * @typedef {Position[]} Ring
+ * @typedef {{ type: 'Polygon', coordinates: Ring[] }} PolygonGeometry
+ * @typedef {{ type: 'MultiPolygon', coordinates: Ring[][] }} MultiPolygonGeometry
+ * @typedef {PolygonGeometry | MultiPolygonGeometry} ZoneGeometry
+ */
+
 const MIN_RING_POSITIONS = 4;
 
 /**
- * @param {any} geometry
+ * @param {{ type?: string, coordinates?: unknown } | null | undefined} geometry
  * @returns {Array<Array<Array<[number, number]>>>} polygons → rings → positions
  */
 export function polygonsOf(geometry) {

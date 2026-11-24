@@ -170,6 +170,7 @@
 		"route_load_failed": "እዚ መስመር ክጽዓን ኣይከኣለን።",
 		"route_shape_failed": "እዚ መስመር ኣብ ካርታ ክስኣል ኣይከኣለን።",
 		"route_shape_partial": "ክፋል እዚ መስመር ክስኣል ኣይከኣለን። ኣብ ካርታ ሓደ ክፋል ጎዲሉ ክኸውን ይኽእል።",
+		"search_failed": "እቲ ምድላይ ክዛዘም ኣይከኣለን።",
 		"favorite_saved": "ናብ ተፈተውቲ ተቐሚጡ።",
 		"favorite_removed": "ካብ ተፈተውቲ ተኣልዩ።",
 		"tap_to_retry": "ንምድጋም ጠውቕ።",

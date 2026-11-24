@@ -161,6 +161,8 @@ import { pushState } from '$app/navigation';
 import MapExperience from '$components/MapExperience.svelte';
 import { createReactiveStop } from './support/reactiveStop.svelte.js';
 import { clearVehicleMarkersMap } from '$lib/vehicleUtils.js';
+import analytics from '$lib/Insights';
+import { userLocation } from '$src/stores/userLocationStore.js';
 
 const STOP = { id: '1_75403', lat: 47.6, lon: -122.3, name: 'Pine St & 3rd Ave' };
 const STOP_B = { id: '1_99999', lat: 47.61, lon: -122.31, name: 'Other St & 4th Ave' };
@@ -198,8 +200,56 @@ function arrivalsPayload(stopId, routes) {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	userLocation.set({ lat: null, lng: null });
 	capturedTripPlanModalProps = null;
 	capturedAlertsModalProps = null;
+});
+
+test('reports distance using current userLocation when stop is opened after mount', async () => {
+	const reportStopViewedSpy = vi.spyOn(analytics, 'reportStopViewed').mockResolvedValue(undefined);
+
+	setPage({
+		url: new URL('https://example.com/'),
+		params: {},
+		route: { id: '/(map)' },
+		state: {},
+		data: {}
+	});
+
+	render(MapExperience);
+
+	// Simulate geolocation resolving after mount
+	userLocation.set({ lat: 47.6, lng: -122.3 });
+	await tick();
+
+	// Open a stop after mount
+	setPage({
+		url: new URL('https://example.com/map/stops/1_75403'),
+		params: {},
+		route: { id: '/(map)' },
+		state: { stopData: STOP },
+		data: {}
+	});
+	await tick();
+
+	expect(reportStopViewedSpy).toHaveBeenCalledWith('1_75403', 'User Distance: 00000-00050m');
+});
+
+test('reports stop view without distance when userLocation is null', async () => {
+	const reportStopViewedSpy = vi.spyOn(analytics, 'reportStopViewed').mockResolvedValue(undefined);
+
+	setPage({
+		url: new URL('https://example.com/map/stops/1_75403'),
+		params: {},
+		route: { id: '/(map)' },
+		state: { stopData: STOP },
+		data: {}
+	});
+
+	render(MapExperience);
+	await tick();
+
+	expect(reportStopViewedSpy).toHaveBeenCalledWith('1_75403', undefined);
 });
 
 test('does not render AlertsModal before an alert loads (null-alert SSR crash regression)', async () => {
