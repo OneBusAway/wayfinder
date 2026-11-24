@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { writable } from 'svelte/store';
 
 const STORAGE_KEY = 'wayfinder_pinned_trips';
