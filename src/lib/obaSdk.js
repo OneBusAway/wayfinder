@@ -65,11 +65,15 @@ export async function callOBA(apiCall, entityName) {
 		}
 
 		if (typeof response.code === 'undefined') {
+			console.error(`OBA response for ${entityName} is missing response code:`, response);
 			throw error(500, `Unable to fetch ${entityName}.`);
 		}
 
 		if (response.code !== 200) {
 			const status = mapErrorStatus(response.code);
+			if (status >= 500) {
+				console.error(`OBA upstream error for ${entityName}: code ${response.code}`);
+			}
 			throw error(status, `Unable to fetch ${entityName}.`);
 		}
 
@@ -80,18 +84,24 @@ export async function callOBA(apiCall, entityName) {
 		}
 
 		if (err instanceof APIConnectionError) {
+			console.error(err);
 			throw error(502, `Unable to fetch ${entityName}.`);
 		}
 
 		if (err instanceof APIError || (err && typeof err.status === 'number')) {
 			const status = mapErrorStatus(err.status);
+			if (status >= 500) {
+				console.error(err);
+			}
 			throw error(status, `Unable to fetch ${entityName}.`);
 		}
 
 		if (err instanceof OnebusawaySDKError) {
+			console.error(err);
 			throw error(502, `Unable to fetch ${entityName}.`);
 		}
 
+		console.error(err);
 		throw error(500, `Unable to fetch ${entityName}.`);
 	}
 }
@@ -110,11 +120,15 @@ export function handleOBAResponse(response, entityName) {
 	}
 
 	if (typeof response.code === 'undefined') {
+		console.error(`OBA response for ${entityName} is missing response code:`, response);
 		throw error(500, `Unable to fetch ${entityName}.`);
 	}
 
 	if (response.code !== 200) {
 		const status = mapErrorStatus(response.code);
+		if (status >= 500) {
+			console.error(`OBA upstream error for ${entityName}: code ${response.code}`);
+		}
 		throw error(status, `Unable to fetch ${entityName}.`);
 	}
 

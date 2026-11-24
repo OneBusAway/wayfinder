@@ -8,7 +8,13 @@
 	const errorMessage = $derived($page.error?.message || '');
 
 	const errorKey = $derived(
-		status === 404 ? '404' : status === 403 ? '403' : status === 500 ? '500' : 'generic'
+		status === 404
+			? '404'
+			: status === 403
+				? '403'
+				: status === 500 || status === 502
+					? '500'
+					: 'generic'
 	);
 
 	const icons = {

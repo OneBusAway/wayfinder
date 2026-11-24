@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax */
-import oba, { callOBA, handleOBAResponse } from '$lib/obaSdk.js';
+import { json } from '@sveltejs/kit';
+import oba, { callOBA } from '$lib/obaSdk.js';
 import { getAgencyFilter, filterByRouteId } from '$lib/agencyFilter.js';
 
 /** @type {import('./$types').RequestHandler} */
@@ -31,5 +32,5 @@ export async function GET({ params, url }) {
 		);
 	}
 
-	return handleOBAResponse(response, 'arrivals-and-departures-for-stop');
+	return json(response);
 }

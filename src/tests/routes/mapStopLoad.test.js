@@ -4,8 +4,7 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 const retrieve = vi.fn();
 vi.mock('$lib/obaSdk.js', () => ({
 	default: { stop: { retrieve: (...a) => retrieve(...a) } },
-	callOBA: async (call) => (typeof call === 'function' ? call() : call),
-	handleOBAResponse: (res) => res // pass-through; res already has .json()
+	callOBA: async (call) => (typeof call === 'function' ? call() : call)
 }));
 
 import { load } from '../../routes/(map)/map/stops/[stopID]/+page.server.js';
@@ -15,7 +14,7 @@ describe('/(map)/map/stops/[stopID] load', () => {
 
 	test('returns the stop entry for the requested id', async () => {
 		const entry = { id: '1_75403', lat: 47.6, lon: -122.3, name: 'Pine St & 3rd Ave' };
-		retrieve.mockResolvedValue({ json: async () => ({ data: { entry } }) });
+		retrieve.mockResolvedValue({ data: { entry } });
 
 		const result = await load({ params: { stopID: '1_75403' } });
 

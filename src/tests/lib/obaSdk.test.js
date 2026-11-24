@@ -257,6 +257,47 @@ describe('OneBusAway Client', () => {
 				callOBA(() => Promise.reject(new Error('Unexpected JS error')), 'stop')
 			).rejects.toMatchObject({ status: 500 });
 		});
+
+		it('logs original error on 502 and 500 but not on 404 or 400', async () => {
+			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+			// 404 should NOT log
+			const notFoundErr = new MockNotFoundError(404, {}, 'Not found', {});
+			await expect(callOBA(() => Promise.reject(notFoundErr), 'trip')).rejects.toMatchObject({
+				status: 404
+			});
+			expect(consoleErrorSpy).not.toHaveBeenCalled();
+
+			// 400 should NOT log
+			const badReqErr = new MockAPIError(400, {}, 'Bad request', {});
+			await expect(callOBA(() => Promise.reject(badReqErr), 'trip')).rejects.toMatchObject({
+				status: 400
+			});
+			expect(consoleErrorSpy).not.toHaveBeenCalled();
+
+			// 401 (maps to 502) SHOULD log original error
+			const authErr = new MockAPIError(401, {}, 'Unauthorized', {});
+			await expect(callOBA(() => Promise.reject(authErr), 'trip')).rejects.toMatchObject({
+				status: 502
+			});
+			expect(consoleErrorSpy).toHaveBeenCalledWith(authErr);
+
+			// Connection error (maps to 502) SHOULD log
+			const connErr = new MockAPIConnectionError('Connection refused');
+			await expect(callOBA(() => Promise.reject(connErr), 'trip')).rejects.toMatchObject({
+				status: 502
+			});
+			expect(consoleErrorSpy).toHaveBeenCalledWith(connErr);
+
+			// Generic 500 error SHOULD log
+			const genericErr = new Error('Database crash');
+			await expect(callOBA(() => Promise.reject(genericErr), 'trip')).rejects.toMatchObject({
+				status: 500
+			});
+			expect(consoleErrorSpy).toHaveBeenCalledWith(genericErr);
+
+			consoleErrorSpy.mockRestore();
+		});
 	});
 
 	describe('handleOBAResponse', () => {

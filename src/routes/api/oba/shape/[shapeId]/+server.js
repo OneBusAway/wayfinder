@@ -1,8 +1,11 @@
 /* eslint-disable no-restricted-syntax */
-import oba, { callOBA, handleOBAResponse } from '$lib/obaSdk.js';
+import { json } from '@sveltejs/kit';
+import oba, { callOBA } from '$lib/obaSdk.js';
 
+/** @type {import('./$types').RequestHandler} */
 export async function GET({ params }) {
-	const { shapeId } = params;
+	const shapeId = params.shapeId;
 	const response = await callOBA(() => oba.shape.retrieve(shapeId), 'shape');
-	return handleOBAResponse(response, 'shape');
+
+	return json(response);
 }

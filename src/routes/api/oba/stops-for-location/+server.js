@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 import { json } from '@sveltejs/kit';
-import oba, { callOBA, handleOBAResponse } from '$lib/obaSdk';
+import oba, { callOBA } from '$lib/obaSdk';
 import { getAgencyFilter, filterStops } from '$lib/agencyFilter.js';
 import { parseLocationQuery } from '$lib/onDemand/params.js';
 
@@ -24,5 +24,5 @@ export async function GET({ url }) {
 		response.data.list = filterStops(response.data.list, getAgencyFilter());
 	}
 
-	return handleOBAResponse(response, 'stops-for-location');
+	return json(response);
 }

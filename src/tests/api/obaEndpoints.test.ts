@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const {
@@ -12,33 +11,34 @@ const {
 	mockTripRetrieve
 } = vi.hoisted(() => {
 	class MockOnebusawaySDKError extends Error {
-		constructor(message) {
+		constructor(message?: string) {
 			super(message);
 			this.name = 'OnebusawaySDKError';
 		}
 	}
 	class MockAPIError extends MockOnebusawaySDKError {
-		constructor(status, errorData, message) {
+		status: number | undefined;
+		constructor(status?: number, errorData?: unknown, message?: string) {
 			super(message || `${status}`);
 			this.name = 'APIError';
 			this.status = status;
 		}
 	}
 	class MockNotFoundError extends MockAPIError {
-		constructor(status = 404, errorData, message) {
+		constructor(status = 404, errorData?: unknown, message?: string) {
 			super(status, errorData, message || 'Not found');
 			this.name = 'NotFoundError';
 		}
 	}
 	class MockAPIConnectionError extends MockAPIError {
-		constructor(message) {
+		constructor(message?: string) {
 			super(undefined, undefined, message || 'Connection error');
 			this.name = 'APIConnectionError';
 			this.status = undefined;
 		}
 	}
 	class MockAPIConnectionTimeoutError extends MockAPIConnectionError {
-		constructor(message) {
+		constructor(message?: string) {
 			super(message || 'Connection timeout');
 			this.name = 'APIConnectionTimeoutError';
 		}
@@ -56,16 +56,17 @@ const {
 });
 
 vi.mock('onebusaway-sdk', () => {
-	const MockOneBusAway = vi.fn().mockImplementation(() => ({
-		stop: { retrieve: mockStopRetrieve },
-		arrivalAndDeparture: { list: mockArrivalAndDepartureList },
-		trip: { retrieve: mockTripRetrieve }
-	}));
-	MockOneBusAway.OnebusawaySDKError = MockOnebusawaySDKError;
-	MockOneBusAway.APIError = MockAPIError;
-	MockOneBusAway.NotFoundError = MockNotFoundError;
-	MockOneBusAway.APIConnectionError = MockAPIConnectionError;
-	MockOneBusAway.APIConnectionTimeoutError = MockAPIConnectionTimeoutError;
+	class MockOneBusAway {
+		static OnebusawaySDKError = MockOnebusawaySDKError;
+		static APIError = MockAPIError;
+		static NotFoundError = MockNotFoundError;
+		static APIConnectionError = MockAPIConnectionError;
+		static APIConnectionTimeoutError = MockAPIConnectionTimeoutError;
+
+		stop = { retrieve: mockStopRetrieve };
+		arrivalAndDeparture = { list: mockArrivalAndDepartureList };
+		trip = { retrieve: mockTripRetrieve };
+	}
 	return {
 		default: MockOneBusAway,
 		OnebusawaySDKError: MockOnebusawaySDKError,
@@ -86,12 +87,24 @@ vi.mock('$env/static/private', () => ({
 
 vi.mock('$lib/agencyFilter.js', () => ({
 	getAgencyFilter: () => null,
-	filterByRouteId: (arrivals) => arrivals
+	filterByRouteId: <T>(arrivals: T): T => arrivals
 }));
 
 import { GET as getStop } from '../../routes/api/oba/stop/[stopID]/+server.js';
 import { GET as getArrivals } from '../../routes/api/oba/arrivals-and-departures-for-stop/[id]/+server.js';
 import { GET as getTrip } from '../../routes/api/oba/trip/[tripId]/+server.js';
+
+const createStopEvent = (stopID: string) =>
+	({ params: { stopID } }) as unknown as Parameters<typeof getStop>[0];
+
+const createArrivalsEvent = (id: string, url: string) =>
+	({
+		params: { id },
+		url: new URL(url)
+	}) as unknown as Parameters<typeof getArrivals>[0];
+
+const createTripEvent = (tripId: string) =>
+	({ params: { tripId } }) as unknown as Parameters<typeof getTrip>[0];
 
 describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () => {
 	beforeEach(() => {
@@ -103,7 +116,7 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 			const mockStop = { code: 200, data: { entry: { id: '1_75403', name: 'Pine St' } } };
 			mockStopRetrieve.mockResolvedValue(mockStop);
 
-			const response = await getStop({ params: { stopID: '1_75403' } });
+			const response = await getStop(createStopEvent('1_75403'));
 			const body = await response.json();
 
 			expect(response.status).toBe(200);
@@ -113,7 +126,7 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 		it('throws 404 when OBA stop.retrieve returns null (Puget Sound missing stop behavior)', async () => {
 			mockStopRetrieve.mockResolvedValue(null);
 
-			await expect(getStop({ params: { stopID: '1_DOESNOTEXIST' } })).rejects.toMatchObject({
+			await expect(getStop(createStopEvent('1_DOESNOTEXIST'))).rejects.toMatchObject({
 				status: 404,
 				body: { message: 'Unable to fetch stop.' }
 			});
@@ -122,7 +135,7 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 		it('throws 404 when OBA stop.retrieve throws NotFoundError', async () => {
 			mockStopRetrieve.mockRejectedValue(new MockNotFoundError(404, {}, 'Not found'));
 
-			await expect(getStop({ params: { stopID: '1_DOESNOTEXIST' } })).rejects.toMatchObject({
+			await expect(getStop(createStopEvent('1_DOESNOTEXIST'))).rejects.toMatchObject({
 				status: 404,
 				body: { message: 'Unable to fetch stop.' }
 			});
@@ -131,7 +144,7 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 		it('throws 502 when upstream returns 401 or 403 (avoiding exposing rider auth errors)', async () => {
 			mockStopRetrieve.mockRejectedValue(new MockAPIError(401, {}, 'Unauthorized'));
 
-			await expect(getStop({ params: { stopID: '1_75403' } })).rejects.toMatchObject({
+			await expect(getStop(createStopEvent('1_75403'))).rejects.toMatchObject({
 				status: 502,
 				body: { message: 'Unable to fetch stop.' }
 			});
@@ -143,10 +156,12 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 			const mockData = { code: 200, data: { entry: { arrivalsAndDepartures: [] } } };
 			mockArrivalAndDepartureList.mockResolvedValue(mockData);
 
-			const response = await getArrivals({
-				params: { id: '1_75403' },
-				url: new URL('http://localhost/api/oba/arrivals-and-departures-for-stop/1_75403')
-			});
+			const response = await getArrivals(
+				createArrivalsEvent(
+					'1_75403',
+					'http://localhost/api/oba/arrivals-and-departures-for-stop/1_75403'
+				)
+			);
 			const body = await response.json();
 
 			expect(response.status).toBe(200);
@@ -157,10 +172,12 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 			mockArrivalAndDepartureList.mockRejectedValue(new MockNotFoundError(404, {}, 'Not found'));
 
 			await expect(
-				getArrivals({
-					params: { id: '1_DOESNOTEXIST' },
-					url: new URL('http://localhost/api/oba/arrivals-and-departures-for-stop/1_DOESNOTEXIST')
-				})
+				getArrivals(
+					createArrivalsEvent(
+						'1_DOESNOTEXIST',
+						'http://localhost/api/oba/arrivals-and-departures-for-stop/1_DOESNOTEXIST'
+					)
+				)
 			).rejects.toMatchObject({
 				status: 404,
 				body: { message: 'Unable to fetch arrivals-and-departures-for-stop.' }
@@ -171,10 +188,12 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 			mockArrivalAndDepartureList.mockRejectedValue(new MockAPIError(429, {}, 'Too Many Requests'));
 
 			await expect(
-				getArrivals({
-					params: { id: '1_75403' },
-					url: new URL('http://localhost/api/oba/arrivals-and-departures-for-stop/1_75403')
-				})
+				getArrivals(
+					createArrivalsEvent(
+						'1_75403',
+						'http://localhost/api/oba/arrivals-and-departures-for-stop/1_75403'
+					)
+				)
 			).rejects.toMatchObject({
 				status: 502,
 				body: { message: 'Unable to fetch arrivals-and-departures-for-stop.' }
@@ -187,7 +206,7 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 			const mockTrip = { code: 200, data: { entry: { id: '1_12345' } } };
 			mockTripRetrieve.mockResolvedValue(mockTrip);
 
-			const response = await getTrip({ params: { tripId: '1_12345' } });
+			const response = await getTrip(createTripEvent('1_12345'));
 			const body = await response.json();
 
 			expect(response.status).toBe(200);
@@ -197,7 +216,7 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 		it('throws 404 when OBA returns HTTP 404 (SDK throws NotFoundError)', async () => {
 			mockTripRetrieve.mockRejectedValue(new MockNotFoundError(404, {}, 'Not found'));
 
-			await expect(getTrip({ params: { tripId: '1_DOESNOTEXIST' } })).rejects.toMatchObject({
+			await expect(getTrip(createTripEvent('1_DOESNOTEXIST'))).rejects.toMatchObject({
 				status: 404,
 				body: { message: 'Unable to fetch trip.' }
 			});
@@ -206,7 +225,7 @@ describe('OBA API Routes error mapping (Puget Sound & upstream behaviors)', () =
 		it('throws 502 when upstream OBA server encounters 500 error', async () => {
 			mockTripRetrieve.mockRejectedValue(new MockAPIError(500, {}, 'Internal Server Error'));
 
-			await expect(getTrip({ params: { tripId: '1_12345' } })).rejects.toMatchObject({
+			await expect(getTrip(createTripEvent('1_12345'))).rejects.toMatchObject({
 				status: 502,
 				body: { message: 'Unable to fetch trip.' }
 			});

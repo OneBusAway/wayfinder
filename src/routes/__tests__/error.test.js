@@ -288,6 +288,7 @@ describe('ErrorPage', () => {
 		test.each([
 			[403, 'Access denied'],
 			[500, 'Server error'],
+			[502, 'Server error'],
 			[418, 'Something went wrong'] // generic fallthrough
 		])('renders the %i branch', (status, title) => {
 			page.__setStatus(status);
