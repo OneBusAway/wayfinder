@@ -65,7 +65,7 @@ export async function callOBA(apiCall, entityName) {
 		}
 
 		if (typeof response.code === 'undefined') {
-			console.error(`OBA response for ${entityName} is missing response code:`, response);
+			console.error(`OBA response for ${entityName} is missing response code`);
 			throw error(500, `Unable to fetch ${entityName}.`);
 		}
 
@@ -120,7 +120,7 @@ export function handleOBAResponse(response, entityName) {
 	}
 
 	if (typeof response.code === 'undefined') {
-		console.error(`OBA response for ${entityName} is missing response code:`, response);
+		console.error(`OBA response for ${entityName} is missing response code`);
 		throw error(500, `Unable to fetch ${entityName}.`);
 	}
 
