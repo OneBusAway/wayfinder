@@ -422,5 +422,28 @@ describe('RecentTripsList', () => {
 				'You can only pin up to 20 trips. Please unpin a trip first.'
 			);
 		});
+
+		it('keeps pin and remove actions visible on touch devices and reserves right padding on pinned rows', () => {
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			mockStoreValue.current = [sampleTrips[1]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const removePinnedBtn = screen.getByRole('button', { name: 'Remove pinned trip' });
+			expect(removePinnedBtn.classList.contains('opacity-100')).toBe(true);
+			expect(removePinnedBtn.classList.contains('[@media(hover:hover)]:opacity-0')).toBe(true);
+
+			const pinnedCardBtn = screen.getByRole('button', {
+				name: 'Use pinned trip from Capitol Hill to University District'
+			});
+			const pinnedTextWrapper = pinnedCardBtn.querySelector('.min-w-0');
+			expect(pinnedTextWrapper.classList.contains('pr-10')).toBe(true);
+
+			const removeRecentBtn = screen.getByRole('button', { name: 'Remove recent trip' });
+			const recentActionsContainer = removeRecentBtn.parentElement;
+			expect(recentActionsContainer.classList.contains('opacity-100')).toBe(true);
+			expect(recentActionsContainer.classList.contains('[@media(hover:hover)]:opacity-0')).toBe(
+				true
+			);
+		});
 	});
 });

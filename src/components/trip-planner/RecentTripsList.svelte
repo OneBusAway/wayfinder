@@ -89,7 +89,7 @@
 								<div class="text-brand-primary mr-3">
 									<Pin class="h-3.5 w-3.5 fill-current" />
 								</div>
-								<div class="min-w-0 flex-1 text-left">
+								<div class="min-w-0 flex-1 pr-10 text-left">
 									<div class="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
 										{trip.fromPlace}
 									</div>
@@ -101,7 +101,7 @@
 							<button
 								type="button"
 								aria-label={$t('trip-planner.remove_pinned_trip')}
-								class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 dark:hover:bg-gray-600"
+								class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-100 transition-opacity hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 dark:hover:bg-gray-600 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
 								onclick={(e) => handleDeletePinned(e, trip.id)}
 							>
 								<X class="h-3.5 w-3.5" />
@@ -157,7 +157,7 @@
 							</button>
 
 							<div
-								class="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+								class="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-0.5 opacity-100 transition-opacity [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-hover:opacity-100"
 							>
 								<button
 									type="button"
