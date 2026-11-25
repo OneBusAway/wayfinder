@@ -165,8 +165,8 @@ const PORTAL = 'https://gis.example.test/portal';
 const LIGHT_ITEM = 'e19f33d2c1f44967aef673306c483913';
 const SHAPE = '_p~iF~ps|U_ulLnnqC_mqNvxq`@';
 
-async function initializedProvider({ apiKey = 'key', customBasemapUrl = '', customBasemap } = {}) {
-	const provider = new ArcGISMapProvider(apiKey, customBasemap ?? customBasemapUrl, vi.fn());
+async function initializedProvider({ apiKey = 'key', customBasemap } = {}) {
+	const provider = new ArcGISMapProvider(apiKey, customBasemap, vi.fn());
 	await provider.initMap(document.createElement('div'), { lat: 47.6, lng: -122.3 });
 	return provider;
 }
@@ -181,7 +181,7 @@ describe('ArcGISMapProvider', () => {
 
 	test('initializes optional API key, custom basemap, shared handlers, and overlay', async () => {
 		const provider = await initializedProvider({
-			customBasemapUrl: 'https://tiles.example.test/style.json'
+			customBasemap: { url: 'https://tiles.example.test/style.json' }
 		});
 		expect(provider.map.basemap.baseLayers[0].url).toBe('https://tiles.example.test/style.json');
 		expect(provider.overlayContainer.className).toBe('arcgis-overlay-container');
@@ -219,7 +219,7 @@ describe('ArcGISMapProvider', () => {
 
 	test('cleans up partial state when view.when rejects', async () => {
 		sdk.MapView.whenResult = Promise.reject(new Error('WebGL unavailable'));
-		const provider = new ArcGISMapProvider('', '', vi.fn());
+		const provider = new ArcGISMapProvider('', undefined, vi.fn());
 		await expect(
 			provider.initMap(document.createElement('div'), { lat: 1, lng: 2 })
 		).rejects.toThrow('WebGL unavailable');
@@ -235,7 +235,7 @@ describe('ArcGISMapProvider', () => {
 					finishProjectionLoad = resolve;
 				})
 		);
-		const provider = new ArcGISMapProvider('', '', vi.fn());
+		const provider = new ArcGISMapProvider('', undefined, vi.fn());
 		const initialization = provider.initMap(document.createElement('div'), { lat: 1, lng: 2 });
 
 		await vi.waitFor(() => expect(sdk.projection.load).toHaveBeenCalled());
@@ -249,7 +249,7 @@ describe('ArcGISMapProvider', () => {
 
 	test('preserves a custom basemap during theme changes and dims only its base layer', async () => {
 		const provider = await initializedProvider({
-			customBasemapUrl: 'https://tiles.example.test/style.json'
+			customBasemap: { url: 'https://tiles.example.test/style.json' }
 		});
 		const basemap = provider.map.basemap;
 		provider.setTheme('dark');
@@ -301,6 +301,49 @@ describe('ArcGISMapProvider', () => {
 		expect(overlay.opacity).toBe(0.6);
 		provider.setBasemapDimmed(false);
 		expect(overlay.opacity).toBe(1);
+	});
+
+	test('an overlay kept across a theme change returns to full opacity after undimming', async () => {
+		const provider = await initializedProvider({
+			customBasemap: { url: 'https://tiles.example.test/light.json', mode: 'overlay' }
+		});
+		const overlay = provider.map.layers[0];
+		provider.setBasemapDimmed(true);
+		provider.setTheme('dark');
+		expect(overlay.opacity).toBe(0.6);
+		provider.setBasemapDimmed(false);
+		expect(overlay.opacity).toBe(1);
+	});
+
+	test('does not reload the basemap when the theme is unchanged', async () => {
+		const provider = await initializedProvider({
+			customBasemap: {
+				url: 'https://tiles.example.test/light.json',
+				darkUrl: 'https://tiles.example.test/dark.json',
+				mode: 'overlay'
+			}
+		});
+		const overlay = provider.map.layers[0];
+		provider.setTheme('light');
+		expect(provider.map.layers[0]).toBe(overlay);
+		expect(provider.map.basemap).toBe('streets-navigation-vector');
+	});
+
+	test('builds the map in dark mode when the page is already dark', async () => {
+		document.documentElement.classList.add('dark');
+		try {
+			const provider = await initializedProvider({
+				customBasemap: {
+					url: 'https://tiles.example.test/light.json',
+					darkUrl: 'https://tiles.example.test/dark.json',
+					mode: 'overlay'
+				}
+			});
+			expect(provider.map.basemap).toBe('dark-gray-vector');
+			expect(provider.map.layers[0].url).toBe('https://tiles.example.test/dark.json');
+		} finally {
+			document.documentElement.classList.remove('dark');
+		}
 	});
 
 	test('overlay mode swaps in the dark overlay with the dark Esri basemap', async () => {
@@ -583,7 +626,11 @@ describe('ArcGISMapProvider', () => {
 		);
 
 		const popupWatch = sdk.reactiveUtils.watch.mock.calls[1][1];
-		popupWatch(false);
+		// The SDK reports `visible: false` when it first creates the popup; that
+		// is not a close and must not unmount content that is about to be shown.
+		popupWatch(false, undefined);
+		expect(provider.activePopupComponent).not.toBeNull();
+		popupWatch(false, true);
 		expect(provider.activePopupComponent).toBeNull();
 	});
 

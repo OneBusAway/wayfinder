@@ -58,8 +58,8 @@ function toArcGISPadding(padding) {
 export default class ArcGISMapProvider {
 	/**
 	 * @param {string} apiKey
-	 * @param {string | import('$lib/arcgisBasemap').CustomBasemapSettings | null | undefined} customBasemap
-	 *   A basemap URL, or `{ url, darkUrl, mode }`; see `resolveCustomBasemap`.
+	 * @param {import('$lib/arcgisBasemap').CustomBasemapSettings | null | undefined} customBasemap
+	 *   `{ url, darkUrl, mode }`; see `resolveCustomBasemap`.
 	 * @param {Function} handleStopMarkerSelect
 	 */
 	constructor(apiKey, customBasemap, handleStopMarkerSelect) {
@@ -98,14 +98,17 @@ export default class ArcGISMapProvider {
 		// bookkeeping, not read reactively
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		this.handles = new Set();
-		// bookkeeping, not read reactively
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		this._basemapLayerOpacities = new Map();
+		// Each basemap layer's opacity before dimming. Weak, so layers dropped by
+		// a theme change need no cleanup and a layer kept across one keeps its entry.
+		this._basemapLayerOpacities = new WeakMap();
 	}
 
 	async initMap(element, options) {
 		if (!browser) return;
 		this._destroyed = false;
+		// Build the map in the current theme so the first `setTheme` call, which
+		// arrives right after initialization, has nothing to reload.
+		this._darkTheme = document.documentElement.classList.contains('dark');
 
 		await import('@arcgis/core/assets/esri/themes/light/main.css');
 		await import('./../../assets/styles/arcgis-map.css');
@@ -194,7 +197,10 @@ export default class ArcGISMapProvider {
 					dockEnabled: false,
 					dockOptions: { breakpoint: false, buttonEnabled: false },
 					actions: [],
-					autoCloseEnabled: true,
+					// Auto-close fires on any view movement, and a right-click counts as
+					// the start of a rotate gesture, so it closed a context menu that was
+					// being moved by a second right-click.
+					autoCloseEnabled: false,
 					defaultPopupTemplateEnabled: false,
 					highlightEnabled: false,
 					visibleElements: {
@@ -233,8 +239,12 @@ export default class ArcGISMapProvider {
 		this._trackHandle(
 			this.reactiveUtils.watch(
 				() => this.view?.popup?.visible,
-				(visible) => {
-					if (!visible) this._cleanupPopupComponent();
+				// Only a visible popup that closes should tear down its content. The
+				// SDK creates the popup on first open and reports `visible: false`
+				// before it opens; treating that as a close unmounted the content that
+				// was about to be shown.
+				(visible, wasVisible) => {
+					if (wasVisible && !visible) this._cleanupPopupComponent();
 				}
 			)
 		);
@@ -663,20 +673,29 @@ export default class ArcGISMapProvider {
 	}
 
 	setTheme(theme) {
-		this._darkTheme = theme === 'dark';
+		const dark = theme === 'dark';
+		if (dark === this._darkTheme) return;
+		this._darkTheme = dark;
 		if (!this.map) return;
-		const custom = this.customBasemap;
-		// A replacement basemap with no dark variant looks the same in both themes.
-		if (custom && !custom.overlay && !custom.dark) return;
 
-		if (custom?.overlay && custom.dark) {
+		const custom = this.customBasemap;
+		if (custom && !custom.dark) {
+			// With no dark variant, a replacement basemap is the same in both
+			// themes; an overlay stays put while the Esri basemap beneath it changes.
+			if (!custom.overlay) return;
+		} else if (custom?.overlay) {
 			const previous = this.customOverlayLayer;
 			this.customOverlayLayer = this._createCustomLayer();
 			this.map.add(this.customOverlayLayer, 0);
-			if (previous) this.map.remove(previous);
+			this.map.remove(previous);
+			// Removing a layer does not free it; destroy it so theme toggles do not
+			// pile up vector tile layers.
+			previous?.destroy?.();
 		}
-		this._basemapLayerOpacities.clear();
+		const previousBasemap = this.map.basemap;
 		this.map.basemap = this._createBasemap();
+		// Only a basemap this provider built is its to destroy.
+		if (custom && !custom.overlay) previousBasemap?.destroy?.();
 		this._applyBasemapDimmingWhenReady(this.map.basemap);
 	}
 
@@ -1124,6 +1143,6 @@ export default class ArcGISMapProvider {
 		this.routeLineLayer = null;
 		this.routePromotedLayer = null;
 		this.stopsMap.clear();
-		this._basemapLayerOpacities.clear();
+		this._basemapLayerOpacities = new WeakMap();
 	}
 }

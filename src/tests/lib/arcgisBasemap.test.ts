@@ -43,7 +43,7 @@ describe('vectorTileSource', () => {
 describe('resolveCustomBasemap', () => {
 	test('returns null without a light URL, even when dark URL and mode are set', () => {
 		expect(resolveCustomBasemap(undefined)).toBeNull();
-		expect(resolveCustomBasemap('')).toBeNull();
+		expect(resolveCustomBasemap({})).toBeNull();
 		expect(
 			resolveCustomBasemap({
 				url: '',
@@ -53,8 +53,8 @@ describe('resolveCustomBasemap', () => {
 		).toBeNull();
 	});
 
-	test('reads a bare string as a replacement basemap with no dark variant', () => {
-		expect(resolveCustomBasemap('https://tiles.example.test/style.json')).toEqual({
+	test('a light URL alone is a replacement basemap with no dark variant', () => {
+		expect(resolveCustomBasemap({ url: 'https://tiles.example.test/style.json' })).toEqual({
 			light: { url: 'https://tiles.example.test/style.json' },
 			dark: null,
 			overlay: false

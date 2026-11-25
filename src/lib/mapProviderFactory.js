@@ -12,11 +12,7 @@ export function createMapProvider(source, config, handleStopMarkerSelect) {
 	if (source === MapSource.ArcGIS) {
 		return new ArcGISMapProvider(
 			config.arcgisApiKey,
-			{
-				url: config.arcgisCustomBasemapUrl,
-				darkUrl: config.arcgisCustomBasemapDarkUrl,
-				mode: config.arcgisCustomBasemapMode
-			},
+			config.arcgisCustomBasemap,
 			handleStopMarkerSelect
 		);
 	}

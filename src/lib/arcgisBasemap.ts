@@ -22,9 +22,9 @@ export interface CustomBasemap {
 	overlay: boolean;
 }
 
-const ITEM_ID = '[0-9a-f]{32}';
+const ITEM_ID = /^[0-9a-f]{32}$/i;
 const ITEM_PAGE = /^(.*)\/home\/item\.html$/i;
-const ITEM_REST = new RegExp(`^(.*)/sharing/rest/content/items/(${ITEM_ID})/?$`, 'i');
+const ITEM_REST = /^(.*)\/sharing\/rest\/content\/items\/([^/]+)\/?$/i;
 
 /**
  * Turn a configured URL into `VectorTileLayer` properties.
@@ -46,30 +46,29 @@ export function vectorTileSource(value: string | null | undefined): VectorTileSo
 	}
 
 	const page = ITEM_PAGE.exec(parsed.pathname);
-	const pageId = parsed.searchParams.get('id');
-	if (page && pageId && new RegExp(`^${ITEM_ID}$`, 'i').test(pageId)) {
-		return { portalItem: { id: pageId, portal: { url: parsed.origin + page[1] } } };
-	}
-
 	const rest = ITEM_REST.exec(parsed.pathname);
-	if (rest) {
-		return { portalItem: { id: rest[2], portal: { url: parsed.origin + rest[1] } } };
+	const portalPath = page?.[1] ?? rest?.[1];
+	const id = page ? parsed.searchParams.get('id') : rest?.[2];
+	if (portalPath !== undefined && id && ITEM_ID.test(id)) {
+		return { portalItem: { id, portal: { url: parsed.origin + portalPath } } };
+	}
+	if (portalPath !== undefined) {
+		// A portal item link without a usable item ID cannot load as a portal
+		// item, and its URL is not a tile service either.
+		console.warn(`ArcGIS custom basemap: no valid portal item ID in "${trimmed}"`);
 	}
 
 	return { url: trimmed };
 }
 
 /**
- * Resolve the custom basemap settings. A bare string is the light URL in
- * replace mode, which is what `PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL` meant before
- * the dark URL and mode settings existed. Returns `null` when no light URL is
+ * Resolve the custom basemap settings. Returns `null` when no light URL is
  * configured; the dark URL and mode have no effect on their own.
  */
 export function resolveCustomBasemap(
-	settings: string | CustomBasemapSettings | null | undefined
+	settings: CustomBasemapSettings | null | undefined
 ): CustomBasemap | null {
-	const { url, darkUrl, mode } =
-		typeof settings === 'string' ? ({ url: settings } as CustomBasemapSettings) : (settings ?? {});
+	const { url, darkUrl, mode } = settings ?? {};
 	const light = vectorTileSource(url);
 	if (!light) return null;
 	return {
