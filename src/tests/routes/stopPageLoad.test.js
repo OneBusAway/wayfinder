@@ -19,7 +19,7 @@ vi.mock('$lib/obaSdk.js', () => ({
 		stop: { retrieve: (...args) => retrieveMock(...args) },
 		arrivalAndDeparture: { list: (...args) => listMock(...args) }
 	},
-	handleOBAResponse: (res) => res
+	callOBA: async (fn) => (typeof fn === 'function' ? fn() : fn)
 }));
 
 import { load } from '../../routes/stops/[stopID]/+page.server.js';
@@ -44,19 +44,15 @@ describe('/stops/[stopID] +page.server load', () => {
 		const arrivals = [{ routeId: '1_10' }, { routeId: '40_550' }];
 
 		retrieveMock.mockResolvedValue({
-			json: async () => ({
-				data: {
-					entry: stopEntry,
-					references: { routes }
-				}
-			})
+			data: {
+				entry: stopEntry,
+				references: { routes }
+			}
 		});
 		listMock.mockResolvedValue({
-			json: async () => ({
-				data: {
-					entry: { arrivalsAndDepartures: arrivals }
-				}
-			})
+			data: {
+				entry: { arrivalsAndDepartures: arrivals }
+			}
 		});
 
 		const result = await load({ params: { stopID: '1_75403' } });
@@ -81,19 +77,15 @@ describe('/stops/[stopID] +page.server load', () => {
 		const arrivals = [{ routeId: '1_10' }, { routeId: '40_550' }];
 
 		retrieveMock.mockResolvedValue({
-			json: async () => ({
-				data: {
-					entry: stopEntry,
-					references: { routes }
-				}
-			})
+			data: {
+				entry: stopEntry,
+				references: { routes }
+			}
 		});
 		listMock.mockResolvedValue({
-			json: async () => ({
-				data: {
-					entry: { arrivalsAndDepartures: arrivals }
-				}
-			})
+			data: {
+				entry: { arrivalsAndDepartures: arrivals }
+			}
 		});
 
 		const result = await load({ params: { stopID: '1_75403' } });

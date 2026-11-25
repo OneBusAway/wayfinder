@@ -1,6 +1,8 @@
 /* eslint-disable no-restricted-syntax */
-import oba, { handleOBAResponse } from '$lib/obaSdk.js';
+import { json } from '@sveltejs/kit';
+import oba, { callOBA } from '$lib/obaSdk.js';
 
+/** @type {import('./$types').RequestHandler} */
 export async function GET({ params, url }) {
 	const { tripId } = params;
 
@@ -23,7 +25,11 @@ export async function GET({ params, url }) {
 	if (serviceDate) {
 		queryParams.serviceDate = serviceDate;
 	}
-	const response = await oba.tripDetails.retrieve(tripId, queryParams);
 
-	return handleOBAResponse(response, 'trip-details');
+	const response = await callOBA(
+		() => oba.tripDetails.retrieve(tripId, queryParams),
+		'trip-details'
+	);
+
+	return json(response);
 }

@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-syntax */
-import oba, { handleOBAResponse } from '$lib/obaSdk.js';
+import oba, { callOBA } from '$lib/obaSdk.js';
 import {
 	getAgencyFilter,
 	filterByRouteId,
@@ -14,37 +14,40 @@ import {
 export async function load({ params }) {
 	const stopID = params.stopID;
 
-	const stopResponse = await oba.stop.retrieve(stopID);
-	const stopBody = await handleOBAResponse(stopResponse, 'stop').json();
+	const stopResponse = await callOBA(() => oba.stop.retrieve(stopID), 'stop');
 
-	const arrivalsAndDeparturesResponse = await oba.arrivalAndDeparture.list(stopID);
-
-	const arrivalsAndDeparturesResponseJSON = await handleOBAResponse(
-		arrivalsAndDeparturesResponse,
+	const arrivalsAndDeparturesResponse = await callOBA(
+		() => oba.arrivalAndDeparture.list(stopID),
 		'arrivals-and-departures-for-stop'
-	).json();
+	);
 
 	const agencyFilter = getAgencyFilter();
 
-	if (arrivalsAndDeparturesResponseJSON.data?.entry?.arrivalsAndDepartures) {
-		arrivalsAndDeparturesResponseJSON.data.entry.arrivalsAndDepartures = filterByRouteId(
-			arrivalsAndDeparturesResponseJSON.data.entry.arrivalsAndDepartures,
+	if (arrivalsAndDeparturesResponse.data?.entry?.arrivalsAndDepartures) {
+		arrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures = filterByRouteId(
+			arrivalsAndDeparturesResponse.data.entry.arrivalsAndDepartures,
 			agencyFilter
 		);
 	}
 
 	if (agencyFilter) {
-		if (stopBody.data?.entry?.routeIds) {
-			stopBody.data.entry.routeIds = filterRouteIds(stopBody.data.entry.routeIds, agencyFilter);
+		if (stopResponse.data?.entry?.routeIds) {
+			stopResponse.data.entry.routeIds = filterRouteIds(
+				stopResponse.data.entry.routeIds,
+				agencyFilter
+			);
 		}
-		if (stopBody.data?.references?.routes) {
-			stopBody.data.references.routes = filterRoutes(stopBody.data.references.routes, agencyFilter);
+		if (stopResponse.data?.references?.routes) {
+			stopResponse.data.references.routes = filterRoutes(
+				stopResponse.data.references.routes,
+				agencyFilter
+			);
 		}
 	}
 
 	return {
 		stopID: params.stopID,
-		stopData: stopBody.data,
-		arrivalsAndDeparturesResponse: arrivalsAndDeparturesResponseJSON
+		stopData: stopResponse.data,
+		arrivalsAndDeparturesResponse
 	};
 }
