@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Popover from '$components/ui/popover/index';
+	import { Button } from '$components/ui/button/';
 	import { languages } from '$lib/i18n';
 	import { locale, t } from 'svelte-i18n';
 	import { browser } from '$app/environment';
@@ -110,12 +111,10 @@
 				aria-label={safeTranslate('language_switcher.select_language', {
 					values: { language: getLanguageNameForLocale(currentLocale, buttonFormat) }
 				})}
-				class="flex h-8 items-center justify-center gap-1 rounded-md border bg-surface/80 px-2 font-semibold text-surface-foreground dark:bg-surface-dark dark:text-surface-foreground-dark"
 			>
 				{#snippet child({ props })}
-					<button {...props} aria-haspopup="listbox">
+					<Button {...props} aria-haspopup="listbox" size="sm" variant="outline">
 						<svg
-							class="h-4 w-4"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
@@ -131,7 +130,7 @@
 						<span class="hidden sm:inline"
 							>{getLanguageNameForLocale(currentLocale, buttonFormat)}</span
 						>
-					</button>
+					</Button>
 				{/snippet}
 			</Popover.Trigger>
 			<Popover.Content
