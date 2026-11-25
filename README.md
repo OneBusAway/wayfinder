@@ -121,7 +121,18 @@ The pre-rename names `PRIVATE_OBACO_API_BASE_URL`, `PRIVATE_REGION_ID`, and `PRI
 - `PUBLIC_OBA_GOOGLE_MAPS_API_KEY` - string: (optional) Your Google API key.
 - `PUBLIC_OBA_MAP_PROVIDER` - string: Use "osm" for OpenStreetMap, "google" for Google Maps, or "arcgis" for ArcGIS Maps SDK.
 - `PUBLIC_ARCGIS_API_KEY` - string: (optional) ArcGIS API key. Public/basic ArcGIS basemaps work without one; secured services require one.
-- `PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL` - string: (optional) ArcGIS vector-tile basemap URL. When configured, it is retained in both light and dark mode.
+- `PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL` - string: (optional) A custom ArcGIS vector-tile basemap. Accepts a `VectorTileServer` URL, a style JSON URL, or a link to a vector tile portal item on ArcGIS Online or an ArcGIS Enterprise portal (`https://<portal>/home/item.html?id=<item id>`). Use the portal item link for a styled item; the bare `VectorTileServer` URL only carries the service's default style. The item and its tile service must be shared publicly.
+- `PUBLIC_ARCGIS_CUSTOM_BASEMAP_DARK_URL` - string: (optional) A dark-mode variant of the custom basemap, in any of the same forms. Without it, the custom basemap is shown in both light and dark mode.
+- `PUBLIC_ARCGIS_CUSTOM_BASEMAP_MODE` - string: (optional) `replace` (default) shows only the custom basemap. `overlay` draws it on top of the standard Esri basemap, which follows the light/dark theme. Use `overlay` when the custom basemap covers only part of the region, such as a campus.
+
+For example, a campus basemap published from an ArcGIS Enterprise portal, with light and dark styles, layered over the Esri basemap:
+
+```
+PUBLIC_OBA_MAP_PROVIDER="arcgis"
+PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL="https://gis.example.edu/portal/home/item.html?id=<light style item id>"
+PUBLIC_ARCGIS_CUSTOM_BASEMAP_DARK_URL="https://gis.example.edu/portal/home/item.html?id=<dark style item id>"
+PUBLIC_ARCGIS_CUSTOM_BASEMAP_MODE="overlay"
+```
 
 ### Geocoding
 

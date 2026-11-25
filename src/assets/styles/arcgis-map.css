@@ -54,3 +54,32 @@
 .dark .esri-popup:has(.map-popup-card) .esri-features__header {
 	background-color: #111827;
 }
+
+/*
+ * Only the ArcGIS light theme is loaded, because its two theme stylesheets
+ * are global and cannot be scoped to Wayfinder's `.dark` class. Give the
+ * widgets Wayfinder shows (zoom and attribution) the colours from the ArcGIS
+ * dark theme instead.
+ */
+.dark .esri-ui .esri-widget {
+	background-color: #242424;
+	color: #d1d1d1;
+}
+
+.dark .esri-ui .esri-widget--button {
+	--calcite-color-text-1: #d1d1d1;
+	--calcite-color-text-3: #adadad;
+	--calcite-color-foreground-1: #242424;
+	--calcite-color-foreground-2: #2e2e2e;
+	--calcite-color-foreground-3: #383838;
+	background-color: #242424;
+	color: #adadad;
+}
+
+.dark .esri-zoom .esri-widget--button:last-child {
+	border-top-color: #adadad4d;
+}
+
+.dark .esri-ui .esri-attribution {
+	background-color: #242424cc;
+}

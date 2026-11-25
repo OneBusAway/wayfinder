@@ -105,7 +105,20 @@
 		"required": false,
 		"type": "url",
 		"allowEmpty": true,
-		"description": "Optional ArcGIS vector-tile basemap URL; preserved across theme changes"
+		"description": "Optional ArcGIS vector-tile basemap: a VectorTileServer URL, a style JSON URL, or a portal item link (ArcGIS Online or Enterprise)"
+	},
+	"PUBLIC_ARCGIS_CUSTOM_BASEMAP_DARK_URL": {
+		"required": false,
+		"type": "url",
+		"allowEmpty": true,
+		"description": "Optional dark-mode variant of PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL; without it the custom basemap is the same in both themes"
+	},
+	"PUBLIC_ARCGIS_CUSTOM_BASEMAP_MODE": {
+		"required": false,
+		"type": "enum",
+		"enum": ["replace", "overlay"],
+		"allowEmpty": true,
+		"description": "'replace' (default) uses the custom basemap alone; 'overlay' draws it on top of the standard Esri basemap, for basemaps that cover only part of the region"
 	},
 	"PUBLIC_OBA_REGION_CENTER_LAT": {
 		"required": true,

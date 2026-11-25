@@ -64,6 +64,12 @@ const sdk = vi.hoisted(() => {
 		constructor(properties) {
 			Object.assign(this, properties);
 		}
+		add(layer, index = this.layers.length) {
+			this.layers.splice(index, 0, layer);
+		}
+		remove(layer) {
+			this.layers = this.layers.filter((item) => item !== layer);
+		}
 	}
 	class Basemap {
 		constructor(properties) {
@@ -155,10 +161,12 @@ import {
 import { isClockwise } from '$lib/MapHelpers/zoneGeometry.js';
 import { square } from '../fixtures/onDemand.js';
 
+const PORTAL = 'https://gis.example.test/portal';
+const LIGHT_ITEM = 'e19f33d2c1f44967aef673306c483913';
 const SHAPE = '_p~iF~ps|U_ulLnnqC_mqNvxq`@';
 
-async function initializedProvider({ apiKey = 'key', customBasemapUrl = '' } = {}) {
-	const provider = new ArcGISMapProvider(apiKey, customBasemapUrl, vi.fn());
+async function initializedProvider({ apiKey = 'key', customBasemapUrl = '', customBasemap } = {}) {
+	const provider = new ArcGISMapProvider(apiKey, customBasemap ?? customBasemapUrl, vi.fn());
 	await provider.initMap(document.createElement('div'), { lat: 47.6, lng: -122.3 });
 	return provider;
 }
@@ -250,6 +258,71 @@ describe('ArcGISMapProvider', () => {
 		expect(basemap.baseLayers[0].opacity).toBe(0.6);
 		provider.setBasemapDimmed(false);
 		expect(basemap.baseLayers[0].opacity).toBe(1);
+	});
+
+	test('loads a portal item link as a portal item so its style is applied', async () => {
+		const provider = await initializedProvider({
+			customBasemap: { url: `${PORTAL}/home/item.html?id=${LIGHT_ITEM}` }
+		});
+		const [layer] = provider.map.basemap.baseLayers;
+		expect(layer.portalItem).toEqual({ id: LIGHT_ITEM, portal: { url: PORTAL } });
+		expect(layer.url).toBeUndefined();
+	});
+
+	test('swaps a replacement basemap for its dark variant in dark mode', async () => {
+		const provider = await initializedProvider({
+			customBasemap: {
+				url: 'https://tiles.example.test/light.json',
+				darkUrl: 'https://tiles.example.test/dark.json'
+			}
+		});
+		provider.setBasemapDimmed(true);
+		provider.setTheme('dark');
+		expect(provider.map.basemap.baseLayers[0].url).toBe('https://tiles.example.test/dark.json');
+		expect(provider.map.basemap.baseLayers[0].opacity).toBe(0.6);
+		provider.setTheme('light');
+		expect(provider.map.basemap.baseLayers[0].url).toBe('https://tiles.example.test/light.json');
+	});
+
+	test('overlay mode keeps the Esri basemap and draws the custom layer beneath Wayfinder layers', async () => {
+		const provider = await initializedProvider({
+			customBasemap: { url: 'https://tiles.example.test/light.json', mode: 'overlay' }
+		});
+		expect(provider.map.basemap).toBe('streets-navigation-vector');
+		expect(provider.map.layers[0].url).toBe('https://tiles.example.test/light.json');
+		expect(provider.map.layers[1]).toBe(provider.zoneLayer);
+
+		const overlay = provider.map.layers[0];
+		provider.setTheme('dark');
+		expect(provider.map.basemap).toBe('dark-gray-vector');
+		expect(provider.map.layers[0]).toBe(overlay);
+
+		provider.setBasemapDimmed(true);
+		expect(overlay.opacity).toBe(0.6);
+		provider.setBasemapDimmed(false);
+		expect(overlay.opacity).toBe(1);
+	});
+
+	test('overlay mode swaps in the dark overlay with the dark Esri basemap', async () => {
+		const provider = await initializedProvider({
+			customBasemap: {
+				url: 'https://tiles.example.test/light.json',
+				darkUrl: 'https://tiles.example.test/dark.json',
+				mode: 'overlay'
+			}
+		});
+		const layerCount = provider.map.layers.length;
+		provider.setBasemapDimmed(true);
+		provider.setTheme('dark');
+		expect(provider.map.basemap).toBe('dark-gray-vector');
+		expect(provider.map.layers).toHaveLength(layerCount);
+		expect(provider.map.layers[0].url).toBe('https://tiles.example.test/dark.json');
+		expect(provider.map.layers[0].opacity).toBe(0.6);
+
+		provider.setTheme('light');
+		expect(provider.map.basemap).toBe('streets-navigation-vector');
+		expect(provider.map.layers).toHaveLength(layerCount);
+		expect(provider.map.layers[0].url).toBe('https://tiles.example.test/light.json');
 	});
 
 	test('applies dimming after an asynchronously loaded basemap is ready', async () => {

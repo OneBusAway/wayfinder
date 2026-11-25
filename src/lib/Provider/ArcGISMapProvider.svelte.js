@@ -20,6 +20,7 @@ import { buildVehiclePopupData } from '$lib/vehicleUtils';
 import { ROUTE_PANE } from '$lib/mapPanes.js';
 import PolylineUtil from 'polyline-encoded';
 import { polygonsOf, orientRing } from '$lib/MapHelpers/zoneGeometry.js';
+import { resolveCustomBasemap } from '$lib/arcgisBasemap';
 import { mount, unmount } from 'svelte';
 
 const DEFAULT_BASEMAP = 'streets-navigation-vector';
@@ -55,9 +56,18 @@ function toArcGISPadding(padding) {
 
 /** ArcGIS Maps SDK implementation of Wayfinder's map-provider contract. */
 export default class ArcGISMapProvider {
-	constructor(apiKey, customBasemapUrl, handleStopMarkerSelect) {
+	/**
+	 * @param {string} apiKey
+	 * @param {string | import('$lib/arcgisBasemap').CustomBasemapSettings | null | undefined} customBasemap
+	 *   A basemap URL, or `{ url, darkUrl, mode }`; see `resolveCustomBasemap`.
+	 * @param {Function} handleStopMarkerSelect
+	 */
+	constructor(apiKey, customBasemap, handleStopMarkerSelect) {
 		this.apiKey = apiKey;
-		this.customBasemapUrl = customBasemapUrl;
+		this.customBasemap = resolveCustomBasemap(customBasemap);
+		// In overlay mode the custom layer sits above the Esri basemap as the
+		// bottom operational layer, so the Esri basemap can still follow the theme.
+		this.customOverlayLayer = null;
 		this.handleStopMarkerSelect = handleStopMarkerSelect;
 		this.map = null;
 		this.view = null;
@@ -150,11 +160,7 @@ export default class ArcGISMapProvider {
 		if (this._destroyed) return;
 
 		try {
-			const basemap = this.customBasemapUrl
-				? new this.Basemap({
-						baseLayers: [new this.VectorTileLayer({ url: this.customBasemapUrl })]
-					})
-				: DEFAULT_BASEMAP;
+			this.customOverlayLayer = this.customBasemap?.overlay ? this._createCustomLayer() : null;
 			this.zoneLayer = new this.GraphicsLayer({ title: 'Wayfinder on-demand zones' });
 			this.routeStopLayer = new this.GraphicsLayer({ title: 'Wayfinder route stops' });
 			this.vehicleLayer = new this.GraphicsLayer({ title: 'Wayfinder vehicles' });
@@ -163,8 +169,9 @@ export default class ArcGISMapProvider {
 			this.routeLineLayer = new this.GraphicsLayer({ title: 'Wayfinder routes' });
 			this.routePromotedLayer = new this.GraphicsLayer({ title: 'Wayfinder promoted routes' });
 			this.map = new this.Map({
-				basemap,
+				basemap: this._createBasemap(),
 				layers: [
+					...(this.customOverlayLayer ? [this.customOverlayLayer] : []),
 					this.zoneLayer,
 					this.routeCasingLayer,
 					this.routeLineLayer,
@@ -657,10 +664,37 @@ export default class ArcGISMapProvider {
 
 	setTheme(theme) {
 		this._darkTheme = theme === 'dark';
-		if (!this.map || this.customBasemapUrl) return;
-		this.map.basemap = this._darkTheme ? DARK_BASEMAP : DEFAULT_BASEMAP;
+		if (!this.map) return;
+		const custom = this.customBasemap;
+		// A replacement basemap with no dark variant looks the same in both themes.
+		if (custom && !custom.overlay && !custom.dark) return;
+
+		if (custom?.overlay && custom.dark) {
+			const previous = this.customOverlayLayer;
+			this.customOverlayLayer = this._createCustomLayer();
+			this.map.add(this.customOverlayLayer, 0);
+			if (previous) this.map.remove(previous);
+		}
 		this._basemapLayerOpacities.clear();
+		this.map.basemap = this._createBasemap();
 		this._applyBasemapDimmingWhenReady(this.map.basemap);
+	}
+
+	/** The custom vector tile layer for the current theme. */
+	_createCustomLayer() {
+		const { light, dark } = this.customBasemap;
+		return new this.VectorTileLayer({
+			...((this._darkTheme && dark) || light),
+			title: 'Custom basemap'
+		});
+	}
+
+	/** The basemap for the current theme: an Esri basemap ID, or the custom layer in replace mode. */
+	_createBasemap() {
+		if (this.customBasemap && !this.customBasemap.overlay) {
+			return new this.Basemap({ baseLayers: [this._createCustomLayer()] });
+		}
+		return this._darkTheme ? DARK_BASEMAP : DEFAULT_BASEMAP;
 	}
 
 	setBasemapDimmed(dimmed) {
@@ -682,6 +716,7 @@ export default class ArcGISMapProvider {
 			if (this.map?.basemap !== basemap) return;
 			this._applyBasemapDimming(basemap.baseLayers);
 		};
+		if (this.customOverlayLayer) this._applyBasemapDimming([this.customOverlayLayer]);
 		const loading = basemap.loadAll?.();
 		if (loading?.then) {
 			loading.then(apply).catch(() => {
@@ -1080,6 +1115,7 @@ export default class ArcGISMapProvider {
 		this.view?.destroy();
 		this.view = null;
 		this.map = null;
+		this.customOverlayLayer = null;
 		this.zoneLayer = null;
 		this.routeStopLayer = null;
 		this.vehicleLayer = null;
