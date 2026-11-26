@@ -18,14 +18,16 @@ export async function GET({ url }) {
 		return json({ surveys: [] });
 	}
 
-	const userId = url.searchParams.get('userId');
+	const userId = url.searchParams.get('userId')?.trim();
 
 	try {
-		const url = buildURL(baseURL, `${regionPath}surveys.json`, {
-			user_id: userId
-		});
+		const targetURL = buildURL(
+			baseURL,
+			`${regionPath}surveys.json`,
+			userId ? { user_id: userId } : {}
+		);
 
-		const response = await fetch(url);
+		const response = await fetch(targetURL);
 
 		if (!response.ok) {
 			throw new Error('Failed to fetch surveys');
