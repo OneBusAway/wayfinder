@@ -141,6 +141,54 @@ describe('googlePlacesAutocomplete', () => {
 			}
 		]);
 	});
+
+	it('skips queryPrediction and malformed entries without crashing', async () => {
+		const fakeResponse = {
+			suggestions: [
+				{
+					queryPrediction: {
+						text: { text: 'coffee shops near me' }
+					}
+				},
+				{
+					placePrediction: {
+						text: { text: 'Missing Place Id' }
+					}
+				},
+				{
+					placePrediction: {
+						placeId: 'valid-1',
+						text: { text: 'Pike Place Market, Seattle, WA' }
+					}
+				}
+			]
+		};
+		global.fetch.mockResolvedValue({
+			ok: true,
+			json: async () => fakeResponse
+		});
+
+		const results = await googlePlacesAutocomplete({ apiKey, input });
+		expect(results).toEqual([
+			{
+				placeId: 'valid-1',
+				name: 'Pike Place Market, Seattle, WA',
+				displayText: 'Pike Place Market, Seattle, WA'
+			}
+		]);
+	});
+
+	it('throws an error when the HTTP response is not ok', async () => {
+		global.fetch.mockResolvedValue({
+			ok: false,
+			status: 429,
+			json: async () => ({ error: 'Too Many Requests' })
+		});
+
+		await expect(googlePlacesAutocomplete({ apiKey, input })).rejects.toThrow(
+			'Google Places Autocomplete request failed with status 429'
+		);
+	});
 });
 
 describe('bingGeocode', () => {
@@ -309,6 +357,56 @@ describe('bingAutoSuggestPlaces', () => {
 				displayText: 'Space Needle - Space Needle, Seattle, WA'
 			}
 		]);
+	});
+
+	it('handles entries missing address without throwing', async () => {
+		const fakeResponse = {
+			resourceSets: [
+				{
+					estimatedTotal: 1,
+					resources: [
+						{
+							value: [
+								{
+									name: 'Seattle Center'
+								}
+							]
+						},
+						{
+							name: 'Westlake Station'
+						}
+					]
+				}
+			]
+		};
+
+		global.fetch.mockResolvedValue({
+			ok: true,
+			json: async () => fakeResponse
+		});
+
+		const results = await bingAutoSuggestPlaces({ apiKey, query });
+		expect(results).toEqual([
+			{
+				name: 'Seattle Center',
+				displayText: 'Seattle Center'
+			},
+			{
+				name: 'Westlake Station',
+				displayText: 'Westlake Station'
+			}
+		]);
+	});
+
+	it('throws an error when the Bing Autosuggest response is not ok', async () => {
+		global.fetch.mockResolvedValue({
+			ok: false,
+			status: 503
+		});
+
+		await expect(bingAutoSuggestPlaces({ apiKey, query })).rejects.toThrow(
+			'Bing Autosuggest request failed with status 503'
+		);
 	});
 });
 
