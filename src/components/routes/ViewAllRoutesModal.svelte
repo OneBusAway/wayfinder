@@ -27,6 +27,7 @@
 	let filteredRoutes = $state([]);
 	let query = $state('');
 	let loading = $state(false);
+	let loadError = $state(false);
 
 	onMount(async () => {
 		await fetchRoutes();
@@ -35,19 +36,22 @@
 	async function fetchRoutes() {
 		try {
 			loading = true;
+			loadError = false;
 			const response = await fetch('/api/oba/routes');
-			const data = await response.json();
+			const data = await response.json().catch(() => ({}));
 
 			if (response.ok) {
-				routes = data.routes;
+				routes = data.routes ?? [];
 				filterRoutes();
 			} else {
-				console.error('Failed to fetch routes:', data.error);
+				console.error('Failed to fetch routes:', data.error ?? response.statusText);
+				loadError = true;
 				routes = [];
 				filteredRoutes = [];
 			}
 		} catch (error) {
 			console.error('Error fetching routes:', error);
+			loadError = true;
 			routes = [];
 			filteredRoutes = [];
 		} finally {
@@ -85,40 +89,55 @@
 
 	{#if loading}
 		<LoadingSpinner />
-	{/if}
-
-	{#if routes.length > 0}
+	{:else if loadError}
+		<div
+			role="alert"
+			class="flex flex-col items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900/50 dark:bg-red-950/30"
+		>
+			<p class="text-sm font-medium text-red-800 dark:text-red-200">
+				{$t('search.routes_load_failed')}
+			</p>
+			<button
+				type="button"
+				onclick={fetchRoutes}
+				class="rounded-lg bg-brand-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90 focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:outline-hidden"
+			>
+				{$t('search.retry')}
+			</button>
+		</div>
+	{:else if routes.length > 0}
 		<div>
 			<div class="sticky top-0 z-10 bg-surface pb-2 dark:bg-surface-dark">
-				<input
-					type="text"
-					placeholder={$t('search.search_for_routes')}
-					class="w-full rounded-lg border border-gray-300 p-2 pl-10 text-gray-700 placeholder-gray-500 dark:border-gray-700 dark:text-gray-900 dark:placeholder-gray-900"
-					bind:value={query}
-					oninput={handleSearch}
-				/>
-				<svg
-					class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-500 dark:text-gray-400"
-					aria-hidden="true"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 20 20"
-				>
-					<path
-						stroke="currentColor"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+				<div class="relative">
+					<input
+						type="text"
+						aria-label={$t('search.search_for_routes')}
+						placeholder={$t('search.search_for_routes')}
+						class="w-full rounded-lg border border-gray-300 bg-white p-2 pl-10 text-gray-700 placeholder-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400"
+						bind:value={query}
+						oninput={handleSearch}
 					/>
-				</svg>
+					<svg
+						class="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-500 dark:text-gray-400"
+						aria-hidden="true"
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 20 20"
+					>
+						<path
+							stroke="currentColor"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+						/>
+					</svg>
+				</div>
 			</div>
 
 			<div>
 				{#if filteredRoutes.length > 0}
-					<!-- FIXME: each block has no key -->
-					<!-- eslint-disable-next-line svelte/require-each-key -->
-					{#each filteredRoutes as route}
+					{#each filteredRoutes as route (route.id)}
 						<RouteItem {route} {handleModalRouteClick} />
 					{/each}
 				{:else}
