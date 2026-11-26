@@ -36,9 +36,21 @@
 	const showGroups = $derived(relevantCount > 0 && relevantCount < orderedAlerts.length);
 
 	const totalPages = $derived(Math.ceil(orderedAlerts.length / alertsPerPage) || 1);
-	const pageStart = $derived((currentPage - 1) * alertsPerPage);
+	const safeCurrentPage = $derived(Math.min(currentPage, totalPages));
+	const pageStart = $derived((safeCurrentPage - 1) * alertsPerPage);
 
 	const paginatedAlerts = $derived(orderedAlerts.slice(pageStart, pageStart + alertsPerPage));
+
+	$effect(() => {
+		void stopId;
+		currentPage = 1;
+	});
+
+	$effect(() => {
+		if (currentPage > totalPages) {
+			currentPage = totalPages;
+		}
+	});
 
 	const modalSeverity = $derived(modalAlert ? normalizeSeverity(modalAlert) : null);
 	const modalWindow = $derived(modalAlert ? activeWindowRange(modalAlert) : null);
@@ -76,6 +88,7 @@
 			</h3>
 			<button
 				type="button"
+				aria-expanded={!isAlertsHidden}
 				class="text-sm font-medium text-brand-accent hover:text-brand focus:outline-hidden dark:text-brand dark:hover:text-white"
 				onclick={toggleAlerts}
 			>
@@ -85,9 +98,7 @@
 
 		{#if !isAlertsHidden}
 			<div class="space-y-2">
-				<!-- FIXME: each block has no key -->
-				<!-- eslint-disable-next-line svelte/require-each-key -->
-				{#each paginatedAlerts as alert, i}
+				{#each paginatedAlerts as alert, i (alert.id ?? i)}
 					{@const absoluteIndex = pageStart + i}
 					{#if showGroups && absoluteIndex === 0}
 						<p
@@ -111,23 +122,25 @@
 				<div class="mt-3 flex items-center justify-center gap-4">
 					<button
 						type="button"
+						aria-label={$t('service_alerts.previous_page')}
 						class="p-1 text-gray-500 hover:text-gray-700 disabled:opacity-50 dark:text-gray-400 dark:hover:text-gray-200"
-						onclick={() => goToPage(currentPage - 1)}
-						disabled={currentPage === 1}
+						onclick={() => goToPage(safeCurrentPage - 1)}
+						disabled={safeCurrentPage === 1}
 					>
-						<ChevronLeft class="rotate-rtl h-4 w-4" />
+						<ChevronLeft class="rotate-rtl h-4 w-4" aria-hidden="true" />
 					</button>
 					<span class="text-sm text-gray-700 dark:text-gray-300">
 						{$t('service_alerts.page')}
-						{currentPage} of {totalPages}
+						{safeCurrentPage} of {totalPages}
 					</span>
 					<button
 						type="button"
+						aria-label={$t('service_alerts.next_page')}
 						class="p-1 text-gray-500 hover:text-gray-700 disabled:opacity-50 dark:text-gray-400 dark:hover:text-gray-200"
-						onclick={() => goToPage(currentPage + 1)}
-						disabled={currentPage === totalPages}
+						onclick={() => goToPage(safeCurrentPage + 1)}
+						disabled={safeCurrentPage === totalPages}
 					>
-						<ChevronRight class="rotate-rtl h-4 w-4" />
+						<ChevronRight class="rotate-rtl h-4 w-4" aria-hidden="true" />
 					</button>
 				</div>
 			{/if}

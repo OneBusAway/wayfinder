@@ -89,13 +89,68 @@ describe('ServiceAlerts', () => {
 			}
 		});
 
-		await user.click(screen.getByRole('button', { name: 'service_alerts.hide' }));
+		const hideButton = screen.getByRole('button', { name: 'service_alerts.hide' });
+		expect(hideButton).toHaveAttribute('aria-expanded', 'true');
+		await user.click(hideButton);
 		expect(
 			screen.queryByRole('button', { name: 'service_alerts.open_alert' })
 		).not.toBeInTheDocument();
 
-		await user.click(screen.getByRole('button', { name: 'service_alerts.show' }));
+		const showButton = screen.getByRole('button', { name: 'service_alerts.show' });
+		expect(showButton).toHaveAttribute('aria-expanded', 'false');
+		await user.click(showButton);
 		expect(screen.getAllByRole('button', { name: 'service_alerts.open_alert' })).toHaveLength(3);
+	});
+
+	it('clamps page index when alerts shrink and resets page when stopId changes', async () => {
+		const user = userEvent.setup();
+		const extras = [
+			{
+				id: 'alert_4',
+				summary: { lang: 'en', value: 'Extra agency notice' },
+				description: { lang: 'en', value: 'More agency text' },
+				severity: 'info',
+				activeWindows: [{ from: Date.now() - 1000, to: Date.now() + 1000 }],
+				allAffects: [{ agencyId: '1' }]
+			}
+		];
+
+		const { rerender } = render(ServiceAlerts, {
+			props: {
+				serviceAlerts: [...mockServiceAlertsData, ...extras],
+				stopId: STOP_ID,
+				routeIds: ROUTE_IDS
+			}
+		});
+
+		const nextBtn = screen.getByRole('button', { name: 'service_alerts.next_page' });
+		expect(screen.getByRole('button', { name: 'service_alerts.previous_page' })).toBeDisabled();
+		await user.click(nextBtn);
+		expect(screen.getByText(/2 of 2/)).toBeInTheDocument();
+
+		// Shrink alerts below page 2 on same stop: should clamp instead of showing an empty page.
+		await rerender({
+			serviceAlerts: mockServiceAlertsData.slice(0, 2),
+			stopId: STOP_ID,
+			routeIds: ROUTE_IDS
+		});
+		expect(screen.getAllByRole('button', { name: 'service_alerts.open_alert' })).toHaveLength(2);
+
+		// Restore 4 alerts and go to page 2, then switch stops: should reset back to page 1.
+		await rerender({
+			serviceAlerts: [...mockServiceAlertsData, ...extras],
+			stopId: STOP_ID,
+			routeIds: ROUTE_IDS
+		});
+		await user.click(screen.getByRole('button', { name: 'service_alerts.next_page' }));
+		expect(screen.getByText(/2 of 2/)).toBeInTheDocument();
+
+		await rerender({
+			serviceAlerts: [...mockServiceAlertsData, ...extras],
+			stopId: '1_OTHER_STOP',
+			routeIds: ROUTE_IDS
+		});
+		expect(screen.getByText(/1 of 2/)).toBeInTheDocument();
 	});
 
 	it('opens the detail modal when an alert is activated', async () => {
