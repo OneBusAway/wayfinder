@@ -31,6 +31,18 @@ export async function GET() {
 		);
 
 		const response = await fetch(alertsURL);
+		if (!response.ok) {
+			return new Response(
+				JSON.stringify({
+					error: 'Failed to fetch alerts',
+					message: `Upstream alerts request failed with status ${response.status}`
+				}),
+				{
+					headers: { 'Content-Type': 'application/json' },
+					status: 502
+				}
+			);
+		}
 
 		const buffer = await response.arrayBuffer();
 
@@ -38,16 +50,14 @@ export async function GET() {
 
 		const agencyFilter = getAgencyFilter();
 		let validAlert = null;
-		for (const entity of feed.entity) {
-			// If we're in test mode, show the alert to test the UI
-			if (showTestAlerts) {
-				validAlert = entity.alert;
-				break;
+		for (const entity of feed?.entity ?? []) {
+			if (!entity?.alert) {
+				continue;
 			}
+			// If we're in test mode, show the first alert to test the UI.
 			if (
-				entity.alert &&
-				isValidAlert(entity.alert) &&
-				alertBelongsToAgency(entity.alert, agencyFilter)
+				showTestAlerts ||
+				(isValidAlert(entity.alert) && alertBelongsToAgency(entity.alert, agencyFilter))
 			) {
 				validAlert = entity.alert;
 				break;
