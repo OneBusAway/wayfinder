@@ -79,6 +79,13 @@
  */
 
 /**
+ * A stop a transit leg passes between boarding and alighting.
+ *
+ * @typedef {ItineraryPlace & { arrival?: number | null, departure?: number | null }} ItineraryIntermediateStop
+ * `arrival` and `departure` are epoch milliseconds.
+ */
+
+/**
  * One turn-by-turn instruction in a walking leg. OpenTripPlanner leaves the
  * directions and street name null for steps that have none, such as an
  * elevator or an unnamed path.
@@ -100,6 +107,7 @@
  * @property {number} [endTime] - Epoch milliseconds
  * @property {ItineraryPlace} [from]
  * @property {string | null} [headsign]
+ * @property {ItineraryIntermediateStop[] | null} [intermediateStops] - Stops passed on a transit leg; null or absent on other legs
  * @property {boolean} [interlineWithPreviousLeg]
  * @property {{ points?: string | null } | null} [legGeometry] - Encoded polyline of the leg's path
  * @property {string} mode - OTP mode, e.g. "WALK" or "BUS"
