@@ -410,14 +410,13 @@ describe('TripPlan shared URL round trip', () => {
 
 	it('clears trip params from the URL when an input is cleared', async () => {
 		mockPlanSuccess();
-		const { container, unmount } = render(TripPlan, { props });
+		const { unmount } = render(TripPlan, { props });
 
 		window.dispatchEvent(new CustomEvent('loadSharedTrip', { detail: sharedTrip }));
 		await waitFor(() => expect(navigation.replaceState).toHaveBeenCalled());
 
 		const user = userEvent.setup();
-		const clearButtons = container.querySelectorAll('#from-location-input ~ button');
-		await user.click(clearButtons[0]);
+		await user.click(screen.getAllByRole('button', { name: 'search.clear' })[0]);
 
 		await waitFor(() => {
 			const url = navigation.replaceState.mock.calls.at(-1)[0];

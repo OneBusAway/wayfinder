@@ -423,6 +423,11 @@
 		}
 	}
 
+	function handleSubmit(event) {
+		event.preventDefault();
+		planTrip();
+	}
+
 	let tabSwitchedHandler;
 	let setTripPlanLocationHandler;
 	let tripPlanModalClosedHandler;
@@ -553,7 +558,7 @@
 	}
 </script>
 
-<div>
+<form onsubmit={handleSubmit}>
 	<div class="flex flex-row items-center justify-between gap-x-2 py-1">
 		<div class="flex w-full gap-x-3">
 			<div class="flex flex-col items-center py-3">
@@ -656,7 +661,7 @@
 				isToEdited ||
 				isGeocoding ||
 				loading}
-			onclick={planTrip}
+			type="submit"
 		>
 			{#if loading}
 				<svg
@@ -676,10 +681,10 @@
 			{/if}
 		</Button>
 	</div>
+</form>
 
-	{#if showRecentTrips && ($recentTrips.length > 0 || $pinnedTrips.length > 0)}
-		<div id="trip-plan-recent-trips">
-			<RecentTripsList onSelect={handleRecentTripSelect} />
-		</div>
-	{/if}
-</div>
+{#if showRecentTrips && ($recentTrips.length > 0 || $pinnedTrips.length > 0)}
+	<div id="trip-plan-recent-trips">
+		<RecentTripsList onSelect={handleRecentTripSelect} />
+	</div>
+{/if}

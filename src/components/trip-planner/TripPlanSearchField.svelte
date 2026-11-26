@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as InputGroup from '$components/ui/input-group';
 	import { MapPin, X } from '@lucide/svelte';
 	import type { FormEventHandler } from 'svelte/elements';
 	import type { PlaceSuggestion } from '$lib/types';
@@ -79,32 +80,29 @@
 </script>
 
 <div class="relative">
-	<input
-		autocomplete="off"
-		id={inputId}
-		type="text"
-		bind:value
-		oninput={handleInput}
-		onkeydown={handleKeydown}
-		role="combobox"
-		aria-autocomplete="list"
-		aria-expanded={hasResults}
-		aria-haspopup="listbox"
-		aria-controls={hasResults ? listboxId : undefined}
-		aria-activedescendant={hasResults && activeIndex >= 0 ? optionId(activeIndex) : undefined}
-		placeholder="{$t('trip-planner.search_for_a_place')}..."
-		class="block w-full rounded-md border-gray-300 pr-10 text-sm text-black shadow-xs focus:border-blue-500 focus:ring-blue-500"
-	/>
-	{#if value}
-		<button
-			type="button"
-			class="absolute inset-y-0 right-0 flex items-center pr-3"
-			onclick={handleClear}
-			aria-label={$t('search.clear')}
-		>
-			<X class="size-5 text-gray-400" />
-		</button>
-	{/if}
+	<InputGroup.Root class="bg-background">
+		<InputGroup.Input
+			aria-autocomplete="list"
+			aria-expanded={hasResults}
+			aria-haspopup="listbox"
+			aria-controls={hasResults ? listboxId : undefined}
+			aria-activedescendant={hasResults && activeIndex >= 0 ? optionId(activeIndex) : undefined}
+			autocomplete="off"
+			id={inputId}
+			bind:value
+			oninput={handleInput}
+			onkeydown={handleKeydown}
+			role="combobox"
+			placeholder="{$t('trip-planner.search_for_a_place')}..."
+		/>
+		{#if value}
+			<InputGroup.Addon align="inline-end">
+				<InputGroup.Button aria-label={$t('search.clear')} onclick={handleClear} size="icon-sm">
+					<X />
+				</InputGroup.Button>
+			</InputGroup.Addon>
+		{/if}
+	</InputGroup.Root>
 	{#if isLoading}
 		<p
 			role="status"

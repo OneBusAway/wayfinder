@@ -497,11 +497,11 @@
 			{/if}
 
 			{#if query}
-				<p class="text-sm text-gray-700 dark:text-gray-400">
+				<p class="py-2 text-sm text-gray-700 dark:text-gray-400">
 					{$t('search.results_for')} "{query}".
-					<button type="button" onclick={clearResults} class="text-blue-600 hover:underline">
+					<Button class="h-auto p-0" onclick={clearResults} variant="link">
 						{$t('search.clear_results')}
-					</button>
+					</Button>
 				</p>
 			{/if}
 

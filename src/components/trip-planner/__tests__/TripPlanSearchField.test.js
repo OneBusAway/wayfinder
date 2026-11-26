@@ -222,7 +222,6 @@ describe('TripPlanSearchField', () => {
 
 			const input = screen.getByPlaceholderText('Search for a place...');
 			expect(input).toHaveAttribute('id', 'from-location-input');
-			expect(input).toHaveAttribute('type', 'text');
 			// Label is now in the parent component (TripPlan.svelte) and connects via the inputId
 		});
 
