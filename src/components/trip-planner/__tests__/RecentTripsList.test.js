@@ -422,5 +422,61 @@ describe('RecentTripsList', () => {
 				'You can only pin up to 20 trips. Please unpin a trip first.'
 			);
 		});
+
+		it('keeps pin and remove actions visible on touch devices and reserves right padding on pinned rows', () => {
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			mockStoreValue.current = [sampleTrips[1]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const removePinnedBtn = screen.getByRole('button', { name: 'Remove pinned trip' });
+			expect(removePinnedBtn.classList.contains('opacity-100')).toBe(true);
+			expect(removePinnedBtn.classList.contains('[@media(hover:hover)]:opacity-0')).toBe(true);
+
+			const pinnedCardBtn = screen.getByRole('button', {
+				name: 'Use pinned trip from Capitol Hill to University District'
+			});
+			const pinnedTextWrapper = pinnedCardBtn.querySelector('.min-w-0');
+			expect(pinnedTextWrapper.classList.contains('pr-10')).toBe(true);
+
+			const removeRecentBtn = screen.getByRole('button', { name: 'Remove recent trip' });
+			const recentActionsContainer = removeRecentBtn.parentElement;
+			expect(recentActionsContainer.classList.contains('opacity-100')).toBe(true);
+			expect(recentActionsContainer.classList.contains('[@media(hover:hover)]:opacity-0')).toBe(
+				true
+			);
+		});
+
+		it('expands action hit targets, button gap, and right padding on coarse pointers', () => {
+			mockPinnedStoreValue.current = [sampleTrips[0]];
+			mockStoreValue.current = [sampleTrips[1]];
+			render(RecentTripsList, { props: { onSelect: vi.fn() } });
+
+			const removePinnedBtn = screen.getByRole('button', { name: 'Remove pinned trip' });
+			expect(removePinnedBtn.classList.contains('[@media(pointer:coarse)]:p-2.5')).toBe(true);
+
+			const pinnedCardBtn = screen.getByRole('button', {
+				name: 'Use pinned trip from Capitol Hill to University District'
+			});
+			expect(
+				pinnedCardBtn.querySelector('.min-w-0').classList.contains('[@media(pointer:coarse)]:pr-12')
+			).toBe(true);
+
+			const pinRecentBtn = screen.getByRole('button', {
+				name: 'Pin trip from Downtown to Ballard'
+			});
+			const removeRecentBtn = screen.getByRole('button', { name: 'Remove recent trip' });
+			expect(pinRecentBtn.classList.contains('[@media(pointer:coarse)]:p-2.5')).toBe(true);
+			expect(removeRecentBtn.classList.contains('[@media(pointer:coarse)]:p-2.5')).toBe(true);
+			expect(
+				removeRecentBtn.parentElement.classList.contains('[@media(pointer:coarse)]:gap-2')
+			).toBe(true);
+
+			const recentCardBtn = screen.getByRole('button', {
+				name: 'Recent trip from Downtown to Ballard'
+			});
+			expect(
+				recentCardBtn.querySelector('.min-w-0').classList.contains('[@media(pointer:coarse)]:pr-24')
+			).toBe(true);
+		});
 	});
 });

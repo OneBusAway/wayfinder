@@ -173,4 +173,16 @@ describe('FavoritesList', () => {
 
 		expect(mockClearAll).toHaveBeenCalledTimes(1);
 	});
+
+	it('expands remove button hit target and right padding on coarse pointers', () => {
+		mockStoreValue.current = sampleFavorites;
+
+		render(FavoritesList);
+
+		const removeBtn = screen.getByLabelText('Remove Pine St & 3rd Ave from favorites');
+		const rowBtn = screen.getByLabelText('Open Pine St & 3rd Ave');
+
+		expect(removeBtn.className).toContain('[@media(pointer:coarse)]:p-2.5');
+		expect(rowBtn.className).toContain('[@media(pointer:coarse)]:pr-12');
+	});
 });
