@@ -10,9 +10,26 @@ function getFooterCloseButton() {
 	return screen.getAllByRole('button', { name: 'Close' })[0];
 }
 
+const mockLocale = vi.hoisted(() => {
+	let current = null;
+	const listeners = new Set();
+	return {
+		subscribe: vi.fn((fn) => {
+			listeners.add(fn);
+			fn(current);
+			return () => listeners.delete(fn);
+		}),
+		set(next) {
+			current = next;
+			for (const fn of listeners) fn(current);
+		}
+	};
+});
+
 // Mock svelte-i18n to return English by default
 vi.mock('svelte-i18n', () => ({
 	getLocaleFromNavigator: vi.fn(() => 'en-US'),
+	locale: mockLocale,
 	t: {
 		subscribe: vi.fn((fn) => {
 			const mockT = (key) => {
@@ -33,6 +50,7 @@ describe('AlertsModal', () => {
 	let mockWindowOpen;
 
 	beforeEach(() => {
+		mockLocale.set(null);
 		// Mock window.open
 		mockWindowOpen = vi.fn();
 		global.window.open = mockWindowOpen;
@@ -154,7 +172,7 @@ describe('AlertsModal', () => {
 		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	});
 
-	test('opens external link when More Info button is clicked', async () => {
+	test('opens external link with noopener,noreferrer when More Info button is clicked', async () => {
 		const user = userEvent.setup();
 
 		render(AlertsModal, {
@@ -167,7 +185,49 @@ describe('AlertsModal', () => {
 		const moreInfoButton = screen.getByRole('button', { name: 'More Info' });
 		await user.click(moreInfoButton);
 
-		expect(mockWindowOpen).toHaveBeenCalledWith('https://example.com/alerts/en', '_blank');
+		expect(mockWindowOpen).toHaveBeenCalledWith(
+			'https://example.com/alerts/en',
+			'_blank',
+			'noopener,noreferrer'
+		);
+	});
+
+	test.each(['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>', '/relative/path'])(
+		'does not render More Info button for unsafe or non-http(s) URL %s',
+		(unsafeUrl) => {
+			render(AlertsModal, {
+				props: {
+					alert: {
+						...mockAlert,
+						url: { translation: [{ language: 'en', text: unsafeUrl }] }
+					},
+					open: true
+				}
+			});
+
+			expect(screen.queryByRole('button', { name: 'More Info' })).not.toBeInTheDocument();
+		}
+	);
+
+	test('reacts to in-app locale changes and matches subtag language codes', async () => {
+		mockLocale.set('es-MX');
+
+		render(AlertsModal, {
+			props: {
+				alert: mockAlert,
+				open: true
+			}
+		});
+
+		expect(screen.getByText('Alerta de Servicio')).toBeInTheDocument();
+		expect(
+			screen.getByText('La Ruta 44 está experimentando retrasos debido a condiciones de tráfico.')
+		).toBeInTheDocument();
+
+		mockLocale.set('fr');
+		await waitFor(() => {
+			expect(screen.getByText('Alerte de Service')).toBeInTheDocument();
+		});
 	});
 
 	test('uses English translation by default', () => {
