@@ -1,14 +1,21 @@
 /* eslint-disable no-restricted-syntax */
+async function fetchGeocoderJson(url, options, label) {
+	const response = await fetch(url, options);
+	if (response.ok === false) {
+		throw new Error(`${label} request failed with status ${response.status}`);
+	}
+	return response.json();
+}
+
 export async function googleGeocode({ apiKey, query, bounds = null }) {
 	let url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`;
 
 	if (bounds) {
 		url += `&bounds=${bounds.south},${bounds.west}|${bounds.north},${bounds.east}`;
 	}
-	const response = await fetch(url);
-	const data = await response.json();
+	const data = await fetchGeocoderJson(url, undefined, 'Google Geocoding');
 
-	if (data.status !== 'OK' || data.results.length === 0) {
+	if (data?.status !== 'OK' || !Array.isArray(data.results) || data.results.length === 0) {
 		return null;
 	}
 
@@ -55,23 +62,30 @@ export async function googlePlacesAutocomplete({ apiKey, input, bounds = null })
 		};
 	}
 
-	const response = await fetch(`https://places.googleapis.com/v1/places:autocomplete`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'X-Goog-Api-Key': apiKey
+	const data = await fetchGeocoderJson(
+		`https://places.googleapis.com/v1/places:autocomplete`,
+		{
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-Goog-Api-Key': apiKey
+			},
+			body: JSON.stringify(requestBody)
 		},
-		body: JSON.stringify(requestBody)
-	});
-	const data = await response.json();
+		'Google Places Autocomplete'
+	);
 
-	if (!data.suggestions) {
+	if (!Array.isArray(data?.suggestions)) {
 		return [];
 	}
 
 	const suggestions = [];
 	for (const suggestion of data.suggestions) {
-		const prediction = suggestion.placePrediction;
+		// Places API v1 can return `queryPrediction` entries without `placePrediction`.
+		const prediction = suggestion?.placePrediction;
+		if (!prediction?.placeId || !prediction?.text?.text) {
+			continue;
+		}
 
 		const suggestionObject = createSuggestion(
 			prediction.placeId,
@@ -96,8 +110,7 @@ export async function bingGeocode({ apiKey, query, bounds = null }) {
 		url += `&userLocation=${centerLat},${centerLon}`;
 	}
 
-	const response = await fetch(url);
-	const data = await response.json();
+	const data = await fetchGeocoderJson(url, undefined, 'Bing Geocoding');
 
 	if (
 		data.statusCode !== 200 ||
@@ -144,14 +157,16 @@ export async function bingAutoSuggestPlaces({ apiKey, query, bounds = null }) {
 		url += `&userLocation=${centerLat},${centerLng}`;
 	}
 
-	const rawBingResult = await fetch(url, {
-		method: 'GET',
-		headers: { Accept: 'application/json' }
-	});
+	const data = await fetchGeocoderJson(
+		url,
+		{
+			method: 'GET',
+			headers: { Accept: 'application/json' }
+		},
+		'Bing Autosuggest'
+	);
 
-	const data = await rawBingResult.json();
-
-	const resourceSets = data.resourceSets;
+	const resourceSets = data?.resourceSets;
 
 	if (!resourceSets || resourceSets.length === 0 || resourceSets[0].estimatedTotal === 0) {
 		return [];
@@ -166,25 +181,24 @@ export async function bingAutoSuggestPlaces({ apiKey, query, bounds = null }) {
 	for (const resource of resources) {
 		if (resource.value && Array.isArray(resource.value)) {
 			for (const item of resource.value) {
-				const displayText = item.name
-					? `${item.name} - ${item.address.formattedAddress}`
-					: item.address.formattedAddress;
+				const formattedAddress = item?.address?.formattedAddress;
+				const displayText =
+					item?.name && formattedAddress
+						? `${item.name} - ${formattedAddress}`
+						: item?.name || formattedAddress;
 
-				const suggestion = createSuggestion(
-					null,
-					item.name || item.address.formattedAddress,
-					displayText
-				);
+				const suggestion = createSuggestion(null, item?.name || formattedAddress, displayText);
 
 				if (suggestion) {
 					suggestions.push(suggestion);
 				}
 			}
 		} else {
+			const formattedAddress = resource?.address?.formattedAddress;
 			const suggestion = createSuggestion(
 				null,
-				resource.name || resource.address.formattedAddress,
-				resource.address.formattedAddress
+				resource?.name || formattedAddress,
+				formattedAddress || resource?.name
 			);
 
 			if (suggestion) {

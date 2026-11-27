@@ -13,17 +13,27 @@ let geocoderApiKey = env.PRIVATE_OBA_GEOCODER_API_KEY;
 /** @param {import('@sveltejs/kit').RequestEvent} event */
 export async function GET({ url }) {
 	const searchInput = url.searchParams.get('query')?.trim() ?? '';
+	if (!searchInput) {
+		/** @type {import('$lib/types').PlaceSuggestionsResponse} */
+		const emptyBody = { suggestions: [] };
+		return json(emptyBody);
+	}
 
 	const bounds = getBoundsCache();
 
-	const suggestions = await fetchAutocompleteResults(
-		geocoderProvider,
-		searchInput,
-		geocoderApiKey,
-		bounds
-	);
+	try {
+		const suggestions = await fetchAutocompleteResults(
+			geocoderProvider,
+			searchInput,
+			geocoderApiKey,
+			bounds
+		);
 
-	/** @type {import('$lib/types').PlaceSuggestionsResponse} */
-	const body = { suggestions };
-	return json(body);
+		/** @type {import('$lib/types').PlaceSuggestionsResponse} */
+		const body = { suggestions };
+		return json(body);
+	} catch (err) {
+		console.error('Place suggestions endpoint failure:', err);
+		return json({ error: 'Failed to fetch place suggestions' }, { status: 500 });
+	}
 }
