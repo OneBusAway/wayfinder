@@ -3,11 +3,14 @@ import { markSurveyAnswered, surveyStore } from '$stores/surveyStore.js';
 
 export async function loadSurveys(stop = null, userId = null) {
 	try {
-		const response = await fetch(`/api/oba/surveys?userId=${userId}`);
+		const endpoint = userId
+			? `/api/oba/surveys?userId=${encodeURIComponent(userId)}`
+			: '/api/oba/surveys';
+		const response = await fetch(endpoint);
 		if (!response.ok) throw new Error('Failed to fetch surveys');
 
 		const data = await response.json();
-		const validSurveys = getValidSurveys(data.surveys);
+		const validSurveys = getValidSurveys(data?.surveys);
 
 		let selectedSurvey = null;
 
@@ -27,12 +30,14 @@ export async function loadSurveys(stop = null, userId = null) {
 }
 
 export function getPrioritySurvey(validSurveys, selectedSurvey) {
+	if (!Array.isArray(validSurveys)) return selectedSurvey;
 	const oneTimeSurvey = validSurveys.find((s) => !s.always_visible);
 	const alwaysVisibleSurvey = validSurveys.find((s) => s.always_visible);
 	return oneTimeSurvey || alwaysVisibleSurvey || selectedSurvey;
 }
 
 export function getValidSurveys(surveys) {
+	if (!Array.isArray(surveys)) return [];
 	const now = Date.now();
 	const oneWeekInMs = 7 * 24 * 60 * 60 * 1000;
 	const validSurveys = [];
@@ -82,6 +87,7 @@ export function shouldShowSurvey(survey) {
 }
 
 export function getValidStopSurvey(surveys, stop) {
+	if (!Array.isArray(surveys) || !stop) return null;
 	for (const survey of surveys) {
 		if (!survey.show_on_stops) continue;
 
@@ -106,10 +112,12 @@ export function getValidStopSurvey(surveys, stop) {
 }
 
 export function getShowSurveyOnAllStops(surveys) {
+	if (!Array.isArray(surveys)) return null;
 	return surveys.find((survey) => survey.show_on_stops && !survey.visible_stop_list) || null;
 }
 
 export function getMapSurvey(surveys) {
+	if (!Array.isArray(surveys)) return null;
 	return surveys.find((survey) => survey.show_on_map) || null;
 }
 

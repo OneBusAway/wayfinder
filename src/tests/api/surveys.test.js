@@ -85,4 +85,29 @@ describe('GET /api/oba/surveys', () => {
 			{ user_id: '123' }
 		);
 	});
+
+	it('omits user_id parameter when userId query param is absent or blank', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = 'https://sidecar.onebusaway.org/api/v1';
+		mockEnv.PRIVATE_SIDECAR_REGION_ID = '7';
+		const fetchMock = vi
+			.spyOn(globalThis, 'fetch')
+			.mockImplementation(
+				async () => new Response(JSON.stringify({ surveys: [] }), { status: 200 })
+			);
+
+		await GET({ url: new URL('http://localhost/api/oba/surveys') });
+		expect(buildURL).toHaveBeenLastCalledWith(
+			'https://sidecar.onebusaway.org/api/v1',
+			'regions/7/surveys.json',
+			{}
+		);
+
+		await GET({ url: new URL('http://localhost/api/oba/surveys?userId=%20%20') });
+		expect(buildURL).toHaveBeenLastCalledWith(
+			'https://sidecar.onebusaway.org/api/v1',
+			'regions/7/surveys.json',
+			{}
+		);
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+	});
 });

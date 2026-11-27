@@ -5,6 +5,7 @@ import {
 	getValidStopSurvey,
 	getShowSurveyOnAllStops,
 	getMapSurvey,
+	loadSurveys,
 	submitHeroQuestion,
 	updateSurveyResponse,
 	getPrioritySurvey,
@@ -398,5 +399,35 @@ describe('skipSurvey', () => {
 
 		expect(localStorage.getItem('survey_3_skipped')).toBeNull();
 		expect(localStorage.getItem('survey_3_skipped_timestamp')).toBe(String(NOW));
+	});
+});
+
+describe('loadSurveys & malformed payload guards', () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it('omits userId query param when userId is null and URL-encodes non-empty userId', async () => {
+		const fetchMock = vi
+			.spyOn(globalThis, 'fetch')
+			.mockImplementation(
+				async () => new Response(JSON.stringify({ surveys: null }), { status: 200 })
+			);
+
+		await loadSurveys(null, null);
+		expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/oba/surveys');
+		expect(get(surveyStore)).toBeNull();
+
+		await loadSurveys(null, 'user a+b');
+		expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/oba/surveys?userId=user%20a%2Bb');
+	});
+
+	it('returns empty/null safely when survey lists are non-array values', () => {
+		expect(getValidSurveys(null)).toEqual([]);
+		expect(getValidSurveys(undefined)).toEqual([]);
+		expect(getValidStopSurvey(null, { id: 's1' })).toBeNull();
+		expect(getShowSurveyOnAllStops(undefined)).toBeNull();
+		expect(getMapSurvey(null)).toBeNull();
+		expect(getPrioritySurvey(null, null)).toBeNull();
 	});
 });
