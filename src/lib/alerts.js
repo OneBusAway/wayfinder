@@ -22,14 +22,20 @@ function getSeverityLevel(alert) {
 }
 
 export function isStartDateWithin24Hours(alert) {
-	if (!alert) return false;
-	if (!alert.activePeriod || alert.activePeriod.length === 0) return false;
-	const startDate = alert.activePeriod[0].start;
-	if (!startDate) return false;
+	if (!alert || !Array.isArray(alert.activePeriod) || alert.activePeriod.length === 0) {
+		return false;
+	}
 	const now = Date.now() / 1000;
-	return startDate <= now && startDate >= now - 24 * 60 * 60;
+	const cutoff = now - 24 * 60 * 60;
+	return alert.activePeriod.some((period) => {
+		const rawStart = period?.start;
+		if (!rawStart) return false;
+		const startDate =
+			typeof rawStart?.toNumber === 'function' ? rawStart.toNumber() : Number(rawStart);
+		return Number.isFinite(startDate) && startDate > 0 && startDate <= now && startDate >= cutoff;
+	});
 }
 
 export function isAgencyWideAlert(alert) {
-	return alert.informedEntity && alert.informedEntity.length > 0;
+	return Boolean(alert?.informedEntity && alert.informedEntity.length > 0);
 }

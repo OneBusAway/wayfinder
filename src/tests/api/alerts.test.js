@@ -40,7 +40,13 @@ vi.mock('gtfs-realtime-bindings', () => ({
 
 import { GET } from '../../routes/api/oba/alerts/+server.js';
 import { buildURL } from '$lib/urls';
-import { isStartDateWithin24Hours, isHighSeverity } from '$lib/alerts.js';
+import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
+import {
+	isStartDateWithin24Hours,
+	isHighSeverity,
+	isAgencyWideAlert,
+	isValidAlert
+} from '$lib/alerts.js';
 
 describe('GET /api/oba/alerts', () => {
 	beforeEach(() => {
@@ -111,6 +117,36 @@ describe('GET /api/oba/alerts', () => {
 
 		expect(response.status).toBe(204);
 	});
+
+	it('returns 502 without decoding protobuf when upstream alerts fetch fails', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = 'https://sidecar.onebusaway.org/api/v1';
+		mockEnv.PRIVATE_SIDECAR_REGION_ID = '7';
+		const decodeSpy = vi.spyOn(GtfsRealtimeBindings.transit_realtime.FeedMessage, 'decode');
+		vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('Bad Gateway', { status: 503 }));
+
+		const response = await GET();
+
+		expect(response.status).toBe(502);
+		expect(decodeSpy).not.toHaveBeenCalled();
+	});
+
+	it('skips feed entities without an alert when test alerts mode is enabled', async () => {
+		mockEnv.PRIVATE_SIDECAR_API_BASE_URL = 'https://sidecar.onebusaway.org/api/v1';
+		mockEnv.PRIVATE_SIDECAR_REGION_ID = '7';
+		mockEnv.PRIVATE_SIDECAR_SHOW_TEST_ALERTS = 'true';
+		vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(new ArrayBuffer(0)));
+		vi.spyOn(GtfsRealtimeBindings.transit_realtime.FeedMessage, 'decode').mockReturnValueOnce({
+			entity: [
+				{ id: 'trip-only', tripUpdate: {} },
+				{ id: 'alert-entity', alert: { id: 'test-alert', severityLevel: 2 } }
+			]
+		});
+
+		const response = await GET();
+
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({ id: 'test-alert', severityLevel: 2 });
+	});
 });
 
 describe('isStartDateWithin24Hours', () => {
@@ -159,6 +195,43 @@ describe('isStartDateWithin24Hours', () => {
 	it('returns true when start is exactly now', () => {
 		const nowSeconds = Math.floor(Date.now() / 1000);
 		expect(isStartDateWithin24Hours({ activePeriod: [{ start: nowSeconds }] })).toBe(true);
+	});
+
+	it('returns true when a later activePeriod starts within the last 24 hours', () => {
+		const nowSeconds = Math.floor(Date.now() / 1000);
+		expect(
+			isStartDateWithin24Hours({
+				activePeriod: [{ start: nowSeconds - 48 * 60 * 60 }, { start: nowSeconds - 30 * 60 }]
+			})
+		).toBe(true);
+	});
+
+	it('supports Long-like start values exposing toNumber()', () => {
+		const nowSeconds = Math.floor(Date.now() / 1000);
+		expect(
+			isStartDateWithin24Hours({
+				activePeriod: [{ start: { toNumber: () => nowSeconds - 60 } }]
+			})
+		).toBe(true);
+	});
+});
+
+describe('isAgencyWideAlert & isValidAlert', () => {
+	it('returns strict booleans and handles null/missing informedEntity safely', () => {
+		expect(isAgencyWideAlert(null)).toBe(false);
+		expect(isAgencyWideAlert({})).toBe(false);
+		expect(isAgencyWideAlert({ informedEntity: [] })).toBe(false);
+		expect(isAgencyWideAlert({ informedEntity: [{ agencyId: '1' }] })).toBe(true);
+
+		const nowSeconds = Math.floor(Date.now() / 1000);
+		expect(isValidAlert(null)).toBe(false);
+		expect(
+			isValidAlert({
+				informedEntity: [{ agencyId: '1' }],
+				activePeriod: [{ start: nowSeconds - 60 }],
+				severityLevel: 3
+			})
+		).toBe(true);
 	});
 });
 
