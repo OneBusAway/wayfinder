@@ -473,6 +473,84 @@ describe('ArcGISMapProvider', () => {
 		expect(provider.routeCasingLayer.graphics).toHaveLength(0);
 	});
 
+	test('recolors CIM polylines in place while preserving style, casing, geometry, and layer', async () => {
+		const provider = await initializedProvider();
+		const polyline = provider.createPolyline(SHAPE, {
+			color: '#112233',
+			weight: 6,
+			opacity: 0.5,
+			withArrow: true,
+			dashArray: '8, 12',
+			casing: true
+		});
+		const expected = provider.createPolyline(SHAPE, {
+			color: '#ff5500',
+			weight: 6,
+			opacity: 0.5,
+			withArrow: true,
+			dashArray: '8, 12'
+		});
+		const symbolBefore = polyline.symbol;
+		const geometryBefore = polyline.geometry;
+		const casingBefore = polyline._casing;
+		const layerBefore = polyline._layer;
+
+		provider.setPolylineColor(polyline, '#ff5500');
+
+		expect(polyline.symbol).not.toBe(symbolBefore);
+		expect(polyline.symbol.type).toBe('cim');
+		expect(polyline.symbol.data).toEqual(expected.symbol.data);
+		expect(
+			polyline.symbol.data.symbol.symbolLayers.find((layer) => layer.type === 'CIMSolidStroke')
+		).toMatchObject({
+			width: 6,
+			color: [255, 85, 0, 127.5],
+			effects: [{ type: 'CIMGeometricEffectDashes', dashTemplate: [8, 12] }]
+		});
+		expect(
+			polyline.symbol.data.symbol.symbolLayers.find((layer) => layer.type === 'CIMVectorMarker')
+				.enable
+		).toBe(true);
+		expect(polyline.geometry).toBe(geometryBefore);
+		expect(polyline._casing).toBe(casingBefore);
+		expect(polyline._layer).toBe(layerBefore);
+	});
+
+	test('recolors plain polylines in place and falls back to default color when falsy', async () => {
+		const provider = await initializedProvider();
+		const plain = provider.createPolyline(SHAPE, {
+			color: '#112233',
+			weight: 5,
+			opacity: 0.8,
+			withArrow: false
+		});
+		const defaultPlain = provider.createPolyline(SHAPE, { withArrow: false });
+
+		provider.setPolylineColor(plain, '#22aa44');
+
+		expect(plain.symbol.type).toBe('simple-line');
+		expect(plain.symbol.color.toHex()).toBe('#22aa44');
+		expect(plain.symbol.color.toRgba()[3]).toBeCloseTo(0.8);
+		expect(plain.symbol.width).toBe(5);
+
+		provider.setPolylineColor(plain, null);
+		expect(plain.symbol.color.toHex()).toBe(defaultPlain.symbol.color.toHex());
+
+		provider.setPolylineColor(plain, '');
+		expect(plain.symbol.color.toHex()).toBe(defaultPlain.symbol.color.toHex());
+	});
+
+	test('ignores null polylines or uninitialized providers in setPolylineColor', async () => {
+		const provider = await initializedProvider();
+		const polyline = provider.createPolyline(SHAPE, { color: '#112233', withArrow: false });
+		const uninitialized = new provider.constructor('test-key');
+
+		expect(() => provider.setPolylineColor(null, '#ff5500')).not.toThrow();
+		expect(() => provider.setPolylineColor(undefined, '#ff5500')).not.toThrow();
+		expect(() => uninitialized.setPolylineColor(polyline, '#ff5500')).not.toThrow();
+		expect(polyline.symbol.color.toHex()).toBe('#112233');
+	});
+
 	test('uses the latest vehicle data for a shared hit-test popup and clears popup components on close', async () => {
 		const provider = await initializedProvider();
 		const marker = provider.addVehicleMarker(

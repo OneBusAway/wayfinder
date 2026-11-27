@@ -788,16 +788,11 @@ export default class ArcGISMapProvider {
 		const geometry = new this.Polyline({ paths: [paths], spatialReference: { wkid: 4326 } });
 		const weight = options.weight || 4;
 		const color = options.color || COLORS.POLYLINE;
+		const opacity = options.opacity ?? 1;
 		const withArrow = options.withArrow ?? true;
 		const graphic = new this.Graphic({
 			geometry,
-			symbol: this._createRouteSymbol(
-				color,
-				weight,
-				options.opacity ?? 1,
-				withArrow,
-				options.dashArray
-			)
+			symbol: this._createRouteSymbol(color, weight, opacity, withArrow, options.dashArray)
 		});
 		if (options.casing) {
 			graphic._casing = new this.Graphic({
@@ -812,9 +807,23 @@ export default class ArcGISMapProvider {
 		}
 		graphic._layer =
 			options.pane === ROUTE_PANE.PROMOTED ? this.routePromotedLayer : this.routeLineLayer;
+		graphic._routeStyle = { weight, opacity, withArrow, dashArray: options.dashArray };
 		graphic._layer.add(graphic);
 		this.polylines.push(graphic);
 		return graphic;
+	}
+
+	// Recolor in place so a theme switch preserves geometry, casing, and route styling.
+	setPolylineColor(polyline, color) {
+		if (!polyline || !this.Color) return;
+		const style = polyline._routeStyle || {};
+		polyline.symbol = this._createRouteSymbol(
+			color || COLORS.POLYLINE,
+			style.weight ?? 4,
+			style.opacity ?? 1,
+			style.withArrow ?? true,
+			style.dashArray
+		);
 	}
 
 	setPolylineLayer(polyline, pane) {
