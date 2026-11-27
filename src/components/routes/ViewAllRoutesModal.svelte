@@ -15,6 +15,7 @@
 	import BottomSheet from '$components/navigation/BottomSheet.svelte';
 	import LoadingSpinner from '$components/LoadingSpinner.svelte';
 	import RouteItem from '$components/RouteItem.svelte';
+	import { Button } from '$components/ui/button';
 	import { X } from '@lucide/svelte';
 	import { keybinding } from '$lib/keybinding';
 	import { onMount } from 'svelte';
@@ -97,13 +98,9 @@
 			<p class="text-sm font-medium text-red-800 dark:text-red-200">
 				{$t('search.routes_load_failed')}
 			</p>
-			<button
-				type="button"
-				onclick={fetchRoutes}
-				class="rounded-lg bg-brand-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90 focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:outline-hidden"
-			>
+			<Button type="button" variant="outline" onclick={fetchRoutes}>
 				{$t('search.retry')}
-			</button>
+			</Button>
 		</div>
 	{:else if routes.length > 0}
 		<div>
