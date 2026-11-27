@@ -6,6 +6,15 @@
 	z-index: 10;
 }
 
+/*
+ * The ArcGIS UI layer holds the popup. Keep it above Wayfinder's HTML markers
+ * so stop markers do not draw over an open popup. The layer itself ignores
+ * pointer events, so markers beneath it stay clickable.
+ */
+.esri-view .esri-ui {
+	z-index: 11;
+}
+
 .arcgis-stop-marker-overlay,
 .arcgis-pin-marker-overlay {
 	position: absolute;
@@ -53,4 +62,39 @@
 .dark .esri-popup:has(.map-popup-card) .esri-popup__pointer-direction,
 .dark .esri-popup:has(.map-popup-card) .esri-features__header {
 	background-color: #111827;
+}
+
+/*
+ * Only the ArcGIS light theme is loaded, because its two theme stylesheets
+ * are global and cannot be scoped to Wayfinder's `.dark` class. Give the
+ * widgets Wayfinder shows (zoom and attribution) the colours from the ArcGIS
+ * dark theme instead.
+ */
+.dark .esri-ui {
+	--wayfinder-arcgis-surface: #242424;
+	--wayfinder-arcgis-text: #d1d1d1;
+	--wayfinder-arcgis-text-muted: #adadad;
+}
+
+.dark .esri-ui .esri-widget {
+	background-color: var(--wayfinder-arcgis-surface);
+	color: var(--wayfinder-arcgis-text);
+}
+
+.dark .esri-ui .esri-widget--button {
+	--calcite-color-text-1: var(--wayfinder-arcgis-text);
+	--calcite-color-text-3: var(--wayfinder-arcgis-text-muted);
+	--calcite-color-foreground-1: var(--wayfinder-arcgis-surface);
+	--calcite-color-foreground-2: #2e2e2e;
+	--calcite-color-foreground-3: #383838;
+	background-color: var(--wayfinder-arcgis-surface);
+	color: var(--wayfinder-arcgis-text-muted);
+}
+
+.dark .esri-zoom .esri-widget--button:last-child {
+	border-top-color: color-mix(in srgb, var(--wayfinder-arcgis-text-muted) 30%, transparent);
+}
+
+.dark .esri-ui .esri-attribution {
+	background-color: color-mix(in srgb, var(--wayfinder-arcgis-surface) 80%, transparent);
 }

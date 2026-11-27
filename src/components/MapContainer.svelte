@@ -10,7 +10,11 @@
 
 	let apiKey = env.PUBLIC_OBA_GOOGLE_MAPS_API_KEY;
 	let arcgisApiKey = env.PUBLIC_ARCGIS_API_KEY;
-	let arcgisCustomBasemapUrl = env.PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL;
+	let arcgisCustomBasemap = {
+		url: env.PUBLIC_ARCGIS_CUSTOM_BASEMAP_URL,
+		darkUrl: env.PUBLIC_ARCGIS_CUSTOM_BASEMAP_DARK_URL,
+		mode: env.PUBLIC_ARCGIS_CUSTOM_BASEMAP_MODE
+	};
 	let {
 		handleStopMarkerSelect,
 		mapProvider = $bindable(),
@@ -23,7 +27,7 @@
 	onMount(() => {
 		mapProvider = createMapProvider(
 			PUBLIC_OBA_MAP_PROVIDER,
-			{ googleApiKey: apiKey, arcgisApiKey, arcgisCustomBasemapUrl },
+			{ googleApiKey: apiKey, arcgisApiKey, arcgisCustomBasemap },
 			handleStopMarkerSelect
 		);
 	});

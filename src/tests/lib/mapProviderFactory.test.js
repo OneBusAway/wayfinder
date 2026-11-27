@@ -14,7 +14,11 @@ describe('createMapProvider', () => {
 	const config = {
 		googleApiKey: 'google-key',
 		arcgisApiKey: 'arcgis-key',
-		arcgisCustomBasemapUrl: 'https://tiles.example.test/style.json'
+		arcgisCustomBasemap: {
+			url: 'https://tiles.example.test/style.json',
+			darkUrl: 'https://tiles.example.test/dark.json',
+			mode: 'overlay'
+		}
 	};
 
 	beforeEach(() => {
@@ -28,7 +32,7 @@ describe('createMapProvider', () => {
 		createMapProvider('arcgis', config, handler);
 		expect(providers.arcgis).toHaveBeenCalledWith(
 			config.arcgisApiKey,
-			config.arcgisCustomBasemapUrl,
+			config.arcgisCustomBasemap,
 			handler
 		);
 	});
