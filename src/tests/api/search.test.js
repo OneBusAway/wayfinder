@@ -58,6 +58,26 @@ describe('search endpoint', () => {
 		});
 	}
 
+	it('returns empty results without querying upstream when query is missing or blank', async () => {
+		for (const rawUrl of [
+			'http://localhost/api/oba/search',
+			'http://localhost/api/oba/search?query=%20%20%20'
+		]) {
+			const response = await GET({ url: new URL(rawUrl) });
+			expect(response.status).toBe(200);
+			const json = await response.json();
+			expect(json).toEqual({
+				routes: [],
+				stops: [],
+				location: null,
+				query: ''
+			});
+		}
+
+		expect(mockRoutesForLocation).not.toHaveBeenCalled();
+		expect(mockStopsForLocation).not.toHaveBeenCalled();
+	});
+
 	it('returns filtered routes when agency filter is set', async () => {
 		mockEnv.PRIVATE_OBA_AGENCY_FILTER = '19';
 

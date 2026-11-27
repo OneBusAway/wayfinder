@@ -42,7 +42,19 @@ async function locationSearch(query, bounds) {
 }
 
 export async function GET({ url }) {
-	const searchInput = url.searchParams.get('query')?.trim();
+	const searchInput = url.searchParams.get('query')?.trim() ?? '';
+
+	if (!searchInput) {
+		return new Response(
+			JSON.stringify({
+				routes: [],
+				stops: [],
+				location: null,
+				query: ''
+			}),
+			{ headers: { 'Content-Type': 'application/json' } }
+		);
+	}
 
 	try {
 		const bounds = getBoundsCache();
