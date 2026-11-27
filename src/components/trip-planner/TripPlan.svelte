@@ -7,7 +7,7 @@
 	import OptionsPill from './OptionsPill.svelte';
 	import { browser } from '$app/environment';
 	import { t } from 'svelte-i18n';
-	import { ArrowLeftRight, Circle, History, MapPin } from '@lucide/svelte';
+	import { ArrowLeftRight, Circle, History, LoaderCircle, MapPin } from '@lucide/svelte';
 	import {
 		tripOptions,
 		showTripOptionsModal,
@@ -56,6 +56,11 @@
 	let fromMarker;
 	let toMarker;
 	let loading = $state(false);
+
+	const canPlan = $derived(
+		!!selectedFrom && !!selectedTo && !isFromEdited && !isToEdited && !isGeocoding && !loading
+	);
+
 	let fromRequestId = 0;
 	let toRequestId = 0;
 	let planRequestId = 0;
@@ -425,6 +430,7 @@
 
 	function handleSubmit(event) {
 		event.preventDefault();
+		if (!canPlan) return;
 		planTrip();
 	}
 
@@ -642,8 +648,8 @@
 		</Button>
 		{#if $recentTrips.length > 0 || $pinnedTrips.length > 0}
 			<Button
-				aria-expanded={showRecentTrips}
 				aria-controls="trip-plan-recent-trips"
+				aria-expanded={showRecentTrips}
 				class="aria-expanded:border-brand-accent aria-expanded:text-brand-accent dark:aria-expanded:border-brand dark:aria-expanded:text-brand"
 				variant="outline"
 				onclick={() => (showRecentTrips = !showRecentTrips)}
@@ -654,28 +660,10 @@
 			</Button>
 		{/if}
 		<div class="flex-1"></div>
-		<Button
-			disabled={!selectedFrom ||
-				!selectedTo ||
-				isFromEdited ||
-				isToEdited ||
-				isGeocoding ||
-				loading}
-			type="submit"
-		>
+		<Button disabled={!canPlan} type="submit">
 			{#if loading}
-				<svg
-					class="size-4 animate-spin"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					aria-hidden="true"
-				>
-					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
-					></circle>
-					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-				</svg>
-				{$t('trip-planner.planning')}...
+				<LoaderCircle class="size-4 animate-spin" />
+				{$t('trip-planner.planning')}…
 			{:else}
 				{$t('trip-planner.plan_your_trip')}
 			{/if}

@@ -829,6 +829,19 @@ describe('TripPlan pending location selection', () => {
 		unmount();
 	});
 
+	it('does not plan on a form submit while a field has text that was not picked', async () => {
+		const { unmount } = render(TripPlan, { props });
+		await selectFromAndTo(mapProvider);
+
+		const [fromInput] = screen.getAllByRole('combobox');
+		await fireEvent.input(fromInput, { target: { value: 'Capitol' } });
+		fromInput.form.requestSubmit();
+		await tick();
+
+		expect(global.fetch).not.toHaveBeenCalledWith(expect.stringContaining('/api/otp/plan'));
+		unmount();
+	});
+
 	it('clears the location when a field is erased, like the clear button', async () => {
 		const { unmount } = render(TripPlan, { props });
 		const { fromMarker } = await selectFromAndTo(mapProvider);
