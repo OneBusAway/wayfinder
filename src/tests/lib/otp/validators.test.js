@@ -176,6 +176,13 @@ describe('validateTimeInput', () => {
 		const result = validateTimeInput('2:30 PM');
 		expect(result.valid).toBe(false);
 	});
+
+	it('rejects trailing non-numeric characters in hours or minutes', () => {
+		expect(validateTimeInput('12abc:00').valid).toBe(false);
+		expect(validateTimeInput('09:30foo').valid).toBe(false);
+		expect(validateTimeInput('+09:30').valid).toBe(false);
+		expect(validateTimeInput('09:5').valid).toBe(false);
+	});
 });
 
 describe('validateDateInput', () => {
