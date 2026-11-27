@@ -20,27 +20,39 @@ export function resolveVehicleStopIndex(status, stopTimes) {
 }
 
 /**
- * Decide whether status belongs to the trip selected by the rider.
+ * Decide how the trip selected by the rider relates to the live status in the
+ * trip-details response.
  *
- * @param {{ status?: { activeTripId?: string, vehicleId?: string } | null } | null} details
+ * - `live`: a vehicle is running this exact trip (and is the selected vehicle,
+ *   when one was selected).
+ * - `previous-trip`: a vehicle is assigned to the block but is still finishing
+ *   the trip immediately before this one (the schedule's `previousTripId`).
+ * - `scheduled`: anything else, including no vehicle, a vehicle already on a
+ *   later trip, a vehicle further back in the block, or a different vehicle than
+ *   the one selected. Nothing can be claimed about live progress, so the pane
+ *   shows the schedule only.
+ *
+ * @param {{
+ *   status?: { activeTripId?: string, vehicleId?: string } | null,
+ *   schedule?: { previousTripId?: string } | null
+ * } | null | undefined} details
  * @param {string} tripId
  * @param {string | null} [vehicleId]
  * @returns {{ state: 'live' | 'previous-trip' | 'scheduled', isLive: boolean }}
  */
 export function resolveLiveState(details, tripId, vehicleId = null) {
 	const status = details?.status;
-	if (!status) return { state: 'scheduled', isLive: false };
+	if (!status?.vehicleId) return { state: 'scheduled', isLive: false };
 
-	const activeTripMatches = status.activeTripId === tripId;
 	const selectedVehicleAvailable = vehicleId != null && vehicleId !== '';
-	const responseVehicleAvailable = Boolean(status.vehicleId);
-	const vehicleMismatch =
-		selectedVehicleAvailable && responseVehicleAvailable && status.vehicleId !== vehicleId;
-	if (activeTripMatches && responseVehicleAvailable && !vehicleMismatch) {
-		return { state: 'live', isLive: true };
+	if (selectedVehicleAvailable && status.vehicleId !== vehicleId) {
+		return { state: 'scheduled', isLive: false };
 	}
 
-	if (!activeTripMatches || vehicleMismatch) {
+	if (status.activeTripId === tripId) return { state: 'live', isLive: true };
+
+	const previousTripId = details?.schedule?.previousTripId;
+	if (previousTripId && status.activeTripId === previousTripId) {
 		return { state: 'previous-trip', isLive: false };
 	}
 

@@ -2,6 +2,7 @@
 <script>
 	import { _ } from 'svelte-i18n';
 	import { untrack } from 'svelte';
+	import { env } from '$env/dynamic/public';
 	import { Check, MapPin, RadioTower } from '@lucide/svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faBus } from '@fortawesome/free-solid-svg-icons';
@@ -22,6 +23,9 @@
 
 	/** @type {Props} */
 	let { stop, tripId, serviceDate = null, vehicleId = null } = $props();
+
+	// Stop times are shown in the region's wall-clock time, matching the arrival cards.
+	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
 	let tripDetails = $state(null);
 	let routeInfo = $state(null);
@@ -53,6 +57,7 @@
 		tripDetails = null;
 		routeInfo = null;
 		stopInfo = {};
+		error = null;
 
 		async function loadTripDetails() {
 			const requestId = ++latestRequestId;
@@ -252,7 +257,7 @@
 									{formatScheduleTimeFromSeconds(
 										tripStop.arrivalTime,
 										tripDetails.serviceDate ?? serviceDate,
-										tripDetails.schedule.timeZone
+										regionTz
 									)}
 								</div>
 							</div>

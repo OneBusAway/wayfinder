@@ -143,43 +143,28 @@ export function formatSecondsFromMidnight(secondsSinceMidnight) {
 }
 
 /**
- * Format a scheduled service-day time in the browser's local timezone.
+ * Format a scheduled stop time (seconds into a service day) as "HH:mm AM/PM"
+ * in the given time zone.
  *
- * OBA schedule times are seconds since midnight in the schedule timezone,
- * while serviceDate identifies midnight at the start of that service day.
+ * OBA defines a schedule time as an offset from the start of the service day,
+ * and `serviceDate` is that start instant. Adding the offset to it yields the
+ * same epoch OBA reports for arrivals, including on DST-change days where the
+ * service day is 23 or 25 hours long, so scheduled and live times line up.
  *
- * @param {number} secondsSinceMidnight
- * @param {number | null | undefined} serviceDate milliseconds since Unix epoch
- * @param {string | null | undefined} timeZone schedule timezone
- * @returns {string}
+ * @example
+ * // Service day starting 2026-10-27 00:00 America/Los_Angeles, 4:07 AM stop
+ * formatScheduleTimeFromSeconds(14820, 1793084400000, 'America/Los_Angeles')  // Returns '04:07 AM'
+ *
+ * @param {number} secondsSinceMidnight - Offset from the start of the service day
+ * @param {number | null | undefined} serviceDate - Service day start, ms since Unix epoch
+ * @param {string} [timeZone] - IANA timezone to display in (the region's); defaults to local
+ * @returns {string} Time in "HH:mm AM/PM" format, or '' when the offset is not a number
  */
 export function formatScheduleTimeFromSeconds(secondsSinceMidnight, serviceDate, timeZone) {
 	if (!Number.isFinite(secondsSinceMidnight)) return '';
-	if (!Number.isFinite(serviceDate) || !timeZone) {
-		return formatSecondsFromMidnight(secondsSinceMidnight);
-	}
+	if (!Number.isFinite(serviceDate)) return formatSecondsFromMidnight(secondsSinceMidnight);
 
-	try {
-		const serviceDay = Temporal.Instant.fromEpochMilliseconds(serviceDate)
-			.toZonedDateTimeISO(timeZone)
-			.toPlainDate();
-		const dayOffset = Math.floor(secondsSinceMidnight / 86400);
-		const secondsOfDay = secondsSinceMidnight - dayOffset * 86400;
-		const plainTime = new Temporal.PlainTime().add({ seconds: secondsOfDay });
-		const instant = serviceDay
-			.add({ days: dayOffset })
-			.toZonedDateTime({ timeZone, plainTime })
-			.toInstant();
-
-		return msToLocalArrivalDepartureTimeString(instant.epochMilliseconds);
-	} catch (error) {
-		if (!(error instanceof RangeError)) throw error;
-		console.error('formatScheduleTimeFromSeconds: invalid service date or timezone', {
-			serviceDate,
-			timeZone
-		});
-		return formatSecondsFromMidnight(secondsSinceMidnight);
-	}
+	return msToLocalArrivalDepartureTimeString(serviceDate + secondsSinceMidnight * 1000, timeZone);
 }
 
 /**

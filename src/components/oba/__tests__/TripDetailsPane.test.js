@@ -1,10 +1,8 @@
 /* eslint-disable no-restricted-syntax */
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
-import {
-	formatSecondsFromMidnight,
-	msToLocalArrivalDepartureTimeString
-} from '$lib/dateTimeFormat';
+import { env } from '$env/dynamic/public';
+import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
 import { tick } from 'svelte';
 
 // Local i18n mock that interpolates {vehicleId}.
@@ -160,31 +158,61 @@ describe('TripDetailsPane', () => {
 		expect(screen.queryByText(/trip_details\.collapsed_stops/)).not.toBeInTheDocument();
 	});
 
-	test('formats scheduled service seconds in the browser timezone like epoch arrivals', async () => {
-		const serviceDate = Date.UTC(2026, 9, 27, 7);
-		const scheduledSeconds = 4 * 60 * 60 + 7 * 60;
-		const expectedEpoch = Date.UTC(2026, 9, 27, 11, 7);
-		const response = mockTripResponse({ vehicleId: null, serviceDate });
-		response.data.entry.schedule = {
-			timeZone: 'America/Los_Angeles',
-			stopTimes: [{ stopId: stop.id, arrivalTime: scheduledSeconds }]
-		};
-		vi.stubGlobal(
-			'fetch',
-			vi.fn().mockResolvedValue({
-				ok: true,
-				json: async () => response
-			})
-		);
-
-		render(TripDetailsPane, { props: { stop, tripId: '1_trip', serviceDate } });
-
-		await waitFor(() => {
-			expect(
-				screen.getByText(msToLocalArrivalDepartureTimeString(expectedEpoch))
-			).toBeInTheDocument();
+	describe('scheduled stop time zone', () => {
+		const originalTz = env.PUBLIC_OBA_TIMEZONE;
+		afterEach(() => {
+			env.PUBLIC_OBA_TIMEZONE = originalTz;
 		});
-		expect(screen.queryByText(formatSecondsFromMidnight(scheduledSeconds))).not.toBeInTheDocument();
+
+		function stubScheduleResponse({ serviceDate, stopTimes, scheduleTimeZone }) {
+			const response = mockTripResponse({ vehicleId: null, serviceDate });
+			response.data.entry.schedule = { timeZone: scheduleTimeZone, stopTimes };
+			vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => response }));
+		}
+
+		test('formats stop times in PUBLIC_OBA_TIMEZONE, like the arrival cards', async () => {
+			env.PUBLIC_OBA_TIMEZONE = 'America/Los_Angeles';
+			// Service day starts at midnight PDT; the stop is 4:07 AM region time. The
+			// schedule's own zone differs so a regression to it (or to the browser's
+			// zone) would render a different wall-clock time.
+			const serviceDate = Date.UTC(2026, 9, 27, 7);
+			stubScheduleResponse({
+				serviceDate,
+				scheduleTimeZone: 'America/Chicago',
+				stopTimes: [{ stopId: stop.id, arrivalTime: 4 * 60 * 60 + 7 * 60 }]
+			});
+
+			render(TripDetailsPane, { props: { stop, tripId: '1_trip', serviceDate } });
+
+			await waitFor(() => expect(screen.getByText('04:07 AM')).toBeInTheDocument());
+			expect(
+				screen.queryByText(formatSecondsFromMidnight(4 * 60 * 60 + 7 * 60))
+			).not.toBeInTheDocument();
+		});
+
+		test('shows the real clock time on a spring-forward day', async () => {
+			env.PUBLIC_OBA_TIMEZONE = 'America/Los_Angeles';
+			// OBA's serviceDate is noon minus 12h, so on 2027-03-14 it is 23:00 PST the
+			// day before. A "02:30" GTFS stop is 9000s later: 1:30 AM PST on the wall
+			// clock, the same instant OBA reports as the arrival epoch.
+			const serviceDate = Date.UTC(2027, 2, 14, 7);
+			stubScheduleResponse({
+				serviceDate,
+				scheduleTimeZone: 'America/Los_Angeles',
+				stopTimes: [
+					{ stopId: '1_before_gap', arrivalTime: 9000 },
+					{ stopId: stop.id, arrivalTime: 14400 }
+				]
+			});
+
+			render(TripDetailsPane, { props: { stop, tripId: '1_trip', serviceDate } });
+
+			await waitFor(() => {
+				expect(screen.getByText('01:30 AM')).toBeInTheDocument();
+				expect(screen.getByText('04:00 AM')).toBeInTheDocument();
+			});
+			expect(screen.queryByText('02:30 AM')).not.toBeInTheDocument();
+		});
 	});
 
 	test('requests and renders the selected trip instance', async () => {
@@ -267,6 +295,25 @@ describe('TripDetailsPane', () => {
 		await vi.advanceTimersByTimeAsync(30000);
 		await waitFor(() => expect(screen.getByText(stop.name)).toBeInTheDocument());
 		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(screen.queryByText('Unable to fetch trip details')).not.toBeInTheDocument();
+	});
+
+	test('clears a previous trip error as soon as another trip is selected', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce({ ok: false }));
+		const { rerender } = render(TripDetailsPane, { props: { stop, tripId: '1_trip' } });
+		await waitFor(() =>
+			expect(screen.getByText('Unable to fetch trip details')).toBeInTheDocument()
+		);
+
+		// The next trip's request never settles, so only the reset can clear the error.
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(() => new Promise(() => {}))
+		);
+		await rerender({ stop, tripId: '1_other_trip' });
+
+		await waitFor(() => expect(screen.getByText('trip_details.loading')).toBeInTheDocument());
 		expect(screen.queryByText('Unable to fetch trip details')).not.toBeInTheDocument();
 	});
 
@@ -406,14 +453,15 @@ describe('TripDetailsPane', () => {
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 
-	test('does not label another active trip live or use its marker position', async () => {
+	test('labels a vehicle on the preceding trip as finishing it, without using its marker position', async () => {
 		vi.stubGlobal(
 			'fetch',
 			vi.fn().mockResolvedValue({
 				ok: true,
 				json: async () =>
 					mockProgressTripResponse('1_middle', {
-						activeTripId: 'another_trip',
+						activeTripId: '1_previous_trip',
+						previousTripId: '1_previous_trip',
 						vehicleId: '1_8129001'
 					})
 			})
@@ -432,6 +480,32 @@ describe('TripDetailsPane', () => {
 			expect(screen.getByText('Start Stop')).toBeInTheDocument();
 		});
 		expect(screen.queryByText('trip_details.live_vehicle 1_8129001')).not.toBeInTheDocument();
+	});
+
+	test.each([
+		['a vehicle already on a later trip', { activeTripId: '1_later_trip' }],
+		['no vehicle at all', { activeTripId: null, vehicleId: null }]
+	])('shows the plain schedule, not "previous trip", for %s', async (_label, statusOverrides) => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () =>
+					mockProgressTripResponse('1_middle', {
+						previousTripId: '1_previous_trip',
+						...statusOverrides
+					})
+			})
+		);
+		render(TripDetailsPane, {
+			props: { stop, tripId: '1_live_trip', serviceDate: 1738800000000 }
+		});
+
+		await waitFor(() => expect(screen.getByText('trip_details.route C Line')).toBeInTheDocument());
+		expect(screen.queryByText('trip_details.previous_trip')).not.toBeInTheDocument();
+		expect(screen.queryByText(/trip_details\.live_vehicle/)).not.toBeInTheDocument();
+		// Without live progress the list starts at the first stop.
+		expect(screen.getByText('Start Stop')).toBeInTheDocument();
 	});
 
 	test('shows live status only when active trip and selected vehicle match', async () => {
@@ -484,7 +558,8 @@ describe('TripDetailsPane', () => {
 			}
 		});
 
-		await waitFor(() => expect(screen.getByText('trip_details.previous_trip')).toBeInTheDocument());
+		await waitFor(() => expect(screen.getByText(stop.name)).toBeInTheDocument());
+		expect(screen.queryByText('trip_details.previous_trip')).not.toBeInTheDocument();
 		expect(
 			screen.queryByText('trip_details.live_vehicle 1_response_vehicle')
 		).not.toBeInTheDocument();
@@ -557,7 +632,7 @@ describe('TripDetailsPane', () => {
 
 function mockProgressTripResponse(
 	closestStop,
-	{ activeTripId = '1_live_trip', vehicleId = '1_8129001' } = {}
+	{ activeTripId = '1_live_trip', vehicleId = '1_8129001', previousTripId } = {}
 ) {
 	const stopTimes = [
 		{ stopId: '1_start', arrivalTime: 41400 },
@@ -572,7 +647,7 @@ function mockProgressTripResponse(
 				serviceDate: 1738800000000,
 				routeId: '1_100479',
 				status: { vehicleId, activeTripId, closestStop },
-				schedule: { stopTimes }
+				schedule: { stopTimes, ...(previousTripId ? { previousTripId } : {}) }
 			},
 			references: {
 				routes: [{ id: '1_100479', shortName: 'C Line' }],
