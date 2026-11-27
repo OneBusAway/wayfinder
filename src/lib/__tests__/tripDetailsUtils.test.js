@@ -1,10 +1,114 @@
 /* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import {
+	resolveLiveState,
 	resolveVehicleStopIndex,
 	computeVisibleStopRange,
 	buildStopSegments
 } from '$lib/tripDetailsUtils.js';
+
+describe('resolveLiveState', () => {
+	it('accepts status only when active trip and selected vehicle match', () => {
+		expect(
+			resolveLiveState(
+				{ status: { activeTripId: 'trip-a', vehicleId: 'vehicle-a' } },
+				'trip-a',
+				'vehicle-a'
+			)
+		).toEqual({ state: 'live', isLive: true });
+	});
+
+	it.each([null, ''])('treats a selected vehicle ID of %j as no vehicle filter', (vehicleId) => {
+		expect(
+			resolveLiveState(
+				{ status: { activeTripId: 'trip-a', vehicleId: 'vehicle-a' } },
+				'trip-a',
+				vehicleId
+			)
+		).toEqual({ state: 'live', isLive: true });
+	});
+
+	it('reports previous-trip only when the vehicle is on the immediately preceding trip', () => {
+		expect(
+			resolveLiveState(
+				{
+					status: { activeTripId: 'trip-prev', vehicleId: 'vehicle-a' },
+					schedule: { previousTripId: 'trip-prev' }
+				},
+				'trip-a',
+				'vehicle-a'
+			)
+		).toEqual({ state: 'previous-trip', isLive: false });
+	});
+
+	it('does not claim a previous trip when the vehicle is already on a later trip', () => {
+		expect(
+			resolveLiveState(
+				{
+					status: { activeTripId: 'trip-next', vehicleId: 'vehicle-a' },
+					schedule: { previousTripId: 'trip-prev', nextTripId: 'trip-next' }
+				},
+				'trip-a'
+			)
+		).toEqual({ state: 'scheduled', isLive: false });
+	});
+
+	it('does not claim a previous trip when the schedule names no preceding trip', () => {
+		expect(
+			resolveLiveState({ status: { activeTripId: 'trip-b', vehicleId: 'vehicle-a' } }, 'trip-a')
+		).toEqual({ state: 'scheduled', isLive: false });
+	});
+
+	it('does not claim a previous trip when there is no vehicle', () => {
+		expect(
+			resolveLiveState(
+				{
+					status: { activeTripId: 'trip-prev' },
+					schedule: { previousTripId: 'trip-prev' }
+				},
+				'trip-a'
+			)
+		).toEqual({ state: 'scheduled', isLive: false });
+		expect(resolveLiveState({ status: { vehicleId: 'vehicle-a' } }, 'trip-a')).toEqual({
+			state: 'scheduled',
+			isLive: false
+		});
+	});
+
+	it('falls back to scheduled when a different vehicle than the selected one is on the trip', () => {
+		expect(
+			resolveLiveState(
+				{ status: { activeTripId: 'trip-a', vehicleId: 'vehicle-b' } },
+				'trip-a',
+				'vehicle-a'
+			)
+		).toEqual({ state: 'scheduled', isLive: false });
+	});
+
+	it('falls back to scheduled state when no live status is available', () => {
+		expect(resolveLiveState(null, 'trip-a')).toEqual({ state: 'scheduled', isLive: false });
+	});
+
+	it.each([undefined, ''])(
+		'does not classify a matching trip as previous when its response vehicle ID is unavailable (%j)',
+		(responseVehicleId) => {
+			expect(
+				resolveLiveState(
+					{ status: { activeTripId: 'trip-a', vehicleId: responseVehicleId } },
+					'trip-a',
+					'vehicle-a'
+				)
+			).toEqual({ state: 'scheduled', isLive: false });
+		}
+	);
+
+	it('requires the status to include a vehicle ID before marking it live', () => {
+		expect(resolveLiveState({ status: { activeTripId: 'trip-a' } }, 'trip-a')).toEqual({
+			state: 'scheduled',
+			isLive: false
+		});
+	});
+});
 
 describe('resolveVehicleStopIndex', () => {
 	const stopTimes = [{ stopId: 'a' }, { stopId: 'b' }, { stopId: 'c' }, { stopId: 'd' }];

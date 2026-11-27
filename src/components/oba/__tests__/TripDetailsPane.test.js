@@ -1,6 +1,9 @@
 /* eslint-disable no-restricted-syntax */
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { expect, test, describe, vi, beforeEach, afterEach } from 'vitest';
+import { env } from '$env/dynamic/public';
+import { formatSecondsFromMidnight } from '$lib/dateTimeFormat';
+import { tick } from 'svelte';
 
 // Local i18n mock that interpolates {vehicleId}.
 //
@@ -34,19 +37,28 @@ import TripDetailsPane from '../TripDetailsPane.svelte';
 
 const stop = { id: '1_75403', name: 'Fauntleroy Way SW & SW Myrtle St' };
 
-function mockTripResponse({ vehicleId }) {
+function mockTripResponse({
+	vehicleId,
+	tripId = '1_trip',
+	serviceDate = 123,
+	activeTripId = tripId,
+	closestStop = '1_75403',
+	responseStopName = 'Fauntleroy Way SW & SW Myrtle St'
+}) {
 	return {
 		data: {
 			entry: {
+				tripId,
+				serviceDate,
 				routeId: '1_100479',
-				status: vehicleId ? { vehicleId, closestStop: '1_75403' } : null,
+				status: vehicleId ? { vehicleId, activeTripId, closestStop } : null,
 				schedule: {
 					stopTimes: [{ stopId: '1_75403', arrivalTime: 41400 }]
 				}
 			},
 			references: {
 				routes: [{ id: '1_100479', shortName: 'C Line' }],
-				stops: [{ id: '1_75403', name: 'Fauntleroy Way SW & SW Myrtle St' }]
+				stops: [{ id: '1_75403', name: responseStopName }]
 			}
 		}
 	};
@@ -64,8 +76,14 @@ function mockLongTripResponse(stopCount) {
 	return {
 		data: {
 			entry: {
+				tripId: '1_trip',
+				serviceDate: 123,
 				routeId: '1_100479',
-				status: { vehicleId: '1_8129001', closestStop: stopTimes[0].stopId },
+				status: {
+					vehicleId: '1_8129001',
+					activeTripId: '1_trip',
+					closestStop: stopTimes[0].stopId
+				},
 				schedule: { stopTimes }
 			},
 			references: {
@@ -139,4 +157,506 @@ describe('TripDetailsPane', () => {
 		});
 		expect(screen.queryByText(/trip_details\.collapsed_stops/)).not.toBeInTheDocument();
 	});
+
+	describe('scheduled stop time zone', () => {
+		const originalTz = env.PUBLIC_OBA_TIMEZONE;
+		afterEach(() => {
+			env.PUBLIC_OBA_TIMEZONE = originalTz;
+		});
+
+		function stubScheduleResponse({ serviceDate, stopTimes, scheduleTimeZone }) {
+			const response = mockTripResponse({ vehicleId: null, serviceDate });
+			response.data.entry.schedule = { timeZone: scheduleTimeZone, stopTimes };
+			vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => response }));
+		}
+
+		test('formats stop times in PUBLIC_OBA_TIMEZONE, like the arrival cards', async () => {
+			env.PUBLIC_OBA_TIMEZONE = 'America/Los_Angeles';
+			// Service day starts at midnight PDT; the stop is 4:07 AM region time. The
+			// schedule's own zone differs so a regression to it (or to the browser's
+			// zone) would render a different wall-clock time.
+			const serviceDate = Date.UTC(2026, 9, 27, 7);
+			stubScheduleResponse({
+				serviceDate,
+				scheduleTimeZone: 'America/Chicago',
+				stopTimes: [{ stopId: stop.id, arrivalTime: 4 * 60 * 60 + 7 * 60 }]
+			});
+
+			render(TripDetailsPane, { props: { stop, tripId: '1_trip', serviceDate } });
+
+			await waitFor(() => expect(screen.getByText('04:07 AM')).toBeInTheDocument());
+			expect(
+				screen.queryByText(formatSecondsFromMidnight(4 * 60 * 60 + 7 * 60))
+			).not.toBeInTheDocument();
+		});
+
+		test('shows the real clock time on a spring-forward day', async () => {
+			env.PUBLIC_OBA_TIMEZONE = 'America/Los_Angeles';
+			// OBA's serviceDate is noon minus 12h, so on 2027-03-14 it is 23:00 PST the
+			// day before. A "02:30" GTFS stop is 9000s later: 1:30 AM PST on the wall
+			// clock, the same instant OBA reports as the arrival epoch.
+			const serviceDate = Date.UTC(2027, 2, 14, 7);
+			stubScheduleResponse({
+				serviceDate,
+				scheduleTimeZone: 'America/Los_Angeles',
+				stopTimes: [
+					{ stopId: '1_before_gap', arrivalTime: 9000 },
+					{ stopId: stop.id, arrivalTime: 14400 }
+				]
+			});
+
+			render(TripDetailsPane, { props: { stop, tripId: '1_trip', serviceDate } });
+
+			await waitFor(() => {
+				expect(screen.getByText('01:30 AM')).toBeInTheDocument();
+				expect(screen.getByText('04:00 AM')).toBeInTheDocument();
+			});
+			expect(screen.queryByText('02:30 AM')).not.toBeInTheDocument();
+		});
+	});
+
+	test('requests and renders the selected trip instance', async () => {
+		const tripId = '1_selected_trip';
+		const serviceDate = 1738800000000;
+		const responseStopName = 'Selected trip schedule';
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => mockTripResponse({ vehicleId: null, tripId, serviceDate, responseStopName })
+		});
+		vi.stubGlobal('fetch', fetchMock);
+
+		render(TripDetailsPane, {
+			props: { stop, tripId, serviceDate }
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText(responseStopName)).toBeInTheDocument();
+		});
+
+		const requestUrl = new URL(fetchMock.mock.calls[0][0], 'http://localhost');
+		expect(requestUrl.pathname).toBe(`/api/oba/trip-details/${tripId}`);
+		expect(requestUrl.searchParams.get('serviceDate')).toBe(String(serviceDate));
+		expect(requestUrl.searchParams.has('time')).toBe(false);
+		expect(screen.getByText(responseStopName)).toBeInTheDocument();
+	});
+
+	test('refreshes live status without pinning requests to a timestamp', async () => {
+		const tripId = '1_live_trip';
+		const serviceDate = 1738800000000;
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => mockProgressTripResponse('1_start')
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => mockProgressTripResponse('1_middle')
+			});
+		vi.stubGlobal('fetch', fetchMock);
+
+		render(TripDetailsPane, { props: { stop, tripId, serviceDate } });
+
+		await waitFor(() => {
+			expect(screen.getByText('Start Stop')).toBeInTheDocument();
+		});
+
+		await vi.advanceTimersByTimeAsync(30000);
+
+		await waitFor(() => {
+			expect(fetchMock).toHaveBeenCalledTimes(2);
+			expect(screen.queryByText('Start Stop')).not.toBeInTheDocument();
+			expect(screen.getByText('Middle Stop')).toBeInTheDocument();
+		});
+
+		for (const [requestUrl] of fetchMock.mock.calls) {
+			const url = new URL(requestUrl, 'http://localhost');
+			expect(url.pathname).toBe(`/api/oba/trip-details/${tripId}`);
+			expect(url.searchParams.get('serviceDate')).toBe(String(serviceDate));
+			expect(url.searchParams.has('time')).toBe(false);
+		}
+	});
+
+	test('clears a request error only after a successful refresh', async () => {
+		const fetchMock = vi
+			.fn()
+			.mockResolvedValueOnce({ ok: false })
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => mockTripResponse({ vehicleId: null })
+			});
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.stubGlobal('fetch', fetchMock);
+		render(TripDetailsPane, { props: { stop, tripId: '1_trip' } });
+
+		await waitFor(() =>
+			expect(screen.getByText('Unable to fetch trip details')).toBeInTheDocument()
+		);
+		await vi.advanceTimersByTimeAsync(30000);
+		await waitFor(() => expect(screen.getByText(stop.name)).toBeInTheDocument());
+		expect(fetchMock).toHaveBeenCalledTimes(2);
+		expect(screen.queryByText('Unable to fetch trip details')).not.toBeInTheDocument();
+	});
+
+	test('clears a previous trip error as soon as another trip is selected', async () => {
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce({ ok: false }));
+		const { rerender } = render(TripDetailsPane, { props: { stop, tripId: '1_trip' } });
+		await waitFor(() =>
+			expect(screen.getByText('Unable to fetch trip details')).toBeInTheDocument()
+		);
+
+		// The next trip's request never settles, so only the reset can clear the error.
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(() => new Promise(() => {}))
+		);
+		await rerender({ stop, tripId: '1_other_trip' });
+
+		await waitFor(() => expect(screen.getByText('trip_details.loading')).toBeInTheDocument());
+		expect(screen.queryByText('Unable to fetch trip details')).not.toBeInTheDocument();
+	});
+
+	test('includes serviceDate zero and never adds a time parameter', async () => {
+		const fetchMock = vi.fn().mockResolvedValue({
+			ok: true,
+			json: async () => mockTripResponse({ vehicleId: null, serviceDate: 0 })
+		});
+		vi.stubGlobal('fetch', fetchMock);
+		render(TripDetailsPane, { props: { stop, tripId: '1_trip', serviceDate: 0 } });
+
+		await waitFor(() => expect(screen.getByText(stop.name)).toBeInTheDocument());
+		const url = new URL(fetchMock.mock.calls[0][0], 'http://localhost');
+		expect(url.searchParams.get('serviceDate')).toBe('0');
+		expect(url.searchParams.has('time')).toBe(false);
+	});
+
+	test('discards a late response after switching selected trips', async () => {
+		let resolveA;
+		let resolveJsonA;
+		let notifyJsonStarted;
+
+		const responseA = new Promise((resolve) => {
+			resolveA = resolve;
+		});
+
+		const jsonA = new Promise((resolve) => {
+			resolveJsonA = resolve;
+		});
+
+		const jsonStarted = new Promise((resolve) => {
+			notifyJsonStarted = resolve;
+		});
+
+		const fetchMock = vi.fn((url) =>
+			String(url).includes('/trip-A')
+				? responseA
+				: Promise.resolve({
+						ok: true,
+						json: async () =>
+							mockTripResponse({
+								tripId: 'trip-B',
+								serviceDate: 2,
+								vehicleId: null,
+								responseStopName: 'Trip B schedule'
+							})
+					})
+		);
+
+		vi.stubGlobal('fetch', fetchMock);
+
+		const { rerender } = render(TripDetailsPane, {
+			props: { stop, tripId: 'trip-A', serviceDate: 1 }
+		});
+
+		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+		await rerender({ stop, tripId: 'trip-B', serviceDate: 2 });
+
+		await waitFor(() => {
+			expect(screen.getByText('Trip B schedule')).toBeInTheDocument();
+		});
+
+		resolveA({
+			ok: true,
+			json: () => {
+				notifyJsonStarted();
+				return jsonA;
+			}
+		});
+
+		await jsonStarted;
+
+		resolveJsonA(
+			mockTripResponse({
+				tripId: 'trip-A',
+				serviceDate: 1,
+				vehicleId: null,
+				responseStopName: 'Late trip A schedule'
+			})
+		);
+
+		await Promise.resolve();
+		await tick();
+
+		expect(screen.queryByText('Late trip A schedule')).not.toBeInTheDocument();
+		expect(screen.getByText('Trip B schedule')).toBeInTheDocument();
+	});
+
+	test('clears the previous trip poll timer when the selected trip changes', async () => {
+		const fetchMock = vi.fn((url) => {
+			const tripId = new URL(url, 'http://localhost').pathname.endsWith('/trip-A')
+				? 'trip-A'
+				: 'trip-B';
+			return Promise.resolve({
+				ok: true,
+				json: async () =>
+					mockTripResponse({
+						tripId,
+						serviceDate: tripId === 'trip-A' ? 1 : 2,
+						vehicleId: null,
+						responseStopName: `${tripId} schedule`
+					})
+			});
+		});
+		vi.stubGlobal('fetch', fetchMock);
+		const { rerender } = render(TripDetailsPane, {
+			props: { stop, tripId: 'trip-A', serviceDate: 1 }
+		});
+		await waitFor(() => expect(screen.getByText('trip-A schedule')).toBeInTheDocument());
+
+		await rerender({ stop, tripId: 'trip-B', serviceDate: 2 });
+		await waitFor(() => expect(screen.getByText('trip-B schedule')).toBeInTheDocument());
+		await vi.advanceTimersByTimeAsync(30000);
+		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+
+		expect(fetchMock.mock.calls.map(([url]) => new URL(url, 'http://localhost').pathname)).toEqual([
+			'/api/oba/trip-details/trip-A',
+			'/api/oba/trip-details/trip-B',
+			'/api/oba/trip-details/trip-B'
+		]);
+	});
+
+	test('aborts an in-flight request and stops polling on unmount', async () => {
+		let signal;
+		const fetchMock = vi.fn((_url, options) => {
+			signal = options.signal;
+			return new Promise(() => {});
+		});
+		vi.stubGlobal('fetch', fetchMock);
+		const { unmount } = render(TripDetailsPane, { props: { stop, tripId: '1_trip' } });
+		await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+		unmount();
+		expect(signal.aborted).toBe(true);
+		await vi.advanceTimersByTimeAsync(60000);
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+	});
+
+	test('labels a vehicle on the preceding trip as finishing it, without using its marker position', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () =>
+					mockProgressTripResponse('1_middle', {
+						activeTripId: '1_previous_trip',
+						previousTripId: '1_previous_trip',
+						vehicleId: '1_8129001'
+					})
+			})
+		);
+		render(TripDetailsPane, {
+			props: {
+				stop,
+				tripId: '1_live_trip',
+				serviceDate: 1738800000000,
+				vehicleId: '1_8129001'
+			}
+		});
+
+		await waitFor(() => {
+			expect(screen.getByText('trip_details.previous_trip')).toBeInTheDocument();
+			expect(screen.getByText('Start Stop')).toBeInTheDocument();
+		});
+		expect(screen.queryByText('trip_details.live_vehicle 1_8129001')).not.toBeInTheDocument();
+	});
+
+	test.each([
+		['a vehicle already on a later trip', { activeTripId: '1_later_trip' }],
+		['no vehicle at all', { activeTripId: null, vehicleId: null }]
+	])('shows the plain schedule, not "previous trip", for %s', async (_label, statusOverrides) => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () =>
+					mockProgressTripResponse('1_middle', {
+						previousTripId: '1_previous_trip',
+						...statusOverrides
+					})
+			})
+		);
+		render(TripDetailsPane, {
+			props: { stop, tripId: '1_live_trip', serviceDate: 1738800000000 }
+		});
+
+		await waitFor(() => expect(screen.getByText('trip_details.route C Line')).toBeInTheDocument());
+		expect(screen.queryByText('trip_details.previous_trip')).not.toBeInTheDocument();
+		expect(screen.queryByText(/trip_details\.live_vehicle/)).not.toBeInTheDocument();
+		// Without live progress the list starts at the first stop.
+		expect(screen.getByText('Start Stop')).toBeInTheDocument();
+	});
+
+	test('shows live status only when active trip and selected vehicle match', async () => {
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () =>
+					mockTripResponse({
+						tripId: '1_trip',
+						serviceDate: 123,
+						vehicleId: '1_expected_vehicle'
+					})
+			})
+		);
+		render(TripDetailsPane, {
+			props: {
+				stop,
+				tripId: '1_trip',
+				serviceDate: 123,
+				vehicleId: '1_expected_vehicle'
+			}
+		});
+
+		await waitFor(() =>
+			expect(screen.getByText('trip_details.live_vehicle 1_expected_vehicle')).toBeInTheDocument()
+		);
+	});
+
+	test('does not show live status when the response vehicle differs from the selected arrival', async () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () =>
+					mockTripResponse({
+						tripId: '1_trip',
+						serviceDate: 123,
+						vehicleId: '1_response_vehicle'
+					})
+			})
+		);
+		render(TripDetailsPane, {
+			props: {
+				stop,
+				tripId: '1_trip',
+				serviceDate: 123,
+				vehicleId: '1_selected_vehicle'
+			}
+		});
+
+		await waitFor(() => expect(screen.getByText(stop.name)).toBeInTheDocument());
+		expect(screen.queryByText('trip_details.previous_trip')).not.toBeInTheDocument();
+		expect(
+			screen.queryByText('trip_details.live_vehicle 1_response_vehicle')
+		).not.toBeInTheDocument();
+		expect(warn).toHaveBeenCalledWith(
+			'Trip details vehicle did not match the selected arrival',
+			expect.objectContaining({
+				selectedVehicleId: '1_selected_vehicle',
+				responseVehicleId: '1_response_vehicle'
+			})
+		);
+	});
+
+	test('rejects an entry that does not match the requested trip identity', async () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () =>
+					mockTripResponse({
+						tripId: 'wrong_trip',
+						serviceDate: 123,
+						vehicleId: null,
+						responseStopName: 'Wrong trip schedule'
+					})
+			})
+		);
+		render(TripDetailsPane, { props: { stop, tripId: 'expected_trip', serviceDate: 123 } });
+
+		await waitFor(() =>
+			expect(
+				screen.getByText('Trip details response did not match the selected trip')
+			).toBeInTheDocument()
+		);
+		expect(screen.queryByText('Wrong trip schedule')).not.toBeInTheDocument();
+		expect(warn).toHaveBeenCalledWith(
+			'Trip details response did not match the selected trip',
+			expect.objectContaining({
+				selected: { tripId: 'expected_trip', serviceDate: 123 },
+				response: { tripId: 'wrong_trip', serviceDate: 123 }
+			})
+		);
+	});
+
+	test('rejects an entry with a different requested serviceDate', async () => {
+		vi.spyOn(console, 'warn').mockImplementation(() => {});
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () =>
+					mockTripResponse({
+						tripId: 'expected_trip',
+						serviceDate: 1,
+						vehicleId: null,
+						responseStopName: 'Wrong service date schedule'
+					})
+			})
+		);
+		render(TripDetailsPane, { props: { stop, tripId: 'expected_trip', serviceDate: 0 } });
+
+		await waitFor(() =>
+			expect(
+				screen.getByText('Trip details response did not match the selected trip')
+			).toBeInTheDocument()
+		);
+		expect(screen.queryByText('Wrong service date schedule')).not.toBeInTheDocument();
+	});
 });
+
+function mockProgressTripResponse(
+	closestStop,
+	{ activeTripId = '1_live_trip', vehicleId = '1_8129001', previousTripId } = {}
+) {
+	const stopTimes = [
+		{ stopId: '1_start', arrivalTime: 41400 },
+		{ stopId: '1_middle', arrivalTime: 41460 },
+		{ stopId: stop.id, arrivalTime: 41520 }
+	];
+
+	return {
+		data: {
+			entry: {
+				tripId: '1_live_trip',
+				serviceDate: 1738800000000,
+				routeId: '1_100479',
+				status: { vehicleId, activeTripId, closestStop },
+				schedule: { stopTimes, ...(previousTripId ? { previousTripId } : {}) }
+			},
+			references: {
+				routes: [{ id: '1_100479', shortName: 'C Line' }],
+				stops: [
+					{ id: '1_start', name: 'Start Stop' },
+					{ id: '1_middle', name: 'Middle Stop' },
+					{ id: stop.id, name: stop.name }
+				]
+			}
+		}
+	};
+}

@@ -5,6 +5,7 @@ import {
 	msToTimeString,
 	msToLocalArrivalDepartureTimeString,
 	formatSecondsFromMidnight,
+	formatScheduleTimeFromSeconds,
 	parseTimeInput,
 	parseDateInput,
 	formatTimeForOTP,
@@ -125,6 +126,47 @@ describe('formatSecondsFromMidnight', () => {
 
 	it.each(INVALID_INPUTS)('returns a blank string when the input is %s', (input) => {
 		expect(formatSecondsFromMidnight(input)).toBe('');
+	});
+});
+
+describe('formatScheduleTimeFromSeconds', () => {
+	const LA = 'America/Los_Angeles';
+	const hours = (h, m = 0) => (h * 60 + m) * 60;
+
+	it('formats the service day start plus the offset in the requested zone', () => {
+		const serviceDate = Date.UTC(2026, 9, 27, 7); // midnight PDT
+		expect(formatScheduleTimeFromSeconds(hours(4, 7), serviceDate, LA)).toBe('04:07 AM');
+		expect(formatScheduleTimeFromSeconds(hours(4, 7), serviceDate, 'America/New_York')).toBe(
+			'07:07 AM'
+		);
+	});
+
+	it('rolls trips past 24:00 into the next calendar day', () => {
+		const serviceDate = Date.UTC(2026, 9, 27, 7);
+		expect(formatScheduleTimeFromSeconds(hours(25, 15), serviceDate, LA)).toBe('01:15 AM');
+	});
+
+	it('matches the real clock time on spring-forward day (23-hour service day)', () => {
+		// OBA's serviceDate is noon minus 12h: 23:00 PST on 2027-03-13.
+		const serviceDate = Date.UTC(2027, 2, 14, 7);
+		expect(formatScheduleTimeFromSeconds(hours(2, 30), serviceDate, LA)).toBe('01:30 AM');
+		expect(formatScheduleTimeFromSeconds(hours(4), serviceDate, LA)).toBe('04:00 AM');
+	});
+
+	it('matches the real clock time on fall-back day (25-hour service day)', () => {
+		// Noon PST on 2026-11-01 is 20:00Z, so noon minus 12h is 08:00Z (01:00 PDT).
+		// A "03:00" GTFS stop is 3h later, 11:00Z, which is 3:00 AM PST on the wall clock.
+		const serviceDate = Date.UTC(2026, 10, 1, 8);
+		expect(formatScheduleTimeFromSeconds(hours(3), serviceDate, LA)).toBe('03:00 AM');
+	});
+
+	it('falls back to the bare offset when there is no service date', () => {
+		expect(formatScheduleTimeFromSeconds(38280, null, LA)).toBe('10:38 AM');
+		expect(formatScheduleTimeFromSeconds(38280, undefined, LA)).toBe('10:38 AM');
+	});
+
+	it.each(INVALID_INPUTS)('returns a blank string when the offset is %s', (input) => {
+		expect(formatScheduleTimeFromSeconds(input, Date.UTC(2026, 9, 27, 7), LA)).toBe('');
 	});
 });
 

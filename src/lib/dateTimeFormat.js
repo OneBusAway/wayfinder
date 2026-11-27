@@ -143,6 +143,31 @@ export function formatSecondsFromMidnight(secondsSinceMidnight) {
 }
 
 /**
+ * Format a scheduled stop time (seconds into a service day) as "HH:mm AM/PM"
+ * in the given time zone.
+ *
+ * OBA defines a schedule time as an offset from the start of the service day,
+ * and `serviceDate` is that start instant. Adding the offset to it yields the
+ * same epoch OBA reports for arrivals, including on DST-change days where the
+ * service day is 23 or 25 hours long, so scheduled and live times line up.
+ *
+ * @example
+ * // Service day starting 2026-10-27 00:00 America/Los_Angeles, 4:07 AM stop
+ * formatScheduleTimeFromSeconds(14820, 1793084400000, 'America/Los_Angeles')  // Returns '04:07 AM'
+ *
+ * @param {number} secondsSinceMidnight - Offset from the start of the service day
+ * @param {number | null | undefined} serviceDate - Service day start, ms since Unix epoch
+ * @param {string} [timeZone] - IANA timezone to display in (the region's); defaults to local
+ * @returns {string} Time in "HH:mm AM/PM" format, or '' when the offset is not a number
+ */
+export function formatScheduleTimeFromSeconds(secondsSinceMidnight, serviceDate, timeZone) {
+	if (!Number.isFinite(secondsSinceMidnight)) return '';
+	if (!Number.isFinite(serviceDate)) return formatSecondsFromMidnight(secondsSinceMidnight);
+
+	return msToLocalArrivalDepartureTimeString(serviceDate + secondsSinceMidnight * 1000, timeZone);
+}
+
+/**
  * Helper to format departure time for pill display
  * Accepts an optional translator function for i18n support
  * @param {Object} opts - Options object containing departureType, departureTime, and departureDate
