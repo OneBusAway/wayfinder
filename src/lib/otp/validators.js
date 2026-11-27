@@ -72,17 +72,13 @@ export function validateTimeInput(timeString) {
 		return { valid: false, error: 'Time must be in HH:mm format (24-hour)' };
 	}
 
-	const parts = timeString.split(':');
-	if (parts.length !== 2) {
+	const match = timeString.match(/^(\d{1,2}):(\d{2})$/);
+	if (!match) {
 		return { valid: false, error: 'Time must be in HH:mm format' };
 	}
 
-	const hours = parseInt(parts[0], 10);
-	const minutes = parseInt(parts[1], 10);
-
-	if (isNaN(hours) || isNaN(minutes)) {
-		return { valid: false, error: 'Hours and minutes must be numeric' };
-	}
+	const hours = parseInt(match[1], 10);
+	const minutes = parseInt(match[2], 10);
 
 	if (hours < TIME_BOUNDS.hours.min || hours > TIME_BOUNDS.hours.max) {
 		return {
