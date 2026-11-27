@@ -258,6 +258,8 @@
 		"no_summary": "No summary available for this alert",
 		"no_description": "No detailed description available for this alert",
 		"page": "Page",
+		"previous_page": "Previous page",
+		"next_page": "Next page",
 		"show": "Show",
 		"hide": "Hide",
 		"open_alert": "Open {severity} service alert details: {summary}",
