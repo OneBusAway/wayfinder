@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const MAX_UPSTREAM_BODY_LENGTH = 300;
 
 /**

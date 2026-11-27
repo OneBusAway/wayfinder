@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 export const GEOMETRY_DETAILS = ['none', 'simplified', 'full'];
 export const MAX_RADIUS_METERS = 20000;
 

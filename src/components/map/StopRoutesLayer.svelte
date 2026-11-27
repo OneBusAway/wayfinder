@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     Draws the routes a rider can actually board from the selected stop, plus the

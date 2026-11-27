@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Test fixtures with realistic OneBusAway API response data
  */

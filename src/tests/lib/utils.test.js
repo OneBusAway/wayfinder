@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import {
 	attachRoutesToStops,
@@ -173,6 +174,26 @@ describe('routeShortNamesForStop', () => {
 		};
 
 		expect(routeShortNamesForStop(response, stop)).toEqual(['44', 'E Line']);
+	});
+
+	it('sorts numeric short names by number', () => {
+		const response = {
+			data: {
+				references: {
+					routes: [
+						{ id: '1_10', shortName: '10' },
+						{ id: '1_2', shortName: '2' },
+						{ id: '1_44', shortName: '44' }
+					]
+				}
+			}
+		};
+
+		expect(routeShortNamesForStop(response, { routeIds: ['1_10', '1_2', '1_44'] })).toEqual([
+			'2',
+			'10',
+			'44'
+		]);
 	});
 
 	it('falls back to the route id suffix when shortName is missing', () => {

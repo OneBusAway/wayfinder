@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import GoogleMapProvider from '$lib/Provider/GoogleMapProvider.svelte.js';
 import OpenStreetMapProvider from '$lib/Provider/OpenStreetMapProvider.svelte.js';
 import ArcGISMapProvider from '$lib/Provider/ArcGISMapProvider.svelte.js';

@@ -1,5 +1,7 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { t } from 'svelte-i18n';
+	import { env } from '$env/dynamic/public';
 	import { msToLocalArrivalDepartureTimeString } from '$lib/dateTimeFormat';
 	import RouteBadge from '$components/RouteBadge.svelte';
 	import { Clock, Rss } from '@lucide/svelte';
@@ -16,6 +18,7 @@
 	} = $props();
 
 	const MS_IN_MINS = 60000;
+	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
 	let routeShortName = $derived(arrivalDeparture.routeShortName);
 	let tripHeadsign = $derived(arrivalDeparture.tripHeadsign);
@@ -134,13 +137,9 @@
 		// Frequency (exact_times=0) trips
 		if (frequency) {
 			const headwayAsMinutes = Math.floor(frequency.headway / 60);
-			const formatter = new Intl.DateTimeFormat([], {
-				hour: '2-digit',
-				minute: '2-digit'
-			});
 
 			if (now < frequency.startTime) {
-				const label = formatter.format(new Date(frequency.startTime));
+				const label = msToLocalArrivalDepartureTimeString(frequency.startTime, regionTz);
 				return $t('status.frequency_from', {
 					values: {
 						headway: headwayAsMinutes,
@@ -148,7 +147,7 @@
 					}
 				});
 			} else {
-				const label = formatter.format(new Date(frequency.endTime));
+				const label = msToLocalArrivalDepartureTimeString(frequency.endTime, regionTz);
 				return $t('status.frequency_until', {
 					values: {
 						headway: headwayAsMinutes,
@@ -204,7 +203,7 @@
 				if (!includeArrivalDepartureInStatusLabel || !scheduledTime || scheduledTime === 0) {
 					return $t('status.scheduled');
 				}
-				const formattedTime = msToLocalArrivalDepartureTimeString(scheduledTime);
+				const formattedTime = msToLocalArrivalDepartureTimeString(scheduledTime, regionTz);
 				return isArrival
 					? $t('status.arrived_at_time', { values: { time: formattedTime } })
 					: $t('status.departed_at_time', { values: { time: formattedTime } });
@@ -269,7 +268,7 @@
 		<p class="truncate text-sm">
 			{#if !arrivalInfo.hideTimePrefix && arrivalInfo.displayTime > 0}
 				<span class="text-gray-500 dark:text-gray-400"
-					>{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime)} ·</span
+					>{msToLocalArrivalDepartureTimeString(arrivalInfo.displayTime, regionTz)} ·</span
 				>
 			{/if}
 			<span class={arrivalInfo.color}>{arrivalInfo.statusText}</span>

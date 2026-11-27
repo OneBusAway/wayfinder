@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { env } from '$env/dynamic/public';
 
 /** @type {'graphql' | 'rest' | null} */

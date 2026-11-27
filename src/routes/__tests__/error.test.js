@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render, screen, waitFor, fireEvent } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi, afterEach } from 'vitest';
 import ErrorPage from '$src/routes/+error.svelte';
@@ -287,6 +288,7 @@ describe('ErrorPage', () => {
 		test.each([
 			[403, 'Access denied'],
 			[500, 'Server error'],
+			[502, 'Server error'],
 			[418, 'Something went wrong'] // generic fallthrough
 		])('renders the %i branch', (status, title) => {
 			page.__setStatus(status);

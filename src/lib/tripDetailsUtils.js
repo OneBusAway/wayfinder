@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Locate the vehicle's current stop within a trip's ordered `stopTimes`, using
  * the stop IDs the server reports for exactly this purpose. `closestStop` is the

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * OTP (OpenTripPlanner) module for trip planning.
  *

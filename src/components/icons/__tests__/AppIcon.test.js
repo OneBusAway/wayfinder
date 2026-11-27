@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, test, expect } from 'vitest';
 import { render } from '@testing-library/svelte';
 import { MapPin } from '@lucide/svelte';

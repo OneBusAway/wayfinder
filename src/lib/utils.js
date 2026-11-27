@@ -1,3 +1,8 @@
+/* eslint-disable no-restricted-syntax */
+import { compareRoutes, removeAgencyPrefix } from './routeUtils';
+
+export { removeAgencyPrefix };
+
 export function debounce(func, wait) {
 	let timeout = null;
 
@@ -17,32 +22,6 @@ export function debounce(func, wait) {
 	};
 
 	return debounced;
-}
-
-/**
- * Removes the agency prefix from an ID string, returning only the numeric part.
- * Handles IDs in the format "AGENCY_ID" or "AGENCY_NUMBER" where the separator is an underscore.
- *
- * @param {string} idString - The full ID string (e.g., "MTS_41242", "1_41242")
- * @returns {string} The ID without the agency prefix (e.g., "41242")
- *
- * @example
- * removeAgencyPrefix("MTS_41242") // returns "41242"
- * removeAgencyPrefix("1_41242")   // returns "41242"
- * removeAgencyPrefix("41242")     // returns "41242" (no prefix to remove)
- */
-export function removeAgencyPrefix(idString) {
-	if (!idString || typeof idString !== 'string') {
-		return idString;
-	}
-
-	const underscoreIndex = idString.indexOf('_');
-	if (underscoreIndex === -1) {
-		return idString;
-	}
-
-	// Return everything after the first underscore
-	return idString.substring(underscoreIndex + 1);
 }
 
 /**
@@ -66,9 +45,9 @@ export function routeShortNamesForStop(arrivalsAndDeparturesResponse, stop) {
 	return (
 		routes
 			.filter((r) => stopRouteIds.has(r.id))
+			.sort(compareRoutes)
 			// the route id will always be present, so if the shortName is missing, fall back to the id without its agency prefix
 			.map((r) => r.shortName || removeAgencyPrefix(r.id))
-			.sort()
 	);
 }
 

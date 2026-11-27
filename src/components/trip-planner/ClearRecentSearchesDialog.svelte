@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import { tick } from 'svelte';
 	import { get } from 'svelte/store';

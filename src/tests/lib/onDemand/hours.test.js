@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import { hoursRows, formatDayRanges } from '$lib/onDemand/hours.js';
 import { parsedService, ruleJson } from '../../fixtures/onDemand.js';

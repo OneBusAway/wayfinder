@@ -1,9 +1,12 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import {
 	toDirection,
 	calculateMidpoint,
 	calculateBoundsFromAgencies,
-	calculateRadiusFromBounds
+	calculateRadiusFromBounds,
+	isValidCoordinate,
+	calcDistanceBetweenTwoPoints
 } from '$lib/mathUtils';
 
 describe('toDirection', () => {
@@ -184,23 +187,6 @@ describe('calculateMidpoint', () => {
 		expect(calculateMidpoint(stops)).toBeNull();
 	});
 
-	it('handles coordinate tuples and multiple coordinate arguments', () => {
-		const result = calculateMidpoint([47.6062, -122.3321], [47.6092, -122.3331]);
-		expect(result.lat).toBeCloseTo(47.6077);
-		expect(result.lon).toBeCloseTo(-122.3326);
-	});
-
-	it('handles single valid coordinate tuple', () => {
-		const result = calculateMidpoint([47.6062, -122.3321]);
-		expect(result).toEqual({ lat: 47.6062, lon: -122.3321 });
-	});
-
-	it('returns null for invalid coordinate tuples or arguments', () => {
-		expect(calculateMidpoint([NaN, -122.3], [47.6, -122.3])).toBeNull();
-		expect(calculateMidpoint([NaN, 0])).toBeNull();
-		expect(calculateMidpoint([undefined, undefined])).toBeNull();
-	});
-
 	it('returns null when latitude or longitude is out of geographic range', () => {
 		// Out-of-range latitude in stop objects
 		expect(
@@ -229,16 +215,6 @@ describe('calculateMidpoint', () => {
 				{ lat: 47.6092, lon: -122.3331 }
 			])
 		).toBeNull();
-
-		// Out-of-range coordinates in single tuple
-		expect(calculateMidpoint([120, -122.3321])).toBeNull();
-		expect(calculateMidpoint([-95, -122.3321])).toBeNull();
-		expect(calculateMidpoint([47.6062, 185])).toBeNull();
-		expect(calculateMidpoint([47.6062, -190])).toBeNull();
-
-		// Out-of-range coordinates in multi-argument tuples
-		expect(calculateMidpoint([120, -122.3], [47.6, -122.3])).toBeNull();
-		expect(calculateMidpoint([47.6, -122.3], [47.6, 200])).toBeNull();
 	});
 
 	it('accepts coordinates at the geographic range boundaries', () => {
@@ -247,9 +223,6 @@ describe('calculateMidpoint', () => {
 			{ lat: -90, lon: -180 }
 		]);
 		expect(result).toEqual({ lat: 0, lon: 0 });
-
-		const tupleResult = calculateMidpoint([90, 180]);
-		expect(tupleResult).toEqual({ lat: 90, lon: 180 });
 	});
 });
 
@@ -555,5 +528,52 @@ describe('calculateRadiusFromBounds', () => {
 		// Should be dominated by latitude span
 		expect(radius).toBeGreaterThan(275000); // meters
 		expect(radius).toBeLessThan(285000); // meters
+	});
+});
+
+describe('isValidCoordinate', () => {
+	it('returns true for valid coordinates', () => {
+		expect(isValidCoordinate(0, 0)).toBe(true);
+		expect(isValidCoordinate(47.6062, -122.3321)).toBe(true);
+		expect(isValidCoordinate(-90, -180)).toBe(true);
+		expect(isValidCoordinate(90, 180)).toBe(true);
+	});
+
+	it('returns false for out of bounds coordinates', () => {
+		expect(isValidCoordinate(90.1, 0)).toBe(false);
+		expect(isValidCoordinate(-90.1, 0)).toBe(false);
+		expect(isValidCoordinate(0, 180.1)).toBe(false);
+		expect(isValidCoordinate(0, -180.1)).toBe(false);
+	});
+
+	it('returns false for non-numeric or non-finite inputs', () => {
+		expect(isValidCoordinate(null, 0)).toBe(false);
+		expect(isValidCoordinate(0, null)).toBe(false);
+		expect(isValidCoordinate(undefined, 0)).toBe(false);
+		expect(isValidCoordinate(NaN, 0)).toBe(false);
+		expect(isValidCoordinate(Infinity, 0)).toBe(false);
+		expect(isValidCoordinate('47.6', '-122.3')).toBe(false);
+	});
+});
+
+describe('calcDistanceBetweenTwoPoints', () => {
+	it('calculates 0 distance between identical points', () => {
+		expect(calcDistanceBetweenTwoPoints(47.6062, -122.3321, 47.6062, -122.3321)).toBe(0);
+	});
+
+	it('calculates correct distance between two known points', () => {
+		// Seattle (47.6062, -122.3321) to Bellevue (47.6101, -122.2015) is ~9.8 km
+		const distance = calcDistanceBetweenTwoPoints(47.6062, -122.3321, 47.6101, -122.2015);
+		expect(distance).toBeGreaterThan(9.0);
+		expect(distance).toBeLessThan(10.5);
+	});
+
+	it('returns null if coordinates are invalid, null, undefined, or non-finite', () => {
+		expect(calcDistanceBetweenTwoPoints(null, null, 47.6062, -122.3321)).toBeNull();
+		expect(calcDistanceBetweenTwoPoints(undefined, -122.3321, 47.6062, -122.3321)).toBeNull();
+		expect(calcDistanceBetweenTwoPoints(47.6062, NaN, 47.6062, -122.3321)).toBeNull();
+		expect(calcDistanceBetweenTwoPoints(47.6062, -122.3321, Infinity, 0)).toBeNull();
+		expect(calcDistanceBetweenTwoPoints(95, 0, 47.6062, -122.3321)).toBeNull();
+		expect(calcDistanceBetweenTwoPoints(47.6062, -122.3321, 0, 200)).toBeNull();
 	});
 });

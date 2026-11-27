@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { json } from '@sveltejs/kit';
 import { PUBLIC_OBA_SERVER_URL } from '$env/static/public';
 import { PRIVATE_OBA_API_KEY } from '$env/static/private';

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render, screen } from '@testing-library/svelte';
 import { describe, expect, test } from 'vitest';
 import OptionsPill from '../components/trip-planner/OptionsPill.svelte';

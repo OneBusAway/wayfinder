@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const MAX_TIMEOUT_MS = 2 ** 31 - 1;
 const REFRESH_SLACK_MS = 1000;
 

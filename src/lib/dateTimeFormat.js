@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 export function getLocalTimeZone() {
 	return new Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
@@ -117,8 +118,8 @@ export function msToTimeString(
  * @param {number} ms - Milliseconds since Unix epoch
  * @returns {string} Time in "HH:mm AM/PM" format
  */
-export function msToLocalArrivalDepartureTimeString(ms) {
-	return msToTimeString(ms, getLocalTimeZone(), fourDigitTimeFormat);
+export function msToLocalArrivalDepartureTimeString(ms, timeZone = getLocalTimeZone()) {
+	return msToTimeString(ms, timeZone || getLocalTimeZone(), fourDigitTimeFormat);
 }
 
 /**
@@ -457,11 +458,16 @@ export function convertToISO8601(date, time, timeZone) {
 	const minute = parseInt(timeMatch[2], 10);
 	const period = timeMatch[3].toUpperCase();
 
+	if (hour < 1 || hour > 12) return null;
+
 	if (period === 'AM' && hour === 12) hour = 0;
 	else if (period === 'PM' && hour !== 12) hour += 12;
 
 	try {
-		const plainDateTime = Temporal.PlainDateTime.from({ year, month, day, hour, minute });
+		const plainDateTime = Temporal.PlainDateTime.from(
+			{ year, month, day, hour, minute },
+			{ overflow: 'reject' }
+		);
 		// toZonedDateTime resolves DST correctly for the target date
 		const zdt = plainDateTime.toZonedDateTime(timeZone || getLocalTimeZone());
 

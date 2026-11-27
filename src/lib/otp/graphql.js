@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { error } from '@sveltejs/kit';
 import { convertToISO8601 } from '$lib/dateTimeFormat';
 
@@ -38,6 +39,13 @@ query planTrip(
             lon
             arrival { scheduledTime estimated { time } }
           }
+          intermediatePlaces {
+            name
+            lat
+            lon
+            arrival { scheduledTime estimated { time } }
+            departure { scheduledTime estimated { time } }
+          }
           route { shortName longName color textColor }
           legGeometry { points }
           steps { relativeDirection streetName distance absoluteDirection }
@@ -65,6 +73,7 @@ query planTrip(
  * @property {boolean|null} [interlineWithPreviousLeg]
  * @property {GraphQLPlanPlace|null} [from]
  * @property {GraphQLPlanPlace|null} [to]
+ * @property {(GraphQLPlanPlace|null)[]|null} [intermediatePlaces] - Null for non-transit legs
  * @property {{ shortName?: string|null, longName?: string|null, color?: string|null, textColor?: string|null }|null} [route]
  * @property {{ points?: string|null }|null} [legGeometry]
  * @property {import('$lib/types').ItineraryStep[]|null} [steps]
@@ -82,6 +91,17 @@ query planTrip(
  * @property {{ planConnection?: { edges?: { node: GraphQLPlanNode }[]|null }|null }|null} [data]
  * @property {{ message?: string|null }[]|null} [errors]
  */
+
+/**
+ * A LegTime as epoch milliseconds, preferring the real-time estimate.
+ *
+ * @param {GraphQLPlanPlace['arrival']} legTime
+ * @returns {number|undefined}
+ */
+function legTimeToMs(legTime) {
+	const time = legTime?.estimated?.time || legTime?.scheduledTime;
+	return time ? new Date(time).getTime() : undefined;
+}
 
 /**
  * Convert comma-separated mode string (e.g. "TRANSIT,WALK") to GraphQL modes input.
@@ -259,6 +279,16 @@ export function mapGraphQLResponse(graphqlData) {
 
 			if (fromTime) mapped.startTime = new Date(fromTime).getTime();
 			if (toTime) mapped.endTime = new Date(toTime).getTime();
+			if (leg.intermediatePlaces?.length) {
+				// Same shape as OTP 1.x `intermediateStops` (times in epoch ms)
+				mapped.intermediateStops = leg.intermediatePlaces.filter(Boolean).map((place) => ({
+					name: place.name,
+					lat: place.lat,
+					lon: place.lon,
+					arrival: legTimeToMs(place.arrival),
+					departure: legTimeToMs(place.departure)
+				}));
+			}
 			if (leg.route) {
 				mapped.routeShortName = leg.route.shortName;
 				mapped.routeLongName = leg.route.longName;

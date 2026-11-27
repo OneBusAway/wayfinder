@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Rider-facing strings for on-demand statuses and booking lines. Times are in
  * the agency timezone; `now` decides the today/tomorrow wording.

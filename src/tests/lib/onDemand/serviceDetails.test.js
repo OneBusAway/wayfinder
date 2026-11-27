@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import { whereSummary, serviceBounds } from '$lib/onDemand/serviceDetails.js';
 import { parsedService, referencesJson, ruleJson, square } from '../../fixtures/onDemand.js';

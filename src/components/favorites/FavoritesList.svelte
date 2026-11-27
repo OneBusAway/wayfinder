@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
 	@component
 	Lists favorited stops and routes. Item select and delete are sibling buttons
@@ -84,7 +85,7 @@
 					<button
 						type="button"
 						aria-label={itemAriaLabel(item)}
-						class="flex min-w-0 flex-1 items-center rounded-lg p-2.5 pr-10 text-left"
+						class="flex min-w-0 flex-1 items-center rounded-lg p-2.5 pr-10 text-left [@media(pointer:coarse)]:pr-12"
 						onclick={() => handleItemClick(item)}
 					>
 						<div class="mr-3 text-gray-400">
@@ -104,7 +105,7 @@
 
 					<button
 						type="button"
-						class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-100 transition-opacity hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 dark:hover:bg-gray-600 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
+						class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1.5 text-gray-400 opacity-100 transition-opacity hover:bg-gray-200 hover:text-red-500 focus-visible:opacity-100 dark:hover:bg-gray-600 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(pointer:coarse)]:p-2.5"
 						onclick={() => handleRemove(item)}
 						aria-label={$t('favorites.remove_item', { values: { name: title } })}
 					>

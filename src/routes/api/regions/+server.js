@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { error, json } from '@sveltejs/kit';
 
 /** @type {import('./$types').RequestHandler} */

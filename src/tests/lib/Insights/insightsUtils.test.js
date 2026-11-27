@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const browserState = vi.hoisted(() => ({ browser: true }));
@@ -110,8 +111,25 @@ describe('getDistanceCategory', () => {
 		expect(getDistanceCategory(0.01)).toBe('User Distance: 00000-00050m');
 	});
 
+	it('categorizes intermediate distances accurately', () => {
+		expect(getDistanceCategory(0.075)).toBe('User Distance: 00050-00100m');
+		expect(getDistanceCategory(0.15)).toBe('User Distance: 00100-00200m');
+		expect(getDistanceCategory(0.3)).toBe('User Distance: 00200-00400m');
+		expect(getDistanceCategory(0.6)).toBe('User Distance: 00400-00800m');
+		expect(getDistanceCategory(1.2)).toBe('User Distance: 00800-01600m');
+		expect(getDistanceCategory(2.5)).toBe('User Distance: 01600-03200m');
+	});
+
 	it('categorizes the long tail', () => {
 		expect(getDistanceCategory(10)).toBe('User Distance: 03200-INFINITY');
+	});
+
+	it('returns undefined for non-finite, negative, or invalid distances', () => {
+		expect(getDistanceCategory(null)).toBeUndefined();
+		expect(getDistanceCategory(undefined)).toBeUndefined();
+		expect(getDistanceCategory(NaN)).toBeUndefined();
+		expect(getDistanceCategory(-5)).toBeUndefined();
+		expect(getDistanceCategory(Infinity)).toBeUndefined();
 	});
 });
 
@@ -119,5 +137,22 @@ describe('analyticsDistanceToStop', () => {
 	it('returns a distance category string for two coordinates', () => {
 		const category = analyticsDistanceToStop(47.6062, -122.3321, 47.6062, -122.3321);
 		expect(category).toBe('User Distance: 00000-00050m');
+	});
+
+	it('returns undefined when user coordinates are missing or null', () => {
+		expect(analyticsDistanceToStop(null, null, 47.6062, -122.3321)).toBeUndefined();
+		expect(analyticsDistanceToStop(null, -122.3321, 47.6062, -122.3321)).toBeUndefined();
+		expect(analyticsDistanceToStop(47.6062, null, 47.6062, -122.3321)).toBeUndefined();
+	});
+
+	it('returns undefined when user coordinates are undefined or invalid', () => {
+		expect(analyticsDistanceToStop(undefined, undefined, 47.6062, -122.3321)).toBeUndefined();
+		expect(analyticsDistanceToStop(NaN, -122.3321, 47.6062, -122.3321)).toBeUndefined();
+		expect(analyticsDistanceToStop(95, -122.3321, 47.6062, -122.3321)).toBeUndefined();
+	});
+
+	it('returns undefined when stop coordinates are missing or invalid', () => {
+		expect(analyticsDistanceToStop(47.6062, -122.3321, null, null)).toBeUndefined();
+		expect(analyticsDistanceToStop(47.6062, -122.3321, undefined, -122.3321)).toBeUndefined();
 	});
 });

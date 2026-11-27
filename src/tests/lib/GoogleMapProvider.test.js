@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import GoogleMapProvider from '$lib/Provider/GoogleMapProvider.svelte.js';
 import { createVehicleIconSvg } from '$lib/MapHelpers/generateVehicleIcon';

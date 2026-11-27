@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { browser } from '$app/environment';
 import { calcDistanceBetweenTwoPoints } from '$lib/mathUtils';
 
@@ -46,9 +47,13 @@ export function getAnalyticsId() {
 /**
  * Converts a distance (in km) to a category string.
  * @param {number} distanceKm - The distance in kilometers.
- * @returns {string} - The distance category string.
+ * @returns {string | undefined} - The distance category string, or undefined if invalid.
  */
 export function getDistanceCategory(distanceKm) {
+	if (!Number.isFinite(distanceKm) || distanceKm < 0) {
+		return undefined;
+	}
+
 	const distanceM = distanceKm * 1000;
 	if (distanceM < 50) {
 		return 'User Distance: 00000-00050m';
@@ -73,13 +78,17 @@ export function getDistanceCategory(distanceKm) {
  * Calculates the distance between the user location and the stop,
  * then returns the corresponding distance category for analytics.
  *
- * @param {number} userLat - User latitude.
- * @param {number} userLng - User longitude.
+ * @param {number | null | undefined} userLat - User latitude.
+ * @param {number | null | undefined} userLng - User longitude.
  * @param {number} stopLat - Stop latitude.
  * @param {number} stopLng - Stop longitude.
- * @returns {string} - The analytics distance category.
+ * @returns {string | undefined} - The analytics distance category, or undefined if unavailable.
  */
 export function analyticsDistanceToStop(userLat, userLng, stopLat, stopLng) {
 	const distanceKm = calcDistanceBetweenTwoPoints(userLat, userLng, stopLat, stopLng);
+	if (distanceKm === null) {
+		return undefined;
+	}
+
 	return getDistanceCategory(distanceKm);
 }

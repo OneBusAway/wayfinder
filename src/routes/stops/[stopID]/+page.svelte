@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import StopPane from '$components/stops/StopPane.svelte';
 	import StopPageHeader from '$components/stops/StopPageHeader.svelte';
@@ -5,6 +6,7 @@
 	import '$lib/i18n.js';
 	import { t, isLoading } from 'svelte-i18n';
 	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
 	import { loadSurveys } from '$lib/Surveys/surveyUtils.js';
 	import { getUserId } from '$lib/utils/user.js';
 	import analytics from '$lib/Insights';
@@ -14,10 +16,10 @@
 	let { data } = $props();
 	const stop = data.stopData.entry;
 	let arrivalsAndDeparturesResponse = $state(data.arrivalsAndDeparturesResponse ?? null);
-
-	const currentUserLocation = $state($userLocation);
+	const routes = $derived(data.stopData.references?.routes ?? []);
 
 	onMount(() => {
+		const currentUserLocation = get(userLocation);
 		const distanceCategory = analyticsDistanceToStop(
 			currentUserLocation.lat,
 			currentUserLocation.lng,
@@ -50,6 +52,8 @@
 		stopLat={stop.lat}
 		stopLon={stop.lon}
 		stopCode={stop.code}
+		routeIds={stop.routeIds ?? []}
+		{routes}
 	/>
-	<StopPane {stop} bind:arrivalsAndDeparturesResponse />
+	<StopPane {stop} showHeroCard={false} bind:arrivalsAndDeparturesResponse />
 </StandalonePage>

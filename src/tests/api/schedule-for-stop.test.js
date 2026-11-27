@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockRetrieve = vi.hoisted(() => vi.fn());

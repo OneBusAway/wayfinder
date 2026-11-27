@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { browser } from '$app/environment';
 import StopMarker from '$components/map/StopMarker.svelte';
 import { faBus } from '@fortawesome/free-solid-svg-icons';

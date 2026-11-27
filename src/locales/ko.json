@@ -170,6 +170,7 @@
 		"route_load_failed": "이 노선을 불러오지 못했습니다.",
 		"route_shape_failed": "이 노선을 지도에 표시하지 못했습니다.",
 		"route_shape_partial": "이 노선의 일부를 지도에 표시하지 못했습니다. 일부 구간이 빠져 있을 수 있습니다.",
+		"search_failed": "검색을 완료하지 못했습니다.",
 		"favorite_saved": "즐겨찾기에 추가되었습니다.",
 		"favorite_removed": "즐겨찾기에서 삭제되었습니다.",
 		"tap_to_retry": "다시 시도하려면 누르세요.",

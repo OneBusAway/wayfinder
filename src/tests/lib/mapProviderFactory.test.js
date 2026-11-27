@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 const providers = vi.hoisted(() => ({ google: vi.fn(), osm: vi.fn(), arcgis: vi.fn() }));

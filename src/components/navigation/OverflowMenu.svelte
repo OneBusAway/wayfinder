@@ -1,5 +1,8 @@
 <script lang="ts">
+	import { Button } from '$components/ui/button/';
+	import { Ellipsis } from '@lucide/svelte';
 	import * as Popover from '$components/ui/popover/index';
+	import { t } from 'svelte-i18n';
 
 	interface Props {
 		links: { key: string; value: string }[];
@@ -15,19 +18,12 @@
 </script>
 
 <Popover.Root bind:open={isOpen}>
-	<Popover.Trigger
-		aria-label="More navigation options"
-		class="flex h-8 w-8 items-center justify-center rounded-md border bg-surface/80 dark:bg-surface-dark"
-	>
-		<svg
-			class="h-5 w-5 text-surface-foreground dark:text-surface-foreground-dark"
-			fill="currentColor"
-			viewBox="0 0 20 20"
-			xmlns="http://www.w3.org/2000/svg"
-			><path
-				d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-			></path></svg
-		>
+	<Popover.Trigger aria-label="More navigation options">
+		{#snippet child({ props })}
+			<Button {...props} size="sm" variant="outline">
+				<Ellipsis />
+			</Button>
+		{/snippet}
 	</Popover.Trigger>
 	<Popover.Content
 		align="end"
@@ -45,7 +41,7 @@
 				href={value}
 				onclick={closePopover}
 			>
-				{key}
+				{$t(key, { default: key })}
 			</a>
 			<!-- eslint-enable svelte/no-navigation-without-resolve -->
 		{/each}

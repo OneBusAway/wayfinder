@@ -1,5 +1,8 @@
-import oba, { handleOBAResponse } from '$lib/obaSdk';
+/* eslint-disable no-restricted-syntax */
+import { json } from '@sveltejs/kit';
+import oba, { callOBA } from '$lib/obaSdk';
 
+/** @type {import('./$types').RequestHandler} */
 export async function GET({ params, url }) {
 	const { routeId } = params;
 
@@ -11,7 +14,10 @@ export async function GET({ params, url }) {
 		includeSchedule
 	};
 
-	const response = await oba.tripsForRoute.list(routeId, queryParams);
+	const response = await callOBA(
+		() => oba.tripsForRoute.list(routeId, queryParams),
+		'trips-for-route'
+	);
 
-	return handleOBAResponse(response, 'trips-for-route');
+	return json(response);
 }

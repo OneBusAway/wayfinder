@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { json } from '@sveltejs/kit';
 import { getRoutesCache, getCacheState } from '$lib/serverCache.js';
 

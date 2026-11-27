@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <script>
 	import TabContainer from '../../components/tabs/TabContainer.svelte';
 	let { text = 'Test Tab Content' } = $props();

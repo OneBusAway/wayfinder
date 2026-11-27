@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // @ts-check
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 

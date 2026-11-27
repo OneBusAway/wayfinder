@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
@@ -538,7 +539,7 @@ describe('TripPlanModal showForm embedding', () => {
 				closePane: vi.fn(),
 				snap: 'half',
 				showForm: true,
-				hasPlanned: true,
+				tripPlanAttempted: true,
 				handleTripPlan: vi.fn(),
 				clearTripItineraries: vi.fn()
 			}

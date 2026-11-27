@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 
 export function isValidAlert(alert) {

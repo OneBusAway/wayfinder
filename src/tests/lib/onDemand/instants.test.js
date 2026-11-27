@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { minInstant, earliestAfter, scheduleAt } from '$lib/onDemand/instants.js';
 

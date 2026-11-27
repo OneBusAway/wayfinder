@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, rmSync, readFileSync } from 'node:fs';

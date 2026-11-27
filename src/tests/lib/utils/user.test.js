@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { getCookie, getUserId } from '$lib/utils/user';
 import { beforeEach, describe, it, expect, afterEach } from 'vitest';
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import { evaluateAvailability, sortByAvailability, TIER } from '$lib/onDemand/availability.js';
 import { resolveBooking } from '$lib/onDemand/bookingResolution.js';

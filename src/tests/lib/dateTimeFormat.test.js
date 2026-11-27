@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
 	fourDigitTimeFormat,
@@ -92,6 +93,12 @@ describe('msToLocalArrivalDepartureTimeString', () => {
 	it('pads minutes with leading Zeros', () => {
 		const result = msToLocalArrivalDepartureTimeString(new Date('2024-01-16T09:05:00Z').valueOf());
 		expect(result).toBe('09:05 AM');
+	});
+
+	it('formats in specified timezone when provided', () => {
+		const ms = new Date('2024-01-16T17:15:00Z').valueOf();
+		expect(msToLocalArrivalDepartureTimeString(ms, 'America/Los_Angeles')).toBe('09:15 AM');
+		expect(msToLocalArrivalDepartureTimeString(ms, 'America/New_York')).toBe('12:15 PM');
 	});
 
 	it.each(INVALID_INPUTS)(`returns "N/A" when the input is %s`, (input) => {
@@ -618,6 +625,17 @@ describe('convertToISO8601', () => {
 
 	it('returns null for an invalid date format', () => {
 		expect(convertToISO8601('011-14-2026', '09:00 AM')).toBeNull();
+	});
+
+	it.each([
+		['02-31-2026', '09:00 AM'],
+		['13-01-2026', '09:00 AM'],
+		['01-14-2026', '13:00 AM'],
+		['01-14-2026', '13:00 PM'],
+		['01-14-2026', '0:30 PM'],
+		['01-14-2026', '09:75 AM']
+	])('returns null for the out of range value %s %s', (date, time) => {
+		expect(convertToISO8601(date, time)).toBeNull();
 	});
 
 	it('returns null when date is null', () => {

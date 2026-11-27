@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // Integration coverage for StopPane.handleSurveyButtonClick exercised through
 // the REAL SurveyBanner component (StopPane.test.js mocks SurveyBanner, and
 // SurveyBanner.test.js mocks onSubmit, so the contract between

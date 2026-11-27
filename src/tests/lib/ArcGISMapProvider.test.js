@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 // The shared setup replaces navigator; the real SDK also needs browser identification.

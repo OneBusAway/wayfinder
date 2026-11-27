@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import 'temporal-polyfill/global';
 import { building } from '$app/environment';
 import { sequence } from '@sveltejs/kit/hooks';

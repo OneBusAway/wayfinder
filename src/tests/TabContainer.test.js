@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { render, screen } from '@testing-library/svelte';
 import { expect, test, describe } from 'vitest';
 import TabContainer from '../components/tabs/TabContainer.svelte';

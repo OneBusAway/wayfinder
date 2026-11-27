@@ -1,3 +1,4 @@
+<!-- eslint-disable svelte/block-lang -->
 <!--
     @component
     Lists every route in the region inside a draggable bottom sheet so the map

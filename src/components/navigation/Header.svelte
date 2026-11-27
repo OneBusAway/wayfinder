@@ -6,9 +6,11 @@
 	} from '$env/static/public';
 
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
+	import { t } from 'svelte-i18n';
 	import OverflowMenu from './OverflowMenu.svelte';
 	import LanguageSwitcher from './LanguageSwitcher/LanguageSwitcher.svelte';
+	import { Button } from '$components/ui/button/';
 
 	const showRegionName = __SHOW_REGION_NAME_IN_NAV_BAR__;
 
@@ -41,7 +43,7 @@
 
 	const EXTRA_PADDING = 32;
 	const GAP_WIDTH = 16; // 1rem = 16px (gap-x-4)
-	const OVERFLOW_BUTTON_WIDTH = 40;
+	const OVERFLOW_BUTTON_WIDTH = 42; // size="sm" Button
 	const DEFAULT_LOGO_HEIGHT = 40; // h-10
 	const MIN_LOGO_HEIGHT = 24; // h-6
 
@@ -64,8 +66,8 @@
 		Object.entries(headerLinks).forEach(([key, value]) => {
 			const tempDiv = document.createElement('div');
 			tempDiv.style.cssText =
-				'position:absolute;visibility:hidden;padding:0.25rem 0.5rem;font-weight:600;';
-			tempDiv.textContent = key;
+				'position:absolute;visibility:hidden;padding:0 0.75rem;font-size:0.875rem;font-weight:500;white-space:nowrap;';
+			tempDiv.textContent = $t(key, { default: key });
 			document.body.appendChild(tempDiv);
 			// Add border width (1px each side) to the measurement
 			linkWidths.push({ key, value, width: tempDiv.offsetWidth + 2 });
@@ -163,6 +165,14 @@
 		overflowLinks = newOverflowLinks;
 	}
 
+	$effect(() => {
+		void $t; // re-run when the language changes
+		untrack(() => {
+			measureLinkWidths();
+			checkOverflow();
+		});
+	});
+
 	onMount(() => {
 		measureLinkWidths();
 
@@ -230,7 +240,7 @@
 </script>
 
 <header
-	class="relative z-9999 flex items-center justify-between border-b border-gray-500 bg-brand-accent/80 text-brand-foreground backdrop-blur-md md:flex-row md:px-8 dark:bg-surface-dark dark:text-surface-foreground-dark"
+	class="relative z-9999 flex items-center justify-between border-b border-gray-500 bg-brand-accent/80 backdrop-blur-md [--ring:var(--foreground)] md:flex-row md:px-8 dark:bg-surface-dark"
 	bind:this={navContainerEl}
 >
 	{#if logoUrl || PUBLIC_OBA_REGION_NAME}
@@ -267,23 +277,16 @@
 		class="flex items-center gap-x-2 px-1 py-1 md:gap-x-4 md:px-2 md:py-2"
 	>
 		{#each visibleLinks as { key, value } (key)}
-			<div class="flex-shrink-0 rounded-md border bg-surface/80 dark:bg-surface-dark">
-				<!-- external URL -->
-				<!-- eslint-disable svelte/no-navigation-without-resolve -->
-				<a
-					href={value}
-					class="block px-2 py-1 font-semibold text-surface-foreground dark:text-surface-foreground-dark"
-					>{key}</a
-				>
-				<!-- eslint-enable svelte/no-navigation-without-resolve -->
-			</div>
+			<Button href={value} size="sm" variant="outline">
+				{$t(key, { default: key })}
+			</Button>
 		{/each}
 
 		{#if overflowLinks.length > 0}
 			<OverflowMenu links={overflowLinks} />
 		{/if}
 
-		<div class="language-switcher-container flex-shrink-0" bind:this={languageSwitcherEl}>
+		<div class="flex-shrink-0" bind:this={languageSwitcherEl}>
 			<LanguageSwitcher />
 		</div>
 	</nav>

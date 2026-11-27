@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * GeoJSON Polygon/MultiPolygon helpers for drawing on-demand zones. Positions
  * are GeoJSON [lon, lat]. Providers disagree on hole winding (Google fills by
@@ -5,10 +6,18 @@
  * explicitly rather than trusting the feed.
  */
 
+/**
+ * @typedef {[number, number]} Position - GeoJSON [lon, lat]
+ * @typedef {Position[]} Ring
+ * @typedef {{ type: 'Polygon', coordinates: Ring[] }} PolygonGeometry
+ * @typedef {{ type: 'MultiPolygon', coordinates: Ring[][] }} MultiPolygonGeometry
+ * @typedef {PolygonGeometry | MultiPolygonGeometry} ZoneGeometry
+ */
+
 const MIN_RING_POSITIONS = 4;
 
 /**
- * @param {any} geometry
+ * @param {{ type?: string, coordinates?: unknown } | null | undefined} geometry
  * @returns {Array<Array<Array<[number, number]>>>} polygons → rings → positions
  */
 export function polygonsOf(geometry) {

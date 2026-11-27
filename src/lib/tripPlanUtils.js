@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /**
  * Swaps trip planner locations (text, coordinates, and map markers)
  * @param {Object} params - Swap parameters

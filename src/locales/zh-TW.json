@@ -170,6 +170,7 @@
 		"route_load_failed": "無法載入此路線。",
 		"route_shape_failed": "無法在地圖上繪製此路線。",
 		"route_shape_partial": "此路線有部分無法繪製，地圖上可能缺少部分路段。",
+		"search_failed": "無法完成搜尋。",
 		"favorite_saved": "已加入我的最愛。",
 		"favorite_removed": "已從我的最愛移除。",
 		"tap_to_retry": "點選以重試。",

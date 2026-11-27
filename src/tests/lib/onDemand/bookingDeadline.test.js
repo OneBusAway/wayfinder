@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect } from 'vitest';
 import vectors from '../../fixtures/flex-booking-vectors.json';
 import { createEvaluator, parseGtfsTime, LOOKAHEAD_DAYS } from '$lib/onDemand/bookingDeadline.js';

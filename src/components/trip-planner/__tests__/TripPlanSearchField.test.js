@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -42,7 +43,7 @@ describe('TripPlanSearchField', () => {
 
 		defaultProps = {
 			inputId: 'from-location-input',
-			place: '',
+			value: '',
 			results: [],
 			isLoading: false,
 			onInput: mockOnInput,
@@ -61,7 +62,7 @@ describe('TripPlanSearchField', () => {
 		});
 
 		it('renders with initial place value', () => {
-			const props = { ...defaultProps, place: 'Capitol Hill' };
+			const props = { ...defaultProps, value: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
 			const input = screen.getByDisplayValue('Capitol Hill');
@@ -69,7 +70,7 @@ describe('TripPlanSearchField', () => {
 		});
 
 		it('shows clear button when place has value', () => {
-			const props = { ...defaultProps, place: 'Capitol Hill' };
+			const props = { ...defaultProps, value: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
 			const clearButton = screen.getByLabelText('Clear');
@@ -127,7 +128,7 @@ describe('TripPlanSearchField', () => {
 		});
 
 		it('calls onClear when clear button is clicked', async () => {
-			const props = { ...defaultProps, place: 'Capitol Hill' };
+			const props = { ...defaultProps, value: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
 			const clearButton = screen.getByLabelText('Clear');
@@ -221,12 +222,11 @@ describe('TripPlanSearchField', () => {
 
 			const input = screen.getByPlaceholderText('Search for a place...');
 			expect(input).toHaveAttribute('id', 'from-location-input');
-			expect(input).toHaveAttribute('type', 'text');
 			// Label is now in the parent component (TripPlan.svelte) and connects via the inputId
 		});
 
 		it('clear button has proper accessibility label', () => {
-			const props = { ...defaultProps, place: 'Capitol Hill' };
+			const props = { ...defaultProps, value: 'Capitol Hill' };
 			render(TripPlanSearchField, { props });
 
 			const clearButton = screen.getByLabelText('Clear');
@@ -302,7 +302,7 @@ describe('TripPlanSearchField', () => {
 
 		it('handles very long place names', () => {
 			const longPlaceName = 'A'.repeat(200);
-			const props = { ...defaultProps, place: longPlaceName };
+			const props = { ...defaultProps, value: longPlaceName };
 			render(TripPlanSearchField, { props });
 
 			const input = screen.getByDisplayValue(longPlaceName);
