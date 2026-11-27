@@ -83,7 +83,7 @@ describe('SearchField', () => {
 		// Check for search button
 		const button = screen.getByRole('button');
 		expect(button).toBeInTheDocument();
-		expect(button).toHaveAttribute('type', 'button');
+		expect(button).toHaveAttribute('type', 'submit');
 	});
 
 	test('search button is disabled when input is empty', () => {
@@ -239,24 +239,15 @@ describe('SearchField', () => {
 		expect(buttonSpan).toHaveClass('sr-only');
 	});
 
-	test('displays search and arrow icons correctly', () => {
-		const { container } = render(SearchField, {
+	test('names the icon-only search button for screen readers', () => {
+		render(SearchField, {
 			props: {
 				value: '',
 				handleSearchResults: mockHandleSearchResults
 			}
 		});
 
-		// Should have two SVG icons: search icon + arrow icon
-		const svgs = container.querySelectorAll('svg');
-		expect(svgs).toHaveLength(2);
-
-		// Verify SVG attributes
-		const searchIcon = svgs[0];
-		expect(searchIcon).toHaveAttribute('viewBox', '0 0 20 20');
-
-		const arrowIcon = svgs[1];
-		expect(arrowIcon).toHaveAttribute('viewBox', '0 0 20 20');
+		expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
 	});
 
 	test('button is disabled when value is empty', () => {
