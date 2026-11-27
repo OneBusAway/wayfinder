@@ -16,6 +16,8 @@ vi.mock('svelte-i18n', () => ({
 					'search.all_routes': 'All Routes',
 					'search.search_for_routes': 'Search for routes',
 					'search.no_routes_found': 'No routes found',
+					'search.routes_load_failed': "Couldn't load routes. Please try again.",
+					'search.retry': 'Try again',
 					loading: 'loading'
 				};
 				return translations[key] || key;
@@ -101,12 +103,52 @@ describe('ViewAllRoutesModal', () => {
 			expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
 		});
 
-		// Should handle error and not display routes
+		// Should handle error, surface alert, and not display routes
 		expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch routes:', 'Failed to fetch routes');
+		expect(screen.getByRole('alert')).toHaveTextContent("Couldn't load routes. Please try again.");
+		expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
 		const routeButtons = screen
 			.queryAllByRole('button')
 			.filter((btn) => btn.className.includes('route-item'));
 		expect(routeButtons).toHaveLength(0);
+
+		consoleSpy.mockRestore();
+	});
+
+	test('retries loading routes when Try again is clicked after a failure', async () => {
+		const user = userEvent.setup();
+		const consoleSpy = vi.spyOn(console, 'error').mockImplementation(vi.fn());
+
+		global.fetch
+			.mockResolvedValueOnce({
+				ok: false,
+				status: 503,
+				json: async () => ({ error: 'Routes data is loading, please retry' })
+			})
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ routes: mockRoutesListData })
+			});
+
+		render(ViewAllRoutesModal, {
+			props: {
+				handleModalRouteClick: mockHandleModalRouteClick,
+				closePane: mockClosePane
+			}
+		});
+
+		const retryButton = await screen.findByRole('button', { name: 'Try again' });
+		await user.click(retryButton);
+
+		await waitFor(() => {
+			expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+		});
+
+		const routeButtons = screen
+			.getAllByRole('button')
+			.filter((btn) => btn.className.includes('route-item'));
+		expect(routeButtons).toHaveLength(mockRoutesListData.length);
+		expect(global.fetch).toHaveBeenCalledTimes(2);
 
 		consoleSpy.mockRestore();
 	});
