@@ -163,6 +163,7 @@ import { createReactiveStop } from './support/reactiveStop.svelte.js';
 import { clearVehicleMarkersMap } from '$lib/vehicleUtils.js';
 import analytics from '$lib/Insights';
 import { userLocation } from '$src/stores/userLocationStore.js';
+import { env } from '$env/dynamic/public';
 
 const STOP = { id: '1_75403', lat: 47.6, lon: -122.3, name: 'Pine St & 3rd Ave' };
 const STOP_B = { id: '1_99999', lat: 47.61, lon: -122.31, name: 'Other St & 4th Ave' };
@@ -401,6 +402,43 @@ test('clearing the selection resets the route flags an expanded row left behind'
 		expect(capturedMapContainerProps.selectedRoute).toBeNull();
 		expect(capturedMapContainerProps.selectedTrip).toBeNull();
 	});
+});
+
+test('expanding an arrival row shows its region time in the stop popup', () => {
+	// 2026-03-08 is a spring-forward day in America/Los_Angeles, so the time since
+	// midnight runs an hour behind the clock.
+	env.PUBLIC_OBA_TIMEZONE = 'America/Los_Angeles';
+	try {
+		setPage(pageWithStop());
+		render(MapExperience);
+		const updatePopupContent = vi.fn();
+		capturedMapContainerProps.mapProvider.updatePopupContent = updatePopupContent;
+
+		capturedSheetProps.tripSelected({
+			detail: {
+				tripId: 'trip_1',
+				routeId: 'route_1',
+				routeShortName: 'C',
+				predictedArrivalTime: Date.parse('2026-03-08T15:35:00-07:00'),
+				scheduledArrivalTime: Date.parse('2026-03-08T15:34:00-07:00')
+			}
+		});
+		expect(updatePopupContent).toHaveBeenLastCalledWith(STOP, 15 * 3600 + 35 * 60);
+
+		// No prediction: falls back to the schedule.
+		capturedSheetProps.tripSelected({
+			detail: {
+				tripId: 'trip_2',
+				routeId: 'route_1',
+				routeShortName: 'C',
+				predictedArrivalTime: 0,
+				scheduledArrivalTime: Date.parse('2026-11-28T16:05:00-08:00')
+			}
+		});
+		expect(updatePopupContent).toHaveBeenLastCalledWith(STOP, 16 * 3600 + 5 * 60);
+	} finally {
+		delete env.PUBLIC_OBA_TIMEZONE;
+	}
 });
 
 test('selecting a route from an open stop sheet survives the resulting stop-close teardown', async () => {

@@ -41,6 +41,7 @@
 	import { removeAgencyPrefix } from '$lib/utils';
 	import { clearVehicleMarkersMap } from '$lib/vehicleUtils';
 	import { activeRoutesFromArrivals, assignRouteColors } from '$lib/activeRoutes.js';
+	import { msToPlainTime } from '$lib/dateTimeFormat';
 
 	// One-time snapshot at mount: on a cold /map/stops/{id} load, `data.stopData` is
 	// present, so boot the map centered on the stop (the selection effect then applies
@@ -59,6 +60,8 @@
 	// map loads stops, so region-center markers are never painted and then stuck.
 	const startInTripPlanMode =
 		browser && !!env.PUBLIC_OTP_SERVER_URL && hasTripParams(initialPage.url.searchParams);
+
+	const regionTz = env.PUBLIC_OBA_TIMEZONE || undefined;
 
 	let currentModal = $state(null);
 	let selectedTrip = $state(null);
@@ -420,7 +423,10 @@
 			};
 
 			if (selectedStopData && mapProvider && mapProvider.updatePopupContent) {
-				const arrivalTime = event.detail.predictedArrivalTime || event.detail.scheduledArrivalTime;
+				// PopupContent takes seconds since midnight, not an epoch time.
+				const arrival = event.detail.predictedArrivalTime || event.detail.scheduledArrivalTime;
+				const time = arrival ? msToPlainTime(arrival, regionTz) : null;
+				const arrivalTime = time ? time.hour * 3600 + time.minute * 60 + time.second : null;
 				mapProvider.updatePopupContent(selectedStopData, arrivalTime);
 			}
 		} else {
